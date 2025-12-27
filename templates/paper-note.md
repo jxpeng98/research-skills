@@ -1,8 +1,8 @@
 # Paper Note Template
 
-<!-- 
+<!--
 Usage: Copy this template for each paper you read.
-Save to: RESEARCH/[project]/notes/[citekey].md
+Save to: RESEARCH/[topic]/notes/[citekey].md
 -->
 
 # [Paper Title]
@@ -70,6 +70,14 @@ Save to: RESEARCH/[project]/notes/[citekey].md
 | Moderator | | |
 | Mediator | | |
 
+### Core Concepts (for qualitative/theoretical)
+
+| Concept | Definition | Operationalization |
+|---------|------------|-------------------|
+| | | |
+| | | |
+| | | |
+
 ## Key Findings
 
 ### Finding 1
@@ -81,12 +89,20 @@ Save to: RESEARCH/[project]/notes/[citekey].md
 ### Finding 3
 <!-- Description + supporting evidence -->
 
-### Statistical Results (if applicable)
+### Statistical Results (if quantitative)
 
 | Hypothesis | Result | Statistic | Effect Size | p-value |
 |------------|--------|-----------|-------------|---------|
 | H1 | Supported/Rejected | | | |
 | H2 | | | | |
+
+### Themes/Narratives (if qualitative)
+
+| Theme | Description | Supporting Evidence |
+|-------|-------------|---------------------|
+| Theme 1 | | "Quote" (p. X) |
+| Theme 2 | | "Quote" (p. Y) |
+| Theme 3 | | "Quote" (p. Z) |
 
 ## Contributions
 

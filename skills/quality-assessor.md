@@ -246,6 +246,51 @@ pie title Evidence Quality Distribution
 ```
 ```
 
+## Risk of Bias (RoB) Tool Selection
+
+Choose the appropriate RoB tool based on study design:
+
+| Study Design | Recommended Tool | Key Domains |
+|--------------|------------------|-------------|
+| Randomized trials | **RoB 2** | Randomization, deviations, missing data, measurement, selection |
+| Non-randomized interventions | **ROBINS-I** | Confounding, selection, classification, deviations, missing data, measurement, selection of results |
+| Diagnostic accuracy | **QUADAS-2** | Patient selection, index test, reference standard, flow and timing |
+| Qualitative studies | **CASP Qualitative** | Aims, methodology, design, recruitment, data collection, reflexivity, ethics, analysis, findings, value |
+| Systematic reviews | **AMSTAR 2** | Protocol, search, selection, extraction, RoB, meta-analysis, publication bias |
+| Cross-sectional | **JBI Critical Appraisal** | Inclusion criteria, subjects, exposure, outcomes, confounders, strategies |
+
+### RoB 2 Quick Assessment (for RCTs)
+
+| Domain | Low Risk | Some Concerns | High Risk |
+|--------|----------|---------------|-----------|
+| Randomization process | | | |
+| Deviations from interventions | | | |
+| Missing outcome data | | | |
+| Measurement of outcome | | | |
+| Selection of reported result | | | |
+| **Overall** | | | |
+
+## GRADE Framework (Evidence Certainty)
+
+For systematic reviews, apply GRADE to rate certainty of evidence:
+
+| Factor | Upgrade/Downgrade | Assessment |
+|--------|-------------------|------------|
+| Risk of bias | ↓ | Serious / Very serious / None |
+| Inconsistency | ↓ | Serious / Very serious / None |
+| Indirectness | ↓ | Serious / Very serious / None |
+| Imprecision | ↓ | Serious / Very serious / None |
+| Publication bias | ↓ | Strongly suspected / None |
+| Large effect | ↑ | Large / Very large / None |
+| Dose-response | ↑ | Yes / No |
+| Confounders | ↑ | Would reduce effect / None |
+
+**GRADE Certainty Levels:**
+- ⊕⊕⊕⊕ **High** - Very confident in the estimate
+- ⊕⊕⊕○ **Moderate** - Moderately confident
+- ⊕⊕○○ **Low** - Limited confidence
+- ⊕○○○ **Very Low** - Very little confidence
+
 ## Usage
 
 This skill is called by:

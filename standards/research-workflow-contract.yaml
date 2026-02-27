@@ -1,0 +1,304 @@
+contract_version: "1.0.0"
+name: "research-workflow-contract"
+scope: "cross-model academic paper workflow"
+
+artifacts:
+  root: "RESEARCH/[topic]/"
+  required_core:
+    - "framing/research_question.md"
+    - "framing/contribution_statement.md"
+    - "manuscript/manuscript.md"
+  optional_by_stage:
+    - "search_strategy.md"
+    - "search_log.md"
+    - "screening/title_abstract.md"
+    - "screening/full_text.md"
+    - "screening/prisma_flow.md"
+    - "extraction_table.md"
+    - "quality_table.md"
+    - "synthesis.md"
+    - "meta_analysis_plan.md"
+    - "effect_size_table.md"
+    - "meta_analysis_results.md"
+    - "study_design.md"
+    - "analysis_plan.md"
+    - "data_management_plan.md"
+    - "ethics_irb.md"
+    - "reporting_checklist.md"
+    - "submission/cover_letter.md"
+    - "submission/submission_checklist.md"
+    - "revision/response_matrix.md"
+    - "revision/response_letter.md"
+
+paper_types:
+  - id: "empirical"
+    focus: "design, data, methods, results, validity"
+  - id: "systematic-review"
+    focus: "PRISMA search-screen-extract-synthesize-report"
+  - id: "methods"
+    focus: "new method + validation + comparative evidence"
+  - id: "theory"
+    focus: "constructs, propositions, conceptual contribution"
+
+stages:
+  - id: "A"
+    name: "framing-positioning"
+    outputs:
+      - "framing/research_question.md"
+      - "framing/contribution_statement.md"
+  - id: "B"
+    name: "literature-related-work"
+    outputs:
+      - "notes/"
+      - "bibliography.bib"
+      - "search_log.md"
+  - id: "C"
+    name: "study-design-analysis-plan"
+    outputs:
+      - "study_design.md"
+      - "analysis_plan.md"
+      - "data_management_plan.md"
+  - id: "D"
+    name: "ethics-irb"
+    outputs:
+      - "ethics_irb.md"
+  - id: "E"
+    name: "evidence-synthesis"
+    outputs:
+      - "synthesis.md"
+      - "meta_analysis_results.md"
+  - id: "F"
+    name: "manuscript-writing"
+    outputs:
+      - "manuscript/outline.md"
+      - "manuscript/manuscript.md"
+      - "manuscript/claims_evidence_map.md"
+      - "manuscript/figures_tables_plan.md"
+  - id: "G"
+    name: "polish-compliance"
+    outputs:
+      - "reporting_checklist.md"
+      - "prisma_checklist.md"
+  - id: "H"
+    name: "submission-revision"
+    outputs:
+      - "submission/cover_letter.md"
+      - "submission/submission_checklist.md"
+      - "revision/response_matrix.md"
+      - "revision/response_letter.md"
+  - id: "I"
+    name: "research-code-support"
+    outputs:
+      - "analysis/"
+
+task_catalog:
+  A1:
+    stage: "A"
+    title: "research-question"
+    outputs:
+      - "framing/research_question.md"
+  A2:
+    stage: "A"
+    title: "contribution-novelty"
+    outputs:
+      - "framing/contribution_statement.md"
+  A3:
+    stage: "A"
+    title: "theoretical-framing"
+    outputs:
+      - "theoretical_framework.md"
+  A4:
+    stage: "A"
+    title: "gap-analysis"
+    outputs:
+      - "gap_analysis.md"
+  B1:
+    stage: "B"
+    title: "systematic-review"
+    outputs:
+      - "search_log.md"
+      - "screening/"
+      - "synthesis.md"
+  B2:
+    stage: "B"
+    title: "targeted-paper-reading"
+    outputs:
+      - "notes/"
+      - "bibliography.bib"
+  B3:
+    stage: "B"
+    title: "citation-snowballing"
+    outputs:
+      - "snowball_log.md"
+  B4:
+    stage: "B"
+    title: "related-work-writing"
+    outputs:
+      - "manuscript/manuscript.md"
+  B5:
+    stage: "B"
+    title: "citation-management"
+    outputs:
+      - "bibliography.bib"
+  C1:
+    stage: "C"
+    title: "study-design"
+    outputs:
+      - "study_design.md"
+  C2:
+    stage: "C"
+    title: "instruments"
+    outputs:
+      - "instruments/"
+  C3:
+    stage: "C"
+    title: "analysis-plan"
+    outputs:
+      - "analysis_plan.md"
+  C4:
+    stage: "C"
+    title: "data-management-plan"
+    outputs:
+      - "data_management_plan.md"
+  C5:
+    stage: "C"
+    title: "preregistration"
+    outputs:
+      - "preregistration.md"
+  D1:
+    stage: "D"
+    title: "ethics-pack"
+    outputs:
+      - "ethics_irb.md"
+  D2:
+    stage: "D"
+    title: "ethics-statements"
+    outputs:
+      - "manuscript/manuscript.md"
+  E1:
+    stage: "E"
+    title: "synthesis-strategy"
+    outputs:
+      - "meta_analysis_plan.md"
+  E2:
+    stage: "E"
+    title: "effect-size-table"
+    outputs:
+      - "effect_size_table.md"
+  E3:
+    stage: "E"
+    title: "meta-analysis"
+    outputs:
+      - "meta_analysis_results.md"
+  E4:
+    stage: "E"
+    title: "certainty-grading"
+    outputs:
+      - "grade_sof.md"
+  E5:
+    stage: "E"
+    title: "integrated-synthesis"
+    outputs:
+      - "synthesis.md"
+  F1:
+    stage: "F"
+    title: "manuscript-outline"
+    outputs:
+      - "manuscript/outline.md"
+  F2:
+    stage: "F"
+    title: "single-section-writing"
+    outputs:
+      - "manuscript/manuscript.md"
+  F3:
+    stage: "F"
+    title: "full-manuscript-draft"
+    outputs:
+      - "manuscript/manuscript.md"
+  F4:
+    stage: "F"
+    title: "claim-evidence-map"
+    outputs:
+      - "manuscript/claims_evidence_map.md"
+  F5:
+    stage: "F"
+    title: "figures-tables-plan"
+    outputs:
+      - "manuscript/figures_tables_plan.md"
+  G1:
+    stage: "G"
+    title: "reporting-check"
+    outputs:
+      - "reporting_checklist.md"
+  G2:
+    stage: "G"
+    title: "prisma-check"
+    outputs:
+      - "prisma_checklist.md"
+  G3:
+    stage: "G"
+    title: "cross-section-integrity"
+    outputs:
+      - "manuscript/claims_evidence_map.md"
+  H1:
+    stage: "H"
+    title: "submission-package"
+    outputs:
+      - "submission/"
+  H2:
+    stage: "H"
+    title: "rebuttal-package"
+    outputs:
+      - "revision/"
+  I1:
+    stage: "I"
+    title: "method-implementation"
+    outputs:
+      - "analysis/"
+  I2:
+    stage: "I"
+    title: "reproduction"
+    outputs:
+      - "analysis/"
+  I3:
+    stage: "I"
+    title: "data-pipeline"
+    outputs:
+      - "analysis/"
+
+platform_mapping:
+  claude_code:
+    A3: "/build-framework"
+    A4: "/find-gap"
+    B1: "/lit-review"
+    B2: "/paper-read"
+    B4: "/academic-write related-work [topic]"
+    C1: "/study-design"
+    D1: "/ethics-check"
+    E1: "/synthesize"
+    F2: "/academic-write [section] [topic]"
+    F3: "/paper-write"
+    G2: "/prisma-checker via /lit-review outputs"
+    H1: "/submission-prep"
+    H2: "/rebuttal"
+    I1: "/code-build"
+  codex:
+    entry: "$research-paper-workflow"
+    task_selector: "Use Task ID from task_catalog (for example F3 or G1)"
+  gemini:
+    prompt_pattern: "Task {ID} on RESEARCH/[topic] using outputs defined in contract_version 1.0.0"
+
+quality_gates:
+  - id: "Q1"
+    name: "question-to-method alignment"
+    rule: "RQs in framing match methods and outcomes in manuscript"
+  - id: "Q2"
+    name: "claim-evidence traceability"
+    rule: "All major claims mapped to evidence and citations"
+  - id: "Q3"
+    name: "reporting completeness"
+    rule: "Use reporting-checker or prisma-checker before submission"
+  - id: "Q4"
+    name: "reproducibility baseline"
+    rule: "Analysis decisions and artifact paths are documented"
+

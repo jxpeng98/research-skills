@@ -1,0 +1,590 @@
+map_version: "1.0.0"
+name: "mcp-agent-capability-map"
+scope: "task-level orchestration for Skills + MCP + Agents"
+
+coordination_contract:
+  entrypoint: "Task ID from standards/research-workflow-contract.yaml"
+  required_packet_fields:
+    - "task_id"
+    - "paper_type"
+    - "topic"
+    - "required_outputs"
+    - "required_skills"
+    - "quality_gates"
+  fixed_execution_chain:
+    - "plan"
+    - "mcp-evidence"
+    - "primary-agent-draft"
+    - "review-agent-check"
+    - "validator-gate"
+
+mcp_registry:
+  - "filesystem"
+  - "scholarly-search"
+  - "citation-graph"
+  - "metadata-registry"
+  - "fulltext-retrieval"
+  - "screening-tracker"
+  - "extraction-store"
+  - "stats-engine"
+  - "code-runtime"
+  - "reporting-guidelines"
+  - "submission-kit"
+
+agent_registry:
+  - "codex"
+  - "claude"
+  - "gemini"
+
+skill_registry:
+  - "question-refiner"
+  - "academic-searcher"
+  - "paper-screener"
+  - "paper-extractor"
+  - "quality-assessor"
+  - "gap-analyzer"
+  - "theory-mapper"
+  - "citation-snowballer"
+  - "fulltext-fetcher"
+  - "metadata-enricher"
+  - "citation-formatter"
+  - "reference-manager-bridge"
+  - "study-designer"
+  - "ethics-irb-helper"
+  - "evidence-synthesizer"
+  - "manuscript-architect"
+  - "prisma-checker"
+  - "reporting-checker"
+  - "submission-packager"
+  - "rebuttal-assistant"
+  - "code-builder"
+  - "model-collaborator"
+
+task_skill_mapping:
+  A1:
+    required_skills:
+      - "question-refiner"
+      - "metadata-enricher"
+  A2:
+    required_skills:
+      - "question-refiner"
+      - "manuscript-architect"
+  A3:
+    required_skills:
+      - "theory-mapper"
+      - "question-refiner"
+  A4:
+    required_skills:
+      - "gap-analyzer"
+      - "academic-searcher"
+
+  B1:
+    required_skills:
+      - "academic-searcher"
+      - "paper-screener"
+      - "fulltext-fetcher"
+      - "paper-extractor"
+      - "quality-assessor"
+      - "prisma-checker"
+      - "evidence-synthesizer"
+  B2:
+    required_skills:
+      - "paper-extractor"
+      - "fulltext-fetcher"
+      - "metadata-enricher"
+      - "citation-formatter"
+  B3:
+    required_skills:
+      - "citation-snowballer"
+      - "metadata-enricher"
+  B4:
+    required_skills:
+      - "manuscript-architect"
+      - "citation-formatter"
+  B5:
+    required_skills:
+      - "citation-formatter"
+      - "reference-manager-bridge"
+
+  C1:
+    required_skills:
+      - "study-designer"
+      - "question-refiner"
+  C2:
+    required_skills:
+      - "study-designer"
+      - "ethics-irb-helper"
+  C3:
+    required_skills:
+      - "study-designer"
+      - "code-builder"
+  C4:
+    required_skills:
+      - "study-designer"
+      - "ethics-irb-helper"
+  C5:
+    required_skills:
+      - "study-designer"
+      - "metadata-enricher"
+
+  D1:
+    required_skills:
+      - "ethics-irb-helper"
+      - "study-designer"
+  D2:
+    required_skills:
+      - "ethics-irb-helper"
+      - "manuscript-architect"
+
+  E1:
+    required_skills:
+      - "evidence-synthesizer"
+      - "quality-assessor"
+  E2:
+    required_skills:
+      - "evidence-synthesizer"
+      - "paper-extractor"
+  E3:
+    required_skills:
+      - "evidence-synthesizer"
+      - "code-builder"
+      - "model-collaborator"
+  E4:
+    required_skills:
+      - "quality-assessor"
+      - "evidence-synthesizer"
+  E5:
+    required_skills:
+      - "evidence-synthesizer"
+      - "manuscript-architect"
+
+  F1:
+    required_skills:
+      - "manuscript-architect"
+      - "metadata-enricher"
+  F2:
+    required_skills:
+      - "manuscript-architect"
+      - "citation-formatter"
+  F3:
+    required_skills:
+      - "manuscript-architect"
+      - "citation-formatter"
+      - "reporting-checker"
+  F4:
+    required_skills:
+      - "manuscript-architect"
+      - "quality-assessor"
+  F5:
+    required_skills:
+      - "manuscript-architect"
+      - "metadata-enricher"
+
+  G1:
+    required_skills:
+      - "reporting-checker"
+      - "quality-assessor"
+  G2:
+    required_skills:
+      - "prisma-checker"
+      - "reporting-checker"
+  G3:
+    required_skills:
+      - "manuscript-architect"
+      - "quality-assessor"
+
+  H1:
+    required_skills:
+      - "submission-packager"
+      - "reporting-checker"
+      - "citation-formatter"
+  H2:
+    required_skills:
+      - "rebuttal-assistant"
+      - "manuscript-architect"
+
+  I1:
+    required_skills:
+      - "code-builder"
+      - "model-collaborator"
+  I2:
+    required_skills:
+      - "code-builder"
+      - "model-collaborator"
+      - "metadata-enricher"
+  I3:
+    required_skills:
+      - "code-builder"
+      - "model-collaborator"
+      - "metadata-enricher"
+
+task_execution:
+  A1:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  A2:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  A3:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "citation-graph"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  A4:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "citation-graph"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q4"
+
+  B1:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "citation-graph"
+      - "fulltext-retrieval"
+      - "screening-tracker"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+  B2:
+    required_mcp:
+      - "filesystem"
+      - "fulltext-retrieval"
+      - "metadata-registry"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  B3:
+    required_mcp:
+      - "filesystem"
+      - "citation-graph"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  B4:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  B5:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+
+  C1:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C3:
+    required_mcp:
+      - "filesystem"
+      - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C4:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  C5:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+
+  D1:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  D2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q3"
+      - "Q4"
+
+  E1:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  E2:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "gemini"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  E3:
+    required_mcp:
+      - "filesystem"
+      - "stats-engine"
+      - "extraction-store"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  E4:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  E5:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+
+  F1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  F2:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  F3:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q3"
+  F4:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  F5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+
+  G1:
+    required_mcp:
+      - "filesystem"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q3"
+  G2:
+    required_mcp:
+      - "filesystem"
+      - "reporting-guidelines"
+      - "screening-tracker"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+  G3:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q4"
+
+  H1:
+    required_mcp:
+      - "filesystem"
+      - "submission-kit"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+      - "Q4"
+  H2:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+
+  I1:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "codex"
+    review_agent: "gemini"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I2:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I3:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+      - "extraction-store"
+    primary_agent: "codex"
+    review_agent: "gemini"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q4"

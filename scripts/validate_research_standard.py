@@ -1201,6 +1201,11 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "generate_release_notes.sh",
             "--skip-note-gen",
             "--from-tag",
+            "--update-existing",
+            "--validator-result",
+            "--unittest-result",
+            "--smoke-result",
+            "release note evidence update",
             "--skip-smoke",
             "--tag",
         ):
@@ -1219,6 +1224,11 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "## Highlights (Draft)",
             "## Validation Evidence",
             "## Publish Steps",
+            "--update-existing",
+            "--validator-result",
+            "--unittest-result",
+            "--smoke-result",
+            "updated evidence lines",
         ):
             report.check(
                 token in note_gen_content,

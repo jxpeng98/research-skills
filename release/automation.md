@@ -17,6 +17,7 @@ Draft release note generator:
 ```
 
 Runs validator + workflow unit tests + beta smoke checks, verifies the tag is not already used, and auto-generates `release/<tag>.md` draft if missing.
+After checks pass, preflight auto-fills validation evidence lines in the release note.
 
 Manual draft generation (optional):
 

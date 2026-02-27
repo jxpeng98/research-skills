@@ -107,17 +107,58 @@ if [[ "$STRICT_MODE" -eq 1 ]]; then
   validate_cmd+=(--strict)
 fi
 
+validator_log="$(mktemp -t research-skills-validator.XXXXXX.log)"
+unit_log="$(mktemp -t research-skills-unittest.XXXXXX.log)"
+smoke_log="$(mktemp -t research-skills-smoke.XXXXXX.log)"
+trap 'rm -f "$validator_log" "$unit_log" "$smoke_log"' EXIT
+
 echo "[preflight] validator"
-"${validate_cmd[@]}"
+"${validate_cmd[@]}" 2>&1 | tee "$validator_log"
+validator_summary="$(grep '^Summary:' "$validator_log" | tail -n1 || true)"
+if [[ -z "$validator_summary" ]]; then
+  validator_summary="passed"
+fi
 
 echo "[preflight] unit tests"
-python3 -m unittest tests.test_orchestrator_workflows -v
+python3 -m unittest tests.test_orchestrator_workflows -v 2>&1 | tee "$unit_log"
+unit_ran_line="$(grep -E '^Ran [0-9]+ tests? in ' "$unit_log" | tail -n1 || true)"
+if grep -q '^OK$' "$unit_log"; then
+  if [[ -n "$unit_ran_line" ]]; then
+    unittest_summary="${unit_ran_line} ... OK"
+  else
+    unittest_summary="OK"
+  fi
+else
+  unittest_summary="FAILED"
+fi
 
 if [[ "$RUN_SMOKE" -eq 1 ]]; then
   echo "[preflight] smoke"
-  ./scripts/run_beta_smoke.sh
+  ./scripts/run_beta_smoke.sh 2>&1 | tee "$smoke_log"
+  if grep -q '\[smoke\] passed' "$smoke_log"; then
+    smoke_summary="passed"
+  else
+    smoke_summary="completed"
+  fi
 else
   echo "[preflight] smoke skipped"
+  smoke_summary="skipped"
+fi
+
+if [[ -n "$TAG" && "$SKIP_NOTE_GEN" -eq 0 ]]; then
+  update_note_cmd=(
+    ./scripts/generate_release_notes.sh
+    --tag "$TAG"
+    --update-existing
+    --validator-result "$validator_summary"
+    --unittest-result "$unittest_summary"
+    --smoke-result "$smoke_summary"
+  )
+  if [[ -n "$FROM_TAG" ]]; then
+    update_note_cmd+=(--from-tag "$FROM_TAG")
+  fi
+  echo "[preflight] release note evidence update"
+  "${update_note_cmd[@]}"
 fi
 
 echo "[preflight] all checks passed"

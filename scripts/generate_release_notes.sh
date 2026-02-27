@@ -9,6 +9,10 @@ RELEASE_DATE="$(date +%F)"
 STAGE="Beta"
 OVERWRITE=0
 MAX_COMMITS=12
+UPDATE_EXISTING=0
+VALIDATOR_RESULT="TODO"
+UNITTEST_RESULT="TODO"
+SMOKE_RESULT="TODO"
 
 usage() {
   cat <<'EOF'
@@ -25,6 +29,10 @@ Options:
   --date <YYYY-MM-DD>   Release date (default: today)
   --stage <name>        Stage label (default: Beta)
   --max-commits <n>     Max commits to include in highlights (default: 12)
+  --validator-result <s>  Value for validator evidence line
+  --unittest-result <s>   Value for unittest evidence line
+  --smoke-result <s>      Value for smoke evidence line
+  --update-existing       Update evidence lines in existing release note
   --overwrite           Overwrite output if it already exists
   -h, --help            Show help
 EOF
@@ -71,6 +79,25 @@ while [[ $# -gt 0 ]]; do
       MAX_COMMITS="$2"
       shift 2
       ;;
+    --validator-result)
+      [[ $# -ge 2 ]] || { echo "[notes] missing value for --validator-result" >&2; exit 2; }
+      VALIDATOR_RESULT="$2"
+      shift 2
+      ;;
+    --unittest-result)
+      [[ $# -ge 2 ]] || { echo "[notes] missing value for --unittest-result" >&2; exit 2; }
+      UNITTEST_RESULT="$2"
+      shift 2
+      ;;
+    --smoke-result)
+      [[ $# -ge 2 ]] || { echo "[notes] missing value for --smoke-result" >&2; exit 2; }
+      SMOKE_RESULT="$2"
+      shift 2
+      ;;
+    --update-existing)
+      UPDATE_EXISTING=1
+      shift
+      ;;
     --overwrite)
       OVERWRITE=1
       shift
@@ -93,6 +120,40 @@ cd "$ROOT_DIR"
 
 if [[ -z "$OUTPUT" ]]; then
   OUTPUT="release/${TAG}.md"
+fi
+
+if [[ "$UPDATE_EXISTING" -eq 1 && -e "$OUTPUT" ]]; then
+  python3 - "$OUTPUT" "$VALIDATOR_RESULT" "$UNITTEST_RESULT" "$SMOKE_RESULT" <<'PY'
+import re
+import sys
+
+path, validator, unittest, smoke = sys.argv[1:]
+with open(path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+patterns = [
+    (
+        r"- `validate_research_standard\.py --strict`: `[^`]*`",
+        f"- `validate_research_standard.py --strict`: `{validator}`",
+    ),
+    (
+        r"- `unittest`: `[^`]*`",
+        f"- `unittest`: `{unittest}`",
+    ),
+    (
+        r"- `run_beta_smoke\.sh`: `[^`]*`",
+        f"- `run_beta_smoke.sh`: `{smoke}`",
+    ),
+]
+for pattern, replacement in patterns:
+    if re.search(pattern, content):
+        content = re.sub(pattern, replacement, content, count=1)
+
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+PY
+  echo "[notes] updated evidence lines: $OUTPUT"
+  exit 0
 fi
 
 if [[ -e "$OUTPUT" && "$OVERWRITE" -ne 1 ]]; then
@@ -147,9 +208,9 @@ EOF
   cat <<'EOF'
 Observed result:
 
-- `validate_research_standard.py --strict`: `TODO`
-- `unittest`: `TODO`
-- `run_beta_smoke.sh`: `TODO`
+- `validate_research_standard.py --strict`: `${VALIDATOR_RESULT}`
+- `unittest`: `${UNITTEST_RESULT}`
+- `run_beta_smoke.sh`: `${SMOKE_RESULT}`
 EOF
   echo
   echo "## Publish Steps"

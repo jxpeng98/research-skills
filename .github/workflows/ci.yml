@@ -30,6 +30,7 @@ jobs:
       - name: Validate shell scripts syntax
         run: |
           bash -n scripts/run_beta_smoke.sh
+          bash -n scripts/generate_release_notes.sh
           bash -n scripts/release_preflight.sh
           bash -n scripts/release_postflight.sh
           bash -n scripts/release_automation.sh

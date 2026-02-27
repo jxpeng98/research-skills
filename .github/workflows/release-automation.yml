@@ -21,6 +21,20 @@ on:
         required: false
         type: boolean
         default: false
+      skip_note_gen:
+        description: "Skip auto draft generation for release notes in pre mode"
+        required: false
+        type: boolean
+        default: false
+      note_overwrite:
+        description: "Overwrite existing release note draft in pre mode"
+        required: false
+        type: boolean
+        default: false
+      from_tag:
+        description: "Optional baseline tag for release note draft highlights"
+        required: false
+        type: string
       skip_remote:
         description: "Skip remote ref checks in post mode"
         required: false
@@ -57,6 +71,15 @@ jobs:
           args=(--tag "${{ inputs.tag }}")
           if [[ "${{ inputs.skip_smoke }}" == "true" ]]; then
             args+=(--skip-smoke)
+          fi
+          if [[ "${{ inputs.skip_note_gen }}" == "true" ]]; then
+            args+=(--skip-note-gen)
+          fi
+          if [[ "${{ inputs.note_overwrite }}" == "true" ]]; then
+            args+=(--note-overwrite)
+          fi
+          if [[ -n "${{ inputs.from_tag }}" ]]; then
+            args+=(--from-tag "${{ inputs.from_tag }}")
           fi
           if [[ "${{ inputs.skip_remote }}" == "true" ]]; then
             args+=(--skip-remote)

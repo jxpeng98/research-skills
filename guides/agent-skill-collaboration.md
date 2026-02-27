@@ -73,6 +73,32 @@
 
 可用 `task-run --skills-strict` 在技能规范文件缺失时阻断执行。
 
+## 3.3) Profile 注入约定（人格 / 审稿风格 / 工具权限）
+
+避免全局固定配置，使用“按运行注入”的 profile 机制：
+
+- profile 文件：`standards/agent-profiles.example.json`
+- 并发模式：
+  - `parallel --profile-file ... --profile ... --summarizer-profile ...`
+- 任务模式：
+  - `task-run --profile-file ... --profile ...`
+  - `task-run --draft-profile ... --review-profile ... --triad-profile ...`
+
+优先级（高 -> 低）：
+
+1. 命令行显式传参（如 `--review-profile strict-review`）
+2. `task_overrides`（按 Task ID 覆盖）
+3. `--profile`（本次运行默认 profile）
+4. 内置 `default` profile
+
+profile 可定义：
+
+- `persona`
+- `analysis_style` / `draft_style` / `review_style` / `summary_style` / `triad_style`
+- `runtime_options`（按 agent 注入工具权限，如 Codex sandbox、Claude permission mode、Gemini sandbox）
+  - 推荐设置：`non_interactive: true`、`timeout_seconds`
+  - 可选严格认证：`require_api_key: true`（缺失 key 时直接快速失败，避免卡在登录流程）
+
 ## 4) 按能力类型给出推荐协同模板
 
 ### A. 代码能力（`I1/I2/I3`）
@@ -106,6 +132,12 @@
 - agent 组合：主执行 `claude`，复核 `gemini/codex`
 
 ## 5) 运行入口（统一）
+
+建议先做预检：
+
+```bash
+python -m bridges.orchestrator doctor --cwd ./project
+```
 
 使用 `task-run` 按任务执行并自动注入 `required_skills + required_skill_cards`：
 

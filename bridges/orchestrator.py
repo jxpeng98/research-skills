@@ -9,6 +9,7 @@ Usage:
     python orchestrator.py role --cwd "/path" --codex-task "..." --claude-task "..." --gemini-task "..."
     python orchestrator.py single --model claude --prompt "..." --cwd "/path"
     python orchestrator.py task-run --task-id F3 --paper-type empirical --topic ai-in-education --cwd "/path" --mcp-strict --skills-strict --triad
+    python orchestrator.py doctor --cwd "/path"
 
 Python 3.12+ required.
 """
@@ -16,7 +17,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import shlex
+import shutil
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict
@@ -81,6 +85,40 @@ class ModelOrchestrator:
         "quality critique",
         "cross-section consistency",
     ]
+    DEFAULT_AGENT_PROFILES: dict[str, dict[str, Any]] = {
+        "default": {
+            "persona": "Balanced academic collaborator emphasizing traceability and rigor.",
+            "analysis_style": "State assumptions explicitly and separate evidence from inference.",
+            "draft_style": "Use concise academic prose with explicit claim-evidence links.",
+            "review_style": "Prioritize high-impact risks first, then completeness and formatting.",
+            "summary_style": "Synthesize consensus, disagreements, and next actions.",
+            "runtime_options": {
+                "codex": {"sandbox": "read-only", "non_interactive": True},
+                "claude": {"permission_mode": "default", "non_interactive": True},
+                "gemini": {"sandbox": False, "non_interactive": True},
+            },
+        },
+        "strict-review": {
+            "persona": "Critical reviewer with low tolerance for unsupported claims.",
+            "review_style": "Block on unresolved validity, reproducibility, or reporting gaps.",
+            "summary_style": "Focus on blockers, evidence gaps, and remediation order.",
+            "runtime_options": {
+                "codex": {"sandbox": "read-only", "non_interactive": True},
+                "claude": {"permission_mode": "default", "non_interactive": True},
+                "gemini": {"sandbox": True, "non_interactive": True},
+            },
+        },
+        "rapid-draft": {
+            "persona": "Fast drafting assistant optimizing iteration speed.",
+            "draft_style": "Produce structured placeholders quickly and list missing inputs.",
+            "summary_style": "Summarize fastest path to a complete next revision.",
+            "runtime_options": {
+                "codex": {"sandbox": "workspace-write", "non_interactive": True},
+                "claude": {"permission_mode": "default", "non_interactive": True},
+                "gemini": {"sandbox": False, "non_interactive": True},
+            },
+        },
+    }
     RUNTIME_AGENTS = {"codex", "claude", "gemini"}
     DEFAULT_STANDARDS_DIR = Path(__file__).resolve().parents[1] / "standards"
     
@@ -98,6 +136,144 @@ class ModelOrchestrator:
         self.gemini = GeminiBridge(sandbox=gemini_sandbox)
         self.standards_dir = standards_dir or self.DEFAULT_STANDARDS_DIR
         self.mcp_connector = MCPConnector(timeout_seconds=mcp_timeout_seconds)
+
+    def _deep_merge_dict(self, base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+        merged: dict[str, Any] = dict(base)
+        for key, value in override.items():
+            base_value = merged.get(key)
+            if isinstance(base_value, dict) and isinstance(value, dict):
+                merged[key] = self._deep_merge_dict(base_value, value)
+            else:
+                merged[key] = value
+        return merged
+
+    def _load_profile_bundle(
+        self,
+        profile_file: Path | None,
+    ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, str]]]:
+        profiles = json.loads(json.dumps(self.DEFAULT_AGENT_PROFILES))
+        task_overrides: dict[str, dict[str, str]] = {}
+        if profile_file is None:
+            return profiles, task_overrides
+        target = profile_file
+        if not target.is_absolute():
+            target = Path.cwd() / target
+        if not target.exists():
+            raise ValueError(f"Profile file not found: {target}")
+        try:
+            payload = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ValueError(f"Failed to load profile file {target}: {exc}") from exc
+        if not isinstance(payload, dict):
+            raise ValueError("Profile file root must be a JSON object.")
+
+        payload_profiles = payload.get("profiles", {})
+        if not isinstance(payload_profiles, dict):
+            raise ValueError("Profile file field 'profiles' must be a JSON object.")
+        for name, config in payload_profiles.items():
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("Profile name must be a non-empty string.")
+            if not isinstance(config, dict):
+                raise ValueError(f"Profile '{name}' must be a JSON object.")
+            existing = profiles.get(name, {})
+            profiles[name] = self._deep_merge_dict(existing, config)
+
+        payload_overrides = payload.get("task_overrides", {})
+        if payload_overrides:
+            if not isinstance(payload_overrides, dict):
+                raise ValueError("Profile file field 'task_overrides' must be a JSON object.")
+            for task_id, mapping in payload_overrides.items():
+                if not isinstance(mapping, dict):
+                    raise ValueError(f"Task override '{task_id}' must be a JSON object.")
+                normalized_map: dict[str, str] = {}
+                for key in ("profile", "draft_profile", "review_profile", "triad_profile"):
+                    value = mapping.get(key)
+                    if value is None:
+                        continue
+                    if not isinstance(value, str) or not value.strip():
+                        raise ValueError(
+                            f"Task override {task_id}.{key} must be a non-empty string."
+                        )
+                    normalized_map[key] = value.strip()
+                task_overrides[str(task_id).strip().upper()] = normalized_map
+        return profiles, task_overrides
+
+    def _resolve_profile_config(
+        self,
+        profile_name: str,
+        profile_registry: dict[str, dict[str, Any]],
+    ) -> dict[str, Any]:
+        name = profile_name.strip()
+        config = profile_registry.get(name)
+        if config is None:
+            raise ValueError(
+                "Unknown agent profile: "
+                f"{name}. Available: {', '.join(sorted(profile_registry.keys()))}"
+            )
+        if not isinstance(config, dict):
+            raise ValueError(f"Invalid profile config format: {name}")
+        return config
+
+    def _resolve_task_profile_names(
+        self,
+        task_id: str,
+        task_overrides: dict[str, dict[str, str]],
+        base_profile: str,
+        draft_profile: str | None,
+        review_profile: str | None,
+        triad_profile: str | None,
+    ) -> dict[str, str]:
+        override = task_overrides.get(task_id.upper(), {})
+        selected_base = (override.get("profile") or base_profile or "default").strip()
+        selected_draft = (draft_profile or override.get("draft_profile") or selected_base).strip()
+        selected_review = (review_profile or override.get("review_profile") or selected_base).strip()
+        selected_triad = (triad_profile or override.get("triad_profile") or selected_base).strip()
+        return {
+            "base": selected_base,
+            "draft": selected_draft,
+            "review": selected_review,
+            "triad": selected_triad,
+        }
+
+    def _profile_runtime_options(
+        self,
+        profile_cfg: dict[str, Any],
+        agent_name: str,
+    ) -> dict[str, Any]:
+        runtime = profile_cfg.get("runtime_options", {})
+        if not isinstance(runtime, dict):
+            return {}
+        agent_opts = runtime.get(agent_name, {})
+        if not isinstance(agent_opts, dict):
+            return {}
+        return dict(agent_opts)
+
+    def _build_profile_directive(
+        self,
+        profile_name: str,
+        profile_cfg: dict[str, Any],
+        stage: str,
+    ) -> str:
+        style_map = {
+            "analysis": "analysis_style",
+            "draft": "draft_style",
+            "review": "review_style",
+            "summary": "summary_style",
+            "triad": "triad_style",
+        }
+        persona = str(profile_cfg.get("persona", "")).strip()
+        style_key = style_map.get(stage, "analysis_style")
+        stage_style = str(profile_cfg.get(style_key, "")).strip()
+        if not stage_style and stage == "triad":
+            stage_style = str(profile_cfg.get("summary_style", "")).strip()
+        if not persona and not stage_style:
+            return ""
+        lines = [f"Agent Profile: {profile_name} (stage: {stage})"]
+        if persona:
+            lines.append(f"- Persona: {persona}")
+        if stage_style:
+            lines.append(f"- Style: {stage_style}")
+        return "\n".join(lines)
     
     def execute(
         self,
@@ -110,6 +286,9 @@ class ModelOrchestrator:
         generator: str = "codex",
         single_model: str = "codex",
         parallel_summarizer: str = "claude",
+        profile_file: Path | None = None,
+        profile: str = "default",
+        summarizer_profile: str | None = None,
         session_id: str | None = None,
     ) -> CollaborationResult:
         """
@@ -125,14 +304,34 @@ class ModelOrchestrator:
             generator: Which model generates in chain mode
             single_model: Which model to use in single mode
             parallel_summarizer: Which model performs post-parallel synthesis
+            profile_file: Optional JSON profile bundle path
+            profile: Base profile for this run
+            summarizer_profile: Profile used by parallel summarizer
             session_id: Resume existing session
         """
         if mode == CollaborationMode.PARALLEL:
-            return self._parallel_analyze(
-                prompt or "",
-                cwd,
-                summarizer=parallel_summarizer,
-            )
+            try:
+                profile_registry, _ = self._load_profile_bundle(profile_file)
+                return self._parallel_analyze(
+                    prompt or "",
+                    cwd,
+                    summarizer=parallel_summarizer,
+                    profile_registry=profile_registry,
+                    base_profile_name=profile,
+                    summarizer_profile_name=summarizer_profile or profile,
+                )
+            except ValueError as exc:
+                error_resp = BridgeResponse.from_error("orchestrator", str(exc))
+                return CollaborationResult(
+                    mode="parallel",
+                    task_description=(prompt or "")[:200],
+                    merged_analysis=str(exc),
+                    confidence=0.0,
+                    recommendations=[],
+                    codex_response=error_resp if "codex" in str(exc).lower() else None,
+                    claude_response=error_resp if "claude" in str(exc).lower() else None,
+                    gemini_response=error_resp if "gemini" in str(exc).lower() else None,
+                )
         elif mode == CollaborationMode.CHAIN:
             return self._chain_verify(prompt or "", cwd, generator)
         elif mode == CollaborationMode.ROLE_BASED:
@@ -149,6 +348,9 @@ class ModelOrchestrator:
         prompt: str,
         cwd: Path,
         summarizer: str = "claude",
+        profile_registry: dict[str, dict[str, Any]] | None = None,
+        base_profile_name: str = "default",
+        summarizer_profile_name: str = "default",
     ) -> CollaborationResult:
         """
         Parallel mode: 3-agent concurrent analysis (codex/claude/gemini),
@@ -158,10 +360,25 @@ class ModelOrchestrator:
         """
         requested_agents = ["codex", "claude", "gemini"]
         responses: dict[str, BridgeResponse] = {}
+        registry = profile_registry or self.DEFAULT_AGENT_PROFILES
+        base_profile_cfg = self._resolve_profile_config(base_profile_name, registry)
+        summary_profile_cfg = self._resolve_profile_config(summarizer_profile_name, registry)
+        analysis_directive = self._build_profile_directive(
+            base_profile_name,
+            base_profile_cfg,
+            stage="analysis",
+        )
 
         with ThreadPoolExecutor(max_workers=len(requested_agents)) as executor:
             futures = {
-                executor.submit(self._execute_runtime_agent, agent, prompt, cwd): agent
+                executor.submit(
+                    self._execute_runtime_agent,
+                    agent,
+                    prompt,
+                    cwd,
+                    self._profile_runtime_options(base_profile_cfg, agent),
+                    analysis_directive,
+                ): agent
                 for agent in requested_agents
             }
             for future in as_completed(futures):
@@ -212,10 +429,17 @@ class ModelOrchestrator:
                 failed_agents=failed_agents,
                 responses=responses,
             )
+            summary_directive = self._build_profile_directive(
+                summarizer_profile_name,
+                summary_profile_cfg,
+                stage="summary",
+            )
             synthesis_resp = self._execute_runtime_agent(
                 synthesis_runtime,
                 synthesis_prompt,
                 cwd,
+                self._profile_runtime_options(summary_profile_cfg, synthesis_runtime),
+                summary_directive,
             )
 
         merged_parts: list[str] = [
@@ -223,6 +447,8 @@ class ModelOrchestrator:
             f"- Requested agents: {', '.join(requested_agents)}",
             f"- Successful agents: {', '.join(success_agents) if success_agents else 'none'}",
             f"- Failed agents: {', '.join(failed_agents) if failed_agents else 'none'}",
+            f"- Base profile: {base_profile_name}",
+            f"- Summarizer profile: {summarizer_profile_name}",
         ]
         for note in synthesis_notes:
             merged_parts.append(f"- {note}")
@@ -811,6 +1037,172 @@ Provide your verification assessment.
             "quality_gates": quality_gates,
         }
 
+    def _check_command_available(self, command: str) -> tuple[bool, str]:
+        try:
+            parsed = shlex.split(command)
+        except ValueError as exc:
+            return False, f"Invalid command syntax: {exc}"
+        if not parsed:
+            return False, "Command is empty."
+        executable = parsed[0]
+        if "/" in executable:
+            candidate = Path(executable).expanduser()
+            if candidate.exists():
+                return True, str(candidate)
+            return False, f"Executable not found: {candidate}"
+        resolved = shutil.which(executable)
+        if resolved:
+            return True, resolved
+        return False, f"Command not found in PATH: {executable}"
+
+    def doctor(self, cwd: Path) -> CollaborationResult:
+        """Run local preflight checks for CLIs, API keys, and MCP command wiring."""
+        checks: list[dict[str, str]] = []
+        recommendations: list[str] = []
+        target_cwd = cwd if cwd.is_absolute() else (Path.cwd() / cwd)
+
+        def add_check(
+            name: str,
+            status: str,
+            detail: str,
+            recommendation: str | None = None,
+        ) -> None:
+            checks.append(
+                {
+                    "name": name,
+                    "status": status,
+                    "detail": detail,
+                }
+            )
+            if recommendation and status in {"warning", "error"}:
+                recommendations.append(recommendation)
+
+        if target_cwd.exists():
+            add_check("Working directory", "ok", str(target_cwd))
+        else:
+            add_check(
+                "Working directory",
+                "error",
+                f"Missing path: {target_cwd}",
+                "Provide a valid --cwd path before running parallel/task-run.",
+            )
+
+        for filename in ("research-workflow-contract.yaml", "mcp-agent-capability-map.yaml"):
+            path = self._standards_file(filename)
+            if path.exists():
+                add_check(f"Standards file {filename}", "ok", str(path))
+            else:
+                add_check(
+                    f"Standards file {filename}",
+                    "error",
+                    f"Missing file: {path}",
+                    f"Restore {filename} under standards/ before running task-run.",
+                )
+
+        runtime_registry = {
+            "codex": "OPENAI_API_KEY",
+            "claude": "ANTHROPIC_API_KEY",
+            "gemini": "GOOGLE_API_KEY",
+        }
+        for cli_name, api_env in runtime_registry.items():
+            cli_path = shutil.which(cli_name)
+            if cli_path:
+                add_check(f"CLI {cli_name}", "ok", cli_path)
+            else:
+                add_check(
+                    f"CLI {cli_name}",
+                    "warning",
+                    f"{cli_name} not found in PATH.",
+                    f"Install {cli_name} CLI or route tasks away from {cli_name}.",
+                )
+
+            if os.environ.get(api_env, "").strip():
+                add_check(f"Env {api_env}", "ok", "configured")
+            else:
+                add_check(
+                    f"Env {api_env}",
+                    "warning",
+                    "not configured",
+                    f"Export {api_env} for {cli_name} runtime authentication.",
+                )
+
+        try:
+            capability_map = self._read_standard("mcp-agent-capability-map.yaml")
+            mcp_registry = self._parse_yaml_list(
+                self._extract_top_level_section(capability_map, "mcp_registry"),
+                item_indent=2,
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            add_check(
+                "MCP registry",
+                "error",
+                str(exc),
+                "Fix standards/mcp-agent-capability-map.yaml before using task-run.",
+            )
+            mcp_registry = []
+
+        for provider in mcp_registry:
+            if provider == "filesystem":
+                add_check("MCP filesystem", "ok", "local provider (no external command required)")
+                continue
+            env_name = self.mcp_connector._provider_env_var(provider)
+            command = os.environ.get(env_name, "").strip()
+            if not command:
+                add_check(
+                    f"MCP {provider}",
+                    "warning",
+                    f"{env_name} not configured",
+                    f"Set {env_name} to enable {provider} evidence collection.",
+                )
+                continue
+            command_ok, detail = self._check_command_available(command)
+            if command_ok:
+                add_check(f"MCP {provider}", "ok", f"{env_name} -> {detail}")
+            else:
+                add_check(
+                    f"MCP {provider}",
+                    "error",
+                    f"{env_name} invalid: {detail}",
+                    f"Fix {env_name} command so {provider} can execute.",
+                )
+
+        status_counts = {"ok": 0, "warning": 0, "error": 0}
+        for item in checks:
+            status_counts[item["status"]] = status_counts.get(item["status"], 0) + 1
+        total_checks = len(checks)
+        confidence = (
+            status_counts["ok"] / total_checks
+            if total_checks > 0
+            else 0.0
+        )
+
+        merged_parts = [
+            "## Doctor Summary",
+            f"- Working directory: {target_cwd}",
+            f"- Total checks: {total_checks}",
+            f"- OK: {status_counts['ok']}",
+            f"- Warnings: {status_counts['warning']}",
+            f"- Errors: {status_counts['error']}",
+            "",
+            "## Check Details",
+        ]
+        for item in checks:
+            merged_parts.append(
+                f"- [{item['status'].upper()}] {item['name']}: {item['detail']}"
+            )
+        if recommendations:
+            merged_parts.extend(["", "## Recommendations"])
+            for rec in sorted(set(recommendations)):
+                merged_parts.append(f"- {rec}")
+
+        return CollaborationResult(
+            mode="doctor",
+            task_description=f"doctor {target_cwd}"[:200],
+            merged_analysis="\n".join(merged_parts),
+            confidence=confidence,
+            recommendations=sorted(set(recommendations)),
+        )
+
     def _resolve_runtime_agent(
         self,
         preferred_agent: str,
@@ -836,13 +1228,24 @@ Provide your verification assessment.
             f"No runtime agent available for preferred={preferred_agent}, exclude={exclude_agent}"
         )
 
-    def _execute_runtime_agent(self, agent_name: str, prompt: str, cwd: Path) -> BridgeResponse:
+    def _execute_runtime_agent(
+        self,
+        agent_name: str,
+        prompt: str,
+        cwd: Path,
+        runtime_options: dict[str, Any] | None = None,
+        profile_directive: str | None = None,
+    ) -> BridgeResponse:
+        final_prompt = prompt
+        if profile_directive:
+            final_prompt = f"{prompt}\n\n{profile_directive}"
+        options = runtime_options or {}
         if agent_name == "codex":
-            return self.codex.execute(prompt, cwd)
+            return self.codex.execute(final_prompt, cwd, **options)
         if agent_name == "claude":
-            return self.claude.execute(prompt, cwd)
+            return self.claude.execute(final_prompt, cwd, **options)
         if agent_name == "gemini":
-            return self.gemini.execute(prompt, cwd)
+            return self.gemini.execute(final_prompt, cwd, **options)
         return BridgeResponse.from_error(
             agent_name,
             f"Unsupported runtime agent for this orchestrator: {agent_name}",
@@ -1112,6 +1515,11 @@ Return sections:
         mcp_strict: bool = False,
         skills_strict: bool = False,
         triad: bool = False,
+        profile_file: Path | None = None,
+        profile: str = "default",
+        draft_profile: str | None = None,
+        review_profile: str | None = None,
+        triad_profile: str | None = None,
     ) -> CollaborationResult:
         """Run task-level orchestration using capability map and contract."""
         normalized_task = task_id.strip().upper()
@@ -1122,6 +1530,44 @@ Return sections:
             agent_plan = self._load_task_agent_plan(normalized_task)
             artifact_root, required_outputs = self._load_task_outputs(normalized_task)
         except (FileNotFoundError, ValueError) as exc:
+            error_resp = BridgeResponse.from_error("orchestrator", str(exc))
+            return CollaborationResult(
+                mode="task-run",
+                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+                merged_analysis=str(exc),
+                confidence=0.0,
+                recommendations=[],
+                codex_response=error_resp if "codex" in str(exc).lower() else None,
+                claude_response=error_resp if "claude" in str(exc).lower() else None,
+                gemini_response=error_resp if "gemini" in str(exc).lower() else None,
+            )
+        try:
+            profile_registry, task_profile_overrides = self._load_profile_bundle(profile_file)
+            selected_profiles = self._resolve_task_profile_names(
+                normalized_task,
+                task_profile_overrides,
+                base_profile=profile,
+                draft_profile=draft_profile,
+                review_profile=review_profile,
+                triad_profile=triad_profile,
+            )
+            _ = self._resolve_profile_config(
+                selected_profiles["base"],
+                profile_registry,
+            )
+            draft_profile_cfg = self._resolve_profile_config(
+                selected_profiles["draft"],
+                profile_registry,
+            )
+            review_profile_cfg = self._resolve_profile_config(
+                selected_profiles["review"],
+                profile_registry,
+            )
+            triad_profile_cfg = self._resolve_profile_config(
+                selected_profiles["triad"],
+                profile_registry,
+            )
+        except ValueError as exc:
             error_resp = BridgeResponse.from_error("orchestrator", str(exc))
             return CollaborationResult(
                 mode="task-run",
@@ -1198,7 +1644,17 @@ Return sections:
             packet.get("required_skill_cards", []),
             context,
         )
-        draft_resp = self._execute_runtime_agent(primary_runtime, draft_prompt, cwd)
+        draft_resp = self._execute_runtime_agent(
+            primary_runtime,
+            draft_prompt,
+            cwd,
+            self._profile_runtime_options(draft_profile_cfg, primary_runtime),
+            self._build_profile_directive(
+                selected_profiles["draft"],
+                draft_profile_cfg,
+                stage="draft",
+            ),
+        )
         draft_runtime = primary_runtime
 
         fallback_resp: BridgeResponse | None = None
@@ -1211,7 +1667,17 @@ Return sections:
             routing_notes.extend(fallback_notes)
             if candidate_runtime != primary_runtime:
                 fallback_runtime = candidate_runtime
-                fallback_resp = self._execute_runtime_agent(fallback_runtime, draft_prompt, cwd)
+                fallback_resp = self._execute_runtime_agent(
+                    fallback_runtime,
+                    draft_prompt,
+                    cwd,
+                    self._profile_runtime_options(draft_profile_cfg, fallback_runtime),
+                    self._build_profile_directive(
+                        selected_profiles["draft"],
+                        draft_profile_cfg,
+                        stage="draft",
+                    ),
+                )
                 if fallback_resp.success:
                     draft_resp = fallback_resp
                     draft_runtime = fallback_runtime
@@ -1233,7 +1699,17 @@ Return sections:
                 packet.get("required_skill_cards", []),
                 draft_resp.content,
             )
-            review_resp = self._execute_runtime_agent(review_runtime, review_prompt, cwd)
+            review_resp = self._execute_runtime_agent(
+                review_runtime,
+                review_prompt,
+                cwd,
+                self._profile_runtime_options(review_profile_cfg, review_runtime),
+                self._build_profile_directive(
+                    selected_profiles["review"],
+                    review_profile_cfg,
+                    stage="review",
+                ),
+            )
         else:
             routing_notes.append("Skipped independent review because draft generation failed.")
 
@@ -1256,7 +1732,17 @@ Return sections:
                     draft_resp.content,
                     review_resp.content,
                 )
-                triad_resp = self._execute_runtime_agent(triad_runtime, triad_prompt, cwd)
+                triad_resp = self._execute_runtime_agent(
+                    triad_runtime,
+                    triad_prompt,
+                    cwd,
+                    self._profile_runtime_options(triad_profile_cfg, triad_runtime),
+                    self._build_profile_directive(
+                        selected_profiles["triad"],
+                        triad_profile_cfg,
+                        stage="triad",
+                    ),
+                )
             else:
                 routing_notes.append(
                     "Triad mode requested, but no third runtime agent available."
@@ -1293,6 +1779,16 @@ Return sections:
             "",
             "## Skill Cards",
             self._format_skill_context(packet.get("required_skill_cards", [])),
+            "",
+            "## Agent Profiles",
+            "\n".join(
+                [
+                    f"- base: {selected_profiles['base']}",
+                    f"- draft: {selected_profiles['draft']}",
+                    f"- review: {selected_profiles['review']}",
+                    f"- triad: {selected_profiles['triad']}",
+                ]
+            ),
             "",
             "## Routing",
             "\n".join(f"- {item}" for item in routing_notes) if routing_notes else "- Direct mapping used.",
@@ -1444,6 +1940,20 @@ def main():
         default="claude",
         help="Model used for post-parallel synthesis",
     )
+    parallel.add_argument(
+        "--profile-file",
+        type=Path,
+        help="Optional JSON file defining user agent profiles and per-task overrides",
+    )
+    parallel.add_argument(
+        "--profile",
+        default="default",
+        help="Base profile name for analyzer agents (default: default)",
+    )
+    parallel.add_argument(
+        "--summarizer-profile",
+        help="Profile name for summarizer agent (defaults to --profile)",
+    )
     
     # Chain mode
     chain = subparsers.add_parser("chain", help="One generates, other verifies")
@@ -1503,6 +2013,38 @@ def main():
         action="store_true",
         help="Enable third independent agent audit when draft/review succeed",
     )
+    task_run.add_argument(
+        "--profile-file",
+        type=Path,
+        help="Optional JSON file defining user agent profiles and per-task overrides",
+    )
+    task_run.add_argument(
+        "--profile",
+        default="default",
+        help="Base profile name for task-run stages (default: default)",
+    )
+    task_run.add_argument(
+        "--draft-profile",
+        help="Profile name for draft stage (defaults to --profile)",
+    )
+    task_run.add_argument(
+        "--review-profile",
+        help="Profile name for review stage (defaults to --profile)",
+    )
+    task_run.add_argument(
+        "--triad-profile",
+        help="Profile name for triad stage (defaults to --profile)",
+    )
+    doctor = subparsers.add_parser(
+        "doctor",
+        help="Run local preflight checks for CLIs, API keys, and MCP command wiring",
+    )
+    doctor.add_argument(
+        "--cwd",
+        default=Path.cwd(),
+        type=Path,
+        help="Working directory used by orchestrator preflight checks",
+    )
 
     args = parser.parse_args()
     
@@ -1516,6 +2058,8 @@ def main():
             tier=args.tier,
             paper_path=args.paper
         )
+    elif args.mode == "doctor":
+        result = orchestrator.doctor(cwd=args.cwd)
     elif args.mode == "task-run":
         result = orchestrator.task_run(
             task_id=args.task_id,
@@ -1527,6 +2071,11 @@ def main():
             mcp_strict=args.mcp_strict,
             skills_strict=args.skills_strict,
             triad=args.triad,
+            profile_file=getattr(args, "profile_file", None),
+            profile=getattr(args, "profile", "default"),
+            draft_profile=getattr(args, "draft_profile", None),
+            review_profile=getattr(args, "review_profile", None),
+            triad_profile=getattr(args, "triad_profile", None),
         )
     else:
         # Map previous modes
@@ -1546,6 +2095,9 @@ def main():
             generator=getattr(args, "generator", "codex"),
             single_model=getattr(args, "model", "codex"),
             parallel_summarizer=getattr(args, "summarizer", "claude"),
+            profile_file=getattr(args, "profile_file", None),
+            profile=getattr(args, "profile", "default"),
+            summarizer_profile=getattr(args, "summarizer_profile", None),
             session_id=getattr(args, "session_id", None),
         )
     

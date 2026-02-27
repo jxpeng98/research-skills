@@ -17,7 +17,6 @@ import shutil
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Generator
 from enum import Enum
 
 
@@ -99,6 +98,18 @@ def escape_prompt(prompt: str) -> str:
 class BaseBridge(ABC):
     """Abstract base for model bridges."""
     
+    DEFAULT_TIMEOUT_SECONDS = 300.0
+    DEFAULT_NON_INTERACTIVE = True
+    DEFAULT_REQUIRE_API_KEY = False
+    READ_POLL_SECONDS = 0.5
+    TERMINATE_GRACE_SECONDS = 2.0
+    WAIT_EXIT_SECONDS = 10.0
+    THREAD_JOIN_SECONDS = 5.0
+    AUTH_ENV_BY_MODEL = {
+        ModelType.CODEX: "OPENAI_API_KEY",
+        ModelType.CLAUDE: "ANTHROPIC_API_KEY",
+        ModelType.GEMINI: "GOOGLE_API_KEY",
+    }
     model_type: ModelType
     
     @abstractmethod
@@ -128,16 +139,80 @@ class BaseBridge(ABC):
                 f"Working directory does not exist: {cwd}"
             )
         
+        timeout_raw = kwargs.pop("timeout_seconds", self.DEFAULT_TIMEOUT_SECONDS)
+        non_interactive = bool(
+            kwargs.pop("non_interactive", self.DEFAULT_NON_INTERACTIVE)
+        )
+        require_api_key = bool(
+            kwargs.pop("require_api_key", self.DEFAULT_REQUIRE_API_KEY)
+        )
+        try:
+            timeout_seconds = self._normalize_timeout_seconds(timeout_raw)
+        except ValueError as exc:
+            return BridgeResponse.from_error(cli_name, str(exc))
+        if require_api_key:
+            auth_env = self.AUTH_ENV_BY_MODEL.get(self.model_type)
+            if auth_env and not os.environ.get(auth_env, "").strip():
+                return BridgeResponse.from_error(
+                    cli_name,
+                    f"{auth_env} is required for non-interactive execution but not configured.",
+                )
+
         try:
             cmd = self.build_command(prompt, cwd, **kwargs)
-            lines = list(self._run_command(cmd, cwd))
-            return self.parse_output(lines)
+            lines, timed_out = self._run_command(
+                cmd,
+                cwd,
+                timeout_seconds=timeout_seconds,
+                non_interactive=non_interactive,
+            )
+            response = self.parse_output(lines)
+            if timed_out:
+                timeout_text = f"{cli_name} CLI timed out after {int(timeout_seconds)}s."
+                if response.success:
+                    response.success = False
+                response.error = (
+                    timeout_text if not response.error else f"{response.error}; {timeout_text}"
+                )
+            return response
+        except KeyboardInterrupt:
+            return BridgeResponse.from_error(cli_name, f"{cli_name} CLI execution was interrupted.")
         except Exception as e:
             return BridgeResponse.from_error(cli_name, f"Execution error: {e}")
     
-    def _run_command(self, cmd: list[str], cwd: Path) -> Generator[str, None, None]:
-        """Stream command output line by line."""
+    def _normalize_timeout_seconds(self, value: object) -> float:
+        try:
+            timeout = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("timeout_seconds must be a positive number.") from exc
+        if timeout <= 0:
+            raise ValueError("timeout_seconds must be greater than 0.")
+        return timeout
+
+    def _terminate_process(self, process: subprocess.Popen[str]) -> None:
+        if process.poll() is not None:
+            return
+        process.terminate()
+        try:
+            process.wait(timeout=self.TERMINATE_GRACE_SECONDS)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+
+    def _run_command(
+        self,
+        cmd: list[str],
+        cwd: Path,
+        timeout_seconds: float,
+        non_interactive: bool,
+    ) -> tuple[list[str], bool]:
+        """Run command with hard timeout and interruption handling."""
         env = os.environ.copy()
+        if non_interactive:
+            env.setdefault("CI", "1")
+            env.setdefault("NO_COLOR", "1")
+            env.setdefault("FORCE_COLOR", "0")
+            env.setdefault("TERM", "dumb")
         
         process = subprocess.Popen(
             cmd,
@@ -152,8 +227,11 @@ class BaseBridge(ABC):
             env=env,
         )
         
+        lines: list[str] = []
         output_queue: queue.Queue[str | None] = queue.Queue()
         graceful_delay = 0.3
+        timed_out = False
+        deadline = time.monotonic() + timeout_seconds
         
         def is_completed(line: str) -> bool:
             """Check if turn is completed based on JSON output."""
@@ -176,32 +254,43 @@ class BaseBridge(ABC):
                 process.stdout.close()
             output_queue.put(None)
         
-        thread = threading.Thread(target=read_output)
+        thread = threading.Thread(target=read_output, daemon=True)
         thread.start()
         
-        while True:
-            try:
-                line = output_queue.get(timeout=0.5)
-                if line is None:
-                    break
-                yield line
-            except queue.Empty:
-                if process.poll() is not None and not thread.is_alive():
-                    break
-        
         try:
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
-        
-        thread.join(timeout=5)
+            while True:
+                now = time.monotonic()
+                remaining = deadline - now
+                if remaining <= 0:
+                    timed_out = True
+                    self._terminate_process(process)
+                    break
+                try:
+                    line = output_queue.get(
+                        timeout=min(self.READ_POLL_SECONDS, max(0.05, remaining))
+                    )
+                    if line is None:
+                        break
+                    lines.append(line)
+                except queue.Empty:
+                    if process.poll() is not None and not thread.is_alive():
+                        break
+        except KeyboardInterrupt:
+            self._terminate_process(process)
+            raise
+        finally:
+            try:
+                process.wait(timeout=self.WAIT_EXIT_SECONDS)
+            except subprocess.TimeoutExpired:
+                self._terminate_process(process)
+            thread.join(timeout=self.THREAD_JOIN_SECONDS)
         
         # Drain remaining output
         while not output_queue.empty():
             try:
                 line = output_queue.get_nowait()
                 if line is not None:
-                    yield line
+                    lines.append(line)
             except queue.Empty:
                 break
+        return lines, timed_out

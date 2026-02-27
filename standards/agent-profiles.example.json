@@ -1,0 +1,109 @@
+{
+  "profiles": {
+    "default": {
+      "persona": "Balanced academic collaborator emphasizing traceability and rigor.",
+      "analysis_style": "State assumptions explicitly and separate evidence from inference.",
+      "draft_style": "Use concise academic prose with explicit claim-evidence links.",
+      "review_style": "Prioritize high-impact risks first, then completeness and formatting.",
+      "summary_style": "Synthesize consensus, disagreements, and next actions.",
+      "triad_style": "Resolve disagreements and rank fixes by impact on validity.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "read-only",
+          "non_interactive": true,
+          "timeout_seconds": 300
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 300
+        },
+        "gemini": {
+          "sandbox": false,
+          "non_interactive": true,
+          "timeout_seconds": 300
+        }
+      }
+    },
+    "strict-review": {
+      "persona": "Critical reviewer with low tolerance for unsupported claims.",
+      "review_style": "Block on unresolved validity, reproducibility, or reporting gaps.",
+      "triad_style": "Escalate conflicts and provide gate-by-gate remediation order.",
+      "summary_style": "Focus on blockers, evidence gaps, and remediation order.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "read-only",
+          "non_interactive": true,
+          "timeout_seconds": 240
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 360
+        },
+        "gemini": {
+          "sandbox": true,
+          "non_interactive": true,
+          "timeout_seconds": 240
+        }
+      }
+    },
+    "rapid-draft": {
+      "persona": "Fast drafting assistant optimizing iteration speed.",
+      "draft_style": "Produce structured placeholders quickly and list missing inputs.",
+      "summary_style": "Summarize fastest path to a complete next revision.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "workspace-write",
+          "non_interactive": true,
+          "timeout_seconds": 180
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 240
+        },
+        "gemini": {
+          "sandbox": false,
+          "non_interactive": true,
+          "timeout_seconds": 180
+        }
+      }
+    },
+    "journal-peer-review": {
+      "persona": "Journal peer reviewer focusing on methodological validity and transparency.",
+      "review_style": "Assess novelty, method validity, reporting completeness, and ethics compliance.",
+      "summary_style": "Output decision-oriented verdict with major and minor revisions.",
+      "triad_style": "Reconcile conflicts and output final decision rationale.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "read-only",
+          "non_interactive": true,
+          "timeout_seconds": 300
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 420
+        },
+        "gemini": {
+          "sandbox": true,
+          "non_interactive": true,
+          "timeout_seconds": 300
+        }
+      }
+    }
+  },
+  "task_overrides": {
+    "F3": {
+      "profile": "default",
+      "draft_profile": "rapid-draft",
+      "review_profile": "strict-review",
+      "triad_profile": "journal-peer-review"
+    },
+    "H2": {
+      "profile": "journal-peer-review",
+      "review_profile": "journal-peer-review"
+    }
+  }
+}

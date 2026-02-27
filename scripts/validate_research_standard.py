@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass, field
@@ -875,6 +876,45 @@ def validate_orchestrator(root: Path, report: ValidationReport) -> None:
         "orchestrator.py should expose --summarizer for post-parallel synthesis",
     )
     report.check(
+        re.search(r"subparsers\.add_parser\(\s*[\"']doctor[\"']", content, flags=re.DOTALL)
+        is not None,
+        "orchestrator.py includes doctor preflight mode",
+        "orchestrator.py should include doctor preflight mode",
+    )
+    report.check(
+        re.search(r"\bdef doctor\(", content) is not None,
+        "orchestrator.py includes doctor method",
+        "orchestrator.py missing doctor method",
+    )
+    report.check(
+        "--profile-file" in content,
+        "orchestrator.py exposes --profile-file for run-level customization",
+        "orchestrator.py should expose --profile-file for profile bundle injection",
+    )
+    report.check(
+        "--summarizer-profile" in content,
+        "orchestrator.py exposes --summarizer-profile",
+        "orchestrator.py should expose --summarizer-profile in parallel mode",
+    )
+    for token in ("--profile", "--draft-profile", "--review-profile", "--triad-profile"):
+        report.check(
+            token in content,
+            f"orchestrator.py exposes {token}",
+            f"orchestrator.py missing {token} CLI option",
+        )
+    for token in (
+        "DEFAULT_AGENT_PROFILES",
+        "_load_profile_bundle",
+        "_resolve_task_profile_names",
+        "_profile_runtime_options",
+        "_build_profile_directive",
+    ):
+        report.check(
+            token in content,
+            f"orchestrator.py includes {token}",
+            f"orchestrator.py missing {token}",
+        )
+    report.check(
         "RUNTIME_AGENTS = {\"codex\", \"claude\", \"gemini\"}" in content,
         "orchestrator.py runtime agents include codex/claude/gemini",
         "orchestrator.py should include codex/claude/gemini in runtime agents",
@@ -905,7 +945,7 @@ def validate_guides(root: Path, report: ValidationReport) -> None:
     content = read_text(root, "guides/agent-skill-collaboration.md", report)
     if not content:
         return
-    for token in ("Task ID", "required_skills", "task-run", "--summarizer"):
+    for token in ("Task ID", "required_skills", "task-run", "--summarizer", "--profile-file", "doctor"):
         report.check(
             token in content,
             f"collaboration guide includes {token}",
@@ -948,6 +988,175 @@ def validate_claude_bridge(root: Path, report: ValidationReport) -> None:
         )
 
 
+def validate_base_bridge(root: Path, report: ValidationReport) -> None:
+    content = read_text(root, "bridges/base_bridge.py", report)
+    if not content:
+        return
+    for token in (
+        "DEFAULT_TIMEOUT_SECONDS",
+        "non_interactive",
+        "require_api_key",
+        "AUTH_ENV_BY_MODEL",
+        "CI",
+        "TERM",
+    ):
+        report.check(
+            token in content,
+            f"base_bridge.py includes {token}",
+            f"bridges/base_bridge.py missing token: {token}",
+        )
+
+
+def validate_tests(root: Path, report: ValidationReport) -> None:
+    content = read_text(root, "tests/test_orchestrator_workflows.py", report)
+    if not content:
+        return
+    for token in (
+        "MockOrchestrator",
+        "CollaborationMode.PARALLEL",
+        "task_run(",
+        "profile_file",
+        "Unknown agent profile",
+    ):
+        report.check(
+            token in content,
+            f"test_orchestrator_workflows.py includes {token}",
+            f"tests/test_orchestrator_workflows.py missing token: {token}",
+        )
+
+
+def validate_profile_bundle_template(root: Path, report: ValidationReport) -> None:
+    relative_path = "standards/agent-profiles.example.json"
+    content = read_text(root, relative_path, report)
+    if not content:
+        return
+    try:
+        payload = json.loads(content)
+    except json.JSONDecodeError as exc:
+        report.check(
+            False,
+            "",
+            f"{relative_path} is invalid JSON: {exc}",
+        )
+        return
+
+    report.check(
+        isinstance(payload, dict),
+        f"{relative_path} root is JSON object",
+        f"{relative_path} root should be JSON object",
+    )
+    if not isinstance(payload, dict):
+        return
+
+    profiles = payload.get("profiles")
+    report.check(
+        isinstance(profiles, dict) and bool(profiles),
+        f"{relative_path} includes non-empty profiles",
+        f"{relative_path} missing non-empty profiles object",
+    )
+    if isinstance(profiles, dict):
+        for profile_name in ("default", "strict-review", "rapid-draft"):
+            report.warn(
+                profile_name in profiles,
+                f"{relative_path} includes {profile_name}",
+                f"{relative_path} should include {profile_name} profile",
+            )
+        for name, cfg in profiles.items():
+            report.check(
+                isinstance(cfg, dict),
+                f"{relative_path} profile '{name}' is object",
+                f"{relative_path} profile '{name}' should be object",
+            )
+            if not isinstance(cfg, dict):
+                continue
+            runtime_options = cfg.get("runtime_options", {})
+            report.warn(
+                isinstance(runtime_options, dict),
+                f"{relative_path} profile '{name}' runtime_options is object",
+                f"{relative_path} profile '{name}' should define runtime_options object",
+            )
+            if isinstance(runtime_options, dict):
+                unknown_agents = set(runtime_options) - EXPECTED_AGENTS
+                report.check(
+                    not unknown_agents,
+                    f"{relative_path} profile '{name}' runtime_options targets known agents",
+                    (
+                        f"{relative_path} profile '{name}' has unknown runtime agent keys: "
+                        f"{ids_to_text(unknown_agents) or 'none'}"
+                    ),
+                )
+
+    task_overrides = payload.get("task_overrides", {})
+    report.check(
+        isinstance(task_overrides, dict),
+        f"{relative_path} task_overrides is object",
+        f"{relative_path} task_overrides should be JSON object",
+    )
+
+
+def validate_ci_workflow(root: Path, report: ValidationReport) -> None:
+    content = read_text(root, ".github/workflows/ci.yml", report)
+    if not content:
+        return
+    for token in (
+        "actions/checkout",
+        "actions/setup-python",
+        "python -m py_compile",
+        "validate_research_standard.py --strict",
+        "python -m unittest tests.test_orchestrator_workflows -v",
+        "./scripts/run_beta_smoke.sh",
+    ):
+        report.check(
+            token in content,
+            f"ci.yml includes {token}",
+            f".github/workflows/ci.yml missing token: {token}",
+        )
+
+
+def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
+    smoke_content = read_text(root, "scripts/run_beta_smoke.sh", report)
+    if smoke_content:
+        for token in (
+            "bridges.orchestrator doctor",
+            "bridges.orchestrator parallel",
+            "bridges.orchestrator task-run",
+            "smoke-fast",
+        ):
+            report.check(
+                token in smoke_content,
+                f"run_beta_smoke.sh includes {token}",
+                f"scripts/run_beta_smoke.sh missing token: {token}",
+            )
+
+    notes_content = read_text(root, "release/v0.1.0-beta.1.md", report)
+    if notes_content:
+        for token in (
+            "Release Notes",
+            "Validation Evidence",
+            "Publish Steps",
+            "rollback.md",
+        ):
+            report.check(
+                token in notes_content,
+                f"v0.1.0-beta.1.md includes {token}",
+                f"release/v0.1.0-beta.1.md missing token: {token}",
+            )
+
+    rollback_content = read_text(root, "release/rollback.md", report)
+    if rollback_content:
+        for token in (
+            "Git Tag Rollback",
+            "Commit-Level Rollback",
+            "Recovery Validation",
+            "validate_research_standard.py --strict",
+        ):
+            report.check(
+                token in rollback_content,
+                f"rollback.md includes {token}",
+                f"release/rollback.md missing token: {token}",
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate cross-model research workflow standardization consistency."
@@ -975,7 +1184,12 @@ def main() -> int:
     validate_cross_file_consistency(root, report)
     validate_mcp_connector(root, report)
     validate_claude_bridge(root, report)
+    validate_base_bridge(root, report)
+    validate_tests(root, report)
     validate_orchestrator(root, report)
+    validate_profile_bundle_template(root, report)
+    validate_ci_workflow(root, report)
+    validate_release_artifacts(root, report)
     validate_guides(root, report)
     validate_docs(root, report)
 

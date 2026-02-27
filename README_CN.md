@@ -32,14 +32,30 @@ python3 scripts/validate_research_standard.py
 python3 -m unittest tests.test_orchestrator_workflows -v
 ```
 
+多端安装脚本：
+
+```bash
+./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
+```
+
 CI 流水线：
 - `.github/workflows/ci.yml`（在 PR/push 上运行 `py_compile`、严格校验与单元测试）
 
 Beta 发布文档：
+- `release/v0.1.0-beta.2.md`
 - `release/v0.1.0-beta.1.md`
 - `release/rollback.md`
+- `release/automation.md`
+- `release/templates/beta-acceptance-template.md`
 
 如需把警告也视为失败，使用 `--strict`。
+
+发布自动化：
+
+```bash
+./scripts/release_automation.sh pre --tag v0.1.0-beta.2
+./scripts/release_automation.sh post --tag v0.1.0-beta.2
+```
 
 协同分工规则：
 - Skill = 流程路由层（`task_id`、输出路径、质量门）
@@ -48,6 +64,43 @@ Beta 发布文档：
 
 协同增强指南：
 - `guides/agent-skill-collaboration.md`
+- `guides/install-multi-client.md`
+
+## Skills + Agents 协同流程（ASCII）
+
+```text
+用户目标 / Prompt
+        |
+        v
+Skill 路由层（Task ID + paper_type）
+  - standards/research-workflow-contract.yaml
+  - standards/mcp-agent-capability-map.yaml
+        |
+        +--------------------------+
+        |                          |
+        v                          v
+MCP 证据采集                  Agent 运行时路由
+(search/extraction/stats)     (codex / claude / gemini)
+        |                          |
+        +------------+-------------+
+                     v
+                 Draft 生成
+                     |
+                     v
+                 Review 复核
+                     |
+         +-----------+-----------+
+         |                       |
+         v                       v
+   Triad 三端审查（可选）   双端/单端自动降级
+                     \       /
+                      v     v
+                 Summarizer 综合
+                     |
+                     v
+           质量门 + 产物落盘输出
+              -> RESEARCH/[topic]/...
+```
 
 ## 快速开始
 
@@ -58,6 +111,19 @@ Beta 发布文档：
 ```bash
 git clone <repository-url> research-skills
 ```
+
+安装到 Codex + Claude Code + Gemini：
+
+```bash
+cd research-skills
+./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
+```
+
+安装脚本说明：
+- `--target codex|claude|gemini|all` 选择安装目标。
+- `--mode copy|link` 控制复制或软链接。
+- `--overwrite` 覆盖已有安装。
+- `--dry-run` 预览安装动作，不写文件。
 
 ### 使用命令
 

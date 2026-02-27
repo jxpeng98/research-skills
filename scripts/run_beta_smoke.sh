@@ -5,6 +5,35 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_PROFILE="$(mktemp -t research-skills-smoke-profile.XXXXXX.json)"
 trap 'rm -f "$TMP_PROFILE"' EXIT
 
+contains_text() {
+  local pattern="$1"
+  local text="$2"
+  if command -v rg >/dev/null 2>&1; then
+    rg -q "$pattern" <<<"$text"
+  else
+    grep -q "$pattern" <<<"$text"
+  fi
+}
+
+run_and_assert_output() {
+  local label="$1"
+  local pattern="$2"
+  shift 2
+
+  local output
+  if ! output="$("$@" 2>&1)"; then
+    echo "[smoke] ${label} failed" >&2
+    echo "$output" >&2
+    return 1
+  fi
+
+  if ! contains_text "$pattern" "$output"; then
+    echo "[smoke] ${label} output missing pattern: $pattern" >&2
+    echo "$output" >&2
+    return 1
+  fi
+}
+
 cat >"$TMP_PROFILE" <<'JSON'
 {
   "profiles": {
@@ -40,19 +69,22 @@ JSON
 cd "$ROOT_DIR"
 
 echo "[smoke] doctor"
-python3 -m bridges.orchestrator doctor --cwd . | rg -q "Doctor Summary"
+run_and_assert_output "doctor" "Doctor Summary" \
+  python3 -m bridges.orchestrator doctor --cwd .
 
 echo "[smoke] parallel/profile path"
-python3 -m bridges.orchestrator parallel \
+run_and_assert_output "parallel" "Parallel Execution" \
+  python3 -m bridges.orchestrator parallel \
   --prompt "beta smoke: parallel" \
   --cwd . \
   --profile-file "$TMP_PROFILE" \
   --profile smoke-fast \
   --summarizer-profile smoke-fast \
-  --summarizer claude | rg -q "Parallel Execution"
+  --summarizer claude
 
 echo "[smoke] task-run/profile path"
-python3 -m bridges.orchestrator task-run \
+run_and_assert_output "task-run" "Agent Profiles" \
+  python3 -m bridges.orchestrator task-run \
   --task-id F3 \
   --paper-type empirical \
   --topic beta-smoke \
@@ -62,6 +94,6 @@ python3 -m bridges.orchestrator task-run \
   --draft-profile smoke-fast \
   --review-profile smoke-fast \
   --triad-profile smoke-fast \
-  --triad | rg -q "Agent Profiles"
+  --triad
 
 echo "[smoke] passed"

@@ -34,14 +34,30 @@ python3 scripts/validate_research_standard.py
 python3 -m unittest tests.test_orchestrator_workflows -v
 ```
 
+Multi-client installer:
+
+```bash
+./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
+```
+
 CI pipeline:
 - `.github/workflows/ci.yml` (runs `py_compile`, strict validator, and unit tests on PR/push)
 
 Beta release docs:
+- `release/v0.1.0-beta.2.md`
 - `release/v0.1.0-beta.1.md`
 - `release/rollback.md`
+- `release/automation.md`
+- `release/templates/beta-acceptance-template.md`
 
 Use `--strict` to treat warnings as failures.
+
+Release automation:
+
+```bash
+./scripts/release_automation.sh pre --tag v0.1.0-beta.2
+./scripts/release_automation.sh post --tag v0.1.0-beta.2
+```
 
 Collaboration rule:
 - Skill = workflow router (`task_id`, output paths, quality gates)
@@ -50,6 +66,43 @@ Collaboration rule:
 
 Collaboration playbook:
 - `guides/agent-skill-collaboration.md`
+- `guides/install-multi-client.md`
+
+## Skills + Agents Flow (ASCII)
+
+```text
+User Goal / Prompt
+        |
+        v
+Skill Router (Task ID + paper_type)
+  - standards/research-workflow-contract.yaml
+  - standards/mcp-agent-capability-map.yaml
+        |
+        +--------------------------+
+        |                          |
+        v                          v
+MCP Evidence Collection      Agent Runtime Routing
+(search/extraction/stats)    (codex / claude / gemini)
+        |                          |
+        +------------+-------------+
+                     v
+              Draft Generation
+                     |
+                     v
+              Review / Critique
+                     |
+         +-----------+-----------+
+         |                       |
+         v                       v
+   Triad Audit (optional)   Dual/Single Fallback
+                     \       /
+                      v     v
+            Synthesis (summarizer)
+                     |
+                     v
+     Quality Gates + Artifact Output Write
+         -> RESEARCH/[topic]/...
+```
 
 ## Quick Start
 
@@ -60,6 +113,19 @@ Clone this repository into your project. Claude Code will automatically recogniz
 ```bash
 git clone <repository-url> research-skills
 ```
+
+Install to Codex + Claude Code + Gemini:
+
+```bash
+cd research-skills
+./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
+```
+
+Installer notes:
+- `--target codex|claude|gemini|all` selects install target.
+- `--mode copy|link` controls whether files are copied or symlinked.
+- `--overwrite` replaces existing installs.
+- `--dry-run` previews the installation plan.
 
 ### Commands
 

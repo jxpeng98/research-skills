@@ -40,6 +40,9 @@
 
 ## P1（强烈建议，Beta 后期/RC 前完成）
 
+- [x] **三端安装入口脚本**
+  - 新增 `scripts/install_research_skill.sh`，统一安装到 Codex / Claude Code / Gemini。
+  - 支持 `--target`、`--mode`、`--project-dir`、`--doctor`、`--dry-run`。
 - [ ] **Profile JSON 结构校验增强**
   - 增加专用 schema（字段类型、允许值、runtime_options 白名单）。
 - [ ] **错误码与排障文档**
@@ -51,7 +54,8 @@
 
 ## P2（可选增强）
 
-- [ ] 发布打包与版本策略（tag 规范、release note 模板）。
+- [x] 发布打包与版本策略（tag 规范、release note 模板）。（已完成：2026-02-27）
+- [x] 发布前后自动化（preflight/postflight + 统一入口 + 回执模板）。（已完成：2026-02-27）
 - [ ] 指标观测（成功率、平均耗时、fallback 触发率）。
 - [ ] 更细粒度权限模板（按 task/stage 自动切换 profile）。
 
@@ -70,3 +74,5 @@
 - [x] 并发 + 降级 + profile 覆盖 smoke test 通过  
 - [x] README / README_CN / CLAUDE.md 发布说明同步  
 - [x] 形成 `v0.x-beta` 发布说明与回滚说明  
+- [x] 发布自动化脚本可执行（`release_preflight.sh` / `release_postflight.sh` / `release_automation.sh`）  
+- [x] 生成 Beta 验收回执模板（`release/templates/beta-acceptance-template.md`）  

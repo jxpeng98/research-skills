@@ -1,0 +1,78 @@
+name: Release Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run phase"
+        required: true
+        type: choice
+        default: post
+        options:
+          - pre
+          - post
+          - full
+      tag:
+        description: "Release tag (for example v0.1.0-beta.1)"
+        required: true
+        type: string
+      skip_smoke:
+        description: "Skip smoke checks in pre mode"
+        required: false
+        type: boolean
+        default: false
+      skip_remote:
+        description: "Skip remote ref checks in post mode"
+        required: false
+        type: boolean
+        default: false
+      skip_ci_status:
+        description: "Skip GitHub Actions status check in post mode"
+        required: false
+        type: boolean
+        default: false
+      create_release:
+        description: "Create GitHub release page in post mode"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release-automation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run release automation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          args=(--tag "${{ inputs.tag }}")
+          if [[ "${{ inputs.skip_smoke }}" == "true" ]]; then
+            args+=(--skip-smoke)
+          fi
+          if [[ "${{ inputs.skip_remote }}" == "true" ]]; then
+            args+=(--skip-remote)
+          fi
+          if [[ "${{ inputs.skip_ci_status }}" == "true" ]]; then
+            args+=(--skip-ci-status)
+          fi
+          if [[ "${{ inputs.create_release }}" == "true" ]]; then
+            args+=(--create-release)
+          fi
+          ./scripts/release_automation.sh "${{ inputs.mode }}" "${args[@]}"
+
+      - name: Upload release acceptance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-acceptance
+          path: release/acceptance/
+          if-no-files-found: ignore

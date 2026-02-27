@@ -27,11 +27,13 @@ jobs:
             scripts/validate_research_standard.py \
             tests/test_orchestrator_workflows.py
 
-      - name: Run standard validator (strict)
-        run: python scripts/validate_research_standard.py --strict
+      - name: Validate shell scripts syntax
+        run: |
+          bash -n scripts/run_beta_smoke.sh
+          bash -n scripts/release_preflight.sh
+          bash -n scripts/release_postflight.sh
+          bash -n scripts/release_automation.sh
+          bash -n scripts/install_research_skill.sh
 
-      - name: Run orchestrator workflow tests
-        run: python -m unittest tests.test_orchestrator_workflows -v
-
-      - name: Run beta smoke checks
-        run: ./scripts/run_beta_smoke.sh
+      - name: Run standardized pre-release gates
+        run: ./scripts/release_preflight.sh

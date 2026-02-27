@@ -1,6 +1,6 @@
 # Beta Rollback Plan
 
-This rollback plan applies to `v0.1.0-beta.1`.
+This rollback plan applies to `v0.1.0-beta.2`.
 
 ## Trigger Conditions
 
@@ -19,8 +19,8 @@ This rollback plan applies to `v0.1.0-beta.1`.
 If tag was pushed but should be withdrawn:
 
 ```bash
-git tag -d v0.1.0-beta.1
-git push origin :refs/tags/v0.1.0-beta.1
+git tag -d v0.1.0-beta.2
+git push origin :refs/tags/v0.1.0-beta.2
 ```
 
 ## Commit-Level Rollback

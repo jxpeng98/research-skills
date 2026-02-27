@@ -804,6 +804,11 @@ def validate_docs(root: Path, report: ValidationReport) -> None:
             f"{relative_path} references collaboration guide",
             f"{relative_path} should reference guides/agent-skill-collaboration.md",
         )
+        report.warn(
+            "scripts/install_research_skill.sh" in content,
+            f"{relative_path} includes installer command",
+            f"{relative_path} should document scripts/install_research_skill.sh",
+        )
 
 
 def validate_orchestrator(root: Path, report: ValidationReport) -> None:
@@ -957,6 +962,24 @@ def validate_guides(root: Path, report: ValidationReport) -> None:
         "guides/agent-skill-collaboration.md should include RESEARCH_MCP_ env contract",
     )
 
+    install_content = read_text(root, "guides/install-multi-client.md", report)
+    if not install_content:
+        return
+    for token in (
+        "install_research_skill.sh",
+        "--target all",
+        "--mode copy|link",
+        "CODEX_HOME",
+        "CLAUDE_CODE_HOME",
+        "GEMINI_HOME",
+        "bridges.orchestrator doctor",
+    ):
+        report.check(
+            token in install_content,
+            f"install guide includes {token}",
+            f"guides/install-multi-client.md missing token: {token}",
+        )
+
 
 def validate_mcp_connector(root: Path, report: ValidationReport) -> None:
     content = read_text(root, "bridges/mcp_connectors.py", report)
@@ -1102,15 +1125,32 @@ def validate_ci_workflow(root: Path, report: ValidationReport) -> None:
         "actions/checkout",
         "actions/setup-python",
         "python -m py_compile",
-        "validate_research_standard.py --strict",
-        "python -m unittest tests.test_orchestrator_workflows -v",
-        "./scripts/run_beta_smoke.sh",
+        "bash -n scripts/release_preflight.sh",
+        "bash -n scripts/release_postflight.sh",
+        "bash -n scripts/release_automation.sh",
+        "bash -n scripts/install_research_skill.sh",
+        "Run standardized pre-release gates",
     ):
         report.check(
             token in content,
             f"ci.yml includes {token}",
             f".github/workflows/ci.yml missing token: {token}",
         )
+
+    release_workflow = read_text(root, ".github/workflows/release-automation.yml", report)
+    if release_workflow:
+        for token in (
+            "workflow_dispatch",
+            "inputs:",
+            "Run release automation",
+            "release_automation.sh",
+            "create_release",
+        ):
+            report.check(
+                token in release_workflow,
+                f"release-automation.yml includes {token}",
+                f".github/workflows/release-automation.yml missing token: {token}",
+            )
 
 
 def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
@@ -1128,7 +1168,92 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
                 f"scripts/run_beta_smoke.sh missing token: {token}",
             )
 
-    notes_content = read_text(root, "release/v0.1.0-beta.1.md", report)
+    preflight_content = read_text(root, "scripts/release_preflight.sh", report)
+    if preflight_content:
+        for token in (
+            "validate_research_standard.py",
+            "tests.test_orchestrator_workflows",
+            "./scripts/run_beta_smoke.sh",
+            "--skip-smoke",
+            "--tag",
+        ):
+            report.check(
+                token in preflight_content,
+                f"release_preflight.sh includes {token}",
+                f"scripts/release_preflight.sh missing token: {token}",
+            )
+
+    postflight_content = read_text(root, "scripts/release_postflight.sh", report)
+    if postflight_content:
+        for token in (
+            "git ls-remote --heads origin",
+            "actions/runs?branch",
+            "release/templates/beta-acceptance-template.md",
+            "--create-release",
+            "gh release view",
+        ):
+            report.check(
+                token in postflight_content,
+                f"release_postflight.sh includes {token}",
+                f"scripts/release_postflight.sh missing token: {token}",
+            )
+
+    automation_content = read_text(root, "scripts/release_automation.sh", report)
+    if automation_content:
+        for token in (
+            "release_preflight.sh",
+            "release_postflight.sh",
+            "<pre|post|full>",
+        ):
+            report.check(
+                token in automation_content,
+                f"release_automation.sh includes {token}",
+                f"scripts/release_automation.sh missing token: {token}",
+            )
+
+    installer_content = read_text(root, "scripts/install_research_skill.sh", report)
+    if installer_content:
+        for token in (
+            "--target <codex|claude|gemini|all>",
+            "--project-dir",
+            "--doctor",
+            "research-paper-workflow",
+            ".agent/workflows",
+            "research-skills.md",
+        ):
+            report.check(
+                token in installer_content,
+                f"install_research_skill.sh includes {token}",
+                f"scripts/install_research_skill.sh missing token: {token}",
+            )
+
+    template_content = read_text(
+        root, "release/templates/beta-acceptance-template.md", report
+    )
+    if template_content:
+        for token in ("{{TAG}}", "{{DATE}}", "{{COMMIT}}", "{{CI_STATUS}}"):
+            report.check(
+                token in template_content,
+                f"beta-acceptance-template.md includes {token}",
+                f"release/templates/beta-acceptance-template.md missing token: {token}",
+            )
+
+    automation_doc = read_text(root, "release/automation.md", report)
+    if automation_doc:
+        for token in (
+            "release_preflight.sh",
+            "release_postflight.sh",
+            "release_automation.sh",
+            "pre --tag",
+            "post --tag",
+        ):
+            report.check(
+                token in automation_doc,
+                f"release/automation.md includes {token}",
+                f"release/automation.md missing token: {token}",
+            )
+
+    notes_content = read_text(root, "release/v0.1.0-beta.2.md", report)
     if notes_content:
         for token in (
             "Release Notes",
@@ -1138,8 +1263,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
         ):
             report.check(
                 token in notes_content,
-                f"v0.1.0-beta.1.md includes {token}",
-                f"release/v0.1.0-beta.1.md missing token: {token}",
+                f"v0.1.0-beta.2.md includes {token}",
+                f"release/v0.1.0-beta.2.md missing token: {token}",
             )
 
     rollback_content = read_text(root, "release/rollback.md", report)

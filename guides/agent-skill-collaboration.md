@@ -1,0 +1,114 @@
+# Agent + Skill 协同增强指南
+
+本指南用于在 `research-skills` 中系统增强某一能力（不仅限代码），并保持跨模型一致性。
+
+## 1) 先定目标：增强哪一类能力
+
+先绑定到标准任务 ID（`A1`~`I3`）：
+
+- **选题与定位**：`A1`~`A4`
+- **文献与综述**：`B1`~`B5`
+- **研究设计/伦理**：`C1`~`D2`
+- **证据综合**：`E1`~`E5`
+- **写作与投稿**：`F1`~`H2`
+- **代码与复现**：`I1`~`I3`
+
+只要确定目标任务，就能复用统一编排链：`plan -> mcp-evidence -> primary-agent-draft -> review-agent-check -> validator-gate`。
+
+## 2) 协同分工原则（固定）
+
+- **Skill**：方法与产物标准（做什么、产出什么）。
+- **MCP**：证据与工具层（从哪里取证、怎么落盘）。
+- **Agent**：推理与写作执行层（如何完成草稿与复核）。
+
+建议始终保留“双 agent”结构：主执行 + 独立复核。
+
+## 3) 如何增强某个能力（标准流程）
+
+1. 选定目标任务（例如 `E3` 或 `I2`）。
+2. 在 `standards/mcp-agent-capability-map.yaml` 中更新：
+   - `required_mcp`
+   - `required_skills`
+   - `primary_agent/review_agent/fallback_agent`
+3. 若新增 skill：
+   - 新建 `skills/<skill-name>.md`
+   - 加入 `skill_registry` 与 `task_skill_mapping`
+4. 若新增 agent runtime：
+   - 在 `bridges/` 增加 bridge
+   - 在 `bridges/orchestrator.py` 的 runtime 路由中接入
+5. 运行校验：
+   - `python3 scripts/validate_research_standard.py --strict`
+
+## 3.1) 外部 MCP 接入约定（命令模式）
+
+对 `filesystem` 以外的 MCP，`task-run` 使用环境变量注入外部命令：
+
+- 变量命名：`RESEARCH_MCP_<PROVIDER>_CMD`
+- 例子：`RESEARCH_MCP_SCHOLARLY_SEARCH_CMD`
+
+执行约定：
+
+1. 编排器向命令 `stdin` 传入 JSON：
+   - `provider`
+   - `task_packet`
+2. 外部命令从 `stdout` 返回 JSON：
+   - `status`: `ok|warning|error|not_configured`
+   - `summary`: 简要结果
+   - `provenance`: 来源列表（可选）
+   - `data`: 结构化附加信息（可选）
+
+未配置变量时，状态为 `not_configured`；可用 `task-run --mcp-strict` 强制阻断执行。
+
+## 4) 按能力类型给出推荐协同模板
+
+### A. 代码能力（`I1/I2/I3`）
+
+- 推荐 skills：`code-builder`, `model-collaborator`, `metadata-enricher`
+- 推荐 MCP：`code-runtime`, `filesystem`, `metadata-registry`
+- agent 组合：主执行 `codex`，复核 `gemini/claude`
+
+### B. 系统综述能力（`B1`）
+
+- 推荐 skills：`academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`
+- 推荐 MCP：`scholarly-search`, `screening-tracker`, `extraction-store`, `fulltext-retrieval`
+- agent 组合：主执行 `claude`，复核 `codex`
+
+### C. 证据综合与 Meta（`E1/E2/E3`）
+
+- 推荐 skills：`evidence-synthesizer`, `quality-assessor`, `code-builder`
+- 推荐 MCP：`stats-engine`, `extraction-store`
+- agent 组合：主执行 `codex`，复核 `claude`
+
+### D. 写作与一致性（`F3/G3`）
+
+- 推荐 skills：`manuscript-architect`, `citation-formatter`, `reporting-checker`, `quality-assessor`
+- 推荐 MCP：`metadata-registry`, `reporting-guidelines`
+- agent 组合：主执行 `claude`，复核 `codex`
+
+### E. 投稿与返修（`H1/H2`）
+
+- 推荐 skills：`submission-packager`, `rebuttal-assistant`, `reporting-checker`
+- 推荐 MCP：`submission-kit`, `metadata-registry`, `reporting-guidelines`
+- agent 组合：主执行 `claude`，复核 `gemini/codex`
+
+## 5) 运行入口（统一）
+
+使用 `task-run` 按任务执行并自动注入 `required_skills`：
+
+```bash
+python -m bridges.orchestrator task-run \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd ./project \
+  --context "Target venue style and strict claim-evidence alignment"
+```
+
+## 6) 引入外部 agent 还是自建 agent？
+
+推荐混合策略：
+
+- **外部 agent/runtime**：负责通用能力上限（代码、推理、长文本）。
+- **本地映射与约束**：负责研究场景一致性与可控性（Task ID、质量门、产物路径、技能约束）。
+
+也就是：把“能力”交给外部，把“标准”留在本地。

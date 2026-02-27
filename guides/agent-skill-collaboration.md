@@ -29,13 +29,15 @@
 2. 在 `standards/mcp-agent-capability-map.yaml` 中更新：
    - `required_mcp`
    - `required_skills`
+   - `required_skill_cards`（由 `skill_catalog` 自动解析）
    - `primary_agent/review_agent/fallback_agent`
 3. 若新增 skill：
    - 新建 `skills/<skill-name>.md`
-   - 加入 `skill_registry` 与 `task_skill_mapping`
+   - 加入 `skill_registry`、`skill_catalog` 与 `task_skill_mapping`
 4. 若新增 agent runtime：
    - 在 `bridges/` 增加 bridge
    - 在 `bridges/orchestrator.py` 的 runtime 路由中接入
+   - 参考现有实现：`bridges/claude_bridge.py`
 5. 运行校验：
    - `python3 scripts/validate_research_standard.py --strict`
 
@@ -58,6 +60,18 @@
    - `data`: 结构化附加信息（可选）
 
 未配置变量时，状态为 `not_configured`；可用 `task-run --mcp-strict` 强制阻断执行。
+
+## 3.2) Skills 注入约定（标准化 skill cards）
+
+`task-run` 会从 `skill_catalog` 自动注入 `required_skill_cards`，每张 card 至少包含：
+
+- `skill`：技能名
+- `category`：技能类别（如 `evidence-synthesis`、`research-code`）
+- `focus`：执行重点
+- `file`：技能规范路径（`skills/*.md`）
+- `default_outputs`：建议产物路径
+
+可用 `task-run --skills-strict` 在技能规范文件缺失时阻断执行。
 
 ## 4) 按能力类型给出推荐协同模板
 
@@ -93,7 +107,7 @@
 
 ## 5) 运行入口（统一）
 
-使用 `task-run` 按任务执行并自动注入 `required_skills`：
+使用 `task-run` 按任务执行并自动注入 `required_skills + required_skill_cards`：
 
 ```bash
 python -m bridges.orchestrator task-run \
@@ -101,8 +115,24 @@ python -m bridges.orchestrator task-run \
   --paper-type empirical \
   --topic ai-in-education \
   --cwd ./project \
-  --context "Target venue style and strict claim-evidence alignment"
+  --context "Target venue style and strict claim-evidence alignment" \
+  --mcp-strict \
+  --skills-strict \
+  --triad
 ```
+
+`--triad` 会在主执行 + 复核之后，自动调用第三个 runtime agent 做独立审查，从而在 `A`~`H` 非代码阶段也保持三端协同。
+
+并发分析模式（不限定 Task ID）：
+
+```bash
+python -m bridges.orchestrator parallel \
+  --prompt "审查当前研究方案的风险、证据缺口与改进顺序" \
+  --cwd ./project \
+  --summarizer claude
+```
+
+该模式默认三端并发（Codex/Claude/Gemini），并在并发后执行总结分析；若三端不可用，会自动降级为双端或单端。
 
 ## 6) 引入外部 agent 还是自建 agent？
 

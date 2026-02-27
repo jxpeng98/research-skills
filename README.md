@@ -1,117 +1,161 @@
 # Academic Deep Research Skills
 
-一套专为学术研究场景设计的 Claude Code 深度研究技能系统。
+A systematic research skills system designed for Claude Code, providing tools for literature review, paper analysis, gap identification, and academic writing.
 
-## 功能特性
+## Features
 
-- 📚 **系统性文献综述** - 遵循 PRISMA 方法论
-- 📖 **论文深度阅读** - 结构化笔记 + BibTeX
-- 🔍 **研究 Gap 识别** - 5类学术空白分析
-- 🧠 **理论框架构建** - 概念关系映射
-- ✍️ **学术写作辅助** - 符合学术规范
+- 📚 **Systematic Literature Review** - PRISMA 2020 compliant methodology
+- 📖 **Deep Paper Reading** - Structured notes + BibTeX
+- 🔍 **Research Gap Identification** - 5 types of academic gap analysis
+- 🧠 **Theoretical Framework Building** - Concept relationship mapping
+- ✍️ **Academic Writing Assistance** - Standard-compliant formatting
 
-## 快速开始
+## Quick Start
 
-### 安装
+### Installation
 
-将此仓库克隆到你的项目中，Claude Code 会自动识别 `.agent/workflows/` 中的命令。
+Clone this repository into your project. Claude Code will automatically recognize commands in `.agent/workflows/`.
 
 ```bash
 git clone <repository-url> research-skills
 ```
 
-### 使用命令
+### Commands
 
-| 命令 | 用途 | 示例 |
-|------|------|------|
-| `/lit-review` | 系统性文献综述 | `/lit-review transformer architecture 2020-2024` |
-| `/paper-read` | 深度阅读论文 | `/paper-read https://arxiv.org/abs/2303.08774` |
-| `/find-gap` | 识别研究空白 | `/find-gap LLM in education` |
-| `/build-framework` | 构建理论框架 | `/build-framework technology acceptance` |
-| `/academic-write` | 学术写作辅助 | `/academic-write introduction AI ethics` |
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/lit-review` | Systematic literature review | `/lit-review transformer architecture 2020-2024` |
+| `/paper-read` | Deep paper analysis | `/paper-read https://arxiv.org/abs/2303.08774` |
+| `/find-gap` | Identify research gaps | `/find-gap LLM in education` |
+| `/build-framework` | Build theoretical framework | `/build-framework technology acceptance` |
+| `/academic-write` | Academic writing assistance | `/academic-write introduction AI ethics` |
 
-## 核心工作流
+## Core Workflows
 
-### 1. 系统性文献综述 `/lit-review`
+### 1. Systematic Literature Review `/lit-review`
 
-遵循 PRISMA 2020 方法论：
+Follows PRISMA 2020 methodology:
 
 ```
-研究问题定义 (PICO/PEO)
+Research Question Definition (PICO/PEO)
        ↓
-多学术数据库检索 (Semantic Scholar, arXiv, Google Scholar)
+Protocol Registration (PROSPERO/OSF)
        ↓
-标题/摘要筛选 → 全文筛选
+Multi-database Search (Semantic Scholar, arXiv, OpenAlex, Google Scholar)
        ↓
-数据提取 + 质量评估
+Citation Snowballing + Grey Literature
        ↓
-综合报告 + PRISMA 流程图
+Title/Abstract Screening → Full-text Screening
+       ↓
+Data Extraction + Quality Assessment (RoB, GRADE)
+       ↓
+Synthesis Report + PRISMA Flow Diagram
 ```
 
-### 2. 论文深度阅读 `/paper-read`
+### 2. Deep Paper Reading `/paper-read`
 
-从论文中提取：
-- 研究问题 (RQs)
-- 理论框架
-- 研究方法 (设计、样本、分析)
-- 核心发现
-- 贡献与局限性
+Extracts from papers:
+- Research Questions (RQs)
+- Theoretical Framework
+- Methodology (design, sample, analysis)
+- Key Findings
+- Contributions & Limitations
 - Future Work
 
-输出格式：Markdown 笔记 + BibTeX 引用
+Output: Markdown notes + BibTeX citation
 
-### 3. 研究 Gap 识别 `/find-gap`
+### 3. Research Gap Identification `/find-gap`
 
-识别以下类型的研究空白：
-- **理论 Gap** - 框架不完整或冲突
-- **方法论 Gap** - 研究方法存在局限
-- **实证 Gap** - 缺乏特定情境证据
-- **知识 Gap** - 某主题研究不足
-- **人群 Gap** - 特定群体未被研究
+Identifies five types of research gaps:
+- **Theoretical Gap** - Incomplete or conflicting frameworks
+- **Methodological Gap** - Research method limitations
+- **Empirical Gap** - Missing contextual evidence
+- **Knowledge Gap** - Understudied topics
+- **Population Gap** - Unrepresented groups
 
-### 4. 理论框架构建 `/build-framework`
+### 4. Theoretical Framework Building `/build-framework`
 
-- 现有理论梳理与对比
-- 概念关系映射 (Mermaid 图谱)
-- 假设/命题推导
+- Existing theory review and comparison
+- Concept relationship mapping (Mermaid diagrams)
+- Hypothesis/proposition derivation
 
-### 5. 学术写作辅助 `/academic-write`
+### 5. Academic Writing Assistance `/academic-write`
 
-支持论文各章节：
-- Introduction (研究背景、问题陈述)
-- Literature Review (主题组织、批判性综述)
-- Methodology (方法论证明)
-- Discussion (发现解释、理论对话)
-- Conclusion (贡献总结、局限性)
+Supports all paper sections:
+- Abstract, Introduction, Literature Review
+- Methodology, Discussion, Conclusion
 
-## 学术证据评级
+## Evidence Quality Rating (A-E)
 
-| 等级 | 证据类型 |
-|------|----------|
-| **A** | 系统性综述、Meta 分析、RCT |
-| **B** | 队列研究、高影响因子期刊论文 |
-| **C** | 案例研究、专家意见、会议论文 |
-| **D** | 预印本、工作论文 |
-| **E** | 轶事、理论推测 |
+| Grade | Evidence Type |
+|-------|--------------|
+| **A** | Systematic reviews, Meta-analyses, Large RCTs |
+| **B** | Cohort studies, High-IF journal papers |
+| **C** | Case studies, Expert opinion, Conference papers |
+| **D** | Preprints, Working papers |
+| **E** | Anecdotal, Theoretical speculation |
 
-## 目录结构
+## Project Structure
 
 ```
 research-skills/
-├── .agent/workflows/     # 用户命令
-├── skills/               # 可复用技能模块
-├── templates/            # 输出模板
-├── RESEARCH/             # 研究输出目录
-├── CLAUDE.md             # Claude Code 快速参考
-└── README.md             # 本文件
+├── .agent/workflows/     # User commands
+│   ├── lit-review.md
+│   ├── paper-read.md
+│   ├── find-gap.md
+│   ├── build-framework.md
+│   └── academic-write.md
+├── skills/               # Reusable skill modules
+│   ├── question-refiner.md
+│   ├── academic-searcher.md
+│   ├── paper-screener.md
+│   ├── paper-extractor.md
+│   ├── gap-analyzer.md
+│   ├── theory-mapper.md
+│   ├── citation-formatter.md
+│   ├── quality-assessor.md
+│   ├── metadata-enricher.md
+│   ├── citation-snowballer.md
+│   ├── fulltext-fetcher.md
+│   ├── prisma-checker.md
+│   └── reference-manager-bridge.md
+├── templates/            # Output templates
+│   ├── prisma-flowchart.md
+│   ├── prisma-checklist.md
+│   ├── protocol-template.md
+│   ├── extraction-table.md
+│   ├── quality-table.md
+│   ├── rob2-table.md
+│   ├── grade-summary-of-findings.md
+│   ├── synthesis-matrix.md
+│   ├── search-log.md
+│   └── paper-note.md
+├── RESEARCH/             # Research output directory
+├── CLAUDE.md             # Claude Code quick reference
+├── glossary.md           # Research terminology
+├── README.md             # This file (English)
+└── README_CN.md          # Chinese version
 ```
 
-## 学术数据库支持
+## Supported APIs
 
-- **Semantic Scholar** - 跨领域 (2亿+论文)，API 直接调用
-- **arXiv** - 物理/数学/CS/AI，API 直接调用
-- **Google Scholar** - 跨领域，通过网页搜索
-- **PubMed** - 生物医学，通过网页搜索
+| Source | Purpose | Coverage |
+|--------|---------|----------|
+| Semantic Scholar | Primary search | 200M+ papers |
+| arXiv | CS/AI/Physics preprints | Full coverage |
+| OpenAlex | Bibliometrics, author data | 250M+ works |
+| Crossref | Metadata verification | 140M+ DOIs |
+| Unpaywall | OA full-text access | DOI-based |
+| CORE | Repository content | 200M+ OA articles |
+| Google Scholar | Broad coverage | Supplementary |
+| PubMed | Biomedical | Domain-specific |
+
+## Reference Manager Integration
+
+Supports export to:
+- **Zotero** - BibTeX, CSL-JSON
+- **Mendeley** - BibTeX, RIS
+- **EndNote** - RIS, EndNote XML
 
 ## License
 

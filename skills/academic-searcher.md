@@ -15,9 +15,13 @@ Execute comprehensive literature searches using:
 |----------|----------|---------------|----------|
 | Semantic Scholar | 200M+ papers, all domains | API | Broad searches, citations |
 | arXiv | Physics, Math, CS, Stats | API | Preprints, CS/AI research |
+| OpenAlex | 250M+ works, all domains | API | Bibliometrics, author data |
+| Crossref | 140M+ DOIs | API | Metadata verification |
 | Google Scholar | Broad coverage | Web search | Comprehensive coverage |
 | PubMed | Biomedical, Life sciences | Web search | Medical research |
 | SSRN | Social sciences, Economics | Web search | Business, Law, Economics |
+| Unpaywall | OA status for DOIs | API | Full-text availability |
+| CORE | 200M+ OA articles | API | Repository content |
 
 ## Process
 
@@ -192,6 +196,115 @@ Query parameters:
 
 Categories (cs.*):
 - cs.AI, cs.CL, cs.CV, cs.LG, cs.NE, cs.RO, cs.SE
+
+### OpenAlex API
+
+Base URL: `https://api.openalex.org`
+
+Endpoints:
+- `/works` - Search works
+- `/works/{openalex_id}` - Get work details
+- `/authors/{id}` - Get author info
+- `/sources/{id}` - Get venue info
+
+Search parameters:
+- `search` - Full-text search
+- `filter` - Structured filters (e.g., `publication_year:2020-2024`)
+- `sort` - Sort order (e.g., `cited_by_count:desc`)
+- `per-page` - Results per page (max 200)
+
+Example:
+```
+https://api.openalex.org/works?search=machine+learning&filter=publication_year:2020-2024&sort=cited_by_count:desc
+```
+
+### Crossref API
+
+Base URL: `https://api.crossref.org`
+
+Endpoints:
+- `/works` - Search works
+- `/works/{doi}` - Get work by DOI
+
+Parameters:
+- `query` - Free text search
+- `query.title` - Title search
+- `query.author` - Author search
+- `filter` - Filters (e.g., `from-pub-date:2020`)
+- `rows` - Results per page (max 1000)
+
+Headers:
+- Add `mailto` parameter for polite pool access
+
+### Unpaywall API
+
+Base URL: `https://api.unpaywall.org/v2`
+
+Endpoint: `/{doi}?email={your_email}`
+
+Response includes:
+- `is_oa` - Boolean
+- `best_oa_location` - Best available OA version
+- `oa_locations[]` - All OA versions
+
+### CORE API
+
+Base URL: `https://api.core.ac.uk/v3`
+
+Endpoints:
+- `/search/works` - Search works
+- `/works/{id}` - Get work details
+
+Parameters:
+- `q` - Query string
+- `limit` - Max results
+
+## Error Handling & Fallback Strategy
+
+When API calls fail, apply this fallback chain:
+
+### Fallback Priority
+
+```
+Primary Search:
+1. Semantic Scholar API
+   ↓ (on failure)
+2. OpenAlex API
+   ↓ (on failure)
+3. Google Scholar Web Search
+```
+
+### Error Types & Recovery
+
+| Error | Cause | Recovery Action |
+|-------|-------|-----------------|
+| 429 Too Many Requests | Rate limit | Wait 60s, then retry (max 3 attempts) |
+| 503 Service Unavailable | Server overload | Wait 30s, try next source |
+| 404 Not Found | Invalid query | Log error, continue with other sources |
+| Timeout | Network issue | Retry once, then skip source |
+| Empty Results | No matches | Broaden query, try synonyms |
+
+### Fallback Logging
+
+Document all fallback events:
+```markdown
+## Fallback Events Log
+
+| Timestamp | Primary Source | Error | Fallback Source | Result |
+|-----------|----------------|-------|-----------------|--------|
+| [time] | Semantic Scholar | 429 | OpenAlex | Success |
+| [time] | OpenAlex | Timeout | Google Scholar | Success |
+```
+
+### Rate Limit Management
+
+| API | Rate Limit | Strategy |
+|-----|------------|----------|
+| Semantic Scholar | 100 req/5min | Batch requests, 1 req/3sec |
+| OpenAlex | 10 req/sec | Reasonable pacing |
+| Crossref | Polite pool: 50/sec | Add mailto header |
+| CORE | Varies by plan | Check quota before batch |
+| Unpaywall | 100k/day | Cache responses |
 
 ## Usage
 

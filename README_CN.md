@@ -57,6 +57,9 @@ Beta 发布文档：
 ./scripts/release_automation.sh post --tag v0.1.0-beta.2
 ```
 
+`pre --tag` 在缺少 `release/<tag>.md` 时会自动生成草稿。
+也可手动生成：`./scripts/generate_release_notes.sh --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2`。
+
 协同分工规则：
 - Skill = 流程路由层（`task_id`、输出路径、质量门）
 - MCP = 证据/工具层

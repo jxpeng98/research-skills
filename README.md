@@ -59,6 +59,9 @@ Release automation:
 ./scripts/release_automation.sh post --tag v0.1.0-beta.2
 ```
 
+`pre --tag` auto-generates `release/<tag>.md` draft when missing.
+Manual draft generation: `./scripts/generate_release_notes.sh --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2`.
+
 Collaboration rule:
 - Skill = workflow router (`task_id`, output paths, quality gates)
 - MCP = evidence/tools layer

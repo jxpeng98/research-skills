@@ -58,6 +58,7 @@ Beta 发布文档：
 ```
 
 `pre --tag` 在缺少 `release/<tag>.md` 时会自动生成草稿。
+`pre --tag` 在检查通过后也会自动回填 validator/unittest/smoke 的结果行。
 也可手动生成：`./scripts/generate_release_notes.sh --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2`。
 
 协同分工规则：

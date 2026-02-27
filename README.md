@@ -60,6 +60,7 @@ Release automation:
 ```
 
 `pre --tag` auto-generates `release/<tag>.md` draft when missing.
+`pre --tag` also auto-fills validator/unittest/smoke evidence lines after checks pass.
 Manual draft generation: `./scripts/generate_release_notes.sh --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2`.
 
 Collaboration rule:

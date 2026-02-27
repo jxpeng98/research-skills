@@ -54,6 +54,7 @@ WORKFLOW_TASK_EXPECTATIONS = {
     ".agent/workflows/submission-prep.md": {"H1"},
     ".agent/workflows/synthesize.md": {"E1", "E2", "E3", "E4", "E5"},
 }
+RELEASE_NOTE_FILE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
 
 
 @dataclass
@@ -158,6 +159,25 @@ def parse_yaml_list(section: str, item_indent: int) -> list[str]:
             item = item[1:-1]
         values.append(item)
     return values
+
+
+def select_latest_release_note(root: Path) -> Path | None:
+    release_dir = root / "release"
+    if not release_dir.exists():
+        return None
+    candidates: list[tuple[tuple[int, int, int, int], Path]] = []
+    for path in release_dir.iterdir():
+        if not path.is_file():
+            continue
+        match = RELEASE_NOTE_FILE_PATTERN.match(path.name)
+        if not match:
+            continue
+        version = tuple(int(match.group(index)) for index in range(1, 5))
+        candidates.append((version, path))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    return candidates[0][1]
 
 
 def parse_frontmatter(content: str) -> tuple[dict[str, str], str]:
@@ -1125,6 +1145,7 @@ def validate_ci_workflow(root: Path, report: ValidationReport) -> None:
         "actions/checkout",
         "actions/setup-python",
         "python -m py_compile",
+        "bash -n scripts/generate_release_notes.sh",
         "bash -n scripts/release_preflight.sh",
         "bash -n scripts/release_postflight.sh",
         "bash -n scripts/release_automation.sh",
@@ -1145,6 +1166,9 @@ def validate_ci_workflow(root: Path, report: ValidationReport) -> None:
             "Run release automation",
             "release_automation.sh",
             "create_release",
+            "skip_note_gen",
+            "note_overwrite",
+            "from_tag",
         ):
             report.check(
                 token in release_workflow,
@@ -1174,6 +1198,9 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "validate_research_standard.py",
             "tests.test_orchestrator_workflows",
             "./scripts/run_beta_smoke.sh",
+            "generate_release_notes.sh",
+            "--skip-note-gen",
+            "--from-tag",
             "--skip-smoke",
             "--tag",
         ):
@@ -1181,6 +1208,22 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
                 token in preflight_content,
                 f"release_preflight.sh includes {token}",
                 f"scripts/release_preflight.sh missing token: {token}",
+            )
+
+    note_gen_content = read_text(root, "scripts/generate_release_notes.sh", report)
+    if note_gen_content:
+        for token in (
+            "--tag <tag>",
+            "--from-tag <tag>",
+            "release/${TAG}.md",
+            "## Highlights (Draft)",
+            "## Validation Evidence",
+            "## Publish Steps",
+        ):
+            report.check(
+                token in note_gen_content,
+                f"generate_release_notes.sh includes {token}",
+                f"scripts/generate_release_notes.sh missing token: {token}",
             )
 
     postflight_content = read_text(root, "scripts/release_postflight.sh", report)
@@ -1204,6 +1247,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "release_preflight.sh",
             "release_postflight.sh",
             "<pre|post|full>",
+            "--from-tag",
+            "--skip-note-gen",
         ):
             report.check(
                 token in automation_content,
@@ -1253,8 +1298,15 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
                 f"release/automation.md missing token: {token}",
             )
 
-    notes_content = read_text(root, "release/v0.1.0-beta.2.md", report)
-    if notes_content:
+    latest_note = select_latest_release_note(root)
+    report.check(
+        latest_note is not None,
+        "release includes at least one beta release note",
+        "release/ missing beta release note files (expected vX.Y.Z-beta.N.md)",
+    )
+    if latest_note is not None:
+        relative_note_path = str(latest_note.relative_to(root))
+        notes_content = read_text(root, relative_note_path, report)
         for token in (
             "Release Notes",
             "Validation Evidence",
@@ -1263,8 +1315,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
         ):
             report.check(
                 token in notes_content,
-                f"v0.1.0-beta.2.md includes {token}",
-                f"release/v0.1.0-beta.2.md missing token: {token}",
+                f"{latest_note.name} includes {token}",
+                f"{relative_note_path} missing token: {token}",
             )
 
     rollback_content = read_text(root, "release/rollback.md", report)

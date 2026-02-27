@@ -12,6 +12,7 @@ Usage:
 
 Examples:
   ./scripts/release_automation.sh pre --tag v0.1.0-beta.2
+  ./scripts/release_automation.sh pre --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2
   ./scripts/release_automation.sh post --tag v0.1.0-beta.1
   ./scripts/release_automation.sh full --tag v0.1.0-beta.2
 
@@ -19,6 +20,7 @@ Notes:
   - pre  -> runs scripts/release_preflight.sh
   - post -> runs scripts/release_postflight.sh
   - full -> runs preflight, then postflight (uses --tag for postflight)
+  - pre/full support --from-tag, --skip-note-gen, --note-overwrite
 EOF
 }
 
@@ -46,6 +48,15 @@ case "$MODE" in
         --skip-smoke|--no-strict)
           pre_args+=("$1")
           shift
+          ;;
+        --skip-note-gen|--note-overwrite)
+          pre_args+=("$1")
+          shift
+          ;;
+        --from-tag)
+          [[ $# -ge 2 ]] || { echo "[release-automation] missing value for --from-tag" >&2; exit 2; }
+          pre_args+=("$1" "$2")
+          shift 2
           ;;
         --skip-remote|--skip-ci-status|--create-release)
           post_args+=("$1")

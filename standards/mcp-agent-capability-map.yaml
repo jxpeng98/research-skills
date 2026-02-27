@@ -10,6 +10,7 @@ coordination_contract:
     - "topic"
     - "required_outputs"
     - "required_skills"
+    - "required_skill_cards"
     - "quality_gates"
   fixed_execution_chain:
     - "plan"
@@ -59,6 +60,144 @@ skill_registry:
   - "rebuttal-assistant"
   - "code-builder"
   - "model-collaborator"
+
+skill_catalog:
+  question-refiner:
+    file: "skills/question-refiner.md"
+    category: "framing"
+    focus: "Refine research questions, scope boundaries, and keyword strategy."
+    default_outputs:
+      - "framing/research_question.md"
+  academic-searcher:
+    file: "skills/academic-searcher.md"
+    category: "literature-discovery"
+    focus: "Build reproducible multi-source search queries and seed corpus."
+    default_outputs:
+      - "literature/search_strategy.md"
+      - "literature/search_results.csv"
+  paper-screener:
+    file: "skills/paper-screener.md"
+    category: "study-selection"
+    focus: "Screen records by inclusion/exclusion rules with decision trace."
+    default_outputs:
+      - "literature/screening_log.csv"
+  paper-extractor:
+    file: "skills/paper-extractor.md"
+    category: "data-extraction"
+    focus: "Extract structured study attributes, outcomes, and effect inputs."
+    default_outputs:
+      - "extraction/effect_size_table.csv"
+  quality-assessor:
+    file: "skills/quality-assessor.md"
+    category: "quality-appraisal"
+    focus: "Assess risk of bias, certainty, and evidence strength."
+    default_outputs:
+      - "quality/quality_assessment.md"
+  gap-analyzer:
+    file: "skills/gap-analyzer.md"
+    category: "research-positioning"
+    focus: "Identify unresolved theoretical, empirical, or methodological gaps."
+    default_outputs:
+      - "framing/research_gap.md"
+  theory-mapper:
+    file: "skills/theory-mapper.md"
+    category: "theoretical-framing"
+    focus: "Map constructs and derive testable propositions or hypotheses."
+    default_outputs:
+      - "framing/theoretical_framework.md"
+  citation-snowballer:
+    file: "skills/citation-snowballer.md"
+    category: "citation-expansion"
+    focus: "Expand corpus using forward/backward citation chaining."
+    default_outputs:
+      - "literature/snowball_log.md"
+  fulltext-fetcher:
+    file: "skills/fulltext-fetcher.md"
+    category: "fulltext-acquisition"
+    focus: "Resolve full text access, version provenance, and retrieval status."
+    default_outputs:
+      - "literature/fulltext_access_log.csv"
+  metadata-enricher:
+    file: "skills/metadata-enricher.md"
+    category: "metadata-normalization"
+    focus: "Normalize DOI, venue, year, author, and identifier metadata."
+    default_outputs:
+      - "references/metadata_registry.csv"
+  citation-formatter:
+    file: "skills/citation-formatter.md"
+    category: "reference-formatting"
+    focus: "Format references in target style and validate citation integrity."
+    default_outputs:
+      - "references/references_formatted.bib"
+  reference-manager-bridge:
+    file: "skills/reference-manager-bridge.md"
+    category: "reference-sync"
+    focus: "Sync citation library with Zotero/EndNote/Mendeley workflows."
+    default_outputs:
+      - "references/reference_manager_sync.md"
+  study-designer:
+    file: "skills/study-designer.md"
+    category: "study-design"
+    focus: "Design sampling, measures, procedures, and analysis plans."
+    default_outputs:
+      - "design/study_design.md"
+      - "design/analysis_plan.md"
+  ethics-irb-helper:
+    file: "skills/ethics-irb-helper.md"
+    category: "ethics-compliance"
+    focus: "Prepare IRB-ready risk, consent, privacy, and governance content."
+    default_outputs:
+      - "compliance/irb_pack.md"
+  evidence-synthesizer:
+    file: "skills/evidence-synthesizer.md"
+    category: "evidence-synthesis"
+    focus: "Synthesize evidence narratively, qualitatively, or quantitatively."
+    default_outputs:
+      - "synthesis/synthesis.md"
+  manuscript-architect:
+    file: "skills/manuscript-architect.md"
+    category: "manuscript-structure"
+    focus: "Build coherent paper structure from outline to section-level drafts."
+    default_outputs:
+      - "manuscript/outline.md"
+      - "manuscript/draft.md"
+  prisma-checker:
+    file: "skills/prisma-checker.md"
+    category: "prisma-compliance"
+    focus: "Verify PRISMA flow, checklist coverage, and reporting transparency."
+    default_outputs:
+      - "review/prisma_checklist.md"
+  reporting-checker:
+    file: "skills/reporting-checker.md"
+    category: "reporting-compliance"
+    focus: "Validate reporting guideline completeness for target study type."
+    default_outputs:
+      - "manuscript/reporting_checklist.md"
+  submission-packager:
+    file: "skills/submission-packager.md"
+    category: "submission-readiness"
+    focus: "Assemble cover letter, compliance files, and submission bundle."
+    default_outputs:
+      - "submission/submission_package.md"
+  rebuttal-assistant:
+    file: "skills/rebuttal-assistant.md"
+    category: "revision-response"
+    focus: "Generate point-by-point response and tracked revision plan."
+    default_outputs:
+      - "submission/rebuttal_response.md"
+  code-builder:
+    file: "skills/code-builder.md"
+    category: "research-code"
+    focus: "Translate methods into reproducible implementation and validation."
+    default_outputs:
+      - "code/implementation_plan.md"
+      - "code/repro_report.md"
+  model-collaborator:
+    file: "skills/model-collaborator.md"
+    category: "multi-agent-verification"
+    focus: "Split execution and cross-review across model runtimes."
+    default_outputs:
+      - "logs/model_collab_trace.md"
 
 task_skill_mapping:
   A1:

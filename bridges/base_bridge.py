@@ -24,6 +24,7 @@ from enum import Enum
 class ModelType(Enum):
     """Supported AI models."""
     CODEX = "codex"
+    CLAUDE = "claude"
     GEMINI = "gemini"
 
 
@@ -53,6 +54,7 @@ class CollaborationResult:
     mode: str
     task_description: str
     codex_response: BridgeResponse | None = None
+    claude_response: BridgeResponse | None = None
     gemini_response: BridgeResponse | None = None
     merged_analysis: str = ""
     confidence: float = 0.0
@@ -69,6 +71,8 @@ class CollaborationResult:
         }
         if self.codex_response:
             data["codex"] = asdict(self.codex_response)
+        if self.claude_response:
+            data["claude"] = asdict(self.claude_response)
         if self.gemini_response:
             data["gemini"] = asdict(self.gemini_response)
         return json.dumps(data, indent=2, ensure_ascii=False)

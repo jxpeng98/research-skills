@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Multi-Model Orchestrator for research-skills.
-Single entry point for coordinating Codex and Gemini collaboration.
+Single entry point for coordinating Codex, Claude, and Gemini collaboration.
 
 Usage:
-    python orchestrator.py parallel --prompt "..." --cwd "/path"
-    python orchestrator.py chain --prompt "..." --cwd "/path" --generator codex
-    python orchestrator.py role --cwd "/path" --codex-task "..." --gemini-task "..."
-    python orchestrator.py single --model codex --prompt "..." --cwd "/path"
-    python orchestrator.py task-run --task-id F3 --paper-type empirical --topic ai-in-education --cwd "/path" --mcp-strict
+    python orchestrator.py parallel --prompt "..." --cwd "/path" --summarizer claude
+    python orchestrator.py chain --prompt "..." --cwd "/path" --generator claude
+    python orchestrator.py role --cwd "/path" --codex-task "..." --claude-task "..." --gemini-task "..."
+    python orchestrator.py single --model claude --prompt "..." --cwd "/path"
+    python orchestrator.py task-run --task-id F3 --paper-type empirical --topic ai-in-education --cwd "/path" --mcp-strict --skills-strict --triad
 
 Python 3.12+ required.
 """
@@ -18,12 +18,14 @@ import argparse
 import json
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict
 from enum import Enum
 from pathlib import Path
 from typing import Any
 
 from .base_bridge import BridgeResponse, CollaborationResult, configure_stdio
+from .claude_bridge import ClaudeBridge
 from .codex_bridge import CodexBridge
 from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
@@ -72,18 +74,27 @@ class ModelOrchestrator:
         "design review",
         "research context",
     ]
-    RUNTIME_AGENTS = {"codex", "gemini"}
+    CLAUDE_STRENGTHS = [
+        "long-form reasoning",
+        "manuscript drafting",
+        "argument structure",
+        "quality critique",
+        "cross-section consistency",
+    ]
+    RUNTIME_AGENTS = {"codex", "claude", "gemini"}
     DEFAULT_STANDARDS_DIR = Path(__file__).resolve().parents[1] / "standards"
     
     def __init__(
         self,
         codex_sandbox: str = "read-only",
+        claude_permission_mode: str | None = None,
         gemini_sandbox: bool = False,
         standards_dir: Path | None = None,
         mcp_timeout_seconds: int = 20,
     ):
         """Initialize orchestrator with bridges."""
         self.codex = CodexBridge(sandbox=codex_sandbox)
+        self.claude = ClaudeBridge(permission_mode=claude_permission_mode)
         self.gemini = GeminiBridge(sandbox=gemini_sandbox)
         self.standards_dir = standards_dir or self.DEFAULT_STANDARDS_DIR
         self.mcp_connector = MCPConnector(timeout_seconds=mcp_timeout_seconds)
@@ -94,9 +105,11 @@ class ModelOrchestrator:
         cwd: Path,
         prompt: str | None = None,
         codex_task: str | None = None,
+        claude_task: str | None = None,
         gemini_task: str | None = None,
         generator: str = "codex",
         single_model: str = "codex",
+        parallel_summarizer: str = "claude",
         session_id: str | None = None,
     ) -> CollaborationResult:
         """
@@ -107,17 +120,23 @@ class ModelOrchestrator:
             cwd: Working directory
             prompt: Main prompt (for parallel/chain/single modes)
             codex_task: Codex-specific task (for role mode)
+            claude_task: Claude-specific task (for role mode)
             gemini_task: Gemini-specific task (for role mode)
             generator: Which model generates in chain mode
             single_model: Which model to use in single mode
+            parallel_summarizer: Which model performs post-parallel synthesis
             session_id: Resume existing session
         """
         if mode == CollaborationMode.PARALLEL:
-            return self._parallel_analyze(prompt or "", cwd)
+            return self._parallel_analyze(
+                prompt or "",
+                cwd,
+                summarizer=parallel_summarizer,
+            )
         elif mode == CollaborationMode.CHAIN:
             return self._chain_verify(prompt or "", cwd, generator)
         elif mode == CollaborationMode.ROLE_BASED:
-            return self._role_based(cwd, codex_task, gemini_task)
+            return self._role_based(cwd, codex_task, claude_task, gemini_task)
         elif mode == CollaborationMode.SINGLE:
             return self._single_execute(
                 prompt or "", cwd, single_model, session_id
@@ -125,39 +144,208 @@ class ModelOrchestrator:
         else:
             raise ValueError(f"Unknown collaboration mode: {mode}")
     
-    def _parallel_analyze(self, prompt: str, cwd: Path) -> CollaborationResult:
+    def _parallel_analyze(
+        self,
+        prompt: str,
+        cwd: Path,
+        summarizer: str = "claude",
+    ) -> CollaborationResult:
         """
-        Parallel mode: Both models analyze simultaneously.
-        Merge results, identify agreements as high-confidence.
-        
-        Best for: Code review, security audit, bug analysis
+        Parallel mode: 3-agent concurrent analysis (codex/claude/gemini),
+        then one summarizer agent performs cross-model synthesis.
+
+        If triad is unavailable, automatically degrade to dual/single.
         """
-        codex_resp = self.codex.execute(prompt, cwd)
-        gemini_resp = self.gemini.execute(prompt, cwd)
-        
-        # Calculate confidence based on both responses
-        if codex_resp.success and gemini_resp.success:
-            merged = self._merge_analyses(codex_resp.content, gemini_resp.content)
-            confidence = self._calculate_agreement(codex_resp, gemini_resp)
-        elif codex_resp.success:
-            merged = f"[Codex Only]\n{codex_resp.content}"
-            confidence = 0.6
-        elif gemini_resp.success:
-            merged = f"[Gemini Only]\n{gemini_resp.content}"
-            confidence = 0.6
+        requested_agents = ["codex", "claude", "gemini"]
+        responses: dict[str, BridgeResponse] = {}
+
+        with ThreadPoolExecutor(max_workers=len(requested_agents)) as executor:
+            futures = {
+                executor.submit(self._execute_runtime_agent, agent, prompt, cwd): agent
+                for agent in requested_agents
+            }
+            for future in as_completed(futures):
+                agent = futures[future]
+                try:
+                    responses[agent] = future.result()
+                except Exception as exc:
+                    responses[agent] = BridgeResponse.from_error(
+                        agent,
+                        f"Parallel execution error: {exc}",
+                    )
+
+        success_agents = [
+            agent
+            for agent in requested_agents
+            if agent in responses and responses[agent].success
+        ]
+        failed_agents = [
+            agent
+            for agent in requested_agents
+            if agent not in success_agents
+        ]
+        if len(success_agents) >= 3:
+            execution_level = "triad"
+        elif len(success_agents) == 2:
+            execution_level = "dual"
+        elif len(success_agents) == 1:
+            execution_level = "single"
         else:
-            merged = "Both models failed to produce output."
-            confidence = 0.0
-        
+            execution_level = "failed"
+
+        synthesis_runtime = ""
+        synthesis_notes: list[str] = []
+        synthesis_resp: BridgeResponse | None = None
+        if success_agents:
+            preferred = summarizer if summarizer in self.RUNTIME_AGENTS else "claude"
+            if preferred in success_agents:
+                synthesis_runtime = preferred
+            else:
+                synthesis_runtime = success_agents[0]
+                synthesis_notes.append(
+                    f"Parallel summarizer '{preferred}' unavailable; "
+                    f"fallback to '{synthesis_runtime}'."
+                )
+            synthesis_prompt = self._build_parallel_synthesis_prompt(
+                original_prompt=prompt,
+                success_agents=success_agents,
+                failed_agents=failed_agents,
+                responses=responses,
+            )
+            synthesis_resp = self._execute_runtime_agent(
+                synthesis_runtime,
+                synthesis_prompt,
+                cwd,
+            )
+
+        merged_parts: list[str] = [
+            f"## Parallel Execution ({execution_level})",
+            f"- Requested agents: {', '.join(requested_agents)}",
+            f"- Successful agents: {', '.join(success_agents) if success_agents else 'none'}",
+            f"- Failed agents: {', '.join(failed_agents) if failed_agents else 'none'}",
+        ]
+        for note in synthesis_notes:
+            merged_parts.append(f"- {note}")
+
+        for agent in requested_agents:
+            response = responses.get(agent)
+            if not response:
+                continue
+            merged_parts.extend(
+                [
+                    "",
+                    f"## {agent.capitalize()} Analysis",
+                    response.content if response.success else f"[FAILED] {response.error}",
+                ]
+            )
+
+        merged_parts.extend(["", "## Synthesis"])
+        if synthesis_resp and synthesis_resp.success:
+            merged_parts.append(
+                f"[Summarizer: {synthesis_runtime}]"
+            )
+            merged_parts.append(synthesis_resp.content)
+        elif success_agents:
+            if synthesis_resp and synthesis_resp.error:
+                merged_parts.append(
+                    f"[Summarizer failed: {synthesis_runtime}] {synthesis_resp.error}"
+                )
+            merged_parts.append(
+                self._build_parallel_fallback_summary(
+                    success_agents=success_agents,
+                    failed_agents=failed_agents,
+                    responses=responses,
+                )
+            )
+        else:
+            merged_parts.append("No successful agent analysis available.")
+
+        merged = "\n".join(merged_parts)
+        confidence = self._calculate_parallel_confidence(
+            success_count=len(success_agents),
+            synthesis_success=bool(synthesis_resp and synthesis_resp.success),
+        )
+
         return CollaborationResult(
             mode="parallel",
             task_description=prompt[:200],
-            codex_response=codex_resp,
-            gemini_response=gemini_resp,
+            codex_response=responses.get("codex"),
+            claude_response=responses.get("claude"),
+            gemini_response=responses.get("gemini"),
             merged_analysis=merged,
             confidence=confidence,
             recommendations=self._extract_recommendations(merged),
         )
+
+    def _build_parallel_synthesis_prompt(
+        self,
+        original_prompt: str,
+        success_agents: list[str],
+        failed_agents: list[str],
+        responses: dict[str, BridgeResponse],
+    ) -> str:
+        output_blocks: list[str] = []
+        for agent in success_agents:
+            output_blocks.append(
+                f"### {agent.upper()} OUTPUT\n{responses[agent].content}"
+            )
+        failed_text = ", ".join(failed_agents) if failed_agents else "none"
+        return f"""Synthesize multi-agent parallel analysis into one actionable conclusion.
+
+Original task:
+{original_prompt}
+
+Successful analyzers: {", ".join(success_agents)}
+Failed analyzers: {failed_text}
+
+Analyzer outputs:
+{"\n\n".join(output_blocks)}
+
+Produce sections:
+- Consensus Summary
+- Key Disagreements
+- Risk Assessment
+- Prioritized Next Actions
+- Confidence (0-1)
+"""
+
+    def _build_parallel_fallback_summary(
+        self,
+        success_agents: list[str],
+        failed_agents: list[str],
+        responses: dict[str, BridgeResponse],
+    ) -> str:
+        lines = [
+            "Fallback summary generated because synthesis step was unavailable.",
+            f"- Successful analyzers: {', '.join(success_agents)}",
+            f"- Failed analyzers: {', '.join(failed_agents) if failed_agents else 'none'}",
+            "- Cross-check recommendation: review disagreements manually before execution.",
+        ]
+        for agent in success_agents:
+            content = responses.get(agent).content if responses.get(agent) else ""
+            preview = content.splitlines()[0][:220] if content else ""
+            if preview:
+                lines.append(f"- {agent} lead point: {preview}")
+        return "\n".join(lines)
+
+    def _calculate_parallel_confidence(
+        self,
+        success_count: int,
+        synthesis_success: bool,
+    ) -> float:
+        if success_count >= 3 and synthesis_success:
+            return 0.93
+        if success_count >= 3:
+            return 0.86
+        if success_count == 2 and synthesis_success:
+            return 0.8
+        if success_count == 2:
+            return 0.72
+        if success_count == 1 and synthesis_success:
+            return 0.62
+        if success_count == 1:
+            return 0.5
+        return 0.0
     
     def _chain_verify(
         self, prompt: str, cwd: Path, generator: str = "codex"
@@ -167,22 +355,17 @@ class ModelOrchestrator:
         
         Best for: Algorithm implementation, code generation
         """
-        if generator == "codex":
-            # Codex generates, Gemini verifies
-            gen_resp = self.codex.execute(prompt, cwd)
-            if gen_resp.success:
-                verify_prompt = self._build_verification_prompt(gen_resp.content)
-                verify_resp = self.gemini.execute(verify_prompt, cwd)
-            else:
-                verify_resp = None
-        else:
-            # Gemini generates, Codex verifies
-            gen_resp = self.gemini.execute(prompt, cwd)
-            if gen_resp.success:
-                verify_prompt = self._build_verification_prompt(gen_resp.content)
-                verify_resp = self.codex.execute(verify_prompt, cwd)
-            else:
-                verify_resp = None
+        verifier_by_generator = {
+            "codex": "claude",
+            "claude": "gemini",
+            "gemini": "codex",
+        }
+        verify_agent = verifier_by_generator.get(generator, "claude")
+        gen_resp = self._execute_runtime_agent(generator, prompt, cwd)
+        verify_resp: BridgeResponse | None = None
+        if gen_resp.success:
+            verify_prompt = self._build_verification_prompt(gen_resp.content)
+            verify_resp = self._execute_runtime_agent(verify_agent, verify_prompt, cwd)
         
         # Build merged analysis
         if gen_resp.success and verify_resp and verify_resp.success:
@@ -198,8 +381,15 @@ class ModelOrchestrator:
         return CollaborationResult(
             mode="chain",
             task_description=prompt[:200],
-            codex_response=gen_resp if generator == "codex" else verify_resp,
-            gemini_response=verify_resp if generator == "codex" else gen_resp,
+            codex_response=gen_resp if generator == "codex" else (
+                verify_resp if verify_agent == "codex" else None
+            ),
+            claude_response=gen_resp if generator == "claude" else (
+                verify_resp if verify_agent == "claude" else None
+            ),
+            gemini_response=gen_resp if generator == "gemini" else (
+                verify_resp if verify_agent == "gemini" else None
+            ),
             merged_analysis=merged,
             confidence=confidence,
             recommendations=self._extract_recommendations(merged),
@@ -209,19 +399,25 @@ class ModelOrchestrator:
         self,
         cwd: Path,
         codex_task: str | None,
+        claude_task: str | None,
         gemini_task: str | None,
     ) -> CollaborationResult:
         """
         Role-based mode: Divide tasks by model specialty.
         
         Codex: Code generation, implementation, fixing
+        Claude: Structured drafting, critique, synthesis
         Gemini: Explanation, documentation, analysis
         """
         codex_resp = None
+        claude_resp = None
         gemini_resp = None
         
         if codex_task:
             codex_resp = self.codex.execute(codex_task, cwd)
+        
+        if claude_task:
+            claude_resp = self.claude.execute(claude_task, cwd)
         
         if gemini_task:
             gemini_resp = self.gemini.execute(gemini_task, cwd)
@@ -230,6 +426,8 @@ class ModelOrchestrator:
         parts = []
         if codex_resp and codex_resp.success:
             parts.append(f"## Codex Output\n\n{codex_resp.content}")
+        if claude_resp and claude_resp.success:
+            parts.append(f"## Claude Output\n\n{claude_resp.content}")
         if gemini_resp and gemini_resp.success:
             parts.append(f"## Gemini Output\n\n{gemini_resp.content}")
         
@@ -237,17 +435,30 @@ class ModelOrchestrator:
         
         # Calculate confidence
         success_count = sum([
-            1 for r in [codex_resp, gemini_resp]
+            1 for r in [codex_resp, claude_resp, gemini_resp]
             if r and r.success
         ])
-        confidence = success_count / 2.0 if (codex_task or gemini_task) else 0.0
+        requested_count = sum([
+            1 if codex_task else 0,
+            1 if claude_task else 0,
+            1 if gemini_task else 0,
+        ])
+        confidence = (
+            success_count / float(requested_count)
+            if requested_count > 0 else 0.0
+        )
         
-        task_desc = f"Codex: {codex_task or 'N/A'} | Gemini: {gemini_task or 'N/A'}"
+        task_desc = (
+            f"Codex: {codex_task or 'N/A'} | "
+            f"Claude: {claude_task or 'N/A'} | "
+            f"Gemini: {gemini_task or 'N/A'}"
+        )
         
         return CollaborationResult(
             mode="role_based",
             task_description=task_desc[:200],
             codex_response=codex_resp,
+            claude_response=claude_resp,
             gemini_response=gemini_resp,
             merged_analysis=merged,
             confidence=confidence,
@@ -271,7 +482,16 @@ class ModelOrchestrator:
                 merged_analysis=resp.content if resp.success else resp.error or "",
                 confidence=1.0 if resp.success else 0.0,
             )
-        else:
+        if model == "claude":
+            resp = self.claude.execute(prompt, cwd, session_id=session_id)
+            return CollaborationResult(
+                mode="single",
+                task_description=prompt[:200],
+                claude_response=resp,
+                merged_analysis=resp.content if resp.success else resp.error or "",
+                confidence=1.0 if resp.success else 0.0,
+            )
+        if model == "gemini":
             resp = self.gemini.execute(prompt, cwd, session_id=session_id)
             return CollaborationResult(
                 mode="single",
@@ -280,6 +500,13 @@ class ModelOrchestrator:
                 merged_analysis=resp.content if resp.success else resp.error or "",
                 confidence=1.0 if resp.success else 0.0,
             )
+        return CollaborationResult(
+            mode="single",
+            task_description=prompt[:200],
+            merged_analysis=f"Unsupported single model: {model}",
+            confidence=0.0,
+            recommendations=[],
+        )
     
     def _merge_analyses(self, codex: str, gemini: str) -> str:
         """Merge two model outputs into unified analysis."""
@@ -496,6 +723,41 @@ Provide your verification assessment.
             raise ValueError(
                 f"Task {task_id} has unknown skill entries: {', '.join(unknown_skills)}"
             )
+        skill_catalog_section = self._extract_top_level_section(capability_map, "skill_catalog")
+        required_skill_cards: list[dict[str, Any]] = []
+        for skill_name in required_skills:
+            card_match = re.search(
+                rf"^\s{{2}}{re.escape(skill_name)}:\n((?:^\s{{4}}.*\n?)+)",
+                skill_catalog_section,
+                flags=re.MULTILINE,
+            )
+            if not card_match:
+                raise ValueError(
+                    f"Task {task_id} required skill missing catalog entry: {skill_name}"
+                )
+            card_block = card_match.group(1)
+            skill_file = self._parse_yaml_scalar(card_block, "file", indent=4)
+            category = self._parse_yaml_scalar(card_block, "category", indent=4)
+            focus = self._parse_yaml_scalar(card_block, "focus", indent=4)
+            default_outputs = self._parse_yaml_list(
+                self._extract_nested_section(card_block, "default_outputs", indent=4),
+                item_indent=6,
+            )
+            if not skill_file:
+                raise ValueError(f"Skill catalog entry missing file for {skill_name}")
+            if not category:
+                raise ValueError(f"Skill catalog entry missing category for {skill_name}")
+            if not focus:
+                raise ValueError(f"Skill catalog entry missing focus for {skill_name}")
+            required_skill_cards.append(
+                {
+                    "skill": skill_name,
+                    "file": skill_file,
+                    "category": category,
+                    "focus": focus,
+                    "default_outputs": default_outputs,
+                }
+            )
 
         task_section = self._extract_top_level_section(capability_map, "task_execution")
         task_match = re.search(
@@ -542,6 +804,7 @@ Provide your verification assessment.
         return {
             "required_mcp": required_mcp,
             "required_skills": required_skills,
+            "required_skill_cards": required_skill_cards,
             "primary_agent": primary_agent,
             "review_agent": review_agent,
             "fallback_agent": fallback_agent,
@@ -556,7 +819,7 @@ Provide your verification assessment.
     ) -> tuple[str, list[str]]:
         notes: list[str] = []
         seen: set[str] = set()
-        candidates = [preferred_agent, *fallback_chain, "codex", "gemini"]
+        candidates = [preferred_agent, *fallback_chain, "codex", "claude", "gemini"]
         for candidate in candidates:
             if not candidate or candidate in seen:
                 continue
@@ -576,6 +839,8 @@ Provide your verification assessment.
     def _execute_runtime_agent(self, agent_name: str, prompt: str, cwd: Path) -> BridgeResponse:
         if agent_name == "codex":
             return self.codex.execute(prompt, cwd)
+        if agent_name == "claude":
+            return self.claude.execute(prompt, cwd)
         if agent_name == "gemini":
             return self.gemini.execute(prompt, cwd)
         return BridgeResponse.from_error(
@@ -597,6 +862,7 @@ Provide your verification assessment.
         required_outputs: list[str],
         required_mcp: list[str],
         required_skills: list[str],
+        required_skill_cards: list[dict[str, Any]],
         quality_gates: list[str],
     ) -> dict[str, Any]:
         return {
@@ -608,8 +874,78 @@ Provide your verification assessment.
             "required_outputs": required_outputs,
             "required_mcp": required_mcp,
             "required_skills": required_skills,
+            "required_skill_cards": required_skill_cards,
             "quality_gates": quality_gates,
         }
+
+    def _collect_skill_context(
+        self,
+        task_packet: dict[str, Any],
+        strict: bool = False,
+    ) -> tuple[list[dict[str, Any]], list[str]]:
+        skill_cards = task_packet.get("required_skill_cards", [])
+        if not isinstance(skill_cards, list):
+            return [], ["required_skill_cards packet field is not a list."]
+
+        resolved_cards: list[dict[str, Any]] = []
+        notes: list[str] = []
+        missing_files: list[str] = []
+        repo_root = self.standards_dir.parent
+
+        for card in skill_cards:
+            if not isinstance(card, dict):
+                continue
+            skill_name = str(card.get("skill", "")).strip()
+            file_rel = str(card.get("file", "")).strip()
+            file_path = repo_root / file_rel if file_rel else Path("")
+            exists = bool(file_rel) and file_path.exists()
+            status = "ok" if exists else "missing"
+            if not exists:
+                missing_files.append(skill_name or file_rel or "<unknown>")
+                notes.append(
+                    f"Skill '{skill_name}' file missing: {file_rel}"
+                )
+            resolved_cards.append(
+                {
+                    "skill": skill_name,
+                    "category": str(card.get("category", "")).strip(),
+                    "focus": str(card.get("focus", "")).strip(),
+                    "file": file_rel,
+                    "default_outputs": [
+                        str(item) for item in card.get("default_outputs", []) if str(item).strip()
+                    ],
+                    "status": status,
+                }
+            )
+        if strict and missing_files:
+            raise ValueError(
+                "Skills strict mode blocked execution due to missing skill files: "
+                + ", ".join(missing_files)
+            )
+        return resolved_cards, notes
+
+    def _format_skill_context(self, skill_cards: list[dict[str, Any]]) -> str:
+        if not skill_cards:
+            return "- No required skill cards available."
+        lines: list[str] = []
+        for card in skill_cards:
+            skill_name = str(card.get("skill", "")).strip() or "unknown-skill"
+            category = str(card.get("category", "")).strip() or "unspecified"
+            focus = str(card.get("focus", "")).strip() or "No focus provided."
+            status = str(card.get("status", "ok")).strip() or "ok"
+            outputs = [
+                str(item)
+                for item in card.get("default_outputs", [])
+                if str(item).strip()
+            ]
+            file_rel = str(card.get("file", "")).strip() or "-"
+            lines.append(
+                f"- {skill_name} [{status}] ({category}): {focus}"
+            )
+            lines.append(f"  spec: {file_rel}")
+            if outputs:
+                lines.append(f"  default_outputs: {', '.join(outputs)}")
+        return "\n".join(lines)
 
     def _collect_mcp_evidence(
         self,
@@ -658,6 +994,7 @@ Provide your verification assessment.
         self,
         task_packet: dict[str, Any],
         mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
         extra_context: str | None,
     ) -> str:
         return f"""You are executing one canonical research workflow task.
@@ -670,11 +1007,15 @@ Execution rules:
 2. Produce deliverables aligned to required_outputs and include those exact paths.
 3. For each deliverable, cite the MCP evidence source used.
 4. Apply every required skill in required_skills as a method constraint in your draft process.
+   - Use required_skill_cards for concrete method focus and default outputs.
 5. Explicitly check quality_gates and mark each as PASS/WARN/FAIL.
 6. If required input is missing, list it under "Missing Inputs" and continue with placeholders.
 
 MCP evidence snapshot:
 {self._format_mcp_evidence(mcp_evidence)}
+
+Required skill cards:
+{self._format_skill_context(skill_cards)}
 
 Additional context:
 {extra_context or "No additional context."}
@@ -691,6 +1032,7 @@ Return sections:
         self,
         task_packet: dict[str, Any],
         mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
         draft_output: str,
     ) -> str:
         return f"""Review the draft for this canonical research workflow task.
@@ -703,6 +1045,9 @@ Primary draft:
 
 MCP evidence snapshot:
 {self._format_mcp_evidence(mcp_evidence)}
+
+Required skill cards:
+{self._format_skill_context(skill_cards)}
 
 Review checklist:
 1. Output path coverage against required_outputs.
@@ -718,6 +1063,44 @@ Return sections:
 - Confidence (0-1)
 """
 
+    def _build_task_triad_prompt(
+        self,
+        task_packet: dict[str, Any],
+        mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
+        draft_output: str,
+        review_output: str,
+    ) -> str:
+        return f"""Perform a third independent audit for this canonical research task.
+
+Task packet (JSON):
+{json.dumps(task_packet, ensure_ascii=False, indent=2)}
+
+Primary draft:
+{draft_output}
+
+Independent review:
+{review_output}
+
+MCP evidence snapshot:
+{self._format_mcp_evidence(mcp_evidence)}
+
+Required skill cards:
+{self._format_skill_context(skill_cards)}
+
+Audit checklist:
+1. Identify unresolved disagreements between draft and review.
+2. Verify contract output paths and quality gates.
+3. Check claim-method-evidence integrity.
+4. Prioritize top 3 fixes by impact.
+
+Return sections:
+- Triad Verdict (PASS/BLOCK)
+- Consensus Status (AGREE/PARTIAL/CONFLICT)
+- Highest-Priority Fixes
+- Confidence (0-1)
+"""
+
     def task_run(
         self,
         task_id: str,
@@ -727,6 +1110,8 @@ Return sections:
         venue: str | None = None,
         context: str | None = None,
         mcp_strict: bool = False,
+        skills_strict: bool = False,
+        triad: bool = False,
     ) -> CollaborationResult:
         """Run task-level orchestration using capability map and contract."""
         normalized_task = task_id.strip().upper()
@@ -745,6 +1130,7 @@ Return sections:
                 confidence=0.0,
                 recommendations=[],
                 codex_response=error_resp if "codex" in str(exc).lower() else None,
+                claude_response=error_resp if "claude" in str(exc).lower() else None,
                 gemini_response=error_resp if "gemini" in str(exc).lower() else None,
             )
 
@@ -757,8 +1143,29 @@ Return sections:
             required_outputs=required_outputs,
             required_mcp=agent_plan["required_mcp"],
             required_skills=agent_plan["required_skills"],
+            required_skill_cards=agent_plan["required_skill_cards"],
             quality_gates=agent_plan["quality_gates"],
         )
+        try:
+            skill_cards, skill_notes = self._collect_skill_context(
+                packet,
+                strict=skills_strict,
+            )
+            packet["required_skill_cards"] = skill_cards
+            routing_notes.extend(skill_notes)
+        except ValueError as exc:
+            error_resp = BridgeResponse.from_error("skills", str(exc))
+            return CollaborationResult(
+                mode="task-run",
+                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+                merged_analysis=str(exc),
+                confidence=0.0,
+                recommendations=[],
+                codex_response=error_resp if "codex" in str(exc).lower() else None,
+                claude_response=error_resp if "claude" in str(exc).lower() else None,
+                gemini_response=error_resp if "gemini" in str(exc).lower() else None,
+            )
+
         try:
             mcp_evidence, mcp_notes = self._collect_mcp_evidence(
                 packet,
@@ -774,7 +1181,9 @@ Return sections:
                 merged_analysis=str(exc),
                 confidence=0.0,
                 recommendations=[],
-                codex_response=error_resp,
+                codex_response=error_resp if "codex" in str(exc).lower() else None,
+                claude_response=error_resp if "claude" in str(exc).lower() else None,
+                gemini_response=error_resp if "gemini" in str(exc).lower() else None,
             )
 
         primary_runtime, primary_notes = self._resolve_runtime_agent(
@@ -783,7 +1192,12 @@ Return sections:
         )
         routing_notes.extend(primary_notes)
 
-        draft_prompt = self._build_task_draft_prompt(packet, mcp_evidence, context)
+        draft_prompt = self._build_task_draft_prompt(
+            packet,
+            mcp_evidence,
+            packet.get("required_skill_cards", []),
+            context,
+        )
         draft_resp = self._execute_runtime_agent(primary_runtime, draft_prompt, cwd)
         draft_runtime = primary_runtime
 
@@ -816,23 +1230,57 @@ Return sections:
             review_prompt = self._build_task_review_prompt(
                 packet,
                 mcp_evidence,
+                packet.get("required_skill_cards", []),
                 draft_resp.content,
             )
             review_resp = self._execute_runtime_agent(review_runtime, review_prompt, cwd)
         else:
             routing_notes.append("Skipped independent review because draft generation failed.")
 
+        triad_resp: BridgeResponse | None = None
+        triad_runtime: str | None = None
+        if triad and draft_resp.success and review_resp and review_resp.success:
+            third_candidates = [
+                agent for agent in ("codex", "claude", "gemini")
+                if agent not in {draft_runtime, review_runtime}
+            ]
+            for candidate in third_candidates:
+                if candidate in self.RUNTIME_AGENTS:
+                    triad_runtime = candidate
+                    break
+            if triad_runtime:
+                triad_prompt = self._build_task_triad_prompt(
+                    packet,
+                    mcp_evidence,
+                    packet.get("required_skill_cards", []),
+                    draft_resp.content,
+                    review_resp.content,
+                )
+                triad_resp = self._execute_runtime_agent(triad_runtime, triad_prompt, cwd)
+            else:
+                routing_notes.append(
+                    "Triad mode requested, but no third runtime agent available."
+                )
+        elif triad:
+            routing_notes.append(
+                "Triad audit skipped because draft/review did not both succeed."
+            )
+
         codex_resp = None
+        claude_resp = None
         gemini_resp = None
         for runtime_agent, response in (
             (draft_runtime, draft_resp),
             (review_runtime, review_resp),
             (fallback_runtime, fallback_resp),
+            (triad_runtime, triad_resp),
         ):
             if not response:
                 continue
             if runtime_agent == "codex" and codex_resp is None:
                 codex_resp = response
+            if runtime_agent == "claude" and claude_resp is None:
+                claude_resp = response
             if runtime_agent == "gemini" and gemini_resp is None:
                 gemini_resp = response
 
@@ -842,6 +1290,9 @@ Return sections:
             "",
             "## MCP Evidence",
             self._format_mcp_evidence(mcp_evidence),
+            "",
+            "## Skill Cards",
+            self._format_skill_context(packet.get("required_skill_cards", [])),
             "",
             "## Routing",
             "\n".join(f"- {item}" for item in routing_notes) if routing_notes else "- Direct mapping used.",
@@ -865,9 +1316,23 @@ Return sections:
                     fallback_resp.content if fallback_resp.success else f"[FAILED] {fallback_resp.error}",
                 ]
             )
+        if triad_resp and triad_runtime:
+            merged_parts.extend(
+                [
+                    "",
+                    f"## Triad Audit ({triad_runtime})",
+                    triad_resp.content if triad_resp.success else f"[FAILED] {triad_resp.error}",
+                ]
+            )
         merged = "\n".join(merged_parts)
 
-        if draft_resp.success and review_resp and review_resp.success and review_runtime != draft_runtime:
+        if (
+            draft_resp.success
+            and review_resp and review_resp.success
+            and triad_resp and triad_resp.success
+        ):
+            confidence = 0.95
+        elif draft_resp.success and review_resp and review_resp.success and review_runtime != draft_runtime:
             confidence = 0.9
         elif draft_resp.success and review_resp and review_resp.success:
             confidence = 0.8
@@ -880,6 +1345,7 @@ Return sections:
             mode="task-run",
             task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
             codex_response=codex_resp,
+            claude_response=claude_resp,
             gemini_response=gemini_resp,
             merged_analysis=merged,
             confidence=confidence,
@@ -969,27 +1435,34 @@ def main():
     # ... (previous parsers: parallel, chain, role, single) ...
     
     # Parallel mode
-    parallel = subparsers.add_parser("parallel", help="Both models analyze simultaneously")
+    parallel = subparsers.add_parser("parallel", help="Triad concurrent analysis with synthesis")
     parallel.add_argument("--prompt", required=True, help="Analysis prompt")
     parallel.add_argument("--cwd", required=True, type=Path, help="Working directory")
+    parallel.add_argument(
+        "--summarizer",
+        choices=["codex", "claude", "gemini"],
+        default="claude",
+        help="Model used for post-parallel synthesis",
+    )
     
     # Chain mode
     chain = subparsers.add_parser("chain", help="One generates, other verifies")
     chain.add_argument("--prompt", required=True, help="Generation prompt")
     chain.add_argument("--cwd", required=True, type=Path, help="Working directory")
-    chain.add_argument("--generator", choices=["codex", "gemini"], default="codex")
+    chain.add_argument("--generator", choices=["codex", "claude", "gemini"], default="codex")
     
     # Role-based mode
     role = subparsers.add_parser("role", help="Task division by specialty")
     role.add_argument("--cwd", required=True, type=Path, help="Working directory")
     role.add_argument("--codex-task", help="Task for Codex")
+    role.add_argument("--claude-task", help="Task for Claude")
     role.add_argument("--gemini-task", help="Task for Gemini")
     
     # Single mode
     single = subparsers.add_parser("single", help="Single model execution")
     single.add_argument("--prompt", required=True, help="Task prompt")
     single.add_argument("--cwd", required=True, type=Path, help="Working directory")
-    single.add_argument("--model", choices=["codex", "gemini"], default="codex")
+    single.add_argument("--model", choices=["codex", "claude", "gemini"], default="codex")
     single.add_argument("--session-id", help="Resume existing session")
     
     # NEW: Code Build mode
@@ -1020,6 +1493,16 @@ def main():
         action="store_true",
         help="Fail task-run if required MCP providers are unavailable",
     )
+    task_run.add_argument(
+        "--skills-strict",
+        action="store_true",
+        help="Fail task-run if required skill specs are missing",
+    )
+    task_run.add_argument(
+        "--triad",
+        action="store_true",
+        help="Enable third independent agent audit when draft/review succeed",
+    )
 
     args = parser.parse_args()
     
@@ -1042,6 +1525,8 @@ def main():
             venue=args.venue,
             context=args.context,
             mcp_strict=args.mcp_strict,
+            skills_strict=args.skills_strict,
+            triad=args.triad,
         )
     else:
         # Map previous modes
@@ -1056,9 +1541,11 @@ def main():
             cwd=args.cwd,
             prompt=getattr(args, "prompt", None),
             codex_task=getattr(args, "codex_task", None),
+            claude_task=getattr(args, "claude_task", None),
             gemini_task=getattr(args, "gemini_task", None),
             generator=getattr(args, "generator", "codex"),
             single_model=getattr(args, "model", "codex"),
+            parallel_summarizer=getattr(args, "summarizer", "claude"),
             session_id=getattr(args, "session_id", None),
         )
     

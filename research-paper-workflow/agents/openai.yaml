@@ -1,0 +1,5 @@
+interface:
+  display_name: "Research Paper Workflow"
+  short_description: "Standardized academic paper workflow router"
+  default_prompt: "Use $research-paper-workflow to run Task F3 for my RESEARCH topic and produce the required outputs."
+

@@ -28,6 +28,9 @@ RESEARCH/[topic]/
 ├── notes/                   ← Required (non-empty)
 ├── extraction_table.md      ← Required
 ├── quality_table.md         ← Required
+├── meta_analysis_plan.md    ← Optional (if quantitative pooling)
+├── effect_size_table.md     ← Optional (if quantitative pooling)
+├── meta_analysis_results.md ← Optional (if quantitative pooling)
 ├── synthesis_matrix.md      ← Required
 ├── synthesis.md             ← Required
 └── bibliography.bib         ← Required
@@ -114,6 +117,8 @@ Check for best practices:
 **Synthesis Transparency:**
 - [ ] Synthesis approach justified
 - [ ] Heterogeneity addressed
+- [ ] Effect measures and synthesis methods clearly reported (PRISMA 12–15, 20b–20d)
+- [ ] Meta-analysis artifacts present if pooling was performed (plan, effect sizes, results)
 - [ ] Limitations acknowledged
 
 ### Step 5: Generate Compliance Report

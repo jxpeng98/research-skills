@@ -28,6 +28,7 @@ EXPECTED_PACKET_FIELDS = {
     "topic",
     "required_outputs",
     "required_skills",
+    "required_skill_cards",
     "quality_gates",
 }
 EXPECTED_EXECUTION_CHAIN = [
@@ -488,6 +489,68 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
             f"Missing skill file for registry entry: skills/{skill_name}.md",
         )
 
+    skill_catalog_section = extract_top_level_section(map_content, "skill_catalog")
+    catalog_ids = {
+        found
+        for found in re.findall(
+            r"^\s{2}([a-z0-9-]+):\s*$",
+            skill_catalog_section,
+            flags=re.MULTILINE,
+        )
+    }
+    report.check(
+        catalog_ids == skill_registry,
+        "Skill catalog covers all registered skills",
+        (
+            "Skill catalog mismatch. Missing: "
+            f"{ids_to_text(skill_registry - catalog_ids) or 'none'}; "
+            f"Extra: {ids_to_text(catalog_ids - skill_registry) or 'none'}"
+        ),
+    )
+    for skill_name, block in re.findall(
+        r"^\s{2}([a-z0-9-]+):\n((?:^\s{4}.*\n?)+)",
+        skill_catalog_section,
+        flags=re.MULTILINE,
+    ):
+        skill_file = parse_yaml_scalar(block, "file", indent=4)
+        category = parse_yaml_scalar(block, "category", indent=4)
+        focus = parse_yaml_scalar(block, "focus", indent=4)
+        default_outputs = parse_yaml_list(
+            extract_nested_section(block, "default_outputs", indent=4),
+            item_indent=6,
+        )
+        report.check(
+            bool(skill_file),
+            f"Skill catalog entry has file: {skill_name}",
+            f"Skill catalog entry missing file: {skill_name}",
+        )
+        if skill_file:
+            report.check(
+                skill_file.startswith("skills/"),
+                f"Skill catalog file uses skills/ prefix: {skill_name}",
+                f"Skill catalog file should be under skills/: {skill_name} -> {skill_file}",
+            )
+            report.check(
+                (root / skill_file).exists(),
+                f"Skill catalog file exists: {skill_name}",
+                f"Skill catalog file path missing: {skill_name} -> {skill_file}",
+            )
+        report.check(
+            bool(category),
+            f"Skill catalog entry has category: {skill_name}",
+            f"Skill catalog entry missing category: {skill_name}",
+        )
+        report.check(
+            bool(focus),
+            f"Skill catalog entry has focus: {skill_name}",
+            f"Skill catalog entry missing focus: {skill_name}",
+        )
+        report.check(
+            len(default_outputs) > 0,
+            f"Skill catalog entry has default_outputs: {skill_name}",
+            f"Skill catalog entry missing default_outputs: {skill_name}",
+        )
+
     skill_map_section = extract_top_level_section(map_content, "task_skill_mapping")
     skill_map_ids = {
         found
@@ -772,14 +835,64 @@ def validate_orchestrator(root: Path, report: ValidationReport) -> None:
         "orchestrator.py should use MCPConnector for mcp-evidence collection",
     )
     report.check(
+        "ClaudeBridge" in content,
+        "orchestrator.py uses ClaudeBridge",
+        "orchestrator.py should use ClaudeBridge for claude runtime",
+    )
+    report.check(
         re.search(r"\bdef _collect_mcp_evidence\(", content) is not None,
         "orchestrator.py includes _collect_mcp_evidence",
         "orchestrator.py missing _collect_mcp_evidence",
     )
     report.check(
+        re.search(r"\bdef _collect_skill_context\(", content) is not None,
+        "orchestrator.py includes _collect_skill_context",
+        "orchestrator.py missing _collect_skill_context",
+    )
+    report.check(
+        "required_skill_cards" in content,
+        "orchestrator.py injects required_skill_cards",
+        "orchestrator.py should inject required_skill_cards in task-run prompts",
+    )
+    report.check(
         "--mcp-strict" in content,
         "orchestrator.py exposes --mcp-strict",
         "orchestrator.py should expose --mcp-strict for MCP availability gating",
+    )
+    report.check(
+        "--skills-strict" in content,
+        "orchestrator.py exposes --skills-strict",
+        "orchestrator.py should expose --skills-strict for skill availability gating",
+    )
+    report.check(
+        "--triad" in content,
+        "orchestrator.py exposes --triad",
+        "orchestrator.py should expose --triad for third-agent audit",
+    )
+    report.check(
+        "--summarizer" in content,
+        "orchestrator.py exposes --summarizer for parallel synthesis",
+        "orchestrator.py should expose --summarizer for post-parallel synthesis",
+    )
+    report.check(
+        "RUNTIME_AGENTS = {\"codex\", \"claude\", \"gemini\"}" in content,
+        "orchestrator.py runtime agents include codex/claude/gemini",
+        "orchestrator.py should include codex/claude/gemini in runtime agents",
+    )
+    report.check(
+        "ThreadPoolExecutor" in content and "as_completed" in content,
+        "orchestrator.py uses concurrent triad execution",
+        "orchestrator.py should use concurrent execution for parallel mode",
+    )
+    report.check(
+        "_build_parallel_synthesis_prompt" in content,
+        "orchestrator.py includes synthesis prompt builder for parallel mode",
+        "orchestrator.py missing synthesis prompt builder for parallel mode",
+    )
+    report.check(
+        "_calculate_parallel_confidence" in content,
+        "orchestrator.py includes parallel confidence calculation",
+        "orchestrator.py missing parallel confidence calculation",
     )
     report.check(
         re.search(r"\bdef task_run\(", content) is not None,
@@ -792,7 +905,7 @@ def validate_guides(root: Path, report: ValidationReport) -> None:
     content = read_text(root, "guides/agent-skill-collaboration.md", report)
     if not content:
         return
-    for token in ("Task ID", "required_skills", "task-run"):
+    for token in ("Task ID", "required_skills", "task-run", "--summarizer"):
         report.check(
             token in content,
             f"collaboration guide includes {token}",
@@ -814,6 +927,24 @@ def validate_mcp_connector(root: Path, report: ValidationReport) -> None:
             token in content,
             f"mcp_connectors.py includes {token}",
             f"bridges/mcp_connectors.py missing token: {token}",
+        )
+
+
+def validate_claude_bridge(root: Path, report: ValidationReport) -> None:
+    content = read_text(root, "bridges/claude_bridge.py", report)
+    if not content:
+        return
+    for token in (
+        "class ClaudeBridge",
+        "model_type = ModelType.CLAUDE",
+        "\"claude\"",
+        "--output-format",
+        "stream-json",
+    ):
+        report.check(
+            token in content,
+            f"claude_bridge.py includes {token}",
+            f"bridges/claude_bridge.py missing token: {token}",
         )
 
 
@@ -843,6 +974,7 @@ def main() -> int:
     validate_portable_skill(root, report)
     validate_cross_file_consistency(root, report)
     validate_mcp_connector(root, report)
+    validate_claude_bridge(root, report)
     validate_orchestrator(root, report)
     validate_guides(root, report)
     validate_docs(root, report)

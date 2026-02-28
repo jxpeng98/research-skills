@@ -74,6 +74,12 @@ skill_registry:
   - "reviewer-empathy-checker"
   - "reproducibility-auditor"
   - "stats-engine"
+  - "peer-review-simulation"
+  - "fatal-flaw-detector"
+  - "code-specification"
+  - "code-planning"
+  - "code-execution"
+  - "code-review"
 
 skill_catalog:
   question-refiner:
@@ -297,6 +303,42 @@ skill_catalog:
     focus: "Statistical modeling, tests, and analytics execution."
     default_outputs:
       - "analysis/stats_report.md"
+  peer-review-simulation:
+    file: "skills/peer-review-simulation.md"
+    category: "revision-response"
+    focus: "Adopt specific reviewer personas to conduct parallel, independent cross-reviews."
+    default_outputs:
+      - "revision/peer_review_simulation.md"
+  fatal-flaw-detector:
+    file: "skills/fatal-flaw-detector.md"
+    category: "revision-response"
+    focus: "Constructive desk-reject analysis identifying critical flaws."
+    default_outputs:
+      - "revision/fatal_flaw_analysis.md"
+  code-specification:
+    file: "skills/code-specification.md"
+    category: "research-code"
+    focus: "Requirement research generating strict constraint sets before coding."
+    default_outputs:
+      - "code/code_specification.md"
+  code-planning:
+    file: "skills/code-planning.md"
+    category: "research-code"
+    focus: "Transforming specs into parallelizable execution plans."
+    default_outputs:
+      - "code/plan.md"
+  code-execution:
+    file: "skills/code-execution.md"
+    category: "research-code"
+    focus: "Executing the plan and optimizing performance (cProfile/vectorization)."
+    default_outputs:
+      - "code/performance_profile.md"
+  code-review:
+    file: "skills/code-review.md"
+    category: "research-code"
+    focus: "Secondary model reviews code logic, security, and statistical validity."
+    default_outputs:
+      - "code/code_review.md"
 
 task_skill_mapping:
   A1:
@@ -494,6 +536,15 @@ task_skill_mapping:
     required_skills:
       - "reviewer-empathy-checker"
       - "self-critique"
+  H3:
+    required_skills:
+      - "peer-review-simulation"
+      - "manuscript-architect"
+      - "quality-assessor"
+  H4:
+    required_skills:
+      - "fatal-flaw-detector"
+      - "self-critique"
 
   I1:
     required_skills:
@@ -515,6 +566,22 @@ task_skill_mapping:
       - "reproducibility-auditor"
       - "model-collaborator"
       - "self-critique"
+  I5:
+    required_skills:
+      - "code-specification"
+      - "self-critique"
+  I6:
+    required_skills:
+      - "code-planning"
+      - "model-collaborator"
+  I7:
+    required_skills:
+      - "code-execution"
+      - "model-collaborator"
+  I8:
+    required_skills:
+      - "code-review"
+      - "model-collaborator"
 
 task_execution:
   A1:
@@ -947,6 +1014,24 @@ task_execution:
     fallback_agent: "codex"
     quality_gates:
       - "Q2"
+  H3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  H4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
 
   I1:
     required_mcp:
@@ -987,4 +1072,40 @@ task_execution:
     review_agent: "gemini"
     fallback_agent: "claude"
     quality_gates:
+      - "Q4"
+  I5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I6:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  I7:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "codex"
+    review_agent: "gemini"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q4"
+  I8:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "gemini"
+    review_agent: "claude"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
       - "Q4"

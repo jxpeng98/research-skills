@@ -102,11 +102,19 @@ stages:
       - "revision/response_matrix.md"
       - "revision/reviewer_empathy_check.md"
       - "revision/response_letter.md"
+      - "revision/peer_review_simulation.md"
+      - "revision/fatal_flaw_analysis.md"
   - id: "I"
     name: "research-code-support"
     outputs:
       - "analysis/"
       - "code/reproducibility_audit.md"
+      - "code/code_specification.md"
+      - "code/plan.md"
+      - "code/performance_profile.md"
+      - "code/code_review.md"
+      - "code/container_config/"
+      - "code/documentation/"
 
 task_catalog:
   A1:
@@ -342,6 +350,39 @@ task_catalog:
     title: "reproducibility-audit"
     outputs:
       - "code/reproducibility_audit.md"
+  H3:
+    stage: "H"
+    title: "peer-review-simulation"
+    outputs:
+      - "revision/peer_review_simulation.md"
+  H4:
+    stage: "H"
+    title: "fatal-flaw-analysis"
+    outputs:
+      - "revision/fatal_flaw_analysis.md"
+  I5:
+    stage: "I"
+    title: "code-specification"
+    outputs:
+      - "code/code_specification.md"
+  I6:
+    stage: "I"
+    title: "code-planning"
+    outputs:
+      - "code/plan.md"
+  I7:
+    stage: "I"
+    title: "code-execution"
+    outputs:
+      - "code/performance_profile.md"
+      - "code/container_config/"
+      - "code/documentation/"
+      - "analysis/"
+  I8:
+    stage: "I"
+    title: "code-review"
+    outputs:
+      - "code/code_review.md"
 
 platform_mapping:
   claude_code:

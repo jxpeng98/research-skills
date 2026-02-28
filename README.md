@@ -12,6 +12,9 @@ A systematic research skills system designed for Claude Code, providing tools fo
 - 🔍 **Research Gap Identification** - 5 types of academic gap analysis
 - 🧠 **Theoretical Framework Building** - Concept relationship mapping
 - ✍️ **Academic Writing Assistance** - Standard-compliant formatting
+- 🧑‍⚖️ **Multi-Persona Peer Review** - Parallel, independent cross-reviews (Methodologist, Domain Expert, "Reviewer 2")
+- 🚀 **CCG Code Execution** - Strict Spec -> Plan -> Execute -> Review isolation for code reliability
+- 🛡️ **Iterative Critique Loop (Red Teaming)** - AI self-review and Socratic questioning to continuously narrow down and refine outputs
 - 🤖 **Multi-Model Collaboration** - Codex + Claude + Gemini coordination across research stages
 - 🧱 **Cross-Model Standard Contract** - Shared Task IDs + artifact paths for Codex/Claude/Gemini
 - ⚡ **Token Optimized** - Layered skills architecture (~90% reduction)
@@ -147,7 +150,7 @@ Installer notes:
 | `/ethics-check` | Ethics / IRB pack | `/ethics-check ai-in-education` |
 | `/submission-prep` | Submission package | `/submission-prep ai-in-education CHI` |
 | `/rebuttal` | Rebuttal / revision response | `/rebuttal ai-in-education` |
-| `/code-build` | Build research code | `/code-build \"Staggered DID\" --domain econ` |
+| `/code-build` | CCG-driven Research code execution | `/code-build \"Staggered DID\" --domain econ` |
 
 Task ID recommendation:
 - Ask users for both `paper_type` and `task_id` (for example `systematic-review + E3`).

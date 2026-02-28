@@ -12,6 +12,8 @@
 - 🔍 **研究 Gap 识别** - 5类学术空白分析
 - 🧠 **理论框架构建** - 概念关系映射
 - ✍️ **学术写作辅助** - 符合学术规范
+- 🧑‍⚖️ **多角色专家互审** - 平行独立审稿模拟与致命缺陷测试
+- 🚀 **CCG 强约束代码引擎** - 将需求/规划/执行/Review严格拆分的可靠研究代码实施
 - 🧱 **跨模型标准合同** - 用统一 Task ID 和产物路径对齐 Codex/Claude/Gemini
 
 ## 标准化层
@@ -145,7 +147,7 @@ cd research-skills
 | `/ethics-check` | 伦理/IRB 文档包 | `/ethics-check ai-in-education` |
 | `/submission-prep` | 投稿打包 | `/submission-prep ai-in-education CHI` |
 | `/rebuttal` | 返修/回复审稿意见 | `/rebuttal ai-in-education` |
-| `/code-build` | 构建研究代码 | `/code-build \"Staggered DID\" --domain econ` |
+| `/code-build` | CCG驱动的研究代码实施 | `/code-build \"Staggered DID\" --domain econ` |
 
 Task ID 建议：
 - 与用户确认 `paper_type + task_id`（例如 `systematic-review + E3`）

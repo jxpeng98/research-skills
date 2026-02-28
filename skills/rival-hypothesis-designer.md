@@ -1,0 +1,1 @@
+# Rival Hypothesis Designer Skill

@@ -10,8 +10,8 @@
 - **文献与综述**：`B1`~`B5`
 - **研究设计/伦理**：`C1`~`D2`
 - **证据综合**：`E1`~`E5`
-- **写作与投稿**：`F1`~`H2`
-- **代码与复现**：`I1`~`I3`
+- **写作与投稿**：`F1`~`H4`
+- **代码与复现**：`I1`~`I8` (包含 CCG 强约束代码引擎)
 
 只要确定目标任务，就能复用统一编排链：`plan -> mcp-evidence -> primary-agent-draft -> review-agent-check -> validator-gate`。
 
@@ -101,11 +101,12 @@ profile 可定义：
 
 ## 4) 按能力类型给出推荐协同模板
 
-### A. 代码能力（`I1/I2/I3`）
+### A. 代码能力（`I1`~`I8`）
 
-- 推荐 skills：`code-builder`, `model-collaborator`, `metadata-enricher`
-- 推荐 MCP：`code-runtime`, `filesystem`, `metadata-registry`
-- agent 组合：主执行 `codex`，复核 `gemini/claude`
+- **CCG 强约束执行 (I5-I8)**：借鉴 `ccg-workflow`，将代码阶段严格拆分为约束集提取(I5)->无决策规划(I6)->主端执行(I7)->侧端验收(I8)。
+- 推荐 skills：`code-specification`, `code-planning`, `code-execution`, `code-review`
+- 推荐 MCP：`code-runtime`, `filesystem`
+- agent 组合：主执行 `codex` (执行I7)，复核 `gemini` (验收I8)
 
 ### B. 系统综述能力（`B1`）
 
@@ -125,9 +126,10 @@ profile 可定义：
 - 推荐 MCP：`metadata-registry`, `reporting-guidelines`
 - agent 组合：主执行 `claude`，复核 `codex`
 
-### E. 投稿与返修（`H1/H2`）
+### E. 投稿与返修（`H1`~`H4`）
 
-- 推荐 skills：`submission-packager`, `rebuttal-assistant`, `reporting-checker`
+- **多角色专家互审 (H3-H4)**：在正式投稿前，通过平行调用模拟 Methodologist、Domain Expert 等苛刻审稿人进行交叉审查（H3），并执行 Desktop-reject 致命缺陷排查（H4）。
+- 推荐 skills：`submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`
 - 推荐 MCP：`submission-kit`, `metadata-registry`, `reporting-guidelines`
 - agent 组合：主执行 `claude`，复核 `gemini/codex`
 

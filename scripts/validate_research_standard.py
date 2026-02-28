@@ -11,15 +11,15 @@ from pathlib import Path
 EXPECTED_PAPER_TYPES = {"empirical", "systematic-review", "methods", "theory"}
 EXPECTED_STAGE_IDS = {stage for stage in "ABCDEFGHI"}
 EXPECTED_TASK_IDS = {
-    "A1", "A2", "A3", "A4",
-    "B1", "B2", "B3", "B4", "B5",
-    "C1", "C2", "C3", "C4", "C5",
-    "D1", "D2",
-    "E1", "E2", "E3", "E4", "E5",
-    "F1", "F2", "F3", "F4", "F5",
-    "G1", "G2", "G3",
-    "H1", "H2",
-    "I1", "I2", "I3",
+    "A1", "A1_5", "A2", "A3", "A4", "A5",
+    "B1", "B1_5", "B2", "B3", "B4", "B5", "B6",
+    "C1", "C1_5", "C2", "C3", "C3_5", "C4", "C5",
+    "D1", "D2", "D3",
+    "E1", "E2", "E3", "E3_5", "E4", "E5",
+    "F1", "F2", "F3", "F4", "F5", "F6",
+    "G1", "G2", "G3", "G4",
+    "H1", "H2", "H2_5",
+    "I1", "I2", "I3", "I4",
 }
 EXPECTED_QUALITY_GATES = {"Q1", "Q2", "Q3", "Q4"}
 EXPECTED_AGENTS = {"codex", "claude", "gemini"}
@@ -271,7 +271,7 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
     task_ids = {
         found
         for found in re.findall(
-            r"^\s{2}([A-I][0-9]+):\s*$",
+            r"^\s{2}([A-I][0-9_]+):\s*$",
             task_section,
             flags=re.MULTILINE,
         )
@@ -287,7 +287,7 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
     )
 
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         task_section,
         flags=re.MULTILINE,
     ):
@@ -576,7 +576,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     skill_map_ids = {
         found
         for found in re.findall(
-            r"^\s{2}([A-I][0-9]+):\s*$",
+            r"^\s{2}([A-I][0-9_]+):\s*$",
             skill_map_section,
             flags=re.MULTILINE,
         )
@@ -591,7 +591,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
         ),
     )
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         skill_map_section,
         flags=re.MULTILINE,
     ):
@@ -615,7 +615,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     task_ids = {
         found
         for found in re.findall(
-            r"^\s{2}([A-I][0-9]+):\s*$",
+            r"^\s{2}([A-I][0-9_]+):\s*$",
             task_section,
             flags=re.MULTILINE,
         )
@@ -631,7 +631,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     )
 
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         task_section,
         flags=re.MULTILINE,
     ):
@@ -700,7 +700,7 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
         markdown_task_ids = {
             found
             for found in re.findall(
-                r"^\|\s*`([A-I][0-9]+)`\s*\|",
+                r"^\|\s*`([A-I][0-9_]+)`\s*\|",
                 markdown_contract,
                 flags=re.MULTILINE,
             )
@@ -718,7 +718,7 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
     paper_workflow_content = read_text(root, ".agent/workflows/paper.md", report)
     if paper_workflow_content:
         paper_ids = {
-            found for found in re.findall(r"\*\*([A-I][0-9]+)\b", paper_workflow_content)
+            found for found in re.findall(r"\*\*([A-I][0-9_]+)\b", paper_workflow_content)
         }
         report.check(
             paper_ids == EXPECTED_TASK_IDS,

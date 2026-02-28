@@ -390,6 +390,20 @@ python -m bridges.orchestrator code-build \
 
 ---
 
+## self-critique
+
+**Purpose:** Iterative red teaming and Socratic critique of outputs
+
+**Process:**
+1. Act as a harsh "Reviewer 2" or Socratic Questioner.
+2. Ask stage-specific critique questions (e.g., claiming causality vs correlation, omitted variables, confirmation bias).
+3. Challenge the Generator to defend or revise their work.
+4. Ensure logical flow, empathy in rebuttals, and rigorous claims.
+
+**Output:** Self-critique log and revised (improved) output
+
+---
+
 ## API Quick Reference
 
 | API | Base URL | Rate Limit |

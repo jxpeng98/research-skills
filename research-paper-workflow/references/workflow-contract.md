@@ -71,10 +71,16 @@ Use this contract as the single source of truth for:
 | `H1` | H | Submission package | `submission/` |
 | `H2` | H | Rebuttal package | `revision/` |
 | `H2_5` | H | Reviewer empathy check | `revision/reviewer_empathy_check.md` |
+| `H3` | H | Peer review simulation | `revision/peer_review_simulation.md` |
+| `H4` | H | Fatal flaw analysis | `revision/fatal_flaw_analysis.md` |
 | `I1` | I | Method implementation | `analysis/` |
 | `I2` | I | Reproduction | `analysis/` |
 | `I3` | I | Data pipeline | `analysis/` |
 | `I4` | I | Code reproducibility audit | `code/reproducibility_audit.md` |
+| `I5` | I | Code specification | `code/code_specification.md` |
+| `I6` | I | Code planning | `code/plan.md` |
+| `I7` | I | Code execution | `code/performance_profile.md` |
+| `I8` | I | Code review | `code/code_review.md` |
 
 ## Quality Gates
 

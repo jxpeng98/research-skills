@@ -18,8 +18,8 @@ EXPECTED_TASK_IDS = {
     "E1", "E2", "E3", "E3_5", "E4", "E5",
     "F1", "F2", "F3", "F4", "F5", "F6",
     "G1", "G2", "G3", "G4",
-    "H1", "H2", "H2_5",
-    "I1", "I2", "I3", "I4",
+    "H1", "H2", "H2_5", "H3", "H4",
+    "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8",
 }
 EXPECTED_QUALITY_GATES = {"Q1", "Q2", "Q3", "Q4"}
 EXPECTED_AGENTS = {"codex", "claude", "gemini"}

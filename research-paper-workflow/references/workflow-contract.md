@@ -30,24 +30,32 @@ Use this contract as the single source of truth for:
 | Task ID | Stage | Purpose | Primary Output |
 |---|---|---|---|
 | `A1` | A | Research question | `framing/research_question.md` |
+| `A1_5` | A | Hypothesis generation | `framing/hypothesis.md` |
 | `A2` | A | Contribution statement | `framing/contribution_statement.md` |
 | `A3` | A | Theoretical framing | `theoretical_framework.md` |
 | `A4` | A | Gap analysis | `gap_analysis.md` |
+| `A5` | A | Target venue analysis | `framing/venue_analysis.md` |
 | `B1` | B | Systematic review | `search_log.md`, `screening/`, `synthesis.md` |
 | `B2` | B | Targeted paper reading | `notes/`, `bibliography.bib` |
+| `B1_5` | B | Concept/keyword extraction | `literature/concept_extraction.md` |
 | `B3` | B | Citation snowballing | `snowball_log.md` |
 | `B4` | B | Related work writing | `manuscript/manuscript.md` |
 | `B5` | B | Citation management | `bibliography.bib` |
+| `B6` | B | Literature mapping | `literature/literature_map.md` |
 | `C1` | C | Study design | `study_design.md` |
+| `C1_5` | C | Rival hypothesis design | `design/rival_hypotheses.md` |
 | `C2` | C | Instruments | `instruments/` |
 | `C3` | C | Analysis plan | `analysis_plan.md` |
+| `C3_5` | C | Robustness check plan | `design/robustness_plan.md` |
 | `C4` | C | Data management plan | `data_management_plan.md` |
 | `C5` | C | Preregistration draft | `preregistration.md` |
 | `D1` | D | Ethics pack | `ethics_irb.md` |
 | `D2` | D | Ethics statements | `manuscript/manuscript.md` |
+| `D3` | D | Participant de-identification plan | `compliance/deidentification_plan.md` |
 | `E1` | E | Synthesis strategy | `meta_analysis_plan.md` |
 | `E2` | E | Effect size table | `effect_size_table.md` |
 | `E3` | E | Meta-analysis write-up | `meta_analysis_results.md` |
+| `E3_5` | E | Publication bias assessment | `synthesis/publication_bias.md` |
 | `E4` | E | Certainty grading | `grade_sof.md` |
 | `E5` | E | Integrated synthesis | `synthesis.md` |
 | `F1` | F | Manuscript outline | `manuscript/outline.md` |
@@ -55,14 +63,18 @@ Use this contract as the single source of truth for:
 | `F3` | F | Full draft | `manuscript/manuscript.md` |
 | `F4` | F | Claim-evidence map | `manuscript/claims_evidence_map.md` |
 | `F5` | F | Figures/tables plan | `manuscript/figures_tables_plan.md` |
+| `F6` | F | Abstract & Title Optimization | `manuscript/meta_optimization.md` |
 | `G1` | G | Reporting completeness | `reporting_checklist.md` |
 | `G2` | G | PRISMA compliance | `prisma_checklist.md` |
 | `G3` | G | Cross-section integrity | `manuscript/claims_evidence_map.md` |
+| `G4` | G | Tone & Style Normalization | `compliance/tone_normalization.md` |
 | `H1` | H | Submission package | `submission/` |
 | `H2` | H | Rebuttal package | `revision/` |
+| `H2_5` | H | Reviewer empathy check | `revision/reviewer_empathy_check.md` |
 | `I1` | I | Method implementation | `analysis/` |
 | `I2` | I | Reproduction | `analysis/` |
 | `I3` | I | Data pipeline | `analysis/` |
+| `I4` | I | Code reproducibility audit | `code/reproducibility_audit.md` |
 
 ## Quality Gates
 

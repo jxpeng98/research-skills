@@ -8,8 +8,11 @@ artifacts:
     - "framing/research_question.md"
     - "framing/contribution_statement.md"
     - "manuscript/manuscript.md"
-  optional_by_stage:
+    - "framing/hypothesis.md"
+    - "framing/venue_analysis.md"
     - "search_strategy.md"
+    - "literature/concept_extraction.md"
+    - "literature/literature_map.md"
     - "search_log.md"
     - "screening/title_abstract.md"
     - "screening/full_text.md"
@@ -21,9 +24,12 @@ artifacts:
     - "effect_size_table.md"
     - "meta_analysis_results.md"
     - "study_design.md"
+    - "design/rival_hypotheses.md"
     - "analysis_plan.md"
+    - "design/robustness_plan.md"
     - "data_management_plan.md"
     - "ethics_irb.md"
+    - "compliance/deidentification_plan.md"
     - "reporting_checklist.md"
     - "submission/cover_letter.md"
     - "submission/submission_checklist.md"
@@ -45,51 +51,62 @@ stages:
     name: "framing-positioning"
     outputs:
       - "framing/research_question.md"
+      - "framing/hypothesis.md"
       - "framing/contribution_statement.md"
+      - "framing/venue_analysis.md"
   - id: "B"
     name: "literature-related-work"
     outputs:
+      - "literature/concept_extraction.md"
       - "notes/"
       - "bibliography.bib"
       - "search_log.md"
+      - "literature/literature_map.md"
   - id: "C"
     name: "study-design-analysis-plan"
     outputs:
       - "study_design.md"
+      - "design/rival_hypotheses.md"
       - "analysis_plan.md"
+      - "design/robustness_plan.md"
       - "data_management_plan.md"
   - id: "D"
     name: "ethics-irb"
     outputs:
       - "ethics_irb.md"
+      - "compliance/deidentification_plan.md"
   - id: "E"
     name: "evidence-synthesis"
     outputs:
       - "synthesis.md"
       - "meta_analysis_results.md"
+      - "synthesis/publication_bias.md"
   - id: "F"
     name: "manuscript-writing"
-    outputs:
       - "manuscript/outline.md"
       - "manuscript/manuscript.md"
       - "manuscript/claims_evidence_map.md"
       - "manuscript/figures_tables_plan.md"
+      - "manuscript/meta_optimization.md"
   - id: "G"
     name: "polish-compliance"
     outputs:
       - "reporting_checklist.md"
       - "prisma_checklist.md"
+      - "compliance/tone_normalization.md"
   - id: "H"
     name: "submission-revision"
     outputs:
       - "submission/cover_letter.md"
       - "submission/submission_checklist.md"
       - "revision/response_matrix.md"
+      - "revision/reviewer_empathy_check.md"
       - "revision/response_letter.md"
   - id: "I"
     name: "research-code-support"
     outputs:
       - "analysis/"
+      - "code/reproducibility_audit.md"
 
 task_catalog:
   A1:
@@ -97,6 +114,11 @@ task_catalog:
     title: "research-question"
     outputs:
       - "framing/research_question.md"
+  A1_5:
+    stage: "A"
+    title: "hypothesis-generation"
+    outputs:
+      - "framing/hypothesis.md"
   A2:
     stage: "A"
     title: "contribution-novelty"
@@ -112,6 +134,11 @@ task_catalog:
     title: "gap-analysis"
     outputs:
       - "gap_analysis.md"
+  A5:
+    stage: "A"
+    title: "venue-analysis"
+    outputs:
+      - "framing/venue_analysis.md"
   B1:
     stage: "B"
     title: "systematic-review"
@@ -119,6 +146,11 @@ task_catalog:
       - "search_log.md"
       - "screening/"
       - "synthesis.md"
+  B1_5:
+    stage: "B"
+    title: "concept-extraction"
+    outputs:
+      - "literature/concept_extraction.md"
   B2:
     stage: "B"
     title: "targeted-paper-reading"
@@ -140,11 +172,21 @@ task_catalog:
     title: "citation-management"
     outputs:
       - "bibliography.bib"
+  B6:
+    stage: "B"
+    title: "literature-mapping"
+    outputs:
+      - "literature/literature_map.md"
   C1:
     stage: "C"
     title: "study-design"
     outputs:
       - "study_design.md"
+  C1_5:
+    stage: "C"
+    title: "rival-hypothesis-design"
+    outputs:
+      - "design/rival_hypotheses.md"
   C2:
     stage: "C"
     title: "instruments"
@@ -155,6 +197,11 @@ task_catalog:
     title: "analysis-plan"
     outputs:
       - "analysis_plan.md"
+  C3_5:
+    stage: "C"
+    title: "robustness-plan"
+    outputs:
+      - "design/robustness_plan.md"
   C4:
     stage: "C"
     title: "data-management-plan"
@@ -175,6 +222,11 @@ task_catalog:
     title: "ethics-statements"
     outputs:
       - "manuscript/manuscript.md"
+  D3:
+    stage: "D"
+    title: "deidentification-plan"
+    outputs:
+      - "compliance/deidentification_plan.md"
   E1:
     stage: "E"
     title: "synthesis-strategy"
@@ -190,6 +242,11 @@ task_catalog:
     title: "meta-analysis"
     outputs:
       - "meta_analysis_results.md"
+  E3_5:
+    stage: "E"
+    title: "publication-bias-check"
+    outputs:
+      - "synthesis/publication_bias.md"
   E4:
     stage: "E"
     title: "certainty-grading"
@@ -225,6 +282,11 @@ task_catalog:
     title: "figures-tables-plan"
     outputs:
       - "manuscript/figures_tables_plan.md"
+  F6:
+    stage: "F"
+    title: "meta-optimization"
+    outputs:
+      - "manuscript/meta_optimization.md"
   G1:
     stage: "G"
     title: "reporting-check"
@@ -240,6 +302,11 @@ task_catalog:
     title: "cross-section-integrity"
     outputs:
       - "manuscript/claims_evidence_map.md"
+  G4:
+    stage: "G"
+    title: "tone-normalization"
+    outputs:
+      - "compliance/tone_normalization.md"
   H1:
     stage: "H"
     title: "submission-package"
@@ -250,6 +317,11 @@ task_catalog:
     title: "rebuttal-package"
     outputs:
       - "revision/"
+  H2_5:
+    stage: "H"
+    title: "reviewer-empathy-check"
+    outputs:
+      - "revision/reviewer_empathy_check.md"
   I1:
     stage: "I"
     title: "method-implementation"
@@ -265,6 +337,11 @@ task_catalog:
     title: "data-pipeline"
     outputs:
       - "analysis/"
+  I4:
+    stage: "I"
+    title: "reproducibility-audit"
+    outputs:
+      - "code/reproducibility_audit.md"
 
 platform_mapping:
   claude_code:

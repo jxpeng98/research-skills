@@ -60,6 +60,20 @@ skill_registry:
   - "rebuttal-assistant"
   - "code-builder"
   - "model-collaborator"
+  - "self-critique"
+  - "hypothesis-generator"
+  - "venue-analyzer"
+  - "concept-extractor"
+  - "literature-mapper"
+  - "rival-hypothesis-designer"
+  - "robustness-planner"
+  - "deidentification-planner"
+  - "publication-bias-checker"
+  - "meta-optimizer"
+  - "tone-normalizer"
+  - "reviewer-empathy-checker"
+  - "reproducibility-auditor"
+  - "stats-engine"
 
 skill_catalog:
   question-refiner:
@@ -199,11 +213,102 @@ skill_catalog:
     default_outputs:
       - "logs/model_collab_trace.md"
 
+  self-critique:
+    file: "skills/self-critique.md"
+    category: "quality-assurance"
+    focus: "Iterative red teaming and Socratic critique of outputs."
+    default_outputs:
+      - "review/self_critique_log.md"
+  hypothesis-generator:
+    file: "skills/hypothesis-generator.md"
+    category: "framing"
+    focus: "Translate abstract research questions into testable formal hypotheses."
+    default_outputs:
+      - "framing/hypothesis.md"
+  venue-analyzer:
+    file: "skills/venue-analyzer.md"
+    category: "framing"
+    focus: "Analyze fit, format, and scoping constraints for target venue."
+    default_outputs:
+      - "framing/venue_analysis.md"
+  concept-extractor:
+    file: "skills/concept-extractor.md"
+    category: "literature-discovery"
+    focus: "Expand search seeds intelligently to break confirmation bias."
+    default_outputs:
+      - "literature/concept_extraction.md"
+  literature-mapper:
+    file: "skills/literature-mapper.md"
+    category: "study-selection"
+    focus: "Visualize and map State-of-the-art taxonomies prior to deep reading."
+    default_outputs:
+      - "literature/literature_map.md"
+  rival-hypothesis-designer:
+    file: "skills/rival-hypothesis-designer.md"
+    category: "study-design"
+    focus: "Proactively construct and address competitive theories."
+    default_outputs:
+      - "design/rival_hypotheses.md"
+  robustness-planner:
+    file: "skills/robustness-planner.md"
+    category: "study-design"
+    focus: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
+    default_outputs:
+      - "design/robustness_plan.md"
+  deidentification-planner:
+    file: "skills/deidentification-planner.md"
+    category: "ethics-compliance"
+    focus: "Ensure technical privacy via k-anonymity or secure data pipelines."
+    default_outputs:
+      - "compliance/deidentification_plan.md"
+  publication-bias-checker:
+    file: "skills/publication-bias-checker.md"
+    category: "evidence-synthesis"
+    focus: "Evaluate fail-safe N, funnel plot asymmetry, and correction models."
+    default_outputs:
+      - "synthesis/publication_bias.md"
+  meta-optimizer:
+    file: "skills/meta-optimizer.md"
+    category: "manuscript-structure"
+    focus: "Optimize Abstract and Title for indexing, SEO, and engagement."
+    default_outputs:
+      - "manuscript/meta_optimization.md"
+  tone-normalizer:
+    file: "skills/tone-normalizer.md"
+    category: "reporting-compliance"
+    focus: "Ruthlessly cut fluff, transition words, and absolute claims."
+    default_outputs:
+      - "compliance/tone_normalization.md"
+  reviewer-empathy-checker:
+    file: "skills/reviewer-empathy-checker.md"
+    category: "revision-response"
+    focus: "Neutralize defensiveness and ensure exact addressing of concerns."
+    default_outputs:
+      - "revision/reviewer_empathy_check.md"
+  reproducibility-auditor:
+    file: "skills/reproducibility-auditor.md"
+    category: "research-code"
+    focus: "Verify magic numbers, random seeds, and fail-graceful contingencies."
+    default_outputs:
+      - "code/reproducibility_audit.md"
+  stats-engine:
+    file: "skills/stats-engine.md"
+    category: "research-code"
+    focus: "Statistical modeling, tests, and analytics execution."
+    default_outputs:
+      - "analysis/stats_report.md"
+
 task_skill_mapping:
   A1:
     required_skills:
       - "question-refiner"
       - "metadata-enricher"
+      - "self-critique"
+  A1_5:
+    required_skills:
+      - "hypothesis-generator"
+      - "question-refiner"
+      - "self-critique"
   A2:
     required_skills:
       - "question-refiner"
@@ -216,6 +321,10 @@ task_skill_mapping:
     required_skills:
       - "gap-analyzer"
       - "academic-searcher"
+  A5:
+    required_skills:
+      - "venue-analyzer"
+      - "academic-searcher"
 
   B1:
     required_skills:
@@ -226,6 +335,11 @@ task_skill_mapping:
       - "quality-assessor"
       - "prisma-checker"
       - "evidence-synthesizer"
+      - "self-critique"
+  B1_5:
+    required_skills:
+      - "concept-extractor"
+      - "question-refiner"
   B2:
     required_skills:
       - "paper-extractor"
@@ -244,11 +358,20 @@ task_skill_mapping:
     required_skills:
       - "citation-formatter"
       - "reference-manager-bridge"
+  B6:
+    required_skills:
+      - "literature-mapper"
+      - "paper-extractor"
 
   C1:
     required_skills:
       - "study-designer"
       - "question-refiner"
+      - "self-critique"
+  C1_5:
+    required_skills:
+      - "rival-hypothesis-designer"
+      - "study-designer"
   C2:
     required_skills:
       - "study-designer"
@@ -257,6 +380,10 @@ task_skill_mapping:
     required_skills:
       - "study-designer"
       - "code-builder"
+  C3_5:
+    required_skills:
+      - "robustness-planner"
+      - "study-designer"
   C4:
     required_skills:
       - "study-designer"
@@ -270,10 +397,15 @@ task_skill_mapping:
     required_skills:
       - "ethics-irb-helper"
       - "study-designer"
+      - "self-critique"
   D2:
     required_skills:
       - "ethics-irb-helper"
       - "manuscript-architect"
+  D3:
+    required_skills:
+      - "deidentification-planner"
+      - "ethics-irb-helper"
 
   E1:
     required_skills:
@@ -288,6 +420,11 @@ task_skill_mapping:
       - "evidence-synthesizer"
       - "code-builder"
       - "model-collaborator"
+      - "self-critique"
+  E3_5:
+    required_skills:
+      - "publication-bias-checker"
+      - "stats-engine"
   E4:
     required_skills:
       - "quality-assessor"
@@ -310,6 +447,7 @@ task_skill_mapping:
       - "manuscript-architect"
       - "citation-formatter"
       - "reporting-checker"
+      - "self-critique"
   F4:
     required_skills:
       - "manuscript-architect"
@@ -318,11 +456,16 @@ task_skill_mapping:
     required_skills:
       - "manuscript-architect"
       - "metadata-enricher"
+  F6:
+    required_skills:
+      - "meta-optimizer"
+      - "manuscript-architect"
 
   G1:
     required_skills:
       - "reporting-checker"
       - "quality-assessor"
+      - "self-critique"
   G2:
     required_skills:
       - "prisma-checker"
@@ -331,21 +474,32 @@ task_skill_mapping:
     required_skills:
       - "manuscript-architect"
       - "quality-assessor"
+  G4:
+    required_skills:
+      - "tone-normalizer"
+      - "manuscript-architect"
+      - "self-critique"
 
   H1:
     required_skills:
       - "submission-packager"
       - "reporting-checker"
       - "citation-formatter"
+      - "self-critique"
   H2:
     required_skills:
       - "rebuttal-assistant"
       - "manuscript-architect"
+  H2_5:
+    required_skills:
+      - "reviewer-empathy-checker"
+      - "self-critique"
 
   I1:
     required_skills:
       - "code-builder"
       - "model-collaborator"
+      - "self-critique"
   I2:
     required_skills:
       - "code-builder"
@@ -356,6 +510,11 @@ task_skill_mapping:
       - "code-builder"
       - "model-collaborator"
       - "metadata-enricher"
+  I4:
+    required_skills:
+      - "reproducibility-auditor"
+      - "model-collaborator"
+      - "self-critique"
 
 task_execution:
   A1:
@@ -369,6 +528,14 @@ task_execution:
     quality_gates:
       - "Q1"
       - "Q4"
+  A1_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
   A2:
     required_mcp:
       - "filesystem"
@@ -402,6 +569,15 @@ task_execution:
       - "Q1"
       - "Q2"
       - "Q4"
+  A5:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
 
   B1:
     required_mcp:
@@ -418,6 +594,15 @@ task_execution:
       - "Q2"
       - "Q3"
       - "Q4"
+  B1_5:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
   B2:
     required_mcp:
       - "filesystem"
@@ -461,6 +646,15 @@ task_execution:
     quality_gates:
       - "Q2"
       - "Q4"
+  B6:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
 
   C1:
     required_mcp:
@@ -472,6 +666,14 @@ task_execution:
     quality_gates:
       - "Q1"
       - "Q4"
+  C1_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
   C2:
     required_mcp:
       - "filesystem"
@@ -485,6 +687,15 @@ task_execution:
     required_mcp:
       - "filesystem"
       - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C3_5:
+    required_mcp:
+      - "filesystem"
     primary_agent: "codex"
     review_agent: "claude"
     fallback_agent: "gemini"
@@ -528,6 +739,14 @@ task_execution:
     fallback_agent: "gemini"
     quality_gates:
       - "Q3"
+      - "Q4"
+  D3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
       - "Q4"
 
   E1:
@@ -563,6 +782,15 @@ task_execution:
     quality_gates:
       - "Q2"
       - "Q4"
+  E3_5:
+    required_mcp:
+      - "filesystem"
+      - "stats-engine"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
   E4:
     required_mcp:
       - "filesystem"
@@ -636,6 +864,14 @@ task_execution:
     quality_gates:
       - "Q2"
       - "Q4"
+  F6:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
 
   G1:
     required_mcp:
@@ -672,6 +908,14 @@ task_execution:
       - "Q1"
       - "Q2"
       - "Q4"
+  G4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "gemini"
+    quality_gates:
+      - "Q2"
 
   H1:
     required_mcp:
@@ -695,6 +939,14 @@ task_execution:
       - "Q2"
       - "Q3"
       - "Q4"
+  H2_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
 
   I1:
     required_mcp:
@@ -722,6 +974,15 @@ task_execution:
       - "filesystem"
       - "code-runtime"
       - "extraction-store"
+    primary_agent: "codex"
+    review_agent: "gemini"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q4"
+  I4:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
     primary_agent: "codex"
     review_agent: "gemini"
     fallback_agent: "claude"

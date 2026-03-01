@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-skills-installer"
+version = "0.1.0b6"
+description = "Installer/upgrader CLI for research-skills (Codex / Claude Code / Gemini) without requiring a git fork."
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.scripts]
+research-skills = "research_skills.cli:main"
+rs = "research_skills.cli:main"
+rsw = "research_skills.cli:main"
+
+[tool.setuptools]
+packages = ["research_skills"]
+
+[tool.setuptools.package-data]
+research_skills = ["project.toml"]

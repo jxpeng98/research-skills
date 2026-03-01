@@ -35,6 +35,9 @@ Local consistency validator:
 ```bash
 python3 scripts/validate_research_standard.py
 python3 -m unittest tests.test_orchestrator_workflows -v
+
+# Project artifact validator (run inside your project)
+python3 scripts/validate_project_artifacts.py --cwd ./project --topic ai-in-education --task-id H1 --strict
 ```
 
 Multi-client installer:
@@ -252,6 +255,7 @@ python -m bridges.orchestrator task-run \
 | `chain` | One generates, other verifies (iterative refinement) |
 | `role` | Task division across Codex/Claude/Gemini |
 | `single` | Single model execution |
+| `task-plan` | Render dependency-based task plan (contract dependency_catalog) |
 | `task-run` | Task-ID orchestration using `mcp-agent-capability-map.yaml` |
 | `doctor` | Environment preflight checks before orchestration |
 
@@ -261,10 +265,12 @@ Runtime note:
 - If triad is unavailable in `parallel`, it degrades automatically to dual or single-agent analysis.
 - `parallel --profile-file/--profile/--summarizer-profile` lets users customize persona/style/permission profile per run.
 - Runtime now defaults to non-interactive execution (`CI=1`, `TERM=dumb`) with hard timeouts to avoid hanging sessions.
+- `task-plan` renders prerequisites from `dependency_catalog` and checks which outputs exist under `RESEARCH/[topic]/`.
 - `task-run` now supports runtime execution for `codex`, `claude`, and `gemini` directly.
 - If a mapped runtime is unavailable, routing automatically falls back to available agents based on the capability map.
 - `task-run` auto-injects `required_skills` from `task_skill_mapping` into draft/review prompts.
 - `task-run` auto-injects `required_skill_cards` from `skill_catalog` (focus, category, default outputs, skill spec path).
+- `task-run` auto-injects `task_plan` (dependency + completion status) into task packets and prompts.
 - `task-run --profile-file` + `--draft-profile/--review-profile/--triad-profile` customizes each stage without touching global defaults.
 - `task-run --skills-strict` blocks execution when required skill spec files are missing.
 - `task-run --triad` adds a third independent audit so non-code stages can also run full 3-agent collaboration.

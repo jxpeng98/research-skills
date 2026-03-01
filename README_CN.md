@@ -32,6 +32,9 @@
 ```bash
 python3 scripts/validate_research_standard.py
 python3 -m unittest tests.test_orchestrator_workflows -v
+
+# 项目产物校验（在你的项目中运行）
+python3 scripts/validate_project_artifacts.py --cwd ./project --topic ai-in-education --task-id H1 --strict
 ```
 
 多端安装脚本：
@@ -184,6 +187,18 @@ python -m bridges.orchestrator parallel \
 - `--profile-file/--profile/--summarizer-profile` 支持按本次运行注入人格、审稿风格和工具权限配置。
 - 运行时默认启用非交互执行（`CI=1`、`TERM=dumb`）+ 硬超时，避免并发阶段卡死。
 
+## 依赖计划（task-plan）
+
+在执行某个 Task ID 之前，先用合同中的 `dependency_catalog` 生成依赖顺序，并检查 `RESEARCH/[topic]/` 下哪些前置产物已存在：
+
+```bash
+python -m bridges.orchestrator task-plan \
+  --task-id H1 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd ./project
+```
+
 ## Agent 编排（task-run）
 
 使用 Task ID + 能力映射做标准化协同：
@@ -238,6 +253,7 @@ python -m bridges.orchestrator task-run \
 - 若映射到本地不可用 agent，会按能力映射自动回退到可用运行时 agent。
 - `task-run` 会自动注入 `task_skill_mapping.required_skills` 到 draft/review 提示词。
 - `task-run` 会自动注入 `skill_catalog` 中的 `required_skill_cards`（类别、focus、默认产物、技能规范路径）。
+- `task-run` 会自动注入 `task_plan`（依赖 + 完成度状态）到 task packet 与提示词。
 - `task-run --profile-file` + `--draft-profile/--review-profile/--triad-profile` 可对不同阶段单独设定 profile，而不改全局默认。
 - `task-run --skills-strict` 会在技能规范文件缺失时阻断执行。
 - `task-run --triad` 会增加第三端独立审查，使非代码阶段也能稳定三端协同。

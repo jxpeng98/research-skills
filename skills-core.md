@@ -306,11 +306,11 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 **Process:**
 1. Confirm target venue constraints + anonymization needs
 2. Run reporting checks (and PRISMA if SR)
-3. Draft cover letter + assemble submission checklist
+3. Draft submission auxiliary materials + assemble submission checklist
 
-**Templates:** `templates/cover-letter.md`, `templates/submission-checklist.md`
+**Templates:** `templates/cover-letter.md`, `templates/submission-checklist.md`, `templates/title-page.md`, `templates/highlights.md`, `templates/suggested-reviewers.md`, `templates/author-contributions-credit.md`, `templates/funding-statement.md`, `templates/coi-statement.md`, `templates/data-availability.md`, `templates/ai-disclosure.md`, `templates/supplementary-inventory.md`
 
-**Output:** `submission/cover_letter.md`, `submission/submission_checklist.md`
+**Output:** `submission/cover_letter.md`, `submission/submission_checklist.md`, `submission/title_page.md`, `submission/highlights.md`, `submission/suggested_reviewers.md`, `submission/author_contributions_credit.md`, `submission/funding_statement.md`, `submission/coi_statement.md`, `submission/data_availability.md`, `submission/ai_disclosure.md`, `submission/supplementary_inventory.md`
 
 ---
 

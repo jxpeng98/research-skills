@@ -68,7 +68,7 @@ Use this contract as the single source of truth for:
 | `G2` | G | PRISMA compliance | `prisma_checklist.md` |
 | `G3` | G | Cross-section integrity | `manuscript/claims_evidence_map.md` |
 | `G4` | G | Tone & Style Normalization | `compliance/tone_normalization.md` |
-| `H1` | H | Submission package | `submission/` |
+| `H1` | H | Submission package | `submission/cover_letter.md`, `submission/submission_checklist.md`, `submission/title_page.md`, `submission/highlights.md`, `submission/suggested_reviewers.md`, `submission/author_contributions_credit.md`, `submission/funding_statement.md`, `submission/coi_statement.md`, `submission/data_availability.md`, `submission/ai_disclosure.md`, `submission/supplementary_inventory.md` |
 | `H2` | H | Rebuttal package | `revision/` |
 | `H2_5` | H | Reviewer empathy check | `revision/reviewer_empathy_check.md` |
 | `H3` | H | Peer review simulation | `revision/peer_review_simulation.md` |

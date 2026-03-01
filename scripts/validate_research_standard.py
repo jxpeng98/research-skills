@@ -317,6 +317,90 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
             f"{task_id} missing outputs or output paths",
         )
 
+    dependency_section = extract_top_level_section(content, "dependency_catalog")
+    report.check(
+        bool(dependency_section),
+        "Dependency catalog exists in contract",
+        "dependency_catalog missing in standards/research-workflow-contract.yaml",
+    )
+    if dependency_section:
+        dependency_ids = {
+            found
+            for found in re.findall(
+                r"^\s{2}([A-I][0-9_]+):\s*$",
+                dependency_section,
+                flags=re.MULTILINE,
+            )
+        }
+        report.check(
+            dependency_ids == EXPECTED_TASK_IDS,
+            "Dependency catalog covers all canonical Task IDs",
+            (
+                "Dependency catalog mismatch. Missing: "
+                f"{ids_to_text(EXPECTED_TASK_IDS - dependency_ids) or 'none'}; "
+                f"Extra: {ids_to_text(dependency_ids - EXPECTED_TASK_IDS) or 'none'}"
+            ),
+        )
+        prereq_all_graph: dict[str, list[str]] = {task_id: [] for task_id in EXPECTED_TASK_IDS}
+        for dep_task_id, dep_block in re.findall(
+            r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+            dependency_section,
+            flags=re.MULTILINE,
+        ):
+            prereq_all = parse_yaml_list(
+                extract_nested_section(dep_block, "prerequisites_all", indent=4),
+                item_indent=6,
+            )
+            prereq_all_graph[dep_task_id] = prereq_all
+
+            for field_name in (
+                "prerequisites_all",
+                "prerequisites_any",
+                "recommended_prerequisites",
+                "recommended_next",
+            ):
+                field_values = set(
+                    parse_yaml_list(
+                        extract_nested_section(dep_block, field_name, indent=4),
+                        item_indent=6,
+                    )
+                )
+                report.check(
+                    field_values.issubset(EXPECTED_TASK_IDS),
+                    f"{dep_task_id} dependency {field_name} references canonical tasks",
+                    (
+                        f"{dep_task_id} dependency {field_name} references unknown tasks: "
+                        f"{ids_to_text(field_values - EXPECTED_TASK_IDS) or 'none'}"
+                    ),
+                )
+
+        visiting: set[str] = set()
+        visited: set[str] = set()
+
+        def dfs(node: str) -> None:
+            if node in visited:
+                return
+            if node in visiting:
+                raise ValueError(f"cycle detected near task: {node}")
+            visiting.add(node)
+            for prereq in prereq_all_graph.get(node, []):
+                if prereq in prereq_all_graph:
+                    dfs(prereq)
+            visiting.remove(node)
+            visited.add(node)
+
+        cycle_error = ""
+        try:
+            for node in sorted(EXPECTED_TASK_IDS):
+                dfs(node)
+        except ValueError as exc:
+            cycle_error = str(exc)
+        report.check(
+            not cycle_error,
+            "Dependency catalog prerequisites_all are acyclic",
+            f"Dependency catalog prerequisites_all contains cycle: {cycle_error}",
+        )
+
     quality_section = extract_top_level_section(content, "quality_gates")
     quality_ids = {
         found

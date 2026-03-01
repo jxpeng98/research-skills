@@ -213,6 +213,15 @@ skill_catalog:
     default_outputs:
       - "submission/cover_letter.md"
       - "submission/submission_checklist.md"
+      - "submission/title_page.md"
+      - "submission/highlights.md"
+      - "submission/suggested_reviewers.md"
+      - "submission/author_contributions_credit.md"
+      - "submission/funding_statement.md"
+      - "submission/coi_statement.md"
+      - "submission/data_availability.md"
+      - "submission/ai_disclosure.md"
+      - "submission/supplementary_inventory.md"
   rebuttal-assistant:
     file: "skills/rebuttal-assistant.md"
     category: "revision-response"

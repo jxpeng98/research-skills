@@ -27,4 +27,13 @@ Assemble a submission-ready package: cover letter, required statements, reportin
 
 - Cover letter → `RESEARCH/[topic]/submission/cover_letter.md` (use `templates/cover-letter.md`)
 - Submission checklist → `RESEARCH/[topic]/submission/submission_checklist.md` (use `templates/submission-checklist.md`)
+- Title page → `RESEARCH/[topic]/submission/title_page.md` (use `templates/title-page.md`)
+- Highlights → `RESEARCH/[topic]/submission/highlights.md` (use `templates/highlights.md`)
+- Suggested reviewers → `RESEARCH/[topic]/submission/suggested_reviewers.md` (use `templates/suggested-reviewers.md`)
+- Author contributions (CRediT) → `RESEARCH/[topic]/submission/author_contributions_credit.md` (use `templates/author-contributions-credit.md`)
+- Funding statement → `RESEARCH/[topic]/submission/funding_statement.md` (use `templates/funding-statement.md`)
+- COI statement → `RESEARCH/[topic]/submission/coi_statement.md` (use `templates/coi-statement.md`)
+- Data availability → `RESEARCH/[topic]/submission/data_availability.md` (use `templates/data-availability.md`)
+- AI disclosure → `RESEARCH/[topic]/submission/ai_disclosure.md` (use `templates/ai-disclosure.md`)
+- Supplementary inventory → `RESEARCH/[topic]/submission/supplementary_inventory.md` (use `templates/supplementary-inventory.md`)
 - Reporting checklist (produced in stage `G1`) → `RESEARCH/[topic]/reporting_checklist.md` (use `templates/reporting-checklist.md`)

@@ -904,6 +904,250 @@ Provide your verification assessment.
             raise ValueError(f"No outputs configured for task {task_id} in contract")
         return artifact_root, outputs
 
+    def _load_task_dependencies(self, task_id: str) -> dict[str, list[str]]:
+        contract = self._read_standard("research-workflow-contract.yaml")
+        dependency_section = self._extract_top_level_section(contract, "dependency_catalog")
+        if not dependency_section:
+            return {
+                "prerequisites_all": [],
+                "prerequisites_any": [],
+                "recommended_prerequisites": [],
+                "recommended_next": [],
+            }
+        task_match = re.search(
+            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
+            dependency_section,
+            flags=re.MULTILINE,
+        )
+        if not task_match:
+            return {
+                "prerequisites_all": [],
+                "prerequisites_any": [],
+                "recommended_prerequisites": [],
+                "recommended_next": [],
+            }
+
+        block = task_match.group(1)
+        return {
+            "prerequisites_all": self._parse_yaml_list(
+                self._extract_nested_section(block, "prerequisites_all", indent=4),
+                item_indent=6,
+            ),
+            "prerequisites_any": self._parse_yaml_list(
+                self._extract_nested_section(block, "prerequisites_any", indent=4),
+                item_indent=6,
+            ),
+            "recommended_prerequisites": self._parse_yaml_list(
+                self._extract_nested_section(block, "recommended_prerequisites", indent=4),
+                item_indent=6,
+            ),
+            "recommended_next": self._parse_yaml_list(
+                self._extract_nested_section(block, "recommended_next", indent=4),
+                item_indent=6,
+            ),
+        }
+
+    def _project_root_for_topic(self, cwd: Path, artifact_root: str, topic: str) -> Path:
+        return cwd / artifact_root.replace("[topic]", topic)
+
+    def _check_task_completion(self, cwd: Path, artifact_root: str, topic: str, task_id: str) -> bool:
+        _, outputs = self._load_task_outputs(task_id)
+        project_root = self._project_root_for_topic(cwd, artifact_root, topic)
+        for rel_path in outputs:
+            target = project_root / rel_path
+            if not target.exists():
+                return False
+        return True
+
+    def _build_task_plan(self, task_id: str) -> dict[str, Any]:
+        visited: set[str] = set()
+        visiting: set[str] = set()
+        ordered: list[str] = []
+
+        def dfs(node: str) -> None:
+            if node in visited:
+                return
+            if node in visiting:
+                raise ValueError(f"Cycle detected in prerequisites_all near task: {node}")
+            visiting.add(node)
+            spec = self._load_task_dependencies(node)
+            for prereq in spec.get("prerequisites_all", []):
+                dfs(prereq)
+            visiting.remove(node)
+            visited.add(node)
+            ordered.append(node)
+
+        dfs(task_id)
+        root_spec = self._load_task_dependencies(task_id)
+        any_of_requirements = [
+            {
+                "task": node,
+                "any_of": self._load_task_dependencies(node).get("prerequisites_any", []),
+            }
+            for node in ordered
+            if self._load_task_dependencies(node).get("prerequisites_any", [])
+        ]
+
+        return {
+            "task_id": task_id,
+            "requires_all_order": ordered,
+            "root_dependencies": root_spec,
+            "any_of_requirements": any_of_requirements,
+        }
+
+    def task_plan(
+        self,
+        task_id: str,
+        paper_type: str,
+        topic: str,
+        cwd: Path,
+    ) -> CollaborationResult:
+        """Render an execution plan based on contract dependency_catalog + filesystem evidence."""
+        normalized_task = task_id.strip().upper()
+        normalized_topic = self._normalize_topic(topic)
+
+        try:
+            artifact_root, _required_outputs = self._load_task_outputs(normalized_task)
+            plan = self._build_task_plan(normalized_task)
+        except (FileNotFoundError, ValueError) as exc:
+            return CollaborationResult(
+                mode="task-plan",
+                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+                merged_analysis=str(exc),
+                confidence=0.0,
+                recommendations=[],
+            )
+
+        project_root = self._project_root_for_topic(cwd, artifact_root, normalized_topic)
+
+        required_chain = [node for node in plan["requires_all_order"] if node != normalized_task]
+        completion: dict[str, bool] = {}
+        missing_required: list[str] = []
+        for node in required_chain:
+            done = self._check_task_completion(cwd, artifact_root, normalized_topic, node)
+            completion[node] = done
+            if not done:
+                missing_required.append(node)
+
+        any_of_status: list[dict[str, Any]] = []
+        missing_any_of: list[str] = []
+        for item in plan["any_of_requirements"]:
+            options = [str(opt) for opt in item.get("any_of", []) if str(opt).strip()]
+            satisfied_by = None
+            for opt in options:
+                if self._check_task_completion(cwd, artifact_root, normalized_topic, opt):
+                    satisfied_by = opt
+                    break
+            ok = bool(satisfied_by) if options else True
+            any_of_status.append(
+                {
+                    "task": item["task"],
+                    "any_of": options,
+                    "satisfied": ok,
+                    "satisfied_by": satisfied_by,
+                }
+            )
+            if options and not satisfied_by:
+                missing_any_of.append(item["task"])
+
+        root_deps = plan.get("root_dependencies", {})
+        recommended_next = [str(x) for x in root_deps.get("recommended_next", []) if str(x).strip()]
+        recommended_prereq = [
+            str(x) for x in root_deps.get("recommended_prerequisites", []) if str(x).strip()
+        ]
+
+        mermaid_lines = ["graph TD"]
+        for node in plan["requires_all_order"]:
+            spec = self._load_task_dependencies(node)
+            for prereq in spec.get("prerequisites_all", []):
+                mermaid_lines.append(f"  {prereq} --> {node}")
+            for prereq in spec.get("prerequisites_any", []):
+                mermaid_lines.append(f"  {prereq} -.-> {node}")
+        mermaid = "\n".join(mermaid_lines)
+
+        summary_lines = [
+            "## Task Plan",
+            f"- task_id: `{normalized_task}`",
+            f"- paper_type: `{paper_type}`",
+            f"- artifact_root: `{artifact_root}`",
+            f"- project_root: `{project_root}`",
+            "",
+            "### Required prerequisites (prerequisites_all, transitive)",
+        ]
+        if required_chain:
+            for index, node in enumerate(required_chain, start=1):
+                status = "OK" if completion.get(node) else "MISSING"
+                summary_lines.append(f"{index}. `{node}` [{status}]")
+        else:
+            summary_lines.append("- None")
+
+        summary_lines.append("")
+        summary_lines.append("### Any-of requirements (prerequisites_any)")
+        if any_of_status:
+            for item in any_of_status:
+                options = ", ".join(f"`{opt}`" for opt in item["any_of"])
+                satisfied_by = item.get("satisfied_by")
+                status = "OK" if item["satisfied"] else "MISSING"
+                suffix = f" (satisfied_by `{satisfied_by}`)" if satisfied_by else ""
+                summary_lines.append(f"- `{item['task']}` requires any of: {options} [{status}]{suffix}")
+        else:
+            summary_lines.append("- None")
+
+        summary_lines.append("")
+        summary_lines.append("### Recommended prerequisites")
+        summary_lines.append(
+            "- " + ", ".join(f"`{item}`" for item in recommended_prereq)
+            if recommended_prereq
+            else "- None"
+        )
+
+        summary_lines.append("")
+        summary_lines.append("### Suggested next tasks")
+        summary_lines.append(
+            "- " + ", ".join(f"`{item}`" for item in recommended_next)
+            if recommended_next
+            else "- None"
+        )
+
+        summary_lines.append("")
+        summary_lines.append("### Dependency graph (Mermaid)")
+        summary_lines.append("```mermaid")
+        summary_lines.append(mermaid)
+        summary_lines.append("```")
+
+        confidence = 1.0 if not missing_required and not missing_any_of else 0.6
+        recommendations = []
+        if missing_required:
+            recommendations.append("Run missing prerequisites_all tasks first: " + ", ".join(missing_required))
+        if missing_any_of:
+            recommendations.append(
+                "Satisfy prerequisites_any for: "
+                + ", ".join(f"{tid} (choose one option)" for tid in missing_any_of)
+            )
+        if recommended_next:
+            recommendations.append("After completion, consider next tasks: " + ", ".join(recommended_next))
+
+        return CollaborationResult(
+            mode="task-plan",
+            task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+            merged_analysis="\n".join(summary_lines),
+            confidence=confidence,
+            recommendations=recommendations,
+            data={
+                "task_id": normalized_task,
+                "paper_type": paper_type,
+                "topic": normalized_topic,
+                "artifact_root": artifact_root,
+                "project_root": str(project_root),
+                "requires_all_order": plan["requires_all_order"],
+                "missing_prerequisites_all": missing_required,
+                "any_of_requirements": any_of_status,
+                "recommended_prerequisites": recommended_prereq,
+                "recommended_next": recommended_next,
+                "mermaid": mermaid,
+            },
+        )
+
     def _load_task_agent_plan(self, task_id: str) -> dict[str, Any]:
         capability_map = self._read_standard("mcp-agent-capability-map.yaml")
         mcp_registry = set(
@@ -1580,6 +1824,12 @@ Return sections:
                 gemini_response=error_resp if "gemini" in str(exc).lower() else None,
             )
 
+        plan_result = self.task_plan(
+            task_id=normalized_task,
+            paper_type=paper_type,
+            topic=normalized_topic,
+            cwd=cwd,
+        )
         packet = self._build_task_packet(
             task_id=normalized_task,
             paper_type=paper_type,
@@ -1592,6 +1842,13 @@ Return sections:
             required_skill_cards=agent_plan["required_skill_cards"],
             quality_gates=agent_plan["quality_gates"],
         )
+        if plan_result.data:
+            packet["task_plan"] = dict(plan_result.data)
+        else:
+            packet["task_plan"] = {
+                "status": "unavailable",
+                "detail": plan_result.merged_analysis,
+            }
         try:
             skill_cards, skill_notes = self._collect_skill_context(
                 packet,
@@ -1771,6 +2028,8 @@ Return sections:
                 gemini_resp = response
 
         merged_parts = [
+            plan_result.merged_analysis,
+            "",
             "## Task Packet",
             json.dumps(packet, ensure_ascii=False, indent=2),
             "",
@@ -2035,6 +2294,19 @@ def main():
         "--triad-profile",
         help="Profile name for triad stage (defaults to --profile)",
     )
+    task_plan = subparsers.add_parser(
+        "task-plan",
+        help="Render dependency-based task plan from workflow contract",
+    )
+    task_plan.add_argument("--task-id", required=True, help="Canonical Task ID (e.g. F3)")
+    task_plan.add_argument(
+        "--paper-type",
+        required=True,
+        choices=["empirical", "systematic-review", "methods", "theory"],
+        help="Paper type from workflow contract",
+    )
+    task_plan.add_argument("--topic", required=True, help="Research topic slug/name")
+    task_plan.add_argument("--cwd", required=True, type=Path, help="Working directory")
     doctor = subparsers.add_parser(
         "doctor",
         help="Run local preflight checks for CLIs, API keys, and MCP command wiring",
@@ -2076,6 +2348,13 @@ def main():
             draft_profile=getattr(args, "draft_profile", None),
             review_profile=getattr(args, "review_profile", None),
             triad_profile=getattr(args, "triad_profile", None),
+        )
+    elif args.mode == "task-plan":
+        result = orchestrator.task_plan(
+            task_id=args.task_id,
+            paper_type=args.paper_type,
+            topic=args.topic,
+            cwd=args.cwd,
         )
     else:
         # Map previous modes

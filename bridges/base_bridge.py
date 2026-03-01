@@ -58,6 +58,7 @@ class CollaborationResult:
     merged_analysis: str = ""
     confidence: float = 0.0
     recommendations: list[str] = field(default_factory=list)
+    data: dict = field(default_factory=dict)
     
     def to_json(self) -> str:
         """Export as JSON string."""
@@ -68,6 +69,8 @@ class CollaborationResult:
             "merged_analysis": self.merged_analysis,
             "recommendations": self.recommendations,
         }
+        if self.data:
+            data["data"] = self.data
         if self.codex_response:
             data["codex"] = asdict(self.codex_response)
         if self.claude_response:

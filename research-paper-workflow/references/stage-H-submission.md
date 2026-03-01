@@ -4,7 +4,18 @@ This stage packages the work for submission and hardens it against reviewer obje
 
 ## Canonical outputs (contract paths)
 
-- `H1` → `submission/` (includes at least `submission/cover_letter.md`, `submission/submission_checklist.md`)
+- `H1` → submission auxiliary package:
+  - `submission/cover_letter.md`
+  - `submission/submission_checklist.md`
+  - `submission/title_page.md`
+  - `submission/highlights.md`
+  - `submission/suggested_reviewers.md`
+  - `submission/author_contributions_credit.md`
+  - `submission/funding_statement.md`
+  - `submission/coi_statement.md`
+  - `submission/data_availability.md`
+  - `submission/ai_disclosure.md`
+  - `submission/supplementary_inventory.md`
 - `H2` → `revision/` (includes at least `revision/response_matrix.md`, `revision/response_letter.md`)
 - `H2_5` → `revision/reviewer_empathy_check.md`
 - `H3` → `revision/peer_review_simulation.md`
@@ -27,6 +38,15 @@ This stage packages the work for submission and hardens it against reviewer obje
 Write into:
 - `submission/cover_letter.md`
 - `submission/submission_checklist.md`
+- `submission/title_page.md`
+- `submission/highlights.md`
+- `submission/suggested_reviewers.md`
+- `submission/author_contributions_credit.md`
+- `submission/funding_statement.md`
+- `submission/coi_statement.md`
+- `submission/data_availability.md`
+- `submission/ai_disclosure.md`
+- `submission/supplementary_inventory.md`
 
 ---
 
@@ -77,4 +97,3 @@ Constructive desk-reject analysis: what would cause immediate rejection and how 
 - Each flaw has a mitigation plan and “if we can’t fix, we must re-scope” note
 
 Write into: `revision/fatal_flaw_analysis.md`.
-

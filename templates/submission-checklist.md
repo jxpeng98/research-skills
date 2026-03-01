@@ -25,13 +25,15 @@ Save to: RESEARCH/[topic]/submission/submission_checklist.md
 - [ ] Acknowledgements removed
 
 ## 3) Required Statements
-- [ ] Ethics statement
-- [ ] Funding statement
-- [ ] COI statement
-- [ ] Data availability statement
+- [ ] Ethics statement (or “not applicable”)
+- [ ] Funding statement (`submission/funding_statement.md`)
+- [ ] COI statement (`submission/coi_statement.md`)
+- [ ] Data availability (`submission/data_availability.md`)
+- [ ] AI disclosure (if required) (`submission/ai_disclosure.md`)
+- [ ] Author contributions / CRediT (`submission/author_contributions_credit.md`)
 
 ## 4) Reporting Guideline
-- [ ] Reporting checklist completed (`submission/reporting_checklist.md`)
+- [ ] Reporting checklist completed (`reporting_checklist.md`)
 - [ ] Any required checklist uploaded as supplement
 
 ## 5) Supplementary Materials
@@ -43,8 +45,10 @@ Save to: RESEARCH/[topic]/submission/submission_checklist.md
 - [ ] Manuscript PDF
 - [ ] Editable source (Word/LaTeX)
 - [ ] Cover letter (`submission/cover_letter.md`)
-- [ ] Suggested reviewers (if requested)
+- [ ] Title page (if required) (`submission/title_page.md`)
+- [ ] Highlights (if required) (`submission/highlights.md`)
+- [ ] Suggested reviewers (if requested) (`submission/suggested_reviewers.md`)
+- [ ] Supplementary inventory (`submission/supplementary_inventory.md`)
 
 ## Notes
 - Portal steps / required fields:
-

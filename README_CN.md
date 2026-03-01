@@ -21,7 +21,7 @@
 统一标准入口（单一真源）：
 - `standards/research-workflow-contract.yaml`
 - `standards/mcp-agent-capability-map.yaml`（按 Task ID 编排 MCP + agent）
-- Task ID：`A1` ... `I3`
+- Task ID：`A1` ... `I8`
 - 产物根目录：`RESEARCH/[topic]/`
 
 可移植 Codex skill 包：
@@ -71,6 +71,7 @@ Beta 发布文档：
 协同增强指南：
 - `guides/agent-skill-collaboration.md`
 - `guides/install-multi-client.md`
+- `guides/extend-research-skills.md`（如何对某一部分进行扩展/修改并保持一致性）
 
 ## Skills + Agents 协同流程（ASCII）
 

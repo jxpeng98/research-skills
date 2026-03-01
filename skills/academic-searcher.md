@@ -9,6 +9,17 @@ Execute comprehensive literature searches using:
 - arXiv API (CS/AI/Physics/Math)
 - Web search for Google Scholar, PubMed, etc.
 
+## Related Task IDs
+
+- `B1` (systematic review pipeline)
+- Support tasks: `A4` (gap scan), `A5` (venue scan), `B3` (snowballing expansion)
+
+## Standard Outputs (contract paths)
+
+- `RESEARCH/[topic]/search_strategy.md`
+- `RESEARCH/[topic]/search_log.md`
+- `RESEARCH/[topic]/search_results.csv`
+
 ## Supported Databases
 
 | Database | Coverage | Access Method | Best For |
@@ -107,62 +118,34 @@ Identify and merge duplicates based on:
 
 ### Step 5: Output
 
-Generate search results document:
+Write the canonical artifacts (CSV + logs) first; optional narrative summaries can be added after.
 
-```markdown
-# Search Results: [Topic]
+#### `search_results.csv` (one row per record)
 
-## Search Strategy
+Recommended minimal schema:
 
-### Databases Searched
-- [ ] Semantic Scholar
-- [ ] arXiv
-- [ ] Google Scholar
-- [ ] PubMed
-
-### Search Queries
-
-**Semantic Scholar:**
-```
-[query]
+```csv
+record_id,source,query_id,retrieved_at,title,authors,year,venue,doi,url,abstract
 ```
 
-**arXiv:**
-```
-[query]
-```
+#### `search_log.md` (reproducibility log)
 
-### Date Range
-[Start] - [End]
+Append one entry per database execution with:
+- timestamp + interface/API version
+- exact query string + filters
+- counts (retrieved, after dedup, etc.)
 
-### Filters Applied
-- Language: English
-- Document type: Journal articles, Conference papers
-- ...
+#### Optional: human-readable results summary
 
-## Results Summary
+If needed, generate a short narrative summary (1–2 pages) *in addition* to the canonical CSV/log outputs.
 
-| Database | Results Found | After Dedup |
-|----------|---------------|-------------|
-| Semantic Scholar | X | |
-| arXiv | Y | |
-| Google Scholar | Z | |
-| **Total** | | **N** |
+Suggested sections:
+- databases searched + date range
+- query strings
+- results counts per database (pre/post dedup)
+- top 10 most relevant papers (titles + citekeys)
 
-## Papers Found
-
-### 1. [Title]
-- **Authors**: 
-- **Year**: 
-- **Venue**: 
-- **Citations**: 
-- **Abstract**: [first 200 chars...]
-- **URL**: 
-- **Source**: [Database]
-
-### 2. [Title]
-...
-```
+Write summaries into the project `notes/` folder when appropriate.
 
 ## API Reference
 

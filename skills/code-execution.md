@@ -1,0 +1,52 @@
+# Code Execution Skill
+
+Execute the plan: implement, test, profile, and document research code with reproducible outputs.
+
+## Related Task IDs
+
+- `I7` (code execution)
+
+## Outputs (contract paths)
+
+- `RESEARCH/[topic]/analysis/`
+- `RESEARCH/[topic]/code/performance_profile.md`
+- `RESEARCH/[topic]/code/container_config/` (optional but recommended)
+- `RESEARCH/[topic]/code/documentation/`
+
+## Inputs
+
+- `code/plan.md`
+- Any required datasets (or a synthetic generator for verification)
+
+## Procedure
+
+1. **Implement incrementally** with tests after each unit.
+2. **Validate** against the spec (I/O, invariants, edge cases).
+3. **Add a minimal runnable entrypoint** (script or CLI).
+4. **Profile** hot paths (time + memory) and record results.
+5. **Document** how to reproduce:
+   - dependencies
+   - commands
+   - expected outputs
+
+## Performance profile format (`code/performance_profile.md`)
+
+```markdown
+# Performance Profile
+
+## Environment
+- OS:
+- Python/R version:
+- Key deps:
+
+## Workload
+- Dataset size:
+- Command:
+
+## Results
+| Component | Time | Notes |
+|---|---:|---|
+
+## Optimization actions taken
+1. ...
+```

@@ -27,5 +27,4 @@ Assemble a submission-ready package: cover letter, required statements, reportin
 
 - Cover letter → `RESEARCH/[topic]/submission/cover_letter.md` (use `templates/cover-letter.md`)
 - Submission checklist → `RESEARCH/[topic]/submission/submission_checklist.md` (use `templates/submission-checklist.md`)
-- Reporting checklist → `RESEARCH/[topic]/submission/reporting_checklist.md` (use `templates/reporting-checklist.md`)
-
+- Reporting checklist (produced in stage `G1`) → `RESEARCH/[topic]/reporting_checklist.md` (use `templates/reporting-checklist.md`)

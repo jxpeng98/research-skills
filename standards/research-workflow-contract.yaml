@@ -5,20 +5,27 @@ scope: "cross-model academic paper workflow"
 artifacts:
   root: "RESEARCH/[topic]/"
   required_core:
+    - "protocol.md"
     - "framing/research_question.md"
     - "framing/contribution_statement.md"
     - "manuscript/manuscript.md"
     - "framing/hypothesis.md"
     - "framing/venue_analysis.md"
+    - "theoretical_framework.md"
+    - "gap_analysis.md"
     - "search_strategy.md"
     - "literature/concept_extraction.md"
     - "literature/literature_map.md"
+    - "notes/"
+    - "bibliography.bib"
     - "search_log.md"
+    - "search_results.csv"
     - "screening/title_abstract.md"
     - "screening/full_text.md"
     - "screening/prisma_flow.md"
     - "extraction_table.md"
     - "quality_table.md"
+    - "synthesis_matrix.md"
     - "synthesis.md"
     - "meta_analysis_plan.md"
     - "effect_size_table.md"
@@ -53,23 +60,35 @@ stages:
       - "framing/research_question.md"
       - "framing/hypothesis.md"
       - "framing/contribution_statement.md"
+      - "theoretical_framework.md"
+      - "gap_analysis.md"
       - "framing/venue_analysis.md"
   - id: "B"
     name: "literature-related-work"
     outputs:
+      - "protocol.md"
+      - "search_strategy.md"
       - "literature/concept_extraction.md"
+      - "search_results.csv"
       - "notes/"
       - "bibliography.bib"
       - "search_log.md"
+      - "snowball_log.md"
+      - "screening/"
+      - "extraction_table.md"
+      - "quality_table.md"
+      - "synthesis_matrix.md"
       - "literature/literature_map.md"
   - id: "C"
     name: "study-design-analysis-plan"
     outputs:
       - "study_design.md"
       - "design/rival_hypotheses.md"
+      - "instruments/"
       - "analysis_plan.md"
       - "design/robustness_plan.md"
       - "data_management_plan.md"
+      - "preregistration.md"
   - id: "D"
     name: "ethics-irb"
     outputs:
@@ -78,11 +97,16 @@ stages:
   - id: "E"
     name: "evidence-synthesis"
     outputs:
-      - "synthesis.md"
+      - "meta_analysis_plan.md"
+      - "effect_size_table.md"
       - "meta_analysis_results.md"
+      - "grade_sof.md"
+      - "synthesis_matrix.md"
+      - "synthesis.md"
       - "synthesis/publication_bias.md"
   - id: "F"
     name: "manuscript-writing"
+    outputs:
       - "manuscript/outline.md"
       - "manuscript/manuscript.md"
       - "manuscript/claims_evidence_map.md"
@@ -93,6 +117,7 @@ stages:
     outputs:
       - "reporting_checklist.md"
       - "prisma_checklist.md"
+      - "manuscript/claims_evidence_map.md"
       - "compliance/tone_normalization.md"
   - id: "H"
     name: "submission-revision"
@@ -151,8 +176,16 @@ task_catalog:
     stage: "B"
     title: "systematic-review"
     outputs:
+      - "protocol.md"
+      - "search_strategy.md"
       - "search_log.md"
+      - "search_results.csv"
       - "screening/"
+      - "notes/"
+      - "bibliography.bib"
+      - "extraction_table.md"
+      - "quality_table.md"
+      - "synthesis_matrix.md"
       - "synthesis.md"
   B1_5:
     stage: "B"
@@ -180,6 +213,8 @@ task_catalog:
     title: "citation-management"
     outputs:
       - "bibliography.bib"
+      - "references.ris"
+      - "references.json"
   B6:
     stage: "B"
     title: "literature-mapping"
@@ -384,6 +419,421 @@ task_catalog:
     outputs:
       - "code/code_review.md"
 
+dependency_catalog:
+  A1:
+    recommended_next:
+      - "A1_5"
+      - "A2"
+      - "A3"
+      - "A4"
+      - "A5"
+      - "B1_5"
+      - "B2"
+  A1_5:
+    prerequisites_all:
+      - "A1"
+    recommended_next:
+      - "C1"
+      - "C3"
+      - "C1_5"
+      - "F1"
+  A2:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "A4"
+    recommended_next:
+      - "A5"
+      - "F1"
+      - "B2"
+      - "B6"
+  A3:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "B2"
+    recommended_next:
+      - "A1_5"
+      - "A4"
+      - "C1"
+      - "F1"
+  A4:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "B2"
+    recommended_next:
+      - "A2"
+      - "A5"
+  A5:
+    prerequisites_all:
+      - "A1"
+      - "A2"
+    recommended_prerequisites:
+      - "A4"
+    recommended_next:
+      - "F1"
+      - "B2"
+
+  B1:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "B1_5"
+    recommended_next:
+      - "G2"
+      - "F3"
+      - "H1"
+  B1_5:
+    prerequisites_all:
+      - "A1"
+    recommended_next:
+      - "B1"
+      - "B2"
+  B2:
+    prerequisites_all:
+      - "A1"
+    recommended_next:
+      - "B6"
+      - "A4"
+      - "B3"
+      - "B4"
+      - "B5"
+  B3:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_next:
+      - "B6"
+      - "B1"
+  B4:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_prerequisites:
+      - "B6"
+      - "A2"
+    recommended_next:
+      - "F1"
+      - "F2"
+      - "F3"
+  B5:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_next:
+      - "H1"
+  B6:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_prerequisites:
+      - "B3"
+    recommended_next:
+      - "B4"
+      - "A4"
+      - "F1"
+
+  C1:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "A1_5"
+      - "A3"
+      - "A5"
+    recommended_next:
+      - "C2"
+      - "C3"
+      - "C4"
+      - "D1"
+  C1_5:
+    prerequisites_all:
+      - "C1"
+    recommended_prerequisites:
+      - "A1_5"
+    recommended_next:
+      - "C3_5"
+      - "C3"
+  C2:
+    prerequisites_all:
+      - "C1"
+    recommended_next:
+      - "D1"
+      - "C3"
+  C3:
+    prerequisites_all:
+      - "C1"
+    recommended_prerequisites:
+      - "A1_5"
+    recommended_next:
+      - "C3_5"
+      - "I5"
+      - "F3"
+  C3_5:
+    prerequisites_all:
+      - "C3"
+    recommended_next:
+      - "F3"
+      - "G1"
+  C4:
+    prerequisites_all:
+      - "C1"
+    recommended_next:
+      - "D1"
+      - "D3"
+      - "H1"
+  C5:
+    prerequisites_all:
+      - "C1"
+      - "C3"
+    recommended_prerequisites:
+      - "C3_5"
+    recommended_next:
+      - "D1"
+
+  D1:
+    prerequisites_all:
+      - "C1"
+      - "C4"
+    recommended_prerequisites:
+      - "C2"
+    recommended_next:
+      - "D3"
+      - "D2"
+      - "H1"
+  D2:
+    prerequisites_any:
+      - "D1"
+      - "C1"
+    recommended_next:
+      - "H1"
+      - "F3"
+  D3:
+    prerequisites_all:
+      - "C4"
+    recommended_prerequisites:
+      - "D1"
+    recommended_next:
+      - "D1"
+      - "H1"
+
+  E1:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_next:
+      - "E2"
+      - "E3"
+      - "E5"
+  E2:
+    prerequisites_all:
+      - "E1"
+    recommended_next:
+      - "E3"
+  E3:
+    prerequisites_all:
+      - "E2"
+    recommended_next:
+      - "E3_5"
+      - "E5"
+      - "F3"
+  E3_5:
+    prerequisites_all:
+      - "E3"
+    recommended_next:
+      - "E5"
+  E4:
+    prerequisites_any:
+      - "E3"
+      - "E5"
+    recommended_next:
+      - "E5"
+      - "F3"
+  E5:
+    prerequisites_any:
+      - "B1"
+      - "E3"
+    recommended_next:
+      - "F3"
+      - "G2"
+
+  F1:
+    prerequisites_all:
+      - "A1"
+      - "A2"
+    recommended_prerequisites:
+      - "A5"
+      - "B4"
+    recommended_next:
+      - "F2"
+      - "F3"
+      - "F5"
+  F2:
+    prerequisites_all:
+      - "F1"
+    recommended_next:
+      - "F3"
+      - "F4"
+  F3:
+    prerequisites_all:
+      - "F1"
+    recommended_prerequisites:
+      - "B4"
+      - "C1"
+      - "C3"
+    recommended_next:
+      - "F4"
+      - "F5"
+      - "F6"
+      - "G1"
+      - "G3"
+      - "G4"
+      - "H3"
+      - "H4"
+  F4:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_next:
+      - "G3"
+  F5:
+    prerequisites_any:
+      - "F1"
+      - "F3"
+    recommended_next:
+      - "F3"
+  F6:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_prerequisites:
+      - "F4"
+    recommended_next:
+      - "H1"
+
+  G1:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_next:
+      - "H1"
+  G2:
+    prerequisites_all:
+      - "B1"
+    recommended_prerequisites:
+      - "F3"
+    recommended_next:
+      - "H1"
+  G3:
+    prerequisites_all:
+      - "F4"
+    recommended_prerequisites:
+      - "G1"
+    recommended_next:
+      - "H1"
+      - "H3"
+      - "H4"
+  G4:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_next:
+      - "H1"
+
+  H1:
+    prerequisites_all:
+      - "F3"
+    recommended_prerequisites:
+      - "G1"
+      - "G3"
+      - "G4"
+    recommended_next:
+      - "H2"
+      - "H3"
+      - "H4"
+  H2:
+    prerequisites_all:
+      - "H1"
+    recommended_next:
+      - "H2_5"
+  H2_5:
+    prerequisites_all:
+      - "H2"
+    recommended_next:
+      - "H2"
+  H3:
+    prerequisites_all:
+      - "F3"
+    recommended_prerequisites:
+      - "G1"
+      - "G3"
+    recommended_next:
+      - "F3"
+      - "H1"
+  H4:
+    prerequisites_any:
+      - "F1"
+      - "F3"
+    recommended_next:
+      - "F3"
+      - "H1"
+
+  I1:
+    prerequisites_any:
+      - "I5"
+      - "C3"
+    recommended_prerequisites:
+      - "I6"
+    recommended_next:
+      - "I4"
+  I2:
+    prerequisites_any:
+      - "I5"
+      - "C3"
+    recommended_prerequisites:
+      - "I6"
+    recommended_next:
+      - "I4"
+  I3:
+    prerequisites_any:
+      - "I5"
+      - "C4"
+    recommended_prerequisites:
+      - "I6"
+    recommended_next:
+      - "I4"
+  I4:
+    prerequisites_any:
+      - "I1"
+      - "I2"
+      - "I3"
+      - "I7"
+    recommended_next:
+      - "H1"
+  I5:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "C3"
+    recommended_next:
+      - "I6"
+  I6:
+    prerequisites_all:
+      - "I5"
+    recommended_next:
+      - "I7"
+  I7:
+    prerequisites_all:
+      - "I6"
+    recommended_next:
+      - "I8"
+      - "I4"
+  I8:
+    prerequisites_all:
+      - "I7"
+    recommended_next:
+      - "I4"
+
 platform_mapping:
   claude_code:
     A3: "/build-framework"
@@ -419,4 +869,3 @@ quality_gates:
   - id: "Q4"
     name: "reproducibility baseline"
     rule: "Analysis decisions and artifact paths are documented"
-

@@ -10,6 +10,18 @@ Systematically extract key information from papers including:
 - Findings and contributions
 - Methodological details
 
+## Related Task IDs
+
+- `B2` (targeted paper reading)
+- `B1` (systematic review pipeline)
+- Supports synthesis: `E2` (effect size table), `E5` (integrated synthesis)
+
+## Outputs (contract paths)
+
+- Paper notes → `RESEARCH/[topic]/notes/`
+- Extraction rollup → `RESEARCH/[topic]/extraction_table.md`
+- (If pooling) effect inputs → `RESEARCH/[topic]/effect_size_table.md`
+
 ## Extraction Framework
 
 ### 1. Bibliographic Information
@@ -87,6 +99,8 @@ Systematically extract key information from papers including:
 | Future Research | What future work suggested? |
 
 ## Extraction Output Template
+
+Write one note per paper under `notes/{citekey}.md`, and then roll up key fields into `extraction_table.md`.
 
 ```markdown
 # Paper Extraction: [Short Citation]

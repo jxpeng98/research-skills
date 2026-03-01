@@ -10,6 +10,16 @@ Implement a two-stage screening process:
 
 Following PRISMA guidelines for transparent, reproducible screening.
 
+## Related Task IDs
+
+- `B1` (systematic review pipeline)
+
+## Outputs (contract paths)
+
+- `RESEARCH/[topic]/screening/title_abstract.md`
+- `RESEARCH/[topic]/screening/full_text.md`
+- `RESEARCH/[topic]/screening/prisma_flow.md`
+
 ## Process
 
 ### Stage 1: Title/Abstract Screening
@@ -92,10 +102,14 @@ Full-text source: [URL/DOI]
 [Any relevant observations]
 ```
 
-### Output: Screening Log
+### Output Files (Standardized)
+
+Split outputs so later PRISMA and synthesis steps can reconcile counts deterministically.
+
+#### 1) Title/Abstract decisions → `screening/title_abstract.md`
 
 ```markdown
-# Screening Log: [Review Topic]
+# Title/Abstract Screening
 
 ## Screening Criteria
 
@@ -144,7 +158,21 @@ Full-text source: [URL/DOI]
 | Duplicate | W |
 ```
 
-### PRISMA Flow Diagram Data
+#### 2) Full-text decisions → `screening/full_text.md`
+
+Include retrieval status and explicit exclusion reasons.
+
+```markdown
+# Full-text Screening
+
+| record_id | decision (include/exclude) | exclusion_reason | fulltext_status | notes |
+|---|---|---|---|---|
+```
+
+Use a controlled `fulltext_status` set:
+- `retrieved_oa` / `retrieved_preprint` / `abstract_only` / `not_retrieved:<reason>`
+
+#### 3) PRISMA flow data → `screening/prisma_flow.md`
 
 After screening, generate data for PRISMA flowchart:
 

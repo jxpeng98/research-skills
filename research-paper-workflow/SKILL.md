@@ -28,4 +28,13 @@ Run a model-agnostic paper workflow using shared Task IDs and artifact contracts
 - Task model + outputs: `references/workflow-contract.md`
 - Platform routing map: `references/platform-routing.md`
 - Coverage matrix: `references/coverage-matrix.md`
-
+- Stage playbooks:
+  - `references/stage-A-framing.md`
+  - `references/stage-B-literature.md`
+  - `references/stage-C-design.md`
+  - `references/stage-D-ethics.md`
+  - `references/stage-E-synthesis.md`
+  - `references/stage-F-writing.md`
+  - `references/stage-G-compliance.md`
+  - `references/stage-H-submission.md`
+  - `references/stage-I-code.md`

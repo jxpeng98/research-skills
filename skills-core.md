@@ -10,7 +10,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Source of truth:** `standards/research-workflow-contract.yaml`
 
-**Rule:** Always map user intent to a canonical Task ID (`A1`...`I3`) and write outputs to the contract path under `RESEARCH/[topic]/`.
+**Rule:** Always map user intent to a canonical Task ID (`A1`...`I8`) and write outputs to the contract path under `RESEARCH/[topic]/`.
 
 ---
 
@@ -79,7 +79,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Fallback:** S2 → OpenAlex → Google Scholar
 
-**Output:** Search results table (Title, Authors, Year, Venue, Citations, DOI, Source)
+**Outputs (contract-aligned):** `search_strategy.md`, `search_log.md`, `search_results.csv`
 
 ---
 
@@ -95,7 +95,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Decisions:** INCLUDE / EXCLUDE (+ reason) / UNCERTAIN
 
-**Output:** Screening log with counts, exclusion reasons summary
+**Outputs (contract-aligned):** `screening/title_abstract.md`, `screening/full_text.md`, `screening/prisma_flow.md`
 
 ---
 
@@ -112,7 +112,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 - Discussion: Interpretation, Implications
 - Meta: Limitations, Future Research, Contributions
 
-**Output:** Structured paper note + extraction table row
+**Outputs (contract-aligned):** `notes/` (per-paper notes) + `extraction_table.md`
 
 ---
 

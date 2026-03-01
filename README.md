@@ -24,7 +24,7 @@ A systematic research skills system designed for Claude Code, providing tools fo
 Use this project with a single canonical workflow contract:
 - `standards/research-workflow-contract.yaml` (source of truth)
 - `standards/mcp-agent-capability-map.yaml` (Task-ID-level MCP + agent orchestration)
-- Task IDs: `A1` ... `I3`
+- Task IDs: `A1` ... `I8`
 - Artifact root: `RESEARCH/[topic]/`
 
 Portable Codex skill package:
@@ -74,6 +74,7 @@ Collaboration rule:
 Collaboration playbook:
 - `guides/agent-skill-collaboration.md`
 - `guides/install-multi-client.md`
+- `guides/extend-research-skills.md` (how to extend/modify parts safely)
 
 ## Skills + Agents Flow (ASCII)
 

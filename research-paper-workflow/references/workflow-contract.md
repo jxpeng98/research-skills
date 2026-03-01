@@ -35,12 +35,12 @@ Use this contract as the single source of truth for:
 | `A3` | A | Theoretical framing | `theoretical_framework.md` |
 | `A4` | A | Gap analysis | `gap_analysis.md` |
 | `A5` | A | Target venue analysis | `framing/venue_analysis.md` |
-| `B1` | B | Systematic review | `search_log.md`, `screening/`, `synthesis.md` |
+| `B1` | B | Systematic review | `protocol.md`, `search_strategy.md`, `search_log.md`, `search_results.csv`, `screening/`, `notes/`, `bibliography.bib`, `extraction_table.md`, `quality_table.md`, `synthesis_matrix.md`, `synthesis.md` |
 | `B2` | B | Targeted paper reading | `notes/`, `bibliography.bib` |
 | `B1_5` | B | Concept/keyword extraction | `literature/concept_extraction.md` |
 | `B3` | B | Citation snowballing | `snowball_log.md` |
 | `B4` | B | Related work writing | `manuscript/manuscript.md` |
-| `B5` | B | Citation management | `bibliography.bib` |
+| `B5` | B | Citation management | `bibliography.bib`, `references.ris`, `references.json` |
 | `B6` | B | Literature mapping | `literature/literature_map.md` |
 | `C1` | C | Study design | `study_design.md` |
 | `C1_5` | C | Rival hypothesis design | `design/rival_hypotheses.md` |
@@ -89,3 +89,16 @@ Use this contract as the single source of truth for:
 - `Q3`: Reporting checklist complete
 - `Q4`: Reproducibility baseline documented
 
+## Stage Guides
+
+Use these when you need more operational detail than the task table provides:
+
+- `references/stage-A-framing.md`
+- `references/stage-B-literature.md`
+- `references/stage-C-design.md`
+- `references/stage-D-ethics.md`
+- `references/stage-E-synthesis.md`
+- `references/stage-F-writing.md`
+- `references/stage-G-compliance.md`
+- `references/stage-H-submission.md`
+- `references/stage-I-code.md`

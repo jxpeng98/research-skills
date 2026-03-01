@@ -1,0 +1,13 @@
+# research-skills project defaults (packaged with the CLI).
+#
+# This file is overwritten in GitHub builds by `scripts/inject_project_toml.sh`
+# so the packaged CLI can default to the correct upstream repo.
+#
+# You can override upstream at runtime via:
+# - CLI:   `--repo <owner>/<repo>` (or a Git URL)
+# - Env:   `RESEARCH_SKILLS_REPO=<owner>/<repo>` (or a Git URL)
+# - Project config: `research-skills.toml` / `.research-skills.toml` (see guides)
+
+[upstream]
+repo = "jxpeng98/research-skills"
+url = "https://github.com/jxpeng98/research-skills"

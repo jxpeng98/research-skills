@@ -64,6 +64,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Inject packaged upstream defaults
+        run: bash scripts/inject_project_toml.sh
+
       - name: Run release automation
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

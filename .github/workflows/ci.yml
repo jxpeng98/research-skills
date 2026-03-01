@@ -19,6 +19,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Inject packaged upstream defaults
+        run: bash scripts/inject_project_toml.sh
+
       - name: Compile critical modules
         run: |
           python -m py_compile \
@@ -35,6 +38,7 @@ jobs:
           bash -n scripts/release_postflight.sh
           bash -n scripts/release_automation.sh
           bash -n scripts/install_research_skill.sh
+          bash -n scripts/inject_project_toml.sh
 
       - name: Run standardized pre-release gates
         run: ./scripts/release_preflight.sh

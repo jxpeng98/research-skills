@@ -1406,7 +1406,18 @@ Provide your verification assessment.
                 continue
             env_name = self.mcp_connector._provider_env_var(provider)
             command = os.environ.get(env_name, "").strip()
+            
             if not command:
+                safe_provider_name = provider.replace("-", "_")
+                native_script = Path(__file__).resolve().parents[1] / "scripts" / f"mcp_{safe_provider_name}.py"
+                if native_script.exists():
+                    add_check(
+                        f"MCP {provider}", 
+                        "ok", 
+                        f"builtin provider ({native_script.name})"
+                    )
+                    continue
+                    
                 add_check(
                     f"MCP {provider}",
                     "warning",

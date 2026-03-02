@@ -89,13 +89,20 @@ class MCPConnector:
     ) -> MCPEvidence:
         env_name = self._provider_env_var(provider)
         command = os.environ.get(env_name, "").strip()
+        
         if not command:
-            return MCPEvidence(
-                provider=provider,
-                status="not_configured",
-                summary=f"External MCP not configured. Set {env_name}.",
-                provenance=[env_name],
-            )
+            # Check for native Python provider fallback
+            safe_provider_name = provider.replace("-", "_")
+            native_script = Path(__file__).resolve().parents[1] / "scripts" / f"mcp_{safe_provider_name}.py"
+            if native_script.exists():
+                command = f"python3 {native_script}"
+            else:
+                return MCPEvidence(
+                    provider=provider,
+                    status="not_configured",
+                    summary=f"External MCP not configured. Set {env_name}.",
+                    provenance=[env_name],
+                )
 
         payload = {
             "provider": provider,

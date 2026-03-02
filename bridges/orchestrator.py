@@ -34,6 +34,15 @@ from .codex_bridge import CodexBridge
 from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
 from .i18n import get_text
+from .errors import (
+    ResearchError,
+    ConfigError,
+    ERR_CFG_INVALID_PROFILE,
+    ERR_CFG_MISSING_STANDARD,
+    ERR_CFG_INVALID_TASK,
+    ERR_EXE_PARALLEL_FAIL,
+    ERR_MCP_PROVIDER_MISSING
+)
 
 
 class CollaborationMode(Enum):
@@ -208,11 +217,12 @@ class ModelOrchestrator:
         config = profile_registry.get(name)
         if config is None:
             err_msg = get_text("unknown_profile", profile=name)
-            raise ValueError(
-                f"{err_msg}. Available: {', '.join(sorted(profile_registry.keys()))}"
+            raise ConfigError(
+                ERR_CFG_INVALID_PROFILE,
+                detail=f"{err_msg}. Available: {', '.join(sorted(profile_registry.keys()))}"
             )
         if not isinstance(config, dict):
-            raise ValueError(f"Invalid profile config format: {name}")
+            raise ConfigError(ERR_CFG_INVALID_PROFILE, detail=f"Invalid profile config format: {name}")
         return config
 
     def _resolve_task_profile_names(
@@ -1800,17 +1810,9 @@ Return sections:
             agent_plan = self._load_task_agent_plan(normalized_task)
             artifact_root, required_outputs = self._load_task_outputs(normalized_task)
         except (FileNotFoundError, ValueError) as exc:
-            error_resp = BridgeResponse.from_error("orchestrator", str(exc))
-            return CollaborationResult(
-                mode="task-run",
-                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
-                merged_analysis=str(exc),
-                confidence=0.0,
-                recommendations=[],
-                codex_response=error_resp if "codex" in str(exc).lower() else None,
-                claude_response=error_resp if "claude" in str(exc).lower() else None,
-                gemini_response=error_resp if "gemini" in str(exc).lower() else None,
-            )
+            msg = f"Task '{normalized_task}' is invalid or missing in workflow contract."
+            raise ConfigError(ERR_CFG_INVALID_TASK, detail=msg) from exc
+
         try:
             profile_registry, task_profile_overrides = self._load_profile_bundle(profile_file)
             selected_profiles = self._resolve_task_profile_names(
@@ -1838,17 +1840,8 @@ Return sections:
                 profile_registry,
             )
         except ValueError as exc:
-            error_resp = BridgeResponse.from_error("orchestrator", str(exc))
-            return CollaborationResult(
-                mode="task-run",
-                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
-                merged_analysis=str(exc),
-                confidence=0.0,
-                recommendations=[],
-                codex_response=error_resp if "codex" in str(exc).lower() else None,
-                claude_response=error_resp if "claude" in str(exc).lower() else None,
-                gemini_response=error_resp if "gemini" in str(exc).lower() else None,
-            )
+            raise ConfigError(ERR_CFG_INVALID_PROFILE, detail=str(exc)) from exc
+
 
         plan_result = self.task_plan(
             task_id=normalized_task,
@@ -2409,4 +2402,11 @@ def main():
     print(result.to_json())
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ResearchError as e:
+        print(f"\n❌ {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ [ERR-RS-UNKNOWN] Unexpected system error: {str(e)}", file=sys.stderr)
+        sys.exit(1)

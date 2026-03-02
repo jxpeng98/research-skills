@@ -1,0 +1,111 @@
+domain: economics
+display_name: "Economics & Applied Microeconomics"
+
+libraries:
+  python:
+    - linearmodels  # IV, panel (FE/RE/Between), system GMM
+    - statsmodels   # OLS, GLS, 2SLS, time series
+    - pyblp         # BLP demand estimation
+    - rdrobust      # regression discontinuity
+    - pyfixest      # fast high-dimensional FE (fixest port)
+    - doubleml      # double/debiased ML for causal inference
+    - causalinference  # matching, propensity score
+    - stargazer     # regression table formatting
+  r:
+    - fixest        # fast multi-way FE, IV, Poisson
+    - plm           # panel data models
+    - rdrobust      # RD estimation + inference
+    - did           # Callaway & Sant'Anna DID
+    - didimputation # Borusyak, Jaravel, Spiess DID
+    - synthdid      # synthetic DID
+    - mlogit        # discrete choice
+    - ivreg         # 2SLS / IV
+    - marginaleffects  # marginal effects + contrasts
+    - modelsummary  # publication-ready regression tables
+    - MatchIt       # propensity score matching
+  stata:
+    - reghdfe       # high-dimensional FE regression
+    - ivreghdfe     # IV with multi-way FE
+    - did_imputation # imputation-based DID
+    - csdid         # Callaway & Sant'Anna
+    - rdrobust      # RD estimation
+    - synth         # synthetic control
+    - eventdd       # event study (Sun & Abraham)
+
+method_templates:
+  - name: "Difference-in-Differences (DID)"
+    tier: standard
+    library: fixest (R) / pyfixest (Python) / reghdfe (Stata)
+    checklist:
+      - "Pre-treatment parallel trends test (event study plot)"
+      - "Use robust DID (Callaway-Sant'Anna / Sun-Abraham) for staggered treatment"
+      - "Cluster SE at treatment-group level"
+      - "Report pre-treatment balance table"
+      - "Robustness: alternative control groups, placebo tests"
+
+  - name: "Regression Discontinuity (RD)"
+    tier: standard
+    library: rdrobust
+    checklist:
+      - "Plot raw data with fitted polynomial on both sides"
+      - "Use local polynomial with MSE-optimal bandwidth"
+      - "McCrary density test for manipulation"
+      - "Robustness: bandwidth sensitivity, different polynomial orders"
+      - "Covariate balance at cutoff"
+
+  - name: "Instrumental Variables (2SLS)"
+    tier: standard
+    library: linearmodels / ivreg / ivreghdfe
+    checklist:
+      - "First-stage F-stat > 10 (Stock-Yogo critical values)"
+      - "Exclusion restriction argument (narrative, not testable)"
+      - "Over-identification test (Sargan/Hansen J) if >1 instrument"
+      - "Reduced-form estimate for interpretation"
+      - "Weak instrument robust inference (Anderson-Rubin)"
+
+  - name: "Synthetic Control"
+    tier: advanced
+    library: synth (Stata) / synthdid (R)
+    checklist:
+      - "Pre-treatment fit quality (RMSPE)"
+      - "Placebo tests (in-space and in-time)"
+      - "Donor pool selection criteria documented"
+
+  - name: "BLP Demand Estimation"
+    tier: advanced
+    library: pyblp
+    checklist:
+      - "Instrument validity (BLP/Hausman/Gandhi-Houde)"
+      - "Convergence diagnostics for GMM"
+      - "Report elasticity matrix and markup estimates"
+
+stats_diagnostics:
+  - "Parallel trends: event study coefficients + joint F-test on pre-periods"
+  - "First-stage strength: Kleibergen-Paap / Cragg-Donald F-stat"
+  - "Clustering: cluster at appropriate level (state, firm, individual)"
+  - "Functional form: RESET test, Box-Cox if necessary"
+  - "Heterogeneous treatment effects: CATE estimation or subgroup analysis"
+
+reporting_guidelines:
+  primary: "AER / QJE / Econometrica style"
+  checklists:
+    - "Balance/summary statistics table"
+    - "Main regression table with progressive controls"
+    - "Event study / RD plot"
+    - "Robustness and placebo tables"
+
+common_pitfalls:
+  - "Staggered DID with TWFE → biased estimates (use robust estimators)"
+  - "Clustering SE at wrong level (too narrow → over-rejection)"
+  - "Weak instruments → misleading 2SLS (use tF > 10 rule)"
+  - "Cherry-picking bandwidth in RD (report MSE-optimal + sensitivity)"
+  - "P-hacking via specification search (pre-register primary spec)"
+  - "Bad controls: conditioning on post-treatment variables"
+  - "SUTVA violations in network/spillover settings"
+
+visualization_templates:
+  - "Event study plot (pre/post treatment coefficients with CI)"
+  - "RD plot (binned scatter + fitted polynomial)"
+  - "Coefficient plot (coefplot) with multiple specifications"
+  - "Parallel trends diagnostic plot"
+  - "Synthetic control gap plot (treated vs synthetic)"

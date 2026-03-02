@@ -1,0 +1,126 @@
+domain: psychology
+display_name: "Psychology & Behavioral Science"
+
+libraries:
+  python:
+    - semopy        # structural equation modeling
+    - factor_analyzer  # EFA / CFA
+    - pingouin      # ANOVA, t-tests, effect sizes, Bayesian
+    - pyprocessmacro   # Hayes PROCESS mediation/moderation
+    - statsmodels   # regression, mixed models
+    - pymer4        # lme4-style mixed models in Python
+    - scikit-learn  # classification, clustering for behavioral data
+    - gensim        # text analysis for open-ended responses
+  r:
+    - lavaan        # SEM, CFA, path analysis
+    - psych         # EFA, reliability, descriptives
+    - lme4          # HLM / multilevel models
+    - lmerTest      # Satterthwaite df for lme4
+    - mirt          # IRT (Rasch, 2PL, 3PL)
+    - BayesFactor   # Bayesian hypothesis testing
+    - effectsize    # Cohen's d, eta-squared, omega-squared
+    - bruceR        # CFA/SEM helper + effect size tables
+    - mediation     # causal mediation analysis
+    - emmeans       # estimated marginal means + contrasts
+    - ggstatsplot   # statistical plots + annotations
+  stata:
+    - sem           # SEM / CFA
+    - irt           # item response theory
+    - mixed         # multilevel models
+    - mediate       # mediation analysis
+
+method_templates:
+  - name: "Structural Equation Modeling (SEM)"
+    tier: standard
+    library: lavaan (R) / semopy (Python)
+    checklist:
+      - "Model fit indices: χ², CFI ≥ 0.95, RMSEA ≤ 0.06, SRMR ≤ 0.08"
+      - "Report standardized and unstandardized estimates"
+      - "Check modification indices (MI > 10) but justify any post-hoc respec"
+      - "Measurement invariance if comparing groups (configural → metric → scalar)"
+      - "Sample size ≥ 200 minimum; N:parameter ratio ≥ 10:1"
+
+  - name: "Confirmatory Factor Analysis (CFA)"
+    tier: standard
+    library: lavaan (R) / factor_analyzer (Python)
+    checklist:
+      - "Report factor loadings (standardized ≥ 0.40)"
+      - "Convergent validity: AVE ≥ 0.50"
+      - "Discriminant validity: √AVE > inter-factor correlations (Fornell-Larcker)"
+      - "Check cross-loadings and residual correlations"
+      - "Reliability: Cronbach α and McDonald's ω"
+
+  - name: "Mediation Analysis"
+    tier: standard
+    library: pyprocessmacro / mediation (R)
+    checklist:
+      - "Bootstrap ≥ 5000 iterations for indirect effect CI"
+      - "Report total, direct, and indirect effects"
+      - "Do NOT use Baron & Kenny causal steps (outdated)"
+      - "Consider causal mediation (Imai et al.) for stronger inference"
+      - "Sequential ignorability assumption stated and discussed"
+
+  - name: "Multilevel / Hierarchical Linear Modeling (HLM)"
+    tier: standard
+    library: lme4 + lmerTest (R) / pymer4 (Python)
+    checklist:
+      - "ICC justifies multilevel structure (ICC > 0.05)"
+      - "Build incrementally: null → random intercept → random slope"
+      - "Center predictors (grand-mean or group-mean, justify choice)"
+      - "Report deviance / AIC-BIC for model comparison"
+      - "Report random effects variance and fixed effect estimates"
+
+  - name: "Exploratory Factor Analysis (EFA)"
+    tier: standard
+    library: psych (R) / factor_analyzer (Python)
+    checklist:
+      - "KMO ≥ 0.60 and Bartlett test significant"
+      - "Parallel analysis or MAP for factor retention (not just eigenvalue > 1)"
+      - "Rotation: oblique (promax/oblimin) unless theoretical independence"
+      - "Cross-loadings < 0.32 for clean structure"
+      - "Split-sample: EFA on half, CFA on other half"
+
+  - name: "Item Response Theory (IRT)"
+    tier: advanced
+    library: mirt (R)
+    checklist:
+      - "Choose model: Rasch (1PL), 2PL, or 3PL with justification"
+      - "Item fit: S-χ², RMSEA per item"
+      - "DIF analysis across key groups"
+      - "Report item parameters (difficulty, discrimination) and ICCs"
+      - "Test information function (TIF) plotted"
+
+stats_diagnostics:
+  - "Normality: Shapiro-Wilk or multivariate Mardia test (for SEM)"
+  - "Common method bias: Harman single-factor test + CFA marker technique"
+  - "Multicollinearity: VIF < 5 (predictors), inter-factor r < 0.85 (CFA)"
+  - "Outliers: Mahalanobis distance, Cook's D"
+  - "Missing data pattern: MCAR (Little's test) → listwise ok; MAR → FIML or MI"
+  - "Effect sizes: always report (Cohen's d, η², ω², R²); never just p-values"
+  - "Power: a priori G*Power analysis or sensitivity analysis reported"
+
+reporting_guidelines:
+  primary: "APA 7th Edition"
+  checklists:
+    - "JARS-Quant (quantitative studies)"
+    - "JARS-Qual (qualitative studies)"
+    - "JARS-Mixed (mixed methods)"
+
+common_pitfalls:
+  - "SEM with N < 200 → unstable estimates and inflated fit indices"
+  - "Reporting α without ω → underestimate true reliability for multidimensional scales"
+  - "Using Baron & Kenny for mediation (outdated; use bootstrap indirect effect)"
+  - "Scale translation without back-translation and pilot validation"
+  - "Ignoring common method bias in single-source survey data"
+  - "Multiple comparisons without Bonferroni / Holm / FDR correction"
+  - "Confusing statistical significance with practical significance (report effect sizes!)"
+  - "Ignoring nested data structure (students in classrooms → need HLM)"
+
+visualization_templates:
+  - "SEM path diagram with standardized loadings and R²"
+  - "Mediation diagram (a, b, c, c' paths with significance)"
+  - "CFA factor loading heatmap"
+  - "Interaction plot (simple slopes for moderation)"
+  - "Scree plot + parallel analysis for EFA"
+  - "Item characteristic curves (IRT)"
+  - "Forest plot of effect sizes across studies"

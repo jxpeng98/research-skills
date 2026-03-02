@@ -1,0 +1,120 @@
+domain: ecology-environmental
+display_name: "Ecology & Environmental Science"
+
+libraries:
+  python:
+    - pysal         # spatial analysis
+    - geopandas     # geospatial data
+    - rasterio      # raster/satellite data
+    - scipy         # optimization, ODE solvers
+    - statsmodels   # GLM, GAM (via pygam)
+    - pygam         # generalized additive models
+    - scikit-learn  # species distribution modeling (SDM)
+    - lifelines     # survival/time-to-event for ecology
+    - networkx      # food web / interaction networks
+    - xarray        # multi-dimensional climate data
+  r:
+    - vegan         # community analysis (diversity, ordination, PERMANOVA)
+    - sf            # spatial features
+    - terra         # raster/vector geospatial
+    - mgcv          # GAM (thin plate splines)
+    - glmmTMB       # GLMM (zero-inflated, overdispersed counts)
+    - lme4          # multilevel / nested designs
+    - dismo         # species distribution modeling
+    - MaxEnt        # MaxEnt SDM
+    - ape           # phylogenetic analysis
+    - phytools      # phylo comparative methods
+    - unmarked      # occupancy and N-mixture models
+    - Distance      # distance sampling
+    - MuMIn         # model averaging (AICc)
+    - DHARMa        # residual diagnostics for hierarchical models
+    - brms          # Bayesian regression (ecology applications)
+  other:
+    - JAGS/BUGS:    "Bayesian hierarchical models"
+    - MARK:         "Capture-recapture population estimation"
+    - FRAGSTATS:    "Landscape metrics"
+
+method_templates:
+  - name: "Species Distribution Modeling (SDM / ENM)"
+    tier: standard
+    library: dismo / MaxEnt (R) / scikit-learn (Python)
+    checklist:
+      - "Background point selection strategy documented"
+      - "Multicollinearity among predictors checked (VIF < 10)"
+      - "Spatial cross-validation (block-CV or LOO-by-site)"
+      - "Report AUC, TSS, and threshold for binary conversion"
+      - "Variable importance / response curves plotted"
+      - "Extrapolation risk (MESS map) assessed"
+
+  - name: "Community Analysis (Diversity / Ordination)"
+    tier: standard
+    library: vegan (R)
+    checklist:
+      - "Alpha diversity: indices (Shannon, Simpson, richness) + rarefaction"
+      - "Beta diversity: distance metric justified (Bray-Curtis, Jaccard)"
+      - "Ordination: NMDS (stress < 0.20) or PCoA"
+      - "PERMANOVA for group differences (adonis2)"
+      - "Dispersion test (betadisper) before PERMANOVA"
+      - "Indicator species analysis if applicable"
+
+  - name: "Generalized Additive Models (GAM)"
+    tier: standard
+    library: mgcv (R) / pygam (Python)
+    checklist:
+      - "Basis dimension (k) large enough (check k-index)"
+      - "Concurvity check for correlated smooths"
+      - "Family: Gaussian, Poisson, NB, Tweedie (justify)"
+      - "Report EDF, p-values, deviance explained"
+      - "Partial effect plots with confidence bands"
+
+  - name: "Occupancy Modeling"
+    tier: advanced
+    library: unmarked (R)
+    checklist:
+      - "Detection vs occupancy covariates separated"
+      - "GOF: parametric bootstrap (MacKenzie-Bailey)"
+      - "Report occupancy + detection probabilities with CI"
+      - "Closure assumption (single-season) or dynamics (multi-season)"
+
+  - name: "Capture-Recapture (Population Estimation)"
+    tier: advanced
+    library: RMark (R) / MARK
+    checklist:
+      - "Model selection: CJS, POPAN, PCRD (justify)"
+      - "AICc model selection + model averaging"
+      - "Goodness-of-fit: U-CARE or median ĉ"
+      - "Report apparent survival (φ) and detection (p)"
+      - "Heterogeneity in detection addressed"
+
+stats_diagnostics:
+  - "Overdispersion: quasi-AIC or NB family if Pearson residual >> 1"
+  - "Zero-inflation: Vuong test or DHARMa zero-inflation test"
+  - "Spatial autocorrelation: Moran's I on residuals, variogram"
+  - "Temporal autocorrelation: ACF/PACF; AR correlation structure"
+  - "Pseudo-replication: sampling units ≠ experimental units"
+  - "Rarefaction: compare diversity at equal sampling effort"
+
+reporting_guidelines:
+  primary: "ESA / British Ecological Society style"
+  checklists:
+    - "ARRIVE 2.0 (animal studies)"
+    - "ODD protocol (agent-based / individual-based models)"
+    - "SDM reporting standards (Zurell et al. 2020)"
+
+common_pitfalls:
+  - "Pseudo-replication: treating subsamples as independent replicates"
+  - "Spatial autocorrelation: standard models assume independence"
+  - "SDM extrapolation beyond environmental range of training data"
+  - "Using presence-only data without accounting for detection bias"
+  - "PERMANOVA sensitive to unequal dispersion between groups"
+  - "Zero-inflated counts fit with Poisson → overdispersion"
+  - "Ignoring phylogenetic non-independence in comparative analyses"
+
+visualization_templates:
+  - "Species distribution prediction map (with uncertainty)"
+  - "NMDS / PCoA ordination plot with group ellipses"
+  - "Rarefaction curve (species richness vs sampling effort)"
+  - "GAM partial effect plots with CI bands"
+  - "Occupancy map (site-level detection/occupancy)"
+  - "Phylogenetic tree with trait mapping"
+  - "Rank-abundance / species accumulation curve"

@@ -1,0 +1,116 @@
+domain: education
+display_name: "Education & Learning Sciences"
+
+libraries:
+  python:
+    - statsmodels   # regression, ANOVA, mixed models
+    - pymer4        # lme4-style HLM in Python
+    - semopy        # SEM for educational measurement
+    - factor_analyzer  # EFA/CFA
+    - scikit-learn  # EDM classifiers, clustering
+    - xgboost       # learning outcome prediction
+    - gensim        # text analysis for open responses
+    - networkx      # social network analysis in classrooms
+    - pyirt         # item response theory
+  r:
+    - lme4          # HLM / multilevel models
+    - lmerTest      # Satterthwaite df
+    - lavaan        # SEM / CFA for measurement
+    - mirt          # item response theory (Rasch, 2PL)
+    - TAM           # test analysis modules (Rasch family)
+    - edstan        # educational stan models
+    - psych         # reliability, descriptives
+    - ggplot2       # visualization
+    - lmtest        # diagnostic tests
+    - mice          # multiple imputation
+    - effectsize    # Cohen's d, eta-squared
+  stata:
+    - mixed         # multilevel models
+    - sem           # SEM
+    - irt           # IRT
+    - xtmixed       # panel/multilevel
+
+method_templates:
+  - name: "Hierarchical Linear Modeling (Nested Education Data)"
+    tier: standard
+    library: lme4 + lmerTest (R) / pymer4 (Python)
+    checklist:
+      - "ICC: students within classrooms/schools (justify multilevel)"
+      - "Build incrementally: null → L1 predictors → L2 predictors → cross-level"
+      - "Center L1 predictors (group-mean) and L2 predictors (grand-mean)"
+      - "Report variance components at each level"
+      - "Effect sizes: pseudo-R² at each level"
+      - "Check residual normality at both levels"
+
+  - name: "Pre-Post Intervention Analysis"
+    tier: standard
+    library: lme4 / statsmodels
+    checklist:
+      - "Use ANCOVA (post ~ pre + treatment) instead of gain scores"
+      - "Check pre-treatment equivalence"
+      - "Report effect size (Cohen's d or Hedges' g)"
+      - "Handle attrition and differential dropout"
+      - "ITT analysis as primary if randomized"
+
+  - name: "Item Response Theory (IRT) for Assessment"
+    tier: standard
+    library: TAM / mirt (R)
+    checklist:
+      - "Model selection: Rasch, 2PL, or 3PL with justification"
+      - "Item fit statistics (infit/outfit MNSQ 0.5–1.5)"
+      - "Person separation reliability ≥ 0.80"
+      - "DIF analysis across key demographics"
+      - "Wright map / variable map for construct validity"
+      - "Test information function plotted"
+
+  - name: "Learning Analytics / Educational Data Mining"
+    tier: advanced
+    library: scikit-learn / xgboost
+    checklist:
+      - "Train/test split respects temporal order (no future leakage)"
+      - "Feature importance + SHAP for interpretability"
+      - "Report AUC, precision, recall, F1 (not just accuracy)"
+      - "Cross-validation with student-level grouping (no student in both folds)"
+      - "Ethical considerations: fairness across demographics"
+
+  - name: "Mixed Methods Design (Sequential Explanatory)"
+    tier: standard
+    library: qual coding + quant analysis
+    checklist:
+      - "QUAN phase fully analyzed before QUAL sampling"
+      - "Purposive sampling from QUAN results (extreme/deviant cases)"
+      - "Integration point explicitly documented"
+      - "Joint display table (QUAN findings × QUAL themes)"
+
+stats_diagnostics:
+  - "ICC: justify multilevel model (ICC > 0.05 for student-in-class)"
+  - "Measurement invariance: across time, groups, or conditions"
+  - "Ceiling/floor effects in assessment scores"
+  - "Non-independence: clustered SE or multilevel model required"
+  - "Missing data: MCAR/MAR test → FIML or multiple imputation"
+  - "Effect sizes: always report; education expects Cohen's d or Hedges' g"
+
+reporting_guidelines:
+  primary: "APA 7th Edition"
+  checklists:
+    - "JARS-Quant / JARS-Qual / JARS-Mixed"
+    - "CONSORT (for RCT-based interventions)"
+    - "SRQR (qualitative research)"
+    - "COREQ (qualitative interviews/focus groups)"
+
+common_pitfalls:
+  - "Ignoring nested structure (students in classrooms) → inflated Type I error"
+  - "Using gain scores instead of ANCOVA → regression to the mean"
+  - "Comparing group means without controlling for pre-test"
+  - "IRT model misfit: forcing Rasch when items have varying discrimination"
+  - "Learning analytics with student leakage across folds"
+  - "Not accounting for teacher/school effects in intervention studies"
+  - "Volunteer bias in non-randomized educational experiments"
+
+visualization_templates:
+  - "Interaction plot (treatment × time / treatment × moderator)"
+  - "Wright map / variable map for IRT"
+  - "ICC plot (reliability across measurement points)"
+  - "Growth curves (individual trajectories)"
+  - "Joint display table (mixed methods integration)"
+  - "CONSORT flow diagram (for intervention studies)"

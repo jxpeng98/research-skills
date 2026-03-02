@@ -1,0 +1,116 @@
+domain: political-science
+display_name: "Political Science & Sociology"
+
+libraries:
+  python:
+    - statsmodels   # regression, logit, probit
+    - linearmodels  # panel data, IV
+    - gensim        # topic modeling (LDA)
+    - spacy         # NLP entity extraction
+    - networkx      # political network analysis
+    - pymc          # Bayesian modeling
+    - causalinference  # matching, IPTW
+    - rdrobust      # regression discontinuity
+    - survey        # survey-weighted analysis (via rpy2)
+  r:
+    - fixest        # multi-way FE regression
+    - survey        # survey-weighted analysis
+    - srvyr         # tidy survey analysis
+    - quanteda      # text analysis + dictionaries
+    - stm           # structural topic modeling
+    - igraph        # network analysis
+    - ergm          # exponential random graph models
+    - MatchIt       # matching (propensity score)
+    - WeightIt      # propensity weights (IPTW, entropy balancing)
+    - brms          # Bayesian regression (Stan backend)
+    - sensemakr     # sensitivity analysis for omitted variable bias
+    - interflex     # flexible interaction (Hainmueller et al.)
+    - rdrobust      # regression discontinuity
+    - CausalImpact  # Bayesian causal impact (Google)
+    - cregg         # conjoint analysis (AMCE)
+  stata:
+    - reghdfe       # high-dimensional FE
+    - coefplot      # coefficient plots
+    - estout        # regression tables
+    - diff          # DID
+    - svy           # survey analysis
+
+method_templates:
+  - name: "Survey-Weighted Analysis"
+    tier: standard
+    library: survey / srvyr (R)
+    checklist:
+      - "Specify design: strata, clusters (PSU), weights"
+      - "Use svyglm / svyolr for weighted regression"
+      - "Report weighted means, proportions, and SEs"
+      - "Non-response adjustment documented"
+      - "Finite population correction if applicable"
+
+  - name: "Text-as-Data (Topic Modeling)"
+    tier: standard
+    library: quanteda + stm (R) / gensim (Python)
+    checklist:
+      - "Preprocessing: tokenization, stopwords, stemming/lemmatization"
+      - "Model selection: number of topics via held-out likelihood or semantic coherence"
+      - "FREX / top words per topic reported"
+      - "Document-topic proportions used as variables (not outcomes)"
+      - "Validation: hand-coding sample + inter-rater reliability"
+
+  - name: "Conjoint Analysis (AMCE)"
+    tier: standard
+    library: cregg (R)
+    checklist:
+      - "Randomization of attribute levels documented"
+      - "AMCE + marginal means reported"
+      - "Subgroup heterogeneity (interaction with respondent attributes)"
+      - "Profile restrictions justified"
+      - "Power analysis for number of tasks per respondent"
+
+  - name: "Exponential Random Graph Models (ERGM)"
+    tier: advanced
+    library: ergm (R)
+    checklist:
+      - "Convergence diagnostics (MCMC traces)"
+      - "Goodness-of-fit: degree distribution, edgewise shared partners"
+      - "Report structural terms (edges, triangles, homophily)"
+      - "Degeneracy issues addressed"
+
+  - name: "Bayesian Causal Impact"
+    tier: standard
+    library: CausalImpact (R)
+    checklist:
+      - "Pre-period model fit assessed visually and statistically"
+      - "Counterfactual prediction with uncertainty bands"
+      - "Cumulative and pointwise causal effect reported"
+      - "Sensitivity to prior specification"
+
+stats_diagnostics:
+  - "Omitted variable bias: Oster (2019) bounds or sensemakr"
+  - "Survey design effects: DEFF reported"
+  - "Multi-level structure: ICC for nested political units"
+  - "Spatial autocorrelation: Moran's I if geographic data"
+  - "Endogeneity: Hausman test, instrument relevance"
+
+reporting_guidelines:
+  primary: "APSA / ASA style"
+  checklists:
+    - "Replication data + code deposited (Dataverse / APSR norms)"
+    - "Pre-analysis plan (if experimental)"
+    - "EGAP registration (for field experiments)"
+
+common_pitfalls:
+  - "Ignoring survey weights → biased population estimates"
+  - "Using naïve SE with clustered data (need robust/cluster SE)"
+  - "Post-treatment bias: controlling for mediators as confounders"
+  - "Topic model validation: not checking semantic coherence"
+  - "Ecological fallacy: group-level data → individual-level claims"
+  - "Conjoint: forcing respondents on implausible profiles"
+  - "ERGM degeneracy: model fails to converge on complex terms"
+
+visualization_templates:
+  - "Coefficient plot with multiple model specifications"
+  - "Topic model: top terms per topic + document proportions"
+  - "AMCE dot plot (conjoint marginal effects)"
+  - "Network graph with community detection coloring"
+  - "Causal impact plot (observed vs counterfactual)"
+  - "Choropleth / spatial distribution map"

@@ -374,19 +374,44 @@ python -m bridges.orchestrator [mode] --prompt "..." --cwd "/path"
 
 ## code-builder
 
-**Purpose:** Build academic research code
+**Purpose:** Build academic research code (multi-discipline, multi-language)
+
+**Domain Profiles:** `skills/domain-profiles/*.yaml` define discipline-specific libraries, method templates, diagnostics, and pitfalls. Available: finance, economics, psychology, biomedical, education, cs-ai, political-science, epidemiology, ecology-environmental. Add new domains via `domain-profiles/custom-template.yaml`.
+
+**Languages:** Python, R, Stata, MATLAB, Julia (inferred from domain profile if not specified)
 
 **Strategies:**
-1. **Standard (Tier 1):** Use standard libraries (statsmodels, arch, fixest)
+1. **Standard (Tier 1):** Use domain-profile recommended library + method checklist
 2. **Advanced (Tier 2):** Methodological Decomposition (JAX/PyTorch/Custom MLE)
 
 **Invocation:**
 ```bash
 python -m bridges.orchestrator code-build \
-  --method "GARCH" --domain finance --tier standard
+  --method "GARCH" --domain finance --tier standard --lang python
 ```
 
-**Output:** Method implementation code + validation test
+**Output:** Implementation + validation test + domain checklist pass/fail + diagnostic plots
+
+## stats-engine (enhanced)
+
+**Purpose:** Statistical modeling with domain-specific method selection
+
+**Key features (expanded):**
+- **Method selection decision tree**: maps research goal × data structure → recommended model family
+- **Domain diagnostics**: auto-loads from domain profile (e.g., PH test for biomedical, parallel trends for econ)
+- **Cross-domain pitfall table**: common errors and fixes
+
+**Output:** `analysis/stats_report.md` with method rationale, diagnostics, robustness, caveats
+
+## code-review (enhanced)
+
+**Purpose:** Domain-aware independent code review
+
+**Key features (expanded):**
+- **9 domain-specific review checklists** (economics, finance, psychology, biomedical, education, CS/AI, political-science, epidemiology, ecology)
+- Each checklist targets the most common field-specific coding errors
+
+**Output:** `code/code_review.md` with domain-specific checklist pass/fail
 
 ---
 

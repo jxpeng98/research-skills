@@ -1,0 +1,47 @@
+# Domain Profile Template
+#
+# Copy this file and rename to your-domain.yaml under skills/domain-profiles/.
+# The code-builder, stats-engine, and code-review skills will automatically
+# inject the matching profile when --domain is specified.
+#
+# Usage:
+#   /code-build "Method Name" --domain your-domain
+#   python -m bridges.orchestrator task-run --task-id I1 --domain your-domain ...
+
+domain: your-domain-id             # lowercase kebab-case identifier
+display_name: "Your Domain Name"   # human-readable name
+
+# 1. Tool chains — libraries the agent should prefer for this domain
+libraries:
+  python:
+    - library_name  # brief comment on purpose
+  r:
+    - library_name  # brief comment on purpose
+  stata: []         # optional; delete section if unused
+  other: {}         # optional; for Julia, MATLAB, etc.
+
+# 2. Method templates — common methods with checklists
+method_templates:
+  - name: "Method Name"
+    tier: standard          # standard | advanced
+    library: library_name   # primary lib for this method
+    checklist:
+      - "Checkpoint / quality gate description"
+
+# 3. Statistical diagnostics specific to this domain
+stats_diagnostics:
+  - "Diagnostic check description"
+
+# 4. Reporting guidelines
+reporting_guidelines:
+  primary: "Style guide name"
+  checklists:
+    - "Checklist name"
+
+# 5. Common pitfalls (injected into self-critique prompts)
+common_pitfalls:
+  - "Pitfall description"
+
+# 6. Visualization templates (injected into F5 figures-tables-plan)
+visualization_templates:
+  - "Chart / plot type description"

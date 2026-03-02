@@ -1,0 +1,114 @@
+domain: cs-ai
+display_name: "Computer Science & Artificial Intelligence"
+
+libraries:
+  python:
+    - torch         # PyTorch (deep learning)
+    - jax           # differentiable computing
+    - transformers  # Hugging Face pre-trained models
+    - scikit-learn  # classical ML
+    - xgboost       # gradient boosting
+    - optuna        # hyperparameter optimization
+    - wandb         # experiment tracking
+    - polars        # fast DataFrame operations
+    - networkx      # graph algorithms
+    - scipy         # optimization, signal processing
+    - matplotlib    # visualization
+    - seaborn       # statistical visualization
+  r:
+    - torch         # PyTorch R interface
+    - caret         # ML workflow
+    - data.table    # fast data manipulation
+    - igraph        # graph/network analysis
+    - ggplot2       # visualization
+  other:
+    - julia_flux:   "Flux.jl (Julia deep learning)"
+    - julia_turing: "Turing.jl (Julia probabilistic programming)"
+    - cpp_libtorch: "LibTorch (C++ inference)"
+
+method_templates:
+  - name: "Supervised Classification / Regression"
+    tier: standard
+    library: scikit-learn / xgboost
+    checklist:
+      - "Stratified k-fold CV (≥5 folds) for evaluation"
+      - "Report: accuracy, precision, recall, F1, AUC-ROC"
+      - "Baseline comparison (majority class, random, simple model)"
+      - "Feature importance or SHAP explanations"
+      - "Statistical significance test across folds (paired t-test / Wilcoxon)"
+
+  - name: "Deep Learning (Classification / Generation)"
+    tier: advanced
+    library: torch / jax / transformers
+    checklist:
+      - "Fixed random seeds (torch, numpy, python) documented"
+      - "Training/validation/test split (no leakage)"
+      - "Report training curves (loss + metric vs epoch)"
+      - "Ablation study: component-wise contribution"
+      - "Hyperparameter search space + method (grid/random/Bayesian)"
+      - "Wall-clock time and GPU type reported"
+      - "Model size (parameters, FLOPs) reported"
+
+  - name: "Fine-Tuning Pre-Trained Language Models"
+    tier: standard
+    library: transformers + peft
+    checklist:
+      - "Specify base model + version + source"
+      - "Training: LR schedule, batch size, epochs, early stopping"
+      - "Evaluation: separate test set, report per-class metrics"
+      - "LoRA / adapter config if parameter-efficient"
+      - "Data contamination check (test data not in pre-train corpus)"
+
+  - name: "Reinforcement Learning"
+    tier: advanced
+    library: stable-baselines3 / RLlib
+    checklist:
+      - "Environment specification (state/action/reward)"
+      - "Training: multiple seeds (≥5), report mean ± std"
+      - "Learning curves (cumulative reward vs steps)"
+      - "Hyperparameter sensitivity analysis"
+      - "Comparison to established baselines"
+
+  - name: "Graph Neural Networks"
+    tier: advanced
+    library: torch_geometric / dgl
+    checklist:
+      - "Graph statistics: nodes, edges, density, diameter"
+      - "Inductive vs transductive setting clarified"
+      - "Message passing layers + aggregation specified"
+      - "Baselines: GCN, GAT, GraphSAGE minimum"
+      - "Over-smoothing analysis for deep GNNs"
+
+stats_diagnostics:
+  - "Statistical comparison of models: paired t-test or Wilcoxon signed-rank on fold results"
+  - "Confidence intervals on metrics (bootstrap or cross-validation based)"
+  - "Effect size of improvement over baseline"
+  - "Multiple comparison correction if comparing many models (Nemenyi / Friedman)"
+  - "Reproducibility: all seeds, configs, and environment specs pinned"
+
+reporting_guidelines:
+  primary: "ACM / IEEE / NeurIPS / ICML style"
+  checklists:
+    - "NeurIPS reproducibility checklist"
+    - "ML reproducibility checklist (Pineau et al.)"
+    - "ACM artifact evaluation badges"
+
+common_pitfalls:
+  - "Data leakage: test data seen during training or feature engineering"
+  - "Not reporting variance across random seeds"
+  - "Cherry-picking best run instead of average"
+  - "Missing ablation study (what component matters)"
+  - "Unfair baseline comparison (different hyperparameter budget)"
+  - "Not reporting compute cost (GPU hours, carbon footprint)"
+  - "Using accuracy on imbalanced datasets"
+  - "Not checking for data contamination in LLM evaluations"
+
+visualization_templates:
+  - "Training curve (loss + metric vs epoch/step)"
+  - "Confusion matrix heatmap"
+  - "ROC curve with AUC annotation"
+  - "Ablation bar chart (component contribution)"
+  - "Attention map / saliency visualization"
+  - "t-SNE / UMAP embedding plot"
+  - "Hyperparameter sensitivity plot"
+  - "Critical difference diagram (model comparison)"

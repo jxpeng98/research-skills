@@ -1,0 +1,123 @@
+domain: epidemiology
+display_name: "Epidemiology & Public Health"
+
+libraries:
+  python:
+    - lifelines     # survival analysis
+    - dowhy         # causal inference (DAG-based)
+    - causalinference  # matching, IPTW
+    - statsmodels   # logistic, Poisson, GEE
+    - pymc          # Bayesian epi models
+    - epimodels     # SIR/SEIR compartmental models
+    - networkx      # contact tracing / transmission networks
+    - geopandas     # spatial epidemiology
+    - tableone      # baseline characteristics table
+  r:
+    - survival      # Cox PH, time-to-event
+    - epiR          # epi measures (RR, OR, AR, NNT)
+    - EpiEstim      # real-time Rt estimation
+    - dagitty       # DAG specification + adjustment set
+    - ggdag         # DAG visualization
+    - gee           # generalized estimating equations
+    - lme4          # multilevel (cluster-level epi)
+    - meta          # meta-analysis
+    - metafor       # advanced meta-analysis
+    - epitools      # epi tables, rate ratios
+    - sf            # spatial data
+    - spdep         # spatial dependence
+    - mice          # multiple imputation
+    - IPWsurvival   # IPTW for survival
+    - MatchIt       # propensity score matching
+    - cobalt        # balance diagnostics
+  stata:
+    - stcox         # Cox PH
+    - logistic      # logistic regression
+    - poisson       # Poisson count models
+    - teffects      # treatment effects (IPTW, AIPW)
+    - meta          # meta-analysis
+
+method_templates:
+  - name: "DAG-Based Causal Analysis"
+    tier: standard
+    library: dagitty + ggdag (R) / dowhy (Python)
+    checklist:
+      - "Draw DAG with all hypothesized relationships"
+      - "Identify minimal sufficient adjustment set via d-separation"
+      - "List and justify unmeasured confounders explicitly"
+      - "Sensitivity analysis for unmeasured confounding (E-value)"
+      - "Report both crude and adjusted estimates"
+
+  - name: "Cohort Study Analysis"
+    tier: standard
+    library: survival + epiR (R)
+    checklist:
+      - "Report person-time and incidence rates"
+      - "Cox regression (check PH assumption)"
+      - "Confounding control: stratification, multivariable, or IPTW"
+      - "E-value for unmeasured confounding sensitivity"
+      - "Report RR / HR with 95% CI"
+
+  - name: "Case-Control Study Analysis"
+    tier: standard
+    library: statsmodels / epiR
+    checklist:
+      - "Conditional or unconditional logistic regression"
+      - "Matching variables appropriately handled"
+      - "Report OR with 95% CI"
+      - "Control selection bias assessment"
+      - "Dose-response if ordinal exposure"
+
+  - name: "Infectious Disease Modeling (SIR/SEIR)"
+    tier: advanced
+    library: epimodels / scipy.integrate
+    checklist:
+      - "Model compartments and transitions justified"
+      - "Parameter estimation from data (R0, recovery rate)"
+      - "Sensitivity analysis on key parameters"
+      - "Model validation against observed epidemic curve"
+      - "Uncertainty quantification (Bayesian or bootstrap)"
+
+  - name: "Inverse Probability of Treatment Weighting (IPTW)"
+    tier: standard
+    library: WeightIt + cobalt (R) / causalinference (Python)
+    checklist:
+      - "Propensity score model specification + diagnostics"
+      - "Covariate balance after weighting (SMD < 0.10)"
+      - "Truncate extreme weights (e.g., 1st/99th percentile)"
+      - "Report weighted estimate with robust SE"
+      - "Sensitivity: varying trimming thresholds"
+
+stats_diagnostics:
+  - "Confounding: DAG-identified adjustment sets"
+  - "Selection bias: assess loss to follow-up differentially"
+  - "Information bias: misclassification sensitivity (quantitative bias analysis)"
+  - "E-value: minimum confounding strength to nullify result"
+  - "Power: based on expected effect size and event rate"
+  - "Spatial autocorrelation: Moran's I, variograms"
+
+reporting_guidelines:
+  primary: "EQUATOR + STROBE"
+  checklists:
+    - "STROBE (cohort, case-control, cross-sectional)"
+    - "PRISMA (systematic reviews)"
+    - "MOOSE (meta-analysis of observational studies)"
+    - "RECORD (routinely collected data studies)"
+    - "CHEERS (health economic evaluations)"
+
+common_pitfalls:
+  - "Table 2 fallacy: reporting all coefficients from a causal model as causal"
+  - "Immortal time bias: misclassifying person-time"
+  - "Collider bias: conditioning on a descendant of both exposure and outcome"
+  - "Healthy worker / healthy user bias"
+  - "Ecological fallacy: area-level data → individual-level inference"
+  - "Time-varying confounding without MSM / g-estimation"
+  - "Not computing E-values for sensitivity to unmeasured confounding"
+
+visualization_templates:
+  - "DAG diagram with exposure, outcome, confounders, and colliders"
+  - "Epidemic curve (epi curve / incidence over time)"
+  - "Forest plot (meta-analysis of observational studies)"
+  - "Kaplan-Meier survival curve with risk table"
+  - "Covariate balance (Love plot / SMD before/after matching)"
+  - "Geographic / choropleth map of disease incidence"
+  - "SIR/SEIR model fit vs observed data"

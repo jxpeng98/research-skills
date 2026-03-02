@@ -1,0 +1,131 @@
+domain: biomedical
+display_name: "Biomedical & Clinical Research"
+
+libraries:
+  python:
+    - lifelines     # survival analysis (KM, Cox, AFT)
+    - scikit-survival  # ML + survival (RSF, gradient boosted)
+    - statsmodels   # logistic, Poisson, GEE
+    - pingouin      # ANOVA, t-tests, ICC
+    - tableone      # Table 1 baseline characteristics
+    - pymer4        # mixed models
+    - pycox         # deep learning survival (DeepSurv, DeepHit)
+    - nilearn       # neuroimaging analysis
+    - mne           # EEG/MEG analysis
+    - biopython     # sequence analysis
+  r:
+    - survival      # KM, Cox PH, competing risks
+    - survminer     # survival visualization (KM + risk tables)
+    - cmprsk        # competing risks (Fine-Gray)
+    - meta          # meta-analysis (generic)
+    - metafor       # meta-analysis (advanced)
+    - lme4          # mixed models (repeated measures)
+    - tableone      # Table 1 generation
+    - MatchIt       # propensity score matching
+    - cobalt        # covariate balance diagnostics
+    - mice          # multiple imputation
+    - rms           # regression modeling strategies (Harrell)
+    - pROC          # ROC analysis
+    - DiagrammeR    # CONSORT flow diagrams
+  stata:
+    - stcox         # Cox PH
+    - stcompet      # competing risks
+    - melogit       # multilevel logistic
+    - meta          # meta-analysis suite
+    - ipdmetan      # IPD meta-analysis
+
+method_templates:
+  - name: "Cox Proportional Hazards"
+    tier: standard
+    library: survival (R) / lifelines (Python)
+    checklist:
+      - "PH assumption: Schoenfeld residuals test + log-log plot"
+      - "Report HR with 95% CI for each covariate"
+      - "Time-varying covariates if PH violated"
+      - "Handle tied events (Efron method preferred)"
+      - "Report median follow-up and event counts"
+
+  - name: "Kaplan-Meier Survival Analysis"
+    tier: standard
+    library: survminer (R) / lifelines (Python)
+    checklist:
+      - "KM curves with risk table below"
+      - "Log-rank test for group comparison"
+      - "Report median survival with 95% CI"
+      - "Censor marks shown on curves"
+      - "Number at risk at key timepoints"
+
+  - name: "Meta-Analysis (Biomedical)"
+    tier: standard
+    library: metafor (R) / statsmodels (Python)
+    checklist:
+      - "Forest plot with individual and pooled estimates"
+      - "Heterogeneity: I², τ², Q-test, prediction interval"
+      - "Funnel plot + Egger's test for publication bias"
+      - "Subgroup / meta-regression for heterogeneity exploration"
+      - "Sensitivity: leave-one-out, influence diagnostics"
+      - "GRADE assessment for certainty of evidence"
+
+  - name: "Logistic Regression (Clinical)"
+    tier: standard
+    library: statsmodels / rms
+    checklist:
+      - "Report OR with 95% CI"
+      - "Hosmer-Lemeshow goodness-of-fit"
+      - "C-statistic (AUC-ROC) for discrimination"
+      - "Calibration plot (observed vs predicted)"
+      - "Events-per-variable (EPV) ≥ 10"
+
+  - name: "Randomized Controlled Trial (RCT) Analysis"
+    tier: standard
+    library: statsmodels + tableone
+    checklist:
+      - "CONSORT flow diagram"
+      - "Table 1: baseline characteristics by arm"
+      - "ITT primary analysis; per-protocol as sensitivity"
+      - "Pre-specified primary and secondary outcomes"
+      - "Multiplicity adjustment if >1 primary outcome"
+
+  - name: "Competing Risks (Fine-Gray)"
+    tier: advanced
+    library: cmprsk (R) / lifelines (Python)
+    checklist:
+      - "Distinguish cause-specific HR vs subdistribution HR"
+      - "Report cumulative incidence functions (CIF)"
+      - "Competing event types explicitly defined"
+
+stats_diagnostics:
+  - "PH assumption: global and per-covariate Schoenfeld test"
+  - "Informative censoring: assess if dropout correlates with outcome"
+  - "Baseline imbalance: standardized mean differences (SMD < 0.1)"
+  - "Missing data: pattern analysis (MNAR/MAR) → multiple imputation (MICE)"
+  - "Sample size: power based on expected HR and event rate"
+  - "Multiplicity: Bonferroni/Holm for multiple endpoints; gatekeeping for hierarchical"
+
+reporting_guidelines:
+  primary: "EQUATOR Network guidelines"
+  checklists:
+    - "CONSORT (RCTs)"
+    - "STROBE (observational)"
+    - "PRISMA (systematic reviews)"
+    - "STARD (diagnostic accuracy)"
+    - "TRIPOD (prediction models)"
+
+common_pitfalls:
+  - "Violating PH assumption without time-varying covariate correction"
+  - "Informative censoring treated as random"
+  - "Ignoring competing risks → overestimating event probability"
+  - "EPV < 10 in logistic regression → overfitting"
+  - "Not reporting CONSORT flow diagram for trials"
+  - "Subgroup analyses without pre-specification (data dredging)"
+  - "Using OR when prevalence is high (OR ≠ RR)"
+  - "Single imputation instead of multiple imputation"
+
+visualization_templates:
+  - "Kaplan-Meier curve with risk table and censor marks"
+  - "Forest plot (meta-analysis) with subgroup panels"
+  - "Funnel plot with Egger's regression line"
+  - "CONSORT flow diagram"
+  - "Calibration plot (predicted vs observed)"
+  - "Table 1 (baseline characteristics, SMD column)"
+  - "Cumulative incidence function plot (competing risks)"

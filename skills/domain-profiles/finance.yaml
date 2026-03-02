@@ -1,0 +1,101 @@
+domain: finance
+display_name: "Finance & Financial Engineering"
+
+libraries:
+  python:
+    - arch          # GARCH, volatility models
+    - QuantLib      # derivatives pricing, fixed income
+    - PyPortfolioOpt # mean-variance, Black-Litterman
+    - statsmodels   # OLS, panel, time series
+    - linearmodels  # IV, panel (FE/RE), system GMM
+    - yfinance      # market data retrieval
+    - empyrical     # risk/return analytics
+    - zipline-reloaded  # backtesting
+  r:
+    - rugarch       # univariate GARCH
+    - rmgarch       # multivariate GARCH (DCC/BEKK)
+    - PerformanceAnalytics # portfolio risk/return
+    - quantmod      # data retrieval + charting
+    - tidyquant     # tidy financial analysis
+    - frm           # financial risk management
+    - vars          # VAR / VECM time series
+    - plm           # panel data
+  stata:
+    - arch/garch    # volatility models
+    - xtreg         # panel data
+    - ivregress     # instrumental variables
+    - rolling       # rolling window estimation
+
+method_templates:
+  - name: "GARCH / Volatility Modeling"
+    tier: standard
+    library: arch (Python) / rugarch (R)
+    checklist:
+      - "Report AIC/BIC for model selection"
+      - "Run Ljung-Box on standardized residuals"
+      - "Test ARCH effects (Engle LM test) before fitting"
+      - "Specify innovation distribution (normal / t / skewed-t)"
+
+  - name: "Event Study"
+    tier: standard
+    library: statsmodels + custom
+    checklist:
+      - "Define estimation window (≥120 days) and event window"
+      - "Use market model or Fama-French for expected returns"
+      - "Report CAR with parametric (Patell) and non-parametric (rank) tests"
+      - "Check for event-date clustering"
+
+  - name: "Portfolio Optimization (MVO)"
+    tier: standard
+    library: PyPortfolioOpt
+    checklist:
+      - "Shrink covariance (Ledoit-Wolf) if N/T ratio is high"
+      - "Report weights, expected return, risk, Sharpe ratio"
+      - "Run sensitivity to return estimates"
+
+  - name: "Fama-French / Factor Models"
+    tier: standard
+    library: linearmodels / statsmodels
+    checklist:
+      - "Use Fama-MacBeth or pooled with clustered SE"
+      - "Report alpha, factor loadings, t-stats"
+      - "Check for multicollinearity among factors"
+      - "Double-sort or Fama-MacBeth cross-section explicitly"
+
+  - name: "Options Pricing / Derivatives"
+    tier: advanced
+    library: QuantLib
+    checklist:
+      - "Specify payoff, exercise type, and market conventions"
+      - "Validate vs closed-form (Black-Scholes) where possible"
+      - "Report Greeks (delta, gamma, vega, theta)"
+
+stats_diagnostics:
+  - "Stationarity: ADF / KPSS tests before time-series modeling"
+  - "Heteroskedasticity: White / Breusch-Pagan tests"
+  - "Serial correlation: Durbin-Watson / Ljung-Box"
+  - "Cointegration: Johansen / Engle-Granger (for multivariate TS)"
+  - "Look-ahead bias: ensure all features use only past data"
+  - "Survivorship bias: document universe construction rules"
+
+reporting_guidelines:
+  primary: "Journal of Finance / RFS / JFE style"
+  checklists:
+    - "Summary statistics table (mean, sd, N, correlations)"
+    - "Double-sort or Fama-MacBeth table"
+    - "Robustness: alternative windows, subsamples, controls"
+
+common_pitfalls:
+  - "Look-ahead bias: using future information in feature construction"
+  - "Survivorship bias: excluding delisted/bankrupt firms"
+  - "Non-stationary series used in OLS → spurious regression"
+  - "Ignoring transaction costs / market impact in backtests"
+  - "Overlapping observations without Newey-West correction"
+  - "Using daily returns for long-horizon event studies (volatility bias)"
+
+visualization_templates:
+  - "Cumulative Abnormal Return (CAR) event study plot"
+  - "Efficient frontier with optimal portfolio markers"
+  - "GARCH conditional volatility time series"
+  - "Factor exposure bar chart (Fama-French loadings)"
+  - "Rolling beta / rolling correlation plots"

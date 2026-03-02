@@ -33,6 +33,7 @@ from .claude_bridge import ClaudeBridge
 from .codex_bridge import CodexBridge
 from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
+from .i18n import get_text
 
 
 class CollaborationMode(Enum):
@@ -206,9 +207,9 @@ class ModelOrchestrator:
         name = profile_name.strip()
         config = profile_registry.get(name)
         if config is None:
+            err_msg = get_text("unknown_profile", profile=name)
             raise ValueError(
-                "Unknown agent profile: "
-                f"{name}. Available: {', '.join(sorted(profile_registry.keys()))}"
+                f"{err_msg}. Available: {', '.join(sorted(profile_registry.keys()))}"
             )
         if not isinstance(config, dict):
             raise ValueError(f"Invalid profile config format: {name}")
@@ -455,11 +456,12 @@ class ModelOrchestrator:
                 summary_directive,
             )
 
+        parallel_header = get_text("parallel_execution") if execution_level == "full" else get_text("parallel_execution_dual")
         merged_parts: list[str] = [
-            f"## Parallel Execution ({execution_level})",
+            parallel_header,
             f"- Requested agents: {', '.join(requested_agents)}",
             f"- Successful agents: {', '.join(success_agents) if success_agents else 'none'}",
-            f"- Failed agents: {', '.join(failed_agents) if failed_agents else 'none'}",
+            get_text("failed_agents", agents=', '.join(failed_agents) if failed_agents else 'none'),
             f"- Base profile: {base_profile_name}",
             f"- Summarizer profile: {summarizer_profile_name}",
         ]
@@ -478,7 +480,7 @@ class ModelOrchestrator:
                 ]
             )
 
-        merged_parts.extend(["", "## Synthesis"])
+        merged_parts.extend(["", get_text("synthesis")])
         if synthesis_resp and synthesis_resp.success:
             merged_parts.append(
                 f"[Summarizer: {synthesis_runtime}]"
@@ -1434,21 +1436,21 @@ Provide your verification assessment.
         )
 
         merged_parts = [
-            "## Doctor Summary",
+            get_text("doctor_summary"),
             f"- Working directory: {target_cwd}",
             f"- Total checks: {total_checks}",
             f"- OK: {status_counts['ok']}",
             f"- Warnings: {status_counts['warning']}",
             f"- Errors: {status_counts['error']}",
             "",
-            "## Check Details",
+            get_text("check_details"),
         ]
         for item in checks:
             merged_parts.append(
                 f"- [{item['status'].upper()}] {item['name']}: {item['detail']}"
             )
         if recommendations:
-            merged_parts.extend(["", "## Recommendations"])
+            merged_parts.extend(["", get_text("recommendations")])
             for rec in sorted(set(recommendations)):
                 merged_parts.append(f"- {rec}")
 
@@ -2043,16 +2045,16 @@ Return sections:
         merged_parts = [
             plan_result.merged_analysis,
             "",
-            "## Task Packet",
+            get_text("task_packet"),
             json.dumps(packet, ensure_ascii=False, indent=2),
             "",
-            "## MCP Evidence",
+            get_text("mcp_evidence"),
             self._format_mcp_evidence(mcp_evidence),
             "",
-            "## Skill Cards",
+            get_text("skill_cards"),
             self._format_skill_context(packet.get("required_skill_cards", [])),
             "",
-            "## Agent Profiles",
+            get_text("agent_profiles"),
             "\n".join(
                 [
                     f"- base: {selected_profiles['base']}",
@@ -2062,17 +2064,17 @@ Return sections:
                 ]
             ),
             "",
-            "## Routing",
+            get_text("routing"),
             "\n".join(f"- {item}" for item in routing_notes) if routing_notes else "- Direct mapping used.",
             "",
-            f"## Draft ({draft_runtime})",
+            get_text("draft", agent=draft_runtime),
             draft_resp.content if draft_resp.success else f"[FAILED] {draft_resp.error}",
         ]
         if review_resp:
             merged_parts.extend(
                 [
                     "",
-                    f"## Review ({review_runtime})",
+                    get_text("review", agent=review_runtime),
                     review_resp.content if review_resp.success else f"[FAILED] {review_resp.error}",
                 ]
             )
@@ -2088,7 +2090,7 @@ Return sections:
             merged_parts.extend(
                 [
                     "",
-                    f"## Triad Audit ({triad_runtime})",
+                    get_text("triad_audit", agent=triad_runtime),
                     triad_resp.content if triad_resp.success else f"[FAILED] {triad_resp.error}",
                 ]
             )

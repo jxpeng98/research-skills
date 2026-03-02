@@ -11,7 +11,7 @@ Usage:
     python orchestrator.py task-run --task-id F3 --paper-type empirical --topic ai-in-education --cwd "/path" --mcp-strict --skills-strict --triad
     python orchestrator.py doctor --cwd "/path"
 
-Python 3.12+ required.
+Python 3.10+ required.
 """
 from __future__ import annotations
 
@@ -267,12 +267,25 @@ class ModelOrchestrator:
         if not stage_style and stage == "triad":
             stage_style = str(profile_cfg.get("summary_style", "")).strip()
         if not persona and not stage_style:
+            lines = []
+        else:
+            lines = [f"Agent Profile: {profile_name} (stage: {stage})"]
+            if persona:
+                lines.append(f"- Persona: {persona}")
+            if stage_style:
+                lines.append(f"- Style: {stage_style}")
+        
+        output_language = str(profile_cfg.get("output_language", "")).strip()
+        if output_language:
+            if not lines:
+                lines = [f"Agent Profile: {profile_name} (stage: {stage})"]
+            lines.append(
+                f"- Output Language Directive: You MUST output the final response in {output_language}, "
+                "but strictly adhere to the English constraints, structures, and schemas provided."
+            )
+        
+        if not lines:
             return ""
-        lines = [f"Agent Profile: {profile_name} (stage: {stage})"]
-        if persona:
-            lines.append(f"- Persona: {persona}")
-        if stage_style:
-            lines.append(f"- Style: {stage_style}")
         return "\n".join(lines)
     
     def execute(

@@ -259,6 +259,35 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             )
         )
 
+    def test_build_profile_directive_bilingual(self) -> None:
+        """Verify that output_language triggers additional constraint injection."""
+        orchestrator = MockOrchestrator()
+        
+        # Test 1: Profile without output_language
+        directive_normal = orchestrator._build_profile_directive(
+            "default",
+            {"persona": "Tester", "analysis_style": "Normal style"},
+            "analysis"
+        )
+        self.assertNotIn("Output Language Directive", directive_normal)
+
+        # Test 2: Profile with output_language
+        directive_bilingual = orchestrator._build_profile_directive(
+            "bilingual",
+            {"persona": "Tester", "output_language": "zh-CN"},
+            "analysis"
+        )
+        self.assertIn("Output Language Directive: You MUST output the final response in zh-CN", directive_bilingual)
+        
+        # Test 3: Profile with ONLY output_language and no persona/style
+        directive_only_lang = orchestrator._build_profile_directive(
+            "only_lang",
+            {"output_language": "fr-FR"},
+            "analysis"
+        )
+        self.assertIn("Output Language Directive: You MUST output the final response in fr-FR", directive_only_lang)
+        self.assertIn("Agent Profile: only_lang", directive_only_lang)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

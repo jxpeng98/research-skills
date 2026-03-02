@@ -92,6 +92,29 @@
           "timeout_seconds": 300
         }
       }
+    },
+    "bilingual-collaborator": {
+      "persona": "Academic collaborator operating with English constraints but outputting localized text.",
+      "output_language": "zh-CN",
+      "analysis_style": "State assumptions explicitly in the target language.",
+      "draft_style": "Use concise academic prose matching target language conventions.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "read-only",
+          "non_interactive": true,
+          "timeout_seconds": 300
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 300
+        },
+        "gemini": {
+          "sandbox": false,
+          "non_interactive": true,
+          "timeout_seconds": 300
+        }
+      }
     }
   },
   "task_overrides": {

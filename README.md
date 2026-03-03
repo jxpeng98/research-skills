@@ -46,6 +46,13 @@ Multi-client installer:
 ./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
 ```
 
+Upgrade / auto-upgrade:
+- Guide: `guides/upgrade-research-skills.md`
+- CLI aliases (after pipx install): `rs` / `rsw` (same as `research-skills`)
+- Optional default upstream (omit `--repo`): set `RESEARCH_SKILLS_REPO=<owner>/<repo>`, or add `research-skills.toml` in your project root
+- Check updates: `rs check --repo <owner>/<repo>` (or `rs check` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py check ...`)
+- Upgrade (no fork / no git clone required): `rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all` (or omit `--repo` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py upgrade ...`)
+
 CI pipeline:
 - `.github/workflows/ci.yml` (runs `py_compile`, strict validator, and unit tests on PR/push)
 
@@ -77,7 +84,30 @@ Collaboration rule:
 Collaboration playbook:
 - `guides/agent-skill-collaboration.md`
 - `guides/install-multi-client.md`
+- `guides/cli-reference.md` (CLI command reference)
 - `guides/extend-research-skills.md` (how to extend/modify parts safely)
+
+## 0 → 1 Navigation (New Users)
+
+If you're new to this repo, this is the fastest way to understand and run it:
+
+1. **Learn the contract (source of truth)**:
+   - `standards/research-workflow-contract.yaml` (Task IDs, required outputs, quality gates, dependencies)
+2. **Learn the routing (who does what)**:
+   - `standards/mcp-agent-capability-map.yaml` (required skills/MCP + primary/review/fallback agents per Task ID)
+3. **Install into your clients/project**:
+   - Script: `./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
+   - Or pipx + upgrade: `pipx install research-skills-installer` then `rs upgrade --project-dir <project> --target all --doctor`
+4. **Run a workflow**:
+   - In Claude Code: use `/paper` or any `.agent/workflows/*.md` command in your project
+   - CLI: `python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`
+5. **Validate outputs**:
+   - `python3 scripts/validate_project_artifacts.py --cwd <project> --topic <topic> --task-id <task> --strict`
+
+Where to customize:
+- Personas/runtime options: `standards/agent-profiles.example.json` (used by `parallel` / `task-run`)
+- Stage playbooks (DoD/checklists): `research-paper-workflow/references/stage-*.md`
+- Project upstream defaults: `research-skills.toml` (or `RESEARCH_SKILLS_REPO`)
 
 ## Skills + Agents Flow (ASCII)
 
@@ -278,6 +308,7 @@ Runtime note:
 
 Profile file template:
 - `standards/agent-profiles.example.json`
+  - Defines personas, agent runtimes, and an optional `output_language` (e.g., `"zh-CN"`). Using `output_language` enforces localized output while keeping core instructions in English, ensuring maximum AI reasoning stability.
 
 ## Core Workflows
 
@@ -327,41 +358,27 @@ Theory review, concept mapping (Mermaid diagrams), hypothesis derivation.
 
 ```
 research-skills/
-├── .agent/workflows/     # User commands
-│   ├── paper.md
-│   ├── lit-review.md
-│   ├── paper-read.md
-│   ├── find-gap.md
-│   ├── build-framework.md
-│   ├── academic-write.md
-│   ├── paper-write.md
-│   ├── code-build.md
-│   ├── synthesize.md
-│   ├── study-design.md
-│   ├── ethics-check.md
-│   ├── submission-prep.md
-│   └── rebuttal.md
-├── skills/               # Detailed skill modules
-│   ├── question-refiner.md
-│   ├── academic-searcher.md
-│   ├── paper-extractor.md
-│   ├── quality-assessor.md
-│   ├── model-collaborator.md   # Multi-model collaboration
-│   └── ... (22 skills)
-├── skills-core.md        # Consolidated reference (~8KB vs 71KB)
-├── bridges/              # Multi-model CLI bridges
-│   ├── base_bridge.py
-│   ├── codex_bridge.py
-│   ├── gemini_bridge.py
-│   └── orchestrator.py   # Single entry point
-├── guides/               # Collaboration playbooks
-├── scripts/              # Local validators and utility scripts
-├── templates/            # Output templates
-├── standards/            # Canonical workflow contract (Task IDs + outputs)
-├── research-paper-workflow/  # Portable Codex skill package
-├── RESEARCH/             # Research output directory
-├── CLAUDE.md             # Claude Code quick reference
-└── README.md
+├── standards/                # Canonical workflow contract + capability map (Task IDs, outputs, routing)
+├── research-paper-workflow/  # Portable skill package installed to Codex/Claude/Gemini
+├── .agent/workflows/         # Claude Code slash-commands (project workflows)
+├── bridges/                  # Multi-model orchestration (Codex/Claude/Gemini bridges + orchestrator)
+├── skills/                   # Skill specs referenced by capability map (skill cards)
+├── skills-core.md            # Token-optimized consolidated reference for skills
+├── templates/                # Output templates (PRISMA, rebuttal, DMP, etc.)
+├── guides/                   # User-facing guides (install/upgrade/collab/CLI reference)
+├── scripts/                  # Install/upgrade/release automation + validators
+├── research_skills/          # pipx CLI package (entrypoints: research-skills / rs / rsw)
+│   └── project.toml          # Packaged default upstream (CI-injected; overrideable)
+├── release/                  # Release notes + acceptance receipts + templates
+├── tests/                    # Orchestrator workflow unit tests (mock bridges)
+├── .github/workflows/        # GitHub Actions CI + release automation
+├── RESEARCH/                 # Example / generated research artifacts (contract output root)
+├── BETA_TODO.md              # Beta readiness checklist
+├── TODO_ROADMAP.md           # Longer-term roadmap
+├── CLAUDE.md                 # Claude Code quick reference (installed into projects)
+├── pyproject.toml            # Packaging (console scripts + metadata)
+├── README.md                 # English docs
+└── README_CN.md              # 中文文档
 ```
 
 ## Token Optimization

@@ -43,6 +43,13 @@ python3 scripts/validate_project_artifacts.py --cwd ./project --topic ai-in-educ
 ./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
 ```
 
+升级 / 自动升级：
+- 指南：`guides/upgrade-research-skills.md`
+- 命令别名（pipx 安装后可用）：`rs` / `rsw`（等价于 `research-skills`）
+- 可选默认上游（省略 `--repo`）：设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml`
+- 检测更新：`rs check --repo <owner>/<repo>`（或设置了 `RESEARCH_SKILLS_REPO` 后直接 `rs check`；或 `python3 scripts/research_skill_update.py check ...`）
+- 直接升级（不需要 fork / 不需要 git clone）：`rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（或设置了 `RESEARCH_SKILLS_REPO` 后省略 `--repo`；或 `python3 scripts/research_skill_update.py upgrade ...`）
+
 CI 流水线：
 - `.github/workflows/ci.yml`（在 PR/push 上运行 `py_compile`、严格校验与单元测试）
 
@@ -74,7 +81,30 @@ Beta 发布文档：
 协同增强指南：
 - `guides/agent-skill-collaboration.md`
 - `guides/install-multi-client.md`
+- `guides/cli-reference.md`（CLI 命令参考）
 - `guides/extend-research-skills.md`（如何对某一部分进行扩展/修改并保持一致性）
+
+## 0 → 1 导航（新用户从这里开始）
+
+如果你刚接触这个仓库，建议按以下顺序快速上手：
+
+1. **先看合同（单一真源）**：
+   - `standards/research-workflow-contract.yaml`（Task ID、必需产物、质量门、依赖顺序）
+2. **再看路由（谁负责做什么）**：
+   - `standards/mcp-agent-capability-map.yaml`（每个 Task 的 required skills/MCP + 主执行/复核/回退 agent）
+3. **安装到三端与项目**：
+   - 脚本安装：`./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
+   - 或 pipx + upgrade：`pipx install research-skills-installer` 然后 `rs upgrade --project-dir <project> --target all --doctor`
+4. **开始跑工作流**：
+   - Claude Code：在项目里用 `/paper` 或 `.agent/workflows/*.md` 的任一命令
+   - 命令行：`python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`
+5. **校验产物是否对齐合同**：
+   - `python3 scripts/validate_project_artifacts.py --cwd <project> --topic <topic> --task-id <task> --strict`
+
+常见自定义入口：
+- 人格/审稿风格/运行参数：`standards/agent-profiles.example.json`（用于 `parallel` / `task-run`）
+- 各阶段 DoD/检查清单：`research-paper-workflow/references/stage-*.md`
+- 项目默认上游：`research-skills.toml`（或环境变量 `RESEARCH_SKILLS_REPO`）
 
 ## Skills + Agents 协同流程（ASCII）
 
@@ -260,6 +290,7 @@ python -m bridges.orchestrator task-run \
 - 外部 MCP 可通过环境变量命令接入，例如：`RESEARCH_MCP_SCHOLARLY_SEARCH_CMD`。
 
 Profile 模板：`standards/agent-profiles.example.json`
+  - 在 Profile 中支持配置 `output_language`（例如 `"output_language": "zh-CN"`），在保持英文内核提示词（保障模型推理最优化）的前提下，强制系统输出本地化语言。
 
 ## 核心工作流
 
@@ -329,16 +360,27 @@ Profile 模板：`standards/agent-profiles.example.json`
 
 ```
 research-skills/
-├── .agent/workflows/     # 用户命令
-├── skills/               # 可复用技能模块
-├── guides/               # 协同增强指南
-├── templates/            # 输出模板
-├── scripts/              # 本地校验与工具脚本
-├── standards/            # 规范合同（Task ID + 输出路径）
-├── research-paper-workflow/  # 可移植 Codex skill 包
-├── RESEARCH/             # 研究输出目录
-├── CLAUDE.md             # Claude Code 快速参考
-└── README.md             # 本文件
+├── standards/                # 规范合同 + 能力映射（Task ID、输出路径、路由）
+├── research-paper-workflow/  # 可移植 skill 包（安装到 Codex/Claude/Gemini）
+├── .agent/workflows/         # Claude Code 项目工作流（/paper 等命令入口）
+├── bridges/                  # 多端协同编排（Codex/Claude/Gemini bridge + orchestrator）
+├── skills/                   # skills 规范卡片（被 capability-map 引用）
+├── skills-core.md            # skills 的 token 优化汇总参考
+├── templates/                # 输出模板（PRISMA、rebuttal、DMP 等）
+├── guides/                   # 使用指南（安装/升级/协同/CLI 参考）
+├── scripts/                  # 安装/升级/发布自动化 + 校验器脚本
+├── research_skills/          # pipx CLI 包（命令：research-skills / rs / rsw）
+│   └── project.toml          # 打包默认上游（CI 注入；可被覆盖）
+├── release/                  # Release notes + 验收回执 + 模板
+├── tests/                    # 编排器单元测试（mock bridges）
+├── .github/workflows/        # GitHub Actions：CI 与发布自动化
+├── RESEARCH/                 # 示例/生成的研究产物根目录（契约输出根）
+├── BETA_TODO.md              # Beta 发布前清单
+├── TODO_ROADMAP.md           # 长期路线图
+├── CLAUDE.md                 # Claude Code 快速参考（安装进项目）
+├── pyproject.toml            # pip 打包配置（console scripts 等）
+├── README.md                 # 英文文档
+└── README_CN.md              # 本文件
 ```
 
 ## 学术数据库支持

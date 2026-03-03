@@ -27,6 +27,8 @@ jobs:
           python-version: "3.12"
 
       - name: Inject packaged upstream defaults
+        env:
+          RESEARCH_SKILLS_REPO_SLUG: jxpeng98/research-skills
         run: bash scripts/inject_project_toml.sh
 
       - name: Install build tools

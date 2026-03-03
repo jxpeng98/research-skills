@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "research-skills-installer"
 version = "0.1.0b7"
 description = "Installer/upgrader CLI for research-skills (Codex / Claude Code / Gemini) without requiring a git fork."
-readme = "README.md"
+readme = "README_PYPI.md"
 requires-python = ">=3.12"
 license = "MIT"
 authors = [{name = "Jiaxin Peng"}]

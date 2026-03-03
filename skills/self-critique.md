@@ -11,9 +11,10 @@ Prevent superficial research by forcing the AI to act as "Reviewer 2" or a "Socr
 1. **Self-Review Configuration:** Identify the current research stage (A-I).
 2. **Reviewer Persona:** Adopt a highly critical, adversarial, yet constructive persona.
 3. **Execution (Debate Loop):** 
-   - Generator provides the draft.
-   - Reviewer asks the stage-specific critique questions.
-   - Generator revises until the Reviewer passes the output.
+   - **Draft Generation:** Generator provides the primary draft based on provided context and skills.
+   - **Dynamic Literature Critique:** The Reviewer first analyzes the provided MCP Evidence (literature abstracts, metadata, full texts) and formulates 2-3 highly specific questions based on the controversies or limitations identified in those exact reference texts.
+   - **Stage-Specific Critique:** The Reviewer then appends the rigorous, stage-specific questions (listed below).
+   - **Iterative Revision:** The Reviewer passes or blocks the draft. If blocked, the Generator revises targeted fixes until the Reviewer passes the output or reaches the maximum allowed rounds.
 
 ## Stage-Specific Critique Questions
 

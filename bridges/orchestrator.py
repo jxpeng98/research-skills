@@ -1757,6 +1757,12 @@ Review checklist:
 4. Internal consistency (claims/methods/evidence alignment).
 5. Missing citations, assumptions, or unresolved risks.
 {critique_section}
+
+Dynamic Literature-Based Critique:
+- Before evaluating, analyze the provided MCP evidence (especially literature references and methodology details).
+- Formulate 2-3 highly specific, critical questions based on the gaps, controversies, or limitations identified in those exact papers.
+- Explicitly evaluate whether the primary draft successfully addresses these dynamic, literature-specific nuances.
+
 IMPORTANT: You MUST include a clear verdict line in your response:
 - Verdict: PASS  (if all critical requirements are met)
 - Verdict: BLOCK (if there are critical issues that must be fixed)

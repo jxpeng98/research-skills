@@ -361,11 +361,28 @@ Profile 模板：`standards/agent-profiles.example.json`
 
 ```
 research-skills/
+├── docs/                     # 框架约定、快速指南、扩展指南
+├── pipelines/                # 编排 DAG 配置（PRISMA 综述等）
+├── roles/                    # 角色配置（PI、Methods Lead 等的 profile + 技能偏好）
+├── schemas/                  # JSON/YAML Schemas (技能、产物、profile 定义)
+├── eval/                     # Evaluation harness（golden tests + 评分标准）
 ├── standards/                # 规范合同 + 能力映射（Task ID、输出路径、路由）
 ├── research-paper-workflow/  # 可移植 skill 包（安装到 Codex/Claude/Gemini）
 ├── .agent/workflows/         # Claude Code 项目工作流（/paper 等命令入口）
 ├── bridges/                  # 多端协同编排（Codex/Claude/Gemini bridge + orchestrator）
-├── skills/                   # skills 规范卡片（被 capability-map 引用）
+├── skills/                   # skills 规范卡片（按 A-I 阶段和 domain-profiles 组织）
+│   ├── A_framing/            # 研究问题与假设
+│   ├── B_literature/         # 检索、筛选、提取
+│   ├── C_design/             # 研究设计与分析规划
+│   ├── D_ethics/             # 伦理与 IRB
+│   ├── E_synthesis/          # 证据评级与合成
+│   ├── F_writing/            # 草稿撰写与图表生成
+│   ├── G_compliance/         # 报告规范与 PRISMA 检查
+│   ├── H_submission/         # 投稿打包与审稿意见回复
+│   ├── I_code/               # 代码规划、实现与质量保证
+│   ├── Z_cross_cutting/      # 工具技能（自我纠错、统一语气）
+│   ├── domain-profiles/      # 领域特性与验证规则（经济学、生物医学等）
+│   └── registry.yaml         # 所有技能的 central index 注册表
 ├── skills-core.md            # skills 的 token 优化汇总参考
 ├── templates/                # 各种输出模板（PRISMA, rebuttal, DMP等）
 ├── guides/
@@ -378,7 +395,6 @@ research-skills/
 ├── tests/                    # 编排器单元测试（mock bridges）
 ├── .github/workflows/        # GitHub Actions：CI 与发布自动化
 ├── RESEARCH/                 # 示例/生成的研究产物根目录（契约输出根）
-├── BETA_TODO.md              # Beta 发布前清单
 ├── TODO_ROADMAP.md           # 长期路线图
 ├── CLAUDE.md                 # Claude Code 快速参考（安装进项目）
 ├── pyproject.toml            # pip 打包配置（console scripts 等）

@@ -29,6 +29,7 @@ TRANSLATIONS = {
         "mcp_evidence": "## MCP Evidence",
         "skill_cards": "## Skill Cards",
         "routing": "## Routing",
+        "revision_history": "## Revision History",
     },
     "zh-CN": {
         "prompt_lang": "Select CLI Language / 请选择 CLI 语言 [en/zh-CN] (default: zh-CN): ",
@@ -53,6 +54,7 @@ TRANSLATIONS = {
         "mcp_evidence": "## MCP 证据采集 (MCP Evidence)",
         "skill_cards": "## 技能规范卡 (Skill Cards)",
         "routing": "## 路由路径 (Routing)",
+        "revision_history": "## 修订历程 (Revision History)",
     }
 }
 

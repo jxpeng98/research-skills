@@ -159,18 +159,15 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("## Synthesis", result.merged_analysis)
 
     def test_parallel_unknown_profile_returns_structured_error(self) -> None:
+        from bridges.errors import ConfigError
         orchestrator = MockOrchestrator()
-        result = orchestrator.execute(
-            mode=CollaborationMode.PARALLEL,
-            cwd=REPO_ROOT,
-            prompt="bad profile",
-            profile="profile-not-exist",
-        )
-
-        self.assertEqual(result.mode, "parallel")
-        self.assertIn("Unknown agent profile", result.merged_analysis)
-        self.assertEqual(result.confidence, 0.0)
-        self.assertEqual(len(orchestrator.runtime_calls), 0)
+        with self.assertRaises(ConfigError):
+            result = orchestrator.execute(
+                mode=CollaborationMode.PARALLEL,
+                cwd=REPO_ROOT,
+                prompt="bad profile",
+                profile="profile-not-exist",
+            )
 
     def test_task_run_executes_with_draft_and_review(self) -> None:
         orchestrator = MockOrchestrator()
@@ -192,19 +189,16 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertTrue(any("(stage: review)" in directive for directive in directives))
 
     def test_task_run_unknown_profile_returns_structured_error(self) -> None:
+        from bridges.errors import ConfigError
         orchestrator = MockOrchestrator()
-        result = orchestrator.task_run(
-            task_id="F3",
-            paper_type="empirical",
-            topic="ai-in-education",
-            cwd=REPO_ROOT,
-            draft_profile="not-exist",
-        )
-
-        self.assertEqual(result.mode, "task-run")
-        self.assertIn("Unknown agent profile", result.merged_analysis)
-        self.assertEqual(result.confidence, 0.0)
-        self.assertEqual(len(orchestrator.runtime_calls), 0)
+        with self.assertRaises(ConfigError):
+            result = orchestrator.task_run(
+                task_id="F3",
+                paper_type="empirical",
+                topic="ai-in-education",
+                cwd=REPO_ROOT,
+                draft_profile="not-exist",
+            )
 
     def test_task_run_stage_profile_overrides_apply(self) -> None:
         orchestrator = MockOrchestrator()
@@ -287,6 +281,86 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         )
         self.assertIn("Output Language Directive: You MUST output the final response in fr-FR", directive_only_lang)
         self.assertIn("Agent Profile: only_lang", directive_only_lang)
+    def test_parse_review_verdict_pass(self) -> None:
+        orchestrator = MockOrchestrator()
+        verdict, conf = orchestrator._parse_review_verdict("Verdict: PASS\nConfidence: 0.95")
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(conf, 0.95)
+
+    def test_parse_review_verdict_block(self) -> None:
+        orchestrator = MockOrchestrator()
+        verdict, conf = orchestrator._parse_review_verdict("Overall Verdict: BLOCK\nConfidence (0-1): 0.5")
+        self.assertEqual(verdict, "BLOCK")
+        self.assertEqual(conf, 0.5)
+
+    def test_parse_review_verdict_convergence(self) -> None:
+        orchestrator = MockOrchestrator()
+        # High confidence but BLOCK should auto-converge to PASS
+        verdict, conf = orchestrator._parse_review_verdict("- Verdict: BLOCK\nConfidence: 0.9")
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(conf, 0.9)
+
+    def test_critique_question_injection(self) -> None:
+        orchestrator = MockOrchestrator()
+        prompt = orchestrator._build_task_review_prompt(
+            task_packet={"task_id": "F3"},
+            mcp_evidence=[],
+            skill_cards=[],
+            draft_output="draft",
+        )
+        self.assertIn("Stage-specific critique questions", prompt)
+        # F-series task is manuscript stage
+        self.assertIn("Do the claims in the Discussion section", prompt)
+
+    def test_task_run_revision_loop_converges(self) -> None:
+        # Create a mock orchestrator that fails the first review but passes the second
+        class ConvergingOrchestrator(MockOrchestrator):
+            def __init__(self) -> None:
+                super().__init__()
+                self.review_count = 0
+
+            def _execute_runtime_agent(
+                self,
+                agent_name: str,
+                prompt: str,
+                cwd: Path,
+                runtime_options: dict[str, Any] | None = None,
+                profile_directive: str | None = None,
+            ) -> BridgeResponse:
+                # If it's the review agent, output BLOCK then PASS
+                if "Review the draft" in prompt:
+                    self.review_count += 1
+                    if self.review_count == 1:
+                        content = "Verdict: BLOCK\nConfidence: 0.5\nCritical Issues: Needed more depth"
+                    else:
+                        content = "Verdict: PASS\nConfidence: 0.9\nLGTM."
+                    
+                    self.runtime_calls.append({
+                        "agent": agent_name,
+                        "runtime_options": dict(runtime_options or {}),
+                        "profile_directive": profile_directive or "",
+                        "cwd": str(cwd),
+                    })
+                    return BridgeResponse(success=True, model=agent_name, content=content)
+                
+                return super()._execute_runtime_agent(
+                    agent_name, prompt, cwd, runtime_options, profile_directive
+                )
+
+        orchestrator = ConvergingOrchestrator()
+        result = orchestrator.task_run(
+            task_id="F3",
+            paper_type="empirical",
+            topic="test-topic",
+            cwd=REPO_ROOT,
+        )
+        # Check that revision history tracked both rounds
+        self.assertIn("Round 0: BLOCK", result.merged_analysis)
+        self.assertIn("Round 1: PASS", result.merged_analysis)
+        # Codex (draft) -> Claude (review 1) -> Codex (revise) -> Claude (review 2) -> Gemini (triad)
+        agents_called = [c["agent"] for c in orchestrator.runtime_calls]
+        self.assertEqual(agents_called.count("claude"), 2)
+        self.assertEqual(agents_called.count("codex"), 2)
 
 
 if __name__ == "__main__":

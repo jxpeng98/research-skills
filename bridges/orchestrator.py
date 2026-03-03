@@ -11,7 +11,7 @@ Usage:
     python orchestrator.py task-run --task-id F3 --paper-type empirical --topic ai-in-education --cwd "/path" --mcp-strict --skills-strict --triad
     python orchestrator.py doctor --cwd "/path"
 
-Python 3.10+ required.
+Python 3.12+ required.
 """
 from __future__ import annotations
 
@@ -34,6 +34,7 @@ from .codex_bridge import CodexBridge
 from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
 from .i18n import get_text
+from .critique_questions import get_critique_questions
 from .errors import (
     ResearchError,
     ConfigError,
@@ -1717,9 +1718,26 @@ Return sections:
         mcp_evidence: list[MCPEvidence],
         skill_cards: list[dict[str, Any]],
         draft_output: str,
+        revision_round: int = 0,
     ) -> str:
-        return f"""Review the draft for this canonical research workflow task.
+        """Build review prompt with self-critique question injection."""
+        task_id = str(task_packet.get("task_id", "")).strip()
+        critique_qs = get_critique_questions(task_id)
 
+        critique_section = ""
+        if critique_qs:
+            formatted = "\n".join(f"   {i+1}. {q}" for i, q in enumerate(critique_qs))
+            critique_section = f"""
+Stage-specific critique questions (MUST address each):
+{formatted}
+"""
+
+        round_note = ""
+        if revision_round > 0:
+            round_note = f"\nThis is review round {revision_round + 1}. Be stricter on issues that were flagged in previous rounds but not adequately addressed.\n"
+
+        return f"""Review the draft for this canonical research workflow task.
+{round_note}
 Task packet (JSON):
 {json.dumps(task_packet, ensure_ascii=False, indent=2)}
 
@@ -1738,6 +1756,12 @@ Review checklist:
 3. Required_skills usage fidelity and completeness.
 4. Internal consistency (claims/methods/evidence alignment).
 5. Missing citations, assumptions, or unresolved risks.
+{critique_section}
+IMPORTANT: You MUST include a clear verdict line in your response:
+- Verdict: PASS  (if all critical requirements are met)
+- Verdict: BLOCK (if there are critical issues that must be fixed)
+And a confidence score:
+- Confidence: <float between 0 and 1>
 
 Return sections:
 - Verdict (PASS/BLOCK)
@@ -1784,6 +1808,90 @@ Return sections:
 - Confidence (0-1)
 """
 
+    def _parse_review_verdict(self, review_content: str) -> tuple[str, float]:
+        """Parse review output to extract verdict (PASS/BLOCK) and confidence.
+
+        Returns ('PASS' | 'BLOCK', confidence_float).
+        Defaults to ('BLOCK', 0.5) if parsing fails.
+        """
+        verdict = "BLOCK"
+        confidence = 0.5
+
+        verdict_patterns = [
+            re.compile(r"Verdict\s*[:\(]\s*(PASS|BLOCK)", re.IGNORECASE),
+            re.compile(
+                r"^\s*-?\s*(?:Overall\s+)?Verdict\s*:\s*(PASS|BLOCK)",
+                re.IGNORECASE | re.MULTILINE,
+            ),
+        ]
+        for pattern in verdict_patterns:
+            match = pattern.search(review_content)
+            if match:
+                verdict = match.group(1).upper()
+                break
+
+        conf_patterns = [
+            re.compile(
+                r"Confidence\s*(?:\(0-1\))?\s*[:\-]\s*(0(?:\.\d+)?|1(?:\.0+)?)",
+                re.IGNORECASE,
+            ),
+            re.compile(
+                r"^\s*-?\s*Confidence\s*:\s*(0(?:\.\d+)?|1(?:\.0+)?)",
+                re.IGNORECASE | re.MULTILINE,
+            ),
+        ]
+        for pattern in conf_patterns:
+            match = pattern.search(review_content)
+            if match:
+                try:
+                    confidence = float(match.group(1))
+                    confidence = max(0.0, min(1.0, confidence))
+                except ValueError:
+                    pass
+                break
+
+        # Convergence: high confidence auto-passes even if labeled BLOCK
+        if confidence >= 0.85 and verdict == "BLOCK":
+            verdict = "PASS"
+
+        return verdict, confidence
+
+    def _build_task_revision_prompt(
+        self,
+        task_packet: dict[str, Any],
+        mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
+        previous_draft: str,
+        review_feedback: str,
+        revision_round: int,
+    ) -> str:
+        """Build a revision prompt that integrates review feedback."""
+        task_json = json.dumps(task_packet, ensure_ascii=False, indent=2)
+        mcp_section = self._format_mcp_evidence(mcp_evidence)
+        skill_section = self._format_skill_context(skill_cards)
+        return (
+            f"You are revising a research workflow task draft based on review feedback.\n"
+            f"This is revision round {revision_round}.\n\n"
+            f"Task packet (JSON):\n{task_json}\n\n"
+            f"Your previous draft:\n{previous_draft}\n\n"
+            f"Review feedback (address ALL issues):\n{review_feedback}\n\n"
+            f"MCP evidence snapshot:\n{mcp_section}\n\n"
+            f"Required skill cards:\n{skill_section}\n\n"
+            "Revision rules:\n"
+            "1. Address every Critical Issue raised in the review.\n"
+            "2. Apply every Suggested Fix unless you can justify why it is not applicable.\n"
+            "3. Do NOT regenerate from scratch — revise the existing draft.\n"
+            "4. Clearly mark what changed with inline comments like [REVISED: reason].\n"
+            "5. Re-check all quality_gates and mark each as PASS/WARN/FAIL.\n"
+            "6. If any issue cannot be resolved, explain why under 'Unresolved Issues'.\n\n"
+            "Return sections:\n"
+            "- Revision Summary (what changed and why)\n"
+            "- Revised Draft Outputs (by file path)\n"
+            "- Quality Gate Check\n"
+            "- Unresolved Issues\n"
+            "- Next Actions\n"
+        )
+
     def task_run(
         self,
         task_id: str,
@@ -1800,6 +1908,7 @@ Return sections:
         draft_profile: str | None = None,
         review_profile: str | None = None,
         triad_profile: str | None = None,
+        max_revision_rounds: int = 2,
     ) -> CollaborationResult:
         """Run task-level orchestration using capability map and contract."""
         normalized_task = task_id.strip().upper()
@@ -1962,6 +2071,7 @@ Return sections:
 
         review_resp: BridgeResponse | None = None
         review_runtime: str | None = None
+        revision_history: list[dict[str, Any]] = []
         if draft_resp.success:
             review_runtime, review_notes = self._resolve_runtime_agent(
                 preferred_agent=agent_plan["review_agent"],
@@ -1969,23 +2079,85 @@ Return sections:
                 exclude_agent=draft_runtime,
             )
             routing_notes.extend(review_notes)
-            review_prompt = self._build_task_review_prompt(
-                packet,
-                mcp_evidence,
-                packet.get("required_skill_cards", []),
-                draft_resp.content,
-            )
-            review_resp = self._execute_runtime_agent(
-                review_runtime,
-                review_prompt,
-                cwd,
-                self._profile_runtime_options(review_profile_cfg, review_runtime),
-                self._build_profile_directive(
-                    selected_profiles["review"],
-                    review_profile_cfg,
-                    stage="review",
-                ),
-            )
+
+            # --- Revision loop ---
+            current_draft_content = draft_resp.content
+            effective_max_rounds = max(0, max_revision_rounds)
+            for revision_round in range(effective_max_rounds + 1):
+                review_prompt = self._build_task_review_prompt(
+                    packet,
+                    mcp_evidence,
+                    packet.get("required_skill_cards", []),
+                    current_draft_content,
+                    revision_round=revision_round,
+                )
+                review_resp = self._execute_runtime_agent(
+                    review_runtime,
+                    review_prompt,
+                    cwd,
+                    self._profile_runtime_options(review_profile_cfg, review_runtime),
+                    self._build_profile_directive(
+                        selected_profiles["review"],
+                        review_profile_cfg,
+                        stage="review",
+                    ),
+                )
+
+                if not review_resp or not review_resp.success:
+                    routing_notes.append(
+                        f"Review failed at round {revision_round}; stopping revision loop."
+                    )
+                    break
+
+                verdict, review_confidence = self._parse_review_verdict(review_resp.content)
+                revision_history.append({
+                    "round": revision_round,
+                    "verdict": verdict,
+                    "confidence": review_confidence,
+                })
+
+                if verdict == "PASS":
+                    routing_notes.append(
+                        f"Review PASSED at round {revision_round} (confidence={review_confidence:.2f})."
+                    )
+                    break
+
+                # BLOCK — revise if we have rounds left
+                if revision_round < effective_max_rounds:
+                    routing_notes.append(
+                        f"Review BLOCKED at round {revision_round} (confidence={review_confidence:.2f}); revising."
+                    )
+                    revision_prompt = self._build_task_revision_prompt(
+                        packet,
+                        mcp_evidence,
+                        packet.get("required_skill_cards", []),
+                        current_draft_content,
+                        review_resp.content,
+                        revision_round=revision_round + 1,
+                    )
+                    revised_resp = self._execute_runtime_agent(
+                        draft_runtime,
+                        revision_prompt,
+                        cwd,
+                        self._profile_runtime_options(draft_profile_cfg, draft_runtime),
+                        self._build_profile_directive(
+                            selected_profiles["draft"],
+                            draft_profile_cfg,
+                            stage="draft",
+                        ),
+                    )
+                    if revised_resp.success:
+                        current_draft_content = revised_resp.content
+                        draft_resp = revised_resp
+                    else:
+                        routing_notes.append(
+                            f"Revision draft failed at round {revision_round + 1}; keeping previous draft."
+                        )
+                        break
+                else:
+                    routing_notes.append(
+                        f"Review BLOCKED at final round {revision_round} (confidence={review_confidence:.2f}); max rounds reached."
+                    )
         else:
             routing_notes.append("Skipped independent review because draft generation failed.")
 
@@ -2074,6 +2246,15 @@ Return sections:
             get_text("draft", agent=draft_runtime),
             draft_resp.content if draft_resp.success else f"[FAILED] {draft_resp.error}",
         ]
+        if revision_history:
+            merged_parts.extend([
+                "",
+                get_text("revision_history"),
+                "\n".join(
+                    f"- Round {r['round']}: {r['verdict']} (confidence={r['confidence']:.2f})"
+                    for r in revision_history
+                ),
+            ])
         if review_resp:
             merged_parts.extend(
                 [
@@ -2313,6 +2494,12 @@ def main():
         "--triad-profile",
         help="Profile name for triad stage (defaults to --profile)",
     )
+    task_run.add_argument(
+        "--max-rounds",
+        type=int,
+        default=2,
+        help="Maximum revision rounds when review returns BLOCK (default: 2, 0 = single-pass)",
+    )
     task_plan = subparsers.add_parser(
         "task-plan",
         help="Render dependency-based task plan from workflow contract",
@@ -2367,6 +2554,7 @@ def main():
             draft_profile=getattr(args, "draft_profile", None),
             review_profile=getattr(args, "review_profile", None),
             triad_profile=getattr(args, "triad_profile", None),
+            max_revision_rounds=getattr(args, "max_rounds", 2),
         )
     elif args.mode == "task-plan":
         result = orchestrator.task_plan(

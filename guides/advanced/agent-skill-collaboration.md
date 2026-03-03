@@ -1,147 +1,147 @@
-# Agent + Skill 协同增强指南
+# Agent + Skill Collaboration Enhancement Guide
 
-本指南用于在 `research-skills` 中系统增强某一能力（不仅限代码），并保持跨模型一致性。
+This guide is designed to systematically enhance a specific capability (not limited to code) within `research-skills` while maintaining cross-model consistency.
 
-## 1) 先定目标：增强哪一类能力
+## 1) Define the Goal: Which Capability to Enhance
 
-先绑定到标准任务 ID（`A1`~`I8`）：
+First, bind the capability to a standard Task ID (`A1`~`I8`):
 
-- **选题与定位**：`A1`~`A4`
-- **文献与综述**：`B1`~`B5`
-- **研究设计/伦理**：`C1`~`D2`
-- **证据综合**：`E1`~`E5`
-- **写作与投稿**：`F1`~`H4`
-- **代码与复现**：`I1`~`I8` (包含 CCG 强约束代码引擎)
+- **Topic Selection & Positioning**: `A1`~`A4`
+- **Literature & Review**: `B1`~`B5`
+- **Study Design / Ethics**: `C1`~`D2`
+- **Evidence Synthesis**: `E1`~`E5`
+- **Drafting & Submission**: `F1`~`H4`
+- **Code & Replication**: `I1`~`I8` (Includes CCG strict-constraint code engine)
 
-只要确定目标任务，就能复用统一编排链：`plan -> mcp-evidence -> primary-agent-draft -> review-agent-check -> validator-gate`。
+Once the target task is determined, you can reuse the unified orchestration chain: `plan -> mcp-evidence -> primary-agent-draft -> review-agent-check -> validator-gate`.
 
-## 2) 协同分工原则（固定）
+## 2) Division of Labor Principles (Fixed)
 
-- **Skill**：方法与产物标准（做什么、产出什么）。
-- **MCP**：证据与工具层（从哪里取证、怎么落盘）。
-- **Agent**：推理与写作执行层（如何完成草稿与复核）。
+- **Skill**: Methodology and artifact standards (What to do, what to produce).
+- **MCP**: Evidence and tooling layer (Where to fetch evidence, how to save).
+- **Agent**: Reasoning and execution layer (How to complete the draft and review).
 
-建议始终保留“双 agent”结构：主执行 + 独立复核。
+It is recommended to always retain the "dual agent" structure: Primary execution + Independent review.
 
-## 3) 如何增强某个能力（标准流程）
+## 3) How to Enhance a Capability (Standard Workflow)
 
-1. 选定目标任务（例如 `E3` 或 `I2`）。
-2. 在 `standards/mcp-agent-capability-map.yaml` 中更新：
+1. Select the target task (e.g., `E3` or `I2`).
+2. Update the following in `standards/mcp-agent-capability-map.yaml`:
    - `required_mcp`
    - `required_skills`
-   - `required_skill_cards`（由 `skill_catalog` 自动解析）
+   - `required_skill_cards` (Automatically parsed by `skill_catalog`)
    - `primary_agent/review_agent/fallback_agent`
-3. 若新增 skill：
-   - 新建 `skills/<skill-name>.md`
-   - 加入 `skill_registry`、`skill_catalog` 与 `task_skill_mapping`
-4. 若新增 agent runtime：
-   - 在 `bridges/` 增加 bridge
-   - 在 `bridges/orchestrator.py` 的 runtime 路由中接入
-   - 参考现有实现：`bridges/claude_bridge.py`
-5. 运行校验：
+3. If adding a new skill:
+   - Create `skills/<skill-name>.md`
+   - Add it to `skill_registry`, `skill_catalog`, and `task_skill_mapping`
+4. If adding a new agent runtime:
+   - Add a bridge in `bridges/`
+   - Integrate it into the runtime router in `bridges/orchestrator.py`
+   - Refer to existing implementations: `bridges/claude_bridge.py`
+5. Run validations:
    - `python3 scripts/validate_research_standard.py --strict`
 
-## 3.1) 外部 MCP 接入约定（命令模式）
+## 3.1) External MCP Integration Conventions (Command Mode)
 
-对 `filesystem` 以外的 MCP，`task-run` 使用环境变量注入外部命令：
+For MCPs other than `filesystem`, `task-run` uses environment variables to inject external commands:
 
-- 变量命名：`RESEARCH_MCP_<PROVIDER>_CMD`
-- 例子：`RESEARCH_MCP_SCHOLARLY_SEARCH_CMD`
+- Variable naming convention: `RESEARCH_MCP_<PROVIDER>_CMD`
+- Example: `RESEARCH_MCP_SCHOLARLY_SEARCH_CMD`
 
-执行约定：
+Execution Protocol:
 
-1. 编排器向命令 `stdin` 传入 JSON：
+1. The orchestrator passes JSON to the command's `stdin`:
    - `provider`
    - `task_packet`
-2. 外部命令从 `stdout` 返回 JSON：
+2. The external command returns JSON via `stdout`:
    - `status`: `ok|warning|error|not_configured`
-   - `summary`: 简要结果
-   - `provenance`: 来源列表（可选）
-   - `data`: 结构化附加信息（可选）
+   - `summary`: Brief summary string
+   - `provenance`: List of sources (optional)
+   - `data`: Structured additional info (optional)
 
-未配置变量时，状态为 `not_configured`；可用 `task-run --mcp-strict` 强制阻断执行。
+If the variable is not configured, the status is `not_configured`; you can use `task-run --mcp-strict` to forcefully block execution.
 
-## 3.2) Skills 注入约定（标准化 skill cards）
+## 3.2) Skill Injection Conventions (Standardized Skill Cards)
 
-`task-run` 会从 `skill_catalog` 自动注入 `required_skill_cards`，每张 card 至少包含：
+`task-run` will automatically inject `required_skill_cards` from `skill_catalog`. Each card contains at least:
 
-- `skill`：技能名
-- `category`：技能类别（如 `evidence-synthesis`、`research-code`）
-- `focus`：执行重点
-- `file`：技能规范路径（`skills/*.md`）
-- `default_outputs`：建议产物路径
+- `skill`: Skill name
+- `category`: Skill category (e.g., `evidence-synthesis`, `research-code`)
+- `focus`: Primary execution focus
+- `file`: Path to the skill specification (`skills/*.md`)
+- `default_outputs`: Recommended artifact output paths
 
-可用 `task-run --skills-strict` 在技能规范文件缺失时阻断执行。
+Use `task-run --skills-strict` to block execution if the skill specification files are missing.
 
-## 3.3) Profile 注入约定（人格 / 审稿风格 / 工具权限）
+## 3.3) Profile Injection Conventions (Persona / Style / Tool Permissions)
 
-避免全局固定配置，使用“按运行注入”的 profile 机制：
+Avoid global fixed configurations; use the "per-run injected" profile mechanism:
 
-- profile 文件：`standards/agent-profiles.example.json`
-- 并发模式：
+- Profile file: `standards/agent-profiles.example.json`
+- Parallel mode:
   - `parallel --profile-file ... --profile ... --summarizer-profile ...`
-- 任务模式：
+- Task mode:
   - `task-run --profile-file ... --profile ...`
   - `task-run --draft-profile ... --review-profile ... --triad-profile ...`
 
-优先级（高 -> 低）：
+Priority (High -> Low):
 
-1. 命令行显式传参（如 `--review-profile strict-review`）
-2. `task_overrides`（按 Task ID 覆盖）
-3. `--profile`（本次运行默认 profile）
-4. 内置 `default` profile
+1. Command-line explicit parameters (e.g., `--review-profile strict-review`)
+2. `task_overrides` (Override by Task ID)
+3. `--profile` (Default profile for this run)
+4. Built-in `default` profile
 
-profile 可定义：
+A profile can define:
 
 - `persona`
 - `analysis_style` / `draft_style` / `review_style` / `summary_style` / `triad_style`
-- `runtime_options`（按 agent 注入工具权限，如 Codex sandbox、Claude permission mode、Gemini sandbox）
-  - 推荐设置：`non_interactive: true`、`timeout_seconds`
-  - 可选严格认证：`require_api_key: true`（缺失 key 时直接快速失败，避免卡在登录流程）
+- `runtime_options` (Agent-specific tool permissions, e.g., Codex sandbox, Claude permission mode, Gemini sandbox)
+  - Recommended settings: `non_interactive: true`, `timeout_seconds`
+  - Optional strict auth: `require_api_key: true` (Fails fast if key is missing, avoiding getting stuck in login flows)
 
-## 4) 按能力类型给出推荐协同模板
+## 4) Recommended Collaboration Templates by Capability Type
 
-### A. 代码能力（`I1`~`I8`）
+### A. Code Capabilities (`I1`~`I8`)
 
-- **CCG 强约束执行 (I5-I8)**：借鉴 `ccg-workflow`，将代码阶段严格拆分为约束集提取(I5)->无决策规划(I6)->主端执行(I7)->侧端验收(I8)。
-- 推荐 skills：`code-specification`, `code-planning`, `code-execution`, `code-review`
-- 推荐 MCP：`code-runtime`, `filesystem`
-- agent 组合：主执行 `codex` (执行I7)，复核 `gemini` (验收I8)
+- **CCG Strict Execution Constraint (I5-I8)**: Drawing from `ccg-workflow`, the code phase is strictly split into Constraint Extraction (I5) -> Decision-free Planning (I6) -> Primary Execution (I7) -> Side-channel Validation (I8).
+- Recommended skills: `code-specification`, `code-planning`, `code-execution`, `code-review`
+- Recommended MCPs: `code-runtime`, `filesystem`
+- Agent combination: Primary `codex` (Executes I7), Review `gemini` (Validates I8)
 
-### B. 系统综述能力（`B1`）
+### B. Systematic Review Capabilities (`B1`)
 
-- 推荐 skills：`academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`
-- 推荐 MCP：`scholarly-search`, `screening-tracker`, `extraction-store`, `fulltext-retrieval`
-- agent 组合：主执行 `claude`，复核 `codex`
+- Recommended skills: `academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`
+- Recommended MCPs: `scholarly-search`, `screening-tracker`, `extraction-store`, `fulltext-retrieval`
+- Agent combination: Primary `claude`, Review `codex`
 
-### C. 证据综合与 Meta（`E1/E2/E3`）
+### C. Evidence Synthesis and Meta-Analysis (`E1/E2/E3`)
 
-- 推荐 skills：`evidence-synthesizer`, `quality-assessor`, `code-builder`
-- 推荐 MCP：`stats-engine`, `extraction-store`
-- agent 组合：主执行 `codex`，复核 `claude`
+- Recommended skills: `evidence-synthesizer`, `quality-assessor`, `code-builder`
+- Recommended MCPs: `stats-engine`, `extraction-store`
+- Agent combination: Primary `codex`, Review `claude`
 
-### D. 写作与一致性（`F3/G3`）
+### D. Drafting and Consistency (`F3/G3`)
 
-- 推荐 skills：`manuscript-architect`, `citation-formatter`, `reporting-checker`, `quality-assessor`
-- 推荐 MCP：`metadata-registry`, `reporting-guidelines`
-- agent 组合：主执行 `claude`，复核 `codex`
+- Recommended skills: `manuscript-architect`, `citation-formatter`, `reporting-checker`, `quality-assessor`
+- Recommended MCPs: `metadata-registry`, `reporting-guidelines`
+- Agent combination: Primary `claude`, Review `codex`
 
-### E. 投稿与返修（`H1`~`H4`）
+### E. Submission and Rebuttal (`H1`~`H4`)
 
-- **多角色专家互审 (H3-H4)**：在正式投稿前，通过平行调用模拟 Methodologist、Domain Expert 等苛刻审稿人进行交叉审查（H3），并执行 Desktop-reject 致命缺陷排查（H4）。
-- 推荐 skills：`submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`
-- 推荐 MCP：`submission-kit`, `metadata-registry`, `reporting-guidelines`
-- agent 组合：主执行 `claude`，复核 `gemini/codex`
+- **Multi-Role Expert Cross-Review (H3-H4)**: Before final submission, use parallel invocations to simulate harsh reviewers (Methodologist, Domain Expert) across a cross-review (H3) and execute a Fatal Flaw Desktop-reject scan (H4).
+- Recommended skills: `submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`
+- Recommended MCPs: `submission-kit`, `metadata-registry`, `reporting-guidelines`
+- Agent combination: Primary `claude`, Review `gemini/codex`
 
-## 5) 运行入口（统一）
+## 5) Execution Entry Points (Unified)
 
-建议先做预检：
+It is recommended to run a pre-flight check first:
 
 ```bash
 python -m bridges.orchestrator doctor --cwd ./project
 ```
 
-使用 `task-run` 按任务执行并自动注入 `required_skills + required_skill_cards`：
+Use `task-run` to execute by task and automatically inject `required_skills + required_skill_cards`:
 
 ```bash
 python -m bridges.orchestrator task-run \
@@ -155,24 +155,24 @@ python -m bridges.orchestrator task-run \
   --triad
 ```
 
-`--triad` 会在主执行 + 复核之后，自动调用第三个 runtime agent 做独立审查，从而在 `A`~`H` 非代码阶段也保持三端协同。
+`--triad` automatically invokes a third runtime agent for an independent audit after the primary draft and review, maintaining a three-end collaboration even during the non-code `A`~`H` phases.
 
-并发分析模式（不限定 Task ID）：
+Parallel Analysis Mode (Not restricted by Task ID):
 
 ```bash
 python -m bridges.orchestrator parallel \
-  --prompt "审查当前研究方案的风险、证据缺口与改进顺序" \
+  --prompt "Review the risks, evidence gaps, and improvement priorities for the current study design" \
   --cwd ./project \
   --summarizer claude
 ```
 
-该模式默认三端并发（Codex/Claude/Gemini），并在并发后执行总结分析；若三端不可用，会自动降级为双端或单端。
+This mode defaults to concurrent multi-agent execution (Codex/Claude/Gemini) followed by a synthesis analysis; it auto-downgrades to dual or single agents if three are not available.
 
-## 6) 引入外部 agent 还是自建 agent？
+## 6) External Agents vs. Custom Agents?
 
-推荐混合策略：
+A hybrid strategy is recommended:
 
-- **外部 agent/runtime**：负责通用能力上限（代码、推理、长文本）。
-- **本地映射与约束**：负责研究场景一致性与可控性（Task ID、质量门、产物路径、技能约束）。
+- **External agent/runtime**: Handles the ceiling of general capabilities (Code generation, reasoning, long-context text).
+- **Local mappings and constraints**: Ensures consistency and controllability for the specific research scenario (Task ID, Quality Gates, Artifact paths, Skill constraints).
 
-也就是：把“能力”交给外部，把“标准”留在本地。
+In other words: Outsource the "capability" to external agents, but keep the "standards" locally.

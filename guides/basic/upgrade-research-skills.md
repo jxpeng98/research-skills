@@ -1,70 +1,72 @@
 # Upgrade / Auto-Upgrade Guide (No Fork Required)
 
-本指南说明如何在使用 `research-skills` 时：
-1) 检测是否有新版本；2) 自动化升级；3) 在不 fork、不 git clone 的情况下完成升级。
+This guide explains how to:
+1) Check for new versions.
+2) Automate the upgrade process.
+3) Complete the upgrade without needing to fork or `git clone` the repository.
 
-## 0) 标准化成 pip 包（推荐）
+## 0) Standardize as a pip package (Recommended)
 
-本仓库已提供 `pyproject.toml`，可以作为 pip 包发布/安装（推荐用 `pipx` 安装 CLI）。
+This repository provides a `pyproject.toml` file, allowing it to be published and installed as a standard pip package (using `pipx` to install the CLI is highly recommended).
 
-发布到 PyPI 后（或用内部源），用户侧的标准用法就是：
+After publishing to PyPI (or an internal registry), the standard usage on your machine is:
 
 ```bash
 pipx install research-skills-installer
-# 提供 3 个等价命令（任选其一）：
+# This provides 3 equivalent commands (choose any):
 # - research-skills
 # - rs
 # - rsw
-# 你也可以设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>` 后省略 --repo
+# You can also set `RESEARCH_SKILLS_REPO=<owner>/<repo>` to omit the --repo flag
 rs check --repo <owner>/<repo>
 rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
 ```
 
-> 注意：pip 安装/升级的是“升级器 CLI”；真正把 skill/workflows 覆盖到三端目录与 project 的动作，仍由 `rs upgrade`（等价于 `research-skills upgrade`）来执行（显式可控、不会在 pip 安装时偷偷写用户目录）。
+> Note: pip installs/upgrades the "updater CLI." The actual process of overwriting the skill/workflow files into the client directories and your project is still performed by `rs upgrade` (or `research-skills upgrade`). This keeps the process explicit and prevents background file modifications during a pip install.
 
-## 1) 你需要升级的到底是什么？
+## 1) What exactly are you upgrading?
 
-这个项目有两类“安装目标”：
+This project has two types of "installation targets":
 
-- **三端本地 skill 安装目录**（让 Codex / Claude Code / Gemini 识别 skill）  
+- **Local skill directories for the 3 clients** (so Codex / Claude Code / Gemini recognize the skill)
   - Codex: `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`
   - Claude: `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`
   - Gemini: `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`
-- **项目内集成文件**（让 Claude Code 的 `/...` 命令在你的项目里可用）  
+- **In-project integration files** (so Claude Code's `/...` commands work inside your project)
   - `<project>/.agent/workflows/*.md`
-  - `<project>/CLAUDE.md`（或 `CLAUDE.research-skills.md`）
+  - `<project>/CLAUDE.md` (or `CLAUDE.research-skills.md`)
   - `<project>/.gemini/research-skills.md`
 
-升级的本质就是：**把这些目标路径覆盖为新版本**（通常需要 `--overwrite`）。
+Upgrading simply means **overwriting these target paths with the new version** (which usually requires `--overwrite`).
 
 ---
 
-## 2) 检测是否有新版本（推荐）
+## 2) Checking for new versions (Recommended)
 
 ```bash
-# 如果已设置 RESEARCH_SKILLS_REPO，可省略 --repo
+# If RESEARCH_SKILLS_REPO is set, --repo can be omitted
 rs check --repo <owner>/<repo>
-# 或在仓库内运行（等价）：
+# Or run within the repository (equivalent):
 python3 scripts/research_skill_update.py check --repo <owner>/<repo>
 ```
 
-说明：
-- `--repo` 用于查询 GitHub 最新 release tag。
-- 若检测到“本地/已安装版本 < 最新版本”，该命令会返回 exit code `1`（方便写自动化）。
-- 你可以设置默认上游来省略 `--repo`：
-  - 环境变量：`export RESEARCH_SKILLS_REPO=<owner>/<repo>`
-  - 若你在 `research-skills` 仓库 clone 里运行，且已配置 git remote（优先 `upstream`，其次 `origin`），也可省略 `--repo`
-  - 或在你的项目根目录添加 `research-skills.toml`（便于提交到项目仓库，适合 CI）
+Details:
+- `--repo` is used to query the latest GitHub release tag.
+- If it detects that "local/installed version < latest version", the command returns exit code `1` (which is useful for automation scripts).
+- You can set a default upstream to omit `--repo`:
+  - Envrionment variable: `export RESEARCH_SKILLS_REPO=<owner>/<repo>`
+  - If you run this inside a `research-skills` clone with a configured git remote (prioritizes `upstream`, then `origin`), `--repo` can be omitted.
+  - Or add a `research-skills.toml` file to your project root (easy to commit to your project repo, great for CI).
 
-示例（项目根目录）：
+Example (in project root):
 
 ```toml
 # research-skills.toml
 [upstream]
-repo = "<owner>/<repo>" # 或 Git URL
+repo = "<owner>/<repo>" # Or Git URL
 ```
 
-此后可直接运行：
+Afterward, you can run:
 
 ```bash
 rs check
@@ -73,12 +75,12 @@ rs upgrade --project-dir . --target all --doctor
 
 ---
 
-## 3) 自动升级（不需要 fork，不需要 git clone）
+## 3) Automatic Upgrade (No fork, no git clone required)
 
-直接下载 GitHub release 压缩包并执行其中的安装脚本：
+This directly downloads the GitHub release archive and executes the installation script inside it:
 
 ```bash
-# 如果已设置 RESEARCH_SKILLS_REPO，可省略 --repo
+# If RESEARCH_SKILLS_REPO is set, --repo can be omitted
 rs upgrade \
   --repo <owner>/<repo> \
   --project-dir /path/to/your/project \
@@ -86,7 +88,7 @@ rs upgrade \
   --mode copy \
   --doctor
 
-# 或在仓库内运行（等价）：
+# Or run within the repository (equivalent):
 python3 scripts/research_skill_update.py upgrade \
   --repo <owner>/<repo> \
   --project-dir /path/to/your/project \
@@ -95,48 +97,48 @@ python3 scripts/research_skill_update.py upgrade \
   --doctor
 ```
 
-要点：
-- 这个方式**不依赖 git**，也不要求你把仓库 clone 到本地。
-- 私有仓库或遇到 API 限流时，建议设置：`GITHUB_TOKEN` 或 `GH_TOKEN`。
-- 默认使用“最新 release tag”；也可指定版本：
+Key points:
+- This method **does not rely on git** and does not require you to clone the repository locally.
+- For private repositories or if you hit API rate limits, it is recommended to set: `GITHUB_TOKEN` or `GH_TOKEN`.
+- It defaults to using the "latest release tag", but you can specify a version:
   - `--ref v0.1.0-beta.6 --ref-type tag`
   - `--ref main --ref-type branch`
 
-升级后建议重启客户端（Codex / Claude Code / Gemini CLI）。
+It is recommended to restart your clients (Codex / Claude Code / Gemini CLI) after upgrading.
 
 ---
 
-## 4) 另一种“自动升级”：link 安装 + git pull（适合长期维护）
+## 4) Alternative "Auto-Upgrade": Link Installation + Git Pull (Best for long-term maintenance)
 
-如果你愿意保留一份本地仓库（不需要 fork，只需 clone 一次），推荐：
+If you are willing to keep a local clone of the repository (no fork needed, just clone once), this is recommended:
 
-1) 安装时用 `--mode link`（用软链接指向仓库，后续更新无需重复 install）：
+1) When installing, use `--mode link` (creates symlinks, meaning future updates don't require re-running the install script):
 
 ```bash
 ./scripts/install_research_skill.sh --target all --mode link --project-dir /path/to/project --overwrite
 ```
 
-2) 更新时只需：
+2) When updating, simply run:
 
 ```bash
 git pull
 ```
 
-因为安装目标是软链接，仓库内容更新后，三端 skill 与 workflows 会自动同步到最新版本。
+Because the installation targets are symlinks, updating the repository contents automatically syncs the skill and workflows to the latest version across all 3 clients.
 
 ---
 
-## 5) 自动化建议（可选）
+## 5) Automation Suggestions (Optional)
 
-你可以用 cron/CI 做“每周检查 + 有更新则升级”：
+You can use cron/CI to do a "weekly check + upgrade if available":
 
-1) 定期 check：
+1) Check periodically:
 ```bash
 rs check --repo <owner>/<repo>
 ```
-2) 返回码为 1 时执行 upgrade：
+2) If exit code is 1, execute upgrade:
 ```bash
 rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
 ```
 
-如果你希望我把这套升级检测做成 Codex Automation（定期跑并生成 inbox 结果），告诉我运行频率和要覆盖的 project 路径即可。
+If you want this upgrade detection integrated as a Codex Automation (run periodically and generate inbox results), just let me know the run frequency and target project paths.

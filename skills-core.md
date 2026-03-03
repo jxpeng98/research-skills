@@ -1,6 +1,6 @@
 # Skills Core Reference
 
-Consolidated skill reference for token-efficient workflow execution. Use this file by default; only load full skill files (`skills/*.md`) for detailed output formats or error recovery.
+Consolidated skill reference for token-efficient workflow execution. Use this file by default; only load full skill files (`skills/*/*.md`) for detailed output formats or error recovery.
 
 ---
 

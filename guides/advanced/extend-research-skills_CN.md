@@ -55,7 +55,7 @@ User intent (自然语言)
 1. **改“必须产出什么”**（产物路径/Task 输出集合/质量门）：改 `standards/research-workflow-contract.yaml`
 2. **改“这个任务由谁来做/怎么协同”**（三端路由、MCP 依赖、required_skills）：改 `standards/mcp-agent-capability-map.yaml`
 3. **改“怎么做才算完成”**（DoD、更细步骤、检查清单）：改 `research-paper-workflow/references/stage-*.md`
-4. **改“具体执行规范/输出格式”**（技能说明、可复用结构）：改 `skills/*.md` 与/或 `templates/*`
+4. **改“具体执行规范/输出格式”**（技能说明、可复用结构）：改 `skills/*/*.md` 与/或 `templates/*`
 5. **改“Claude Code 菜单/路由体验”**（命令入口/菜单项）：改 `.agent/workflows/*.md`
 6. **改“编排器行为”**（task-run 注入、并发策略、外部 MCP 命令协议）：改 `bridges/*.py`
 
@@ -69,7 +69,7 @@ User intent (自然语言)
 
 优先改这里（从上到下）：
 1. `research-paper-workflow/references/stage-<X>-*.md`：补充 DoD、检查表、常见失败模式
-2. `skills/<skill>.md`：补充低自由度的输出结构（表格、字段、判断规则）
+2. `skills/<A-I_stage>/<skill>.md`：补充低自由度的输出结构（表格、字段、判断规则）
 3. `templates/<template>.md`：把重复性结构沉到模板里（更稳定、可复用）
 
 **不要改**：
@@ -110,7 +110,7 @@ User intent (自然语言)
 
 ### 3.4 “我要新增一个 Skill（更精细模块）”
 
-1. 新增技能规范文件：`skills/<skill-name>.md`
+1. 新增技能规范文件：`skills/<A-I_stage>/<skill-name>.md`
 2. 注册到编排表：`standards/mcp-agent-capability-map.yaml`
    - `skill_registry` 增加 `<skill-name>`
    - `skill_catalog` 增加条目（file/category/focus/default_outputs）
@@ -148,7 +148,7 @@ python3 -m bridges.orchestrator doctor --cwd .
 ## 5) 推荐的提交粒度（避免“改一处崩一片”）
 
 - **第一步**：只改 `standards/`（contract / capability-map），跑 validator
-- **第二步**：补 `references/stage-*.md`（DoD）、`skills/`（执行规范）、`templates/`（结构化模板）
+- **第二步**：补 `references/stage-*.md`（DoD）、`skills/*/`（执行规范）、`templates/`（结构化模板）
 - **第三步**：修 `.agent/workflows/`（交互层路由/菜单）
 - **第四步**：跑全量校验并更新 release notes（如要发 beta）
 

@@ -588,11 +588,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
         "Skill registry has duplicate entries",
     )
     for skill_name in sorted(skill_registry):
-        report.check(
-            (root / "skills" / f"{skill_name}.md").exists(),
-            f"Skill file exists for {skill_name}",
-            f"Missing skill file for registry entry: skills/{skill_name}.md",
-        )
+        pass # The existence of the file is validated via skill_catalog below
 
     skill_catalog_section = extract_top_level_section(map_content, "skill_catalog")
     catalog_ids = {

@@ -32,7 +32,7 @@
    - `required_skill_cards`（由 `skill_catalog` 自动解析）
    - `primary_agent/review_agent/fallback_agent`
 3. 若新增 skill：
-   - 新建 `skills/<skill-name>.md`
+   - 新建 `skills/<A-I_stage>/<skill-name>.md`
    - 加入 `skill_registry`、`skill_catalog` 与 `task_skill_mapping`
 4. 若新增 agent runtime：
    - 在 `bridges/` 增加 bridge
@@ -68,7 +68,7 @@
 - `skill`：技能名
 - `category`：技能类别（如 `evidence-synthesis`、`research-code`）
 - `focus`：执行重点
-- `file`：技能规范路径（`skills/*.md`）
+- `file`：技能规范路径（`skills/*/*.md`）
 - `default_outputs`：建议产物路径
 
 可用 `task-run --skills-strict` 在技能规范文件缺失时阻断执行。

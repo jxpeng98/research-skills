@@ -56,7 +56,7 @@ Categorizing your changes will directly determine which file layer you should ed
 1. **Change "What Must Be Produced"** (Artifact paths / Task output sets / Quality gates): Edit `standards/research-workflow-contract.yaml`
 2. **Change "Who Does This Task / How It is Coordinated"** (Three-client routing, MCP dependencies, required_skills): Edit `standards/mcp-agent-capability-map.yaml`
 3. **Change "Definition of Done"** (DoD, granular steps, checklists): Edit `research-paper-workflow/references/stage-*.md`
-4. **Change "Specific Execution Specs / Output Formats"** (Skill descriptions, reusable structures): Edit `skills/*.md` and/or `templates/*`
+4. **Change "Specific Execution Specs / Output Formats"** (Skill descriptions, reusable structures): Edit `skills/*/*.md` and/or `templates/*`
 5. **Change "Claude Code Menus / Routing Experience"** (Command entry points / Menu items): Edit `.agent/workflows/*.md`
 6. **Change "Orchestrator Behavior"** (task-run injection, concurrency strategies, external MCP command protocols): Edit `bridges/*.py`
 
@@ -70,7 +70,7 @@ Categorizing your changes will directly determine which file layer you should ed
 
 Focus your edits here (Top to bottom priority):
 1. `research-paper-workflow/references/stage-<X>-*.md`: Add check lists, DoD, and common failure modes.
-2. `skills/<skill>.md`: Add low-freedom output structures (tables, specific fields, formatting rules).
+2. `skills/<A-I_stage>/<skill>.md`: Add low-freedom output structures (tables, specific fields, formatting rules).
 3. `templates/<template>.md`: Extract repetitive structures into a template (makes it stable and reusable).
 
 **DO NOT CHANGE**:
@@ -111,7 +111,7 @@ Steps:
 
 ### 3.4 "I want to add a new Skill (More granular module)."
 
-1. Create a new skill specification file: `skills/<skill-name>.md`
+1. Create a new skill specification file: `skills/<A-I_stage>/<skill-name>.md`
 2. Register it in the orchestration map: `standards/mcp-agent-capability-map.yaml`
    - Add `<skill-name>` to `skill_registry`
    - Add an entry to `skill_catalog` (file/category/focus/default_outputs)
@@ -149,6 +149,6 @@ python3 -m bridges.orchestrator doctor --cwd .
 ## 5) Recommended Commit Granularity (Avoid breaking everything at once)
 
 - **Step One**: Only modify `standards/` (contract / capability-map), run validator.
-- **Step Two**: Add `references/stage-*.md` (DoD), `skills/` (execution specs), `templates/` (structured templates).
+- **Step Two**: Add `references/stage-*.md` (DoD), `skills/*/` (execution specs), `templates/` (structured templates).
 - **Step Three**: Fix `.agent/workflows/` (Interaction layer routing/menus).
 - **Step Four**: Run a full validation suite and update release notes (if issuing a beta).

@@ -32,7 +32,7 @@ It is recommended to always retain the "dual agent" structure: Primary execution
    - `required_skill_cards` (Automatically parsed by `skill_catalog`)
    - `primary_agent/review_agent/fallback_agent`
 3. If adding a new skill:
-   - Create `skills/<skill-name>.md`
+   - Create `skills/<A-I_stage>/<skill-name>.md`
    - Add it to `skill_registry`, `skill_catalog`, and `task_skill_mapping`
 4. If adding a new agent runtime:
    - Add a bridge in `bridges/`
@@ -68,7 +68,7 @@ If the variable is not configured, the status is `not_configured`; you can use `
 - `skill`: Skill name
 - `category`: Skill category (e.g., `evidence-synthesis`, `research-code`)
 - `focus`: Primary execution focus
-- `file`: Path to the skill specification (`skills/*.md`)
+- `file`: Path to the skill specification (`skills/*/*.md`)
 - `default_outputs`: Recommended artifact output paths
 
 Use `task-run --skills-strict` to block execution if the skill specification files are missing.

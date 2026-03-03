@@ -83,13 +83,13 @@ skill_registry:
 
 skill_catalog:
   question-refiner:
-    file: "skills/question-refiner.md"
+    file: "skills/A_framing/question-refiner.md"
     category: "framing"
     focus: "Refine research questions, scope boundaries, and keyword strategy."
     default_outputs:
       - "framing/research_question.md"
   academic-searcher:
-    file: "skills/academic-searcher.md"
+    file: "skills/B_literature/academic-searcher.md"
     category: "literature-discovery"
     focus: "Build reproducible multi-source search queries and seed corpus."
     default_outputs:
@@ -97,7 +97,7 @@ skill_catalog:
       - "search_results.csv"
       - "search_log.md"
   paper-screener:
-    file: "skills/paper-screener.md"
+    file: "skills/B_literature/paper-screener.md"
     category: "study-selection"
     focus: "Screen records by inclusion/exclusion rules with decision trace."
     default_outputs:
@@ -105,57 +105,57 @@ skill_catalog:
       - "screening/full_text.md"
       - "screening/prisma_flow.md"
   paper-extractor:
-    file: "skills/paper-extractor.md"
+    file: "skills/B_literature/paper-extractor.md"
     category: "data-extraction"
     focus: "Extract structured study attributes, outcomes, and effect inputs."
     default_outputs:
       - "notes/"
       - "extraction_table.md"
   quality-assessor:
-    file: "skills/quality-assessor.md"
+    file: "skills/E_synthesis/quality-assessor.md"
     category: "quality-appraisal"
     focus: "Assess risk of bias, certainty, and evidence strength."
     default_outputs:
       - "quality_table.md"
       - "grade_sof.md"
   gap-analyzer:
-    file: "skills/gap-analyzer.md"
+    file: "skills/A_framing/gap-analyzer.md"
     category: "research-positioning"
     focus: "Identify unresolved theoretical, empirical, or methodological gaps."
     default_outputs:
       - "gap_analysis.md"
   theory-mapper:
-    file: "skills/theory-mapper.md"
+    file: "skills/A_framing/theory-mapper.md"
     category: "theoretical-framing"
     focus: "Map constructs and derive testable propositions or hypotheses."
     default_outputs:
       - "theoretical_framework.md"
   citation-snowballer:
-    file: "skills/citation-snowballer.md"
+    file: "skills/B_literature/citation-snowballer.md"
     category: "citation-expansion"
     focus: "Expand corpus using forward/backward citation chaining."
     default_outputs:
       - "snowball_log.md"
   fulltext-fetcher:
-    file: "skills/fulltext-fetcher.md"
+    file: "skills/B_literature/fulltext-fetcher.md"
     category: "fulltext-acquisition"
     focus: "Resolve full text access, version provenance, and retrieval status."
     default_outputs:
       - "screening/full_text.md"
   metadata-enricher:
-    file: "skills/metadata-enricher.md"
+    file: "skills/Z_cross_cutting/metadata-enricher.md"
     category: "metadata-normalization"
     focus: "Normalize DOI, venue, year, author, and identifier metadata."
     default_outputs:
       - "bibliography.bib"
   citation-formatter:
-    file: "skills/citation-formatter.md"
+    file: "skills/B_literature/citation-formatter.md"
     category: "reference-formatting"
     focus: "Format references in target style and validate citation integrity."
     default_outputs:
       - "bibliography.bib"
   reference-manager-bridge:
-    file: "skills/reference-manager-bridge.md"
+    file: "skills/B_literature/reference-manager-bridge.md"
     category: "reference-sync"
     focus: "Sync citation library with Zotero/EndNote/Mendeley workflows."
     default_outputs:
@@ -163,7 +163,7 @@ skill_catalog:
       - "references.ris"
       - "references.json"
   study-designer:
-    file: "skills/study-designer.md"
+    file: "skills/C_design/study-designer.md"
     category: "study-design"
     focus: "Design sampling, measures, procedures, and analysis plans."
     default_outputs:
@@ -173,20 +173,20 @@ skill_catalog:
       - "instruments/"
       - "preregistration.md"
   ethics-irb-helper:
-    file: "skills/ethics-irb-helper.md"
+    file: "skills/D_ethics/ethics-irb-helper.md"
     category: "ethics-compliance"
     focus: "Prepare IRB-ready risk, consent, privacy, and governance content."
     default_outputs:
       - "ethics_irb.md"
   evidence-synthesizer:
-    file: "skills/evidence-synthesizer.md"
+    file: "skills/E_synthesis/evidence-synthesizer.md"
     category: "evidence-synthesis"
     focus: "Synthesize evidence narratively, qualitatively, or quantitatively."
     default_outputs:
       - "synthesis.md"
       - "synthesis_matrix.md"
   manuscript-architect:
-    file: "skills/manuscript-architect.md"
+    file: "skills/F_writing/manuscript-architect.md"
     category: "manuscript-structure"
     focus: "Build coherent paper structure from outline to section-level drafts."
     default_outputs:
@@ -195,19 +195,19 @@ skill_catalog:
       - "manuscript/claims_evidence_map.md"
       - "manuscript/figures_tables_plan.md"
   prisma-checker:
-    file: "skills/prisma-checker.md"
+    file: "skills/G_compliance/prisma-checker.md"
     category: "prisma-compliance"
     focus: "Verify PRISMA flow, checklist coverage, and reporting transparency."
     default_outputs:
       - "prisma_checklist.md"
   reporting-checker:
-    file: "skills/reporting-checker.md"
+    file: "skills/G_compliance/reporting-checker.md"
     category: "reporting-compliance"
     focus: "Validate reporting guideline completeness for target study type."
     default_outputs:
       - "reporting_checklist.md"
   submission-packager:
-    file: "skills/submission-packager.md"
+    file: "skills/H_submission/submission-packager.md"
     category: "submission-readiness"
     focus: "Assemble cover letter, compliance files, and submission bundle."
     default_outputs:
@@ -223,141 +223,141 @@ skill_catalog:
       - "submission/ai_disclosure.md"
       - "submission/supplementary_inventory.md"
   rebuttal-assistant:
-    file: "skills/rebuttal-assistant.md"
+    file: "skills/H_submission/rebuttal-assistant.md"
     category: "revision-response"
     focus: "Generate point-by-point response and tracked revision plan."
     default_outputs:
       - "revision/response_matrix.md"
       - "revision/response_letter.md"
   code-builder:
-    file: "skills/code-builder.md"
+    file: "skills/I_code/code-builder.md"
     category: "research-code"
     focus: "Translate methods into reproducible implementation and validation."
     default_outputs:
       - "analysis/"
   model-collaborator:
-    file: "skills/model-collaborator.md"
+    file: "skills/Z_cross_cutting/model-collaborator.md"
     category: "multi-agent-verification"
     focus: "Split execution and cross-review across model runtimes."
     default_outputs:
       - "logs/model_collab_trace.md"
 
   self-critique:
-    file: "skills/self-critique.md"
+    file: "skills/Z_cross_cutting/self-critique.md"
     category: "quality-assurance"
     focus: "Iterative red teaming and Socratic critique of outputs."
     default_outputs:
       - "review/self_critique_log.md"
   hypothesis-generator:
-    file: "skills/hypothesis-generator.md"
+    file: "skills/A_framing/hypothesis-generator.md"
     category: "framing"
     focus: "Translate abstract research questions into testable formal hypotheses."
     default_outputs:
       - "framing/hypothesis.md"
   venue-analyzer:
-    file: "skills/venue-analyzer.md"
+    file: "skills/A_framing/venue-analyzer.md"
     category: "framing"
     focus: "Analyze fit, format, and scoping constraints for target venue."
     default_outputs:
       - "framing/venue_analysis.md"
   concept-extractor:
-    file: "skills/concept-extractor.md"
+    file: "skills/B_literature/concept-extractor.md"
     category: "literature-discovery"
     focus: "Expand search seeds intelligently to break confirmation bias."
     default_outputs:
       - "literature/concept_extraction.md"
   literature-mapper:
-    file: "skills/literature-mapper.md"
+    file: "skills/B_literature/literature-mapper.md"
     category: "study-selection"
     focus: "Visualize and map State-of-the-art taxonomies prior to deep reading."
     default_outputs:
       - "literature/literature_map.md"
   rival-hypothesis-designer:
-    file: "skills/rival-hypothesis-designer.md"
+    file: "skills/C_design/rival-hypothesis-designer.md"
     category: "study-design"
     focus: "Proactively construct and address competitive theories."
     default_outputs:
       - "design/rival_hypotheses.md"
   robustness-planner:
-    file: "skills/robustness-planner.md"
+    file: "skills/C_design/robustness-planner.md"
     category: "study-design"
     focus: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
     default_outputs:
       - "design/robustness_plan.md"
   deidentification-planner:
-    file: "skills/deidentification-planner.md"
+    file: "skills/D_ethics/deidentification-planner.md"
     category: "ethics-compliance"
     focus: "Ensure technical privacy via k-anonymity or secure data pipelines."
     default_outputs:
       - "compliance/deidentification_plan.md"
   publication-bias-checker:
-    file: "skills/publication-bias-checker.md"
+    file: "skills/E_synthesis/publication-bias-checker.md"
     category: "evidence-synthesis"
     focus: "Evaluate fail-safe N, funnel plot asymmetry, and correction models."
     default_outputs:
       - "synthesis/publication_bias.md"
   meta-optimizer:
-    file: "skills/meta-optimizer.md"
+    file: "skills/F_writing/meta-optimizer.md"
     category: "manuscript-structure"
     focus: "Optimize Abstract and Title for indexing, SEO, and engagement."
     default_outputs:
       - "manuscript/meta_optimization.md"
   tone-normalizer:
-    file: "skills/tone-normalizer.md"
+    file: "skills/G_compliance/tone-normalizer.md"
     category: "reporting-compliance"
     focus: "Ruthlessly cut fluff, transition words, and absolute claims."
     default_outputs:
       - "compliance/tone_normalization.md"
   reviewer-empathy-checker:
-    file: "skills/reviewer-empathy-checker.md"
+    file: "skills/H_submission/reviewer-empathy-checker.md"
     category: "revision-response"
     focus: "Neutralize defensiveness and ensure exact addressing of concerns."
     default_outputs:
       - "revision/reviewer_empathy_check.md"
   reproducibility-auditor:
-    file: "skills/reproducibility-auditor.md"
+    file: "skills/I_code/reproducibility-auditor.md"
     category: "research-code"
     focus: "Verify magic numbers, random seeds, and fail-graceful contingencies."
     default_outputs:
       - "code/reproducibility_audit.md"
   stats-engine:
-    file: "skills/stats-engine.md"
+    file: "skills/I_code/stats-engine.md"
     category: "research-code"
     focus: "Statistical modeling, tests, and analytics execution."
     default_outputs:
       - "analysis/stats_report.md"
   peer-review-simulation:
-    file: "skills/peer-review-simulation.md"
+    file: "skills/H_submission/peer-review-simulation.md"
     category: "revision-response"
     focus: "Adopt specific reviewer personas to conduct parallel, independent cross-reviews."
     default_outputs:
       - "revision/peer_review_simulation.md"
   fatal-flaw-detector:
-    file: "skills/fatal-flaw-detector.md"
+    file: "skills/H_submission/fatal-flaw-detector.md"
     category: "revision-response"
     focus: "Constructive desk-reject analysis identifying critical flaws."
     default_outputs:
       - "revision/fatal_flaw_analysis.md"
   code-specification:
-    file: "skills/code-specification.md"
+    file: "skills/I_code/code-specification.md"
     category: "research-code"
     focus: "Requirement research generating strict constraint sets before coding."
     default_outputs:
       - "code/code_specification.md"
   code-planning:
-    file: "skills/code-planning.md"
+    file: "skills/I_code/code-planning.md"
     category: "research-code"
     focus: "Transforming specs into parallelizable execution plans."
     default_outputs:
       - "code/plan.md"
   code-execution:
-    file: "skills/code-execution.md"
+    file: "skills/I_code/code-execution.md"
     category: "research-code"
     focus: "Executing the plan and optimizing performance (cProfile/vectorization)."
     default_outputs:
       - "code/performance_profile.md"
   code-review:
-    file: "skills/code-review.md"
+    file: "skills/I_code/code-review.md"
     category: "research-code"
     focus: "Secondary model reviews code logic, security, and statistical validity."
     default_outputs:

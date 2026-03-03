@@ -2419,12 +2419,22 @@ def main():
         "--summarizer-profile",
         help="Profile name for summarizer agent (defaults to --profile)",
     )
+    parallel.add_argument(
+        "--role",
+        type=str,
+        help="Research team role (e.g., pi, methods-lead, statistician) mapped to roles/",
+    )
     
     # Chain mode
     chain = subparsers.add_parser("chain", help="One generates, other verifies")
     chain.add_argument("--prompt", required=True, help="Generation prompt")
     chain.add_argument("--cwd", required=True, type=Path, help="Working directory")
     chain.add_argument("--generator", choices=["codex", "claude", "gemini"], default="codex")
+    chain.add_argument(
+        "--role",
+        type=str,
+        help="Research team role (e.g., pi, methods-lead, statistician) mapped to roles/",
+    )
     
     # Role-based mode
     role = subparsers.add_parser("role", help="Task division by specialty")
@@ -2482,6 +2492,11 @@ def main():
         "--profile-file",
         type=Path,
         help="Optional JSON file defining user agent profiles and per-task overrides",
+    )
+    task_run.add_argument(
+        "--role",
+        type=str,
+        help="Research team role (e.g., pi, methods-lead, statistician) mapped to roles/",
     )
     task_run.add_argument(
         "--profile",

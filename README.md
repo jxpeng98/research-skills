@@ -364,13 +364,23 @@ research-skills/
 ├── .agent/workflows/         # Claude Code slash-commands (project workflows)
 ├── bridges/                  # Multi-model orchestration (Codex/Claude/Gemini bridges + orchestrator)
 ├── skills/                   # Skill specs referenced by capability map (skill cards)
+│   ├── A_framing/              # Research question, theory, positioning
+│   ├── B_literature/           # Search, screen, extract, cite
+│   ├── C_design/               # Study design, analysis, robustness
+│   ├── D_ethics/               # IRB, privacy, deidentification
+│   ├── E_synthesis/            # Quality assessment, synthesis, bias
+│   ├── F_writing/              # Manuscript, tables, figures, meta
+│   ├── G_compliance/           # PRISMA, reporting, tone
+│   ├── H_submission/           # Package, rebuttal, review, CRediT
+│   ├── I_code/                 # Spec, plan, build, review, release
+│   ├── Z_cross_cutting/        # Multi-agent, metadata, QA, tone
+│   ├── domain-profiles/        # Domain-specific configs (economics, cs-ai, biomedical, etc.)
+│   └── registry.yaml           # Machine-readable index of all skills
+├── pipelines/                # Abstract pipeline DAGs (systematic-review, empirical, etc.)
+├── roles/                    # Research team role configs (pi, statistician, etc.)
+├── schemas/                  # JSON schemas + artifact type vocab
+├── eval/                     # Golden test cases + rubrics + runner
 ├── skills-core.md            # Token-optimized consolidated reference for skills
-├── templates/                # Output templates (PRISMA, rebuttal, DMP, etc.)
-├── guides/
-│   ├── basic/                # Basic usage, installation, upgrades
-│   └── advanced/             # Advanced features, CLI reference, MCP integration
-├── scripts/                  # Install/upgrade/release automation + validators
-├── research_skills/          # pipx CLI package (entrypoints: research-skills / rs / rsw)
 │   └── project.toml          # Packaged default upstream (CI-injected; overrideable)
 ├── release/                  # Release notes + acceptance receipts + templates
 ├── tests/                    # Orchestrator workflow unit tests (mock bridges)

@@ -1,3 +1,32 @@
+---
+id: academic-searcher
+stage: B_literature
+version: "1.0.0"
+description: "Conduct systematic multi-database searches across Semantic Scholar, arXiv, OpenAlex, and other sources to build a reproducible corpus."
+inputs:
+  - type: RQSet
+    description: "Research questions with key terms"
+  - type: SearchQueryPlan
+    description: "Optional pre-built search strategy"
+    required: false
+outputs:
+  - type: SearchQueryPlan
+    artifact: "search_strategy.md"
+  - type: SearchResults
+    artifact: "search_results.csv"
+  - type: SearchLog
+    artifact: "search_log.md"
+constraints:
+  - "Must log exact query strings and timestamps for reproducibility"
+  - "Must deduplicate across databases"
+failure_modes:
+  - "API rate limits exhausted"
+  - "Zero results for narrow queries"
+tools: [filesystem, scholarly-search, fulltext-retrieval]
+tags: [literature, search, databases, API, reproducibility]
+domain_aware: false
+---
+
 # Academic Searcher Skill
 
 Conduct systematic searches across academic databases to find relevant scholarly literature.

@@ -1,3 +1,28 @@
+---
+id: code-builder
+stage: I_code
+version: "1.0.0"
+description: "Systematic conversion of academic methodologies into executable code (Python/R/Stata/MATLAB/Julia) with domain-profile-driven library selection."
+inputs:
+  - type: AnalysisPlan
+    description: "Analysis plan or method description"
+  - type: DomainProfile
+    description: "Domain-specific profile for library selection"
+    required: false
+outputs:
+  - type: AnalysisCode
+    artifact: "analysis/"
+constraints:
+  - "Must include environment setup, synthetic data generation, validation tests, and diagnostic plots"
+  - "Must follow domain checklist when domain profile is specified"
+failure_modes:
+  - "Method too novel for standard library matching"
+  - "Language-specific implementation gaps"
+tools: [filesystem, code-runtime]
+tags: [code, implementation, multi-language, domain-profiles, reproducibility]
+domain_aware: true
+---
+
 # Code Builder Skill
 
 Academic code generation with multi-discipline, multi-language, and 2-tier complexity support.

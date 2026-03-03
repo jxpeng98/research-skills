@@ -1,3 +1,29 @@
+---
+id: rebuttal-assistant
+stage: H_submission
+version: "1.0.0"
+description: "Generate point-by-point response matrix and tracked revision plan from reviewer comments."
+inputs:
+  - type: ReviewComments
+    description: "Reviewer feedback and editor decision letter"
+  - type: Manuscript
+    description: "Original submitted manuscript"
+outputs:
+  - type: ResponseToReviewers
+    artifact: "revision/response_matrix.md"
+  - type: ResponseLetter
+    artifact: "revision/response_letter.md"
+constraints:
+  - "Must address every reviewer point without exception"
+  - "Must tag each response with action taken (revised/clarified/rebutted)"
+failure_modes:
+  - "Ambiguous reviewer comments requiring interpretation"
+  - "Conflicting reviewer demands"
+tools: [filesystem]
+tags: [submission, rebuttal, revision, reviewer-response, point-by-point]
+domain_aware: false
+---
+
 # Rebuttal Assistant Skill
 
 Turn reviewer comments into a structured revision plan and a professional response package (response matrix + letter), including handling conflicting reviews.

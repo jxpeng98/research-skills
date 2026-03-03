@@ -1,3 +1,25 @@
+---
+id: peer-review-simulation
+stage: H_submission
+version: "1.0.0"
+description: "Simulate parallel, independent cross-reviews using distinct reviewer personas (Methodologist, Domain Expert, Reviewer 2)."
+inputs:
+  - type: Manuscript
+    description: "Draft manuscript for simulated review"
+outputs:
+  - type: PeerReviewSimulation
+    artifact: "revision/peer_review_simulation.md"
+constraints:
+  - "Each persona must review independently"
+  - "Must aggregate and reconcile conflicting feedback"
+failure_modes:
+  - "Personas converge to similar critique"
+  - "Missing domain expertise for specialized methods"
+tools: [filesystem]
+tags: [submission, peer-review, simulation, multi-persona, red-team]
+domain_aware: false
+---
+
 # Peer Review Simulation Skill
 
 Simulate independent peer reviews using distinct reviewer personas and consolidate findings into an action plan.

@@ -1,3 +1,25 @@
+---
+id: fulltext-fetcher
+stage: B_literature
+version: "1.0.0"
+description: "Retrieve full-text PDFs through open access channels (Unpaywall, S2, CORE, arXiv) with PRISMA-compliant status tracking."
+inputs:
+  - type: ScreeningDecisionLog
+    description: "Papers requiring full-text retrieval"
+outputs:
+  - type: FullTextStatus
+    artifact: "screening/full_text.md"
+constraints:
+  - "Must attempt retrieval through priority-ordered OA pipeline"
+  - "Must document not-retrieved reasons for PRISMA reporting"
+failure_modes:
+  - "Paywall blocks access to key papers"
+  - "Broken OA links"
+tools: [filesystem, fulltext-retrieval]
+tags: [literature, fulltext, open-access, retrieval, PRISMA]
+domain_aware: false
+---
+
 # Full-text Fetcher Skill
 
 Retrieve full-text PDFs through open access channels and document retrieval status.

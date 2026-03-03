@@ -99,3 +99,38 @@ visualization_templates:
   - "GARCH conditional volatility time series"
   - "Factor exposure bar chart (Fama-French loadings)"
   - "Rolling beta / rolling correlation plots"
+
+reporting_standards:
+  primary: "Top-3 Finance journal style"
+  checklists: []
+  required_tables:
+    - "Summary statistics with winsorized variables"
+    - "Correlation matrix"
+    - "Main regression with progressive controls"
+    - "Robustness (alternative measures, subsamples)"
+
+default_databases:
+  primary: [SSRN, WRDS, NBER]
+  secondary: [Google Scholar, Scopus, EconLit]
+  preprints: [SSRN]
+  query_syntax_notes: "WRDS provides structured data access; SSRN free text search"
+
+methodology_priors:
+  identification: "Natural experiments or IV strongly preferred; event studies common"
+  robustness: "Placebo tests, Fama-MacBeth SE, portfolio sorts"
+  standard_hierarchy: [Natural_Experiment, IV, DID, Event_Study, Cross_Sectional_Regression]
+  estimation_norms: "Double-clustered SE (firm + time); Newey-West for time series"
+
+venue_norms:
+  jf:
+    sections: [Introduction, Data, Empirical_Strategy, Results, Conclusion]
+    word_limit: 15000
+    code_release: "Encouraged"
+  jfe:
+    sections: [Introduction, Institutional_Background, Data, Results, Conclusion]
+    word_limit: 15000
+    code_release: "Encouraged"
+  rfs:
+    sections: [Introduction, Model, Data, Results, Conclusion]
+    word_limit: 15000
+    code_release: "Expected"

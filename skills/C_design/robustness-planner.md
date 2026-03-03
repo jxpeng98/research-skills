@@ -1,3 +1,27 @@
+---
+id: robustness-planner
+stage: C_design
+version: "1.0.0"
+description: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling for empirical studies."
+inputs:
+  - type: DesignSpec
+    description: "Study design with analysis plan"
+  - type: AnalysisPlan
+    description: "Primary analysis specification"
+outputs:
+  - type: RobustnessPlan
+    artifact: "design/robustness_plan.md"
+constraints:
+  - "Must pre-specify all checks before analysis to avoid p-hacking"
+  - "Must include at least 3 robustness checks"
+failure_modes:
+  - "Checklist not domain-appropriate"
+  - "Over-specification leading to excessive multiple testing"
+tools: [filesystem]
+tags: [design, robustness, sensitivity-analysis, heteroskedasticity, endogeneity]
+domain_aware: true
+---
+
 # Robustness Planner Skill
 
 Pre-specify robustness and sensitivity checks so results are credible and reviewer-proof.

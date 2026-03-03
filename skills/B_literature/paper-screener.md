@@ -1,3 +1,31 @@
+---
+id: paper-screener
+stage: B_literature
+version: "1.0.0"
+description: "Apply two-stage systematic screening (title/abstract then full-text) with PRISMA-compliant decision logging."
+inputs:
+  - type: SearchResults
+    description: "Search results to screen"
+  - type: RQSet
+    description: "Inclusion/exclusion criteria from research questions"
+outputs:
+  - type: ScreeningDecisionLog
+    artifact: "screening/title_abstract.md"
+  - type: FullTextScreening
+    artifact: "screening/full_text.md"
+  - type: PRISMAFlowData
+    artifact: "screening/prisma_flow.md"
+constraints:
+  - "Must document exclusion reason for every excluded paper"
+  - "Must follow PRISMA flow reporting"
+failure_modes:
+  - "Ambiguous inclusion criteria leading to inconsistent decisions"
+  - "Full text unavailable for borderline cases"
+tools: [filesystem, screening-tracker]
+tags: [literature, screening, PRISMA, inclusion-exclusion]
+domain_aware: false
+---
+
 # Paper Screener Skill
 
 Apply systematic screening criteria to filter papers for inclusion in a literature review.

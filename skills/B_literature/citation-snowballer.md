@@ -1,3 +1,26 @@
+---
+id: citation-snowballer
+stage: B_literature
+version: "1.0.0"
+description: "Trace citations forward and backward from seed papers to expand corpus coverage and identify seminal works."
+inputs:
+  - type: SearchResults
+    description: "Initial search results for seed selection"
+outputs:
+  - type: SnowballLog
+    artifact: "snowball_log.md"
+constraints:
+  - "Must select 5-15 seed papers"
+  - "Must apply relevance scoring with weighted factors"
+  - "Must deduplicate against existing corpus"
+failure_modes:
+  - "API rate limits during large-scale snowballing"
+  - "Diminishing returns after level 1"
+tools: [filesystem, scholarly-search, citation-graph]
+tags: [literature, citations, snowballing, forward-backward]
+domain_aware: false
+---
+
 # Citation Snowballer Skill
 
 Systematically trace citations forward and backward to identify additional relevant papers.

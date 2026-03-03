@@ -1,3 +1,25 @@
+---
+id: self-critique
+stage: Z_cross_cutting
+version: "1.0.0"
+description: "Iterative red teaming and Socratic questioning to continuously critique and refine AI-generated outputs."
+inputs:
+  - type: AnyArtifact
+    description: "Any output requiring quality assurance"
+outputs:
+  - type: CritiqueLog
+    artifact: "review/self_critique_log.md"
+constraints:
+  - "Must apply structured questioning protocol"
+  - "Must iterate until no new issues found or max rounds reached"
+failure_modes:
+  - "Circular critique without convergence"
+  - "Inability to identify own systematic biases"
+tools: [filesystem]
+tags: [cross-cutting, critique, red-team, quality-assurance, Socratic]
+domain_aware: false
+---
+
 # Self-Critique Skill
 
 Iterative Critique Loop (Red Teaming) to pressure-test research outputs through multi-agent debate and Socratic questioning.

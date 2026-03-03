@@ -109,3 +109,38 @@ visualization_templates:
   - "Coefficient plot (coefplot) with multiple specifications"
   - "Parallel trends diagnostic plot"
   - "Synthetic control gap plot (treated vs synthetic)"
+
+reporting_standards:
+  primary: "AER/QJE style"
+  checklists: [STROBE]
+  required_tables:
+    - "Summary statistics / balance table"
+    - "Main regression with progressive controls"
+    - "Robustness / placebo tests"
+
+default_databases:
+  primary: [SSRN, NBER, RePEc, EconLit]
+  secondary: [Google Scholar, Scopus, Web of Science]
+  preprints: [SSRN, NBER Working Papers]
+  query_syntax_notes: "EconLit uses controlled vocabulary (JEL codes); SSRN uses free text"
+
+methodology_priors:
+  identification: "Requires credible causal identification strategy"
+  robustness: "Minimum 3 robustness checks expected"
+  standard_hierarchy: [RCT, IV, RD, DID, Matching, OLS]
+  estimation_norms: "Report clustered SE, show progressive controls"
+
+venue_norms:
+  aer:
+    sections: [Introduction, Model, Data, Results, Conclusion]
+    word_limit: 15000
+    appendix: "Online appendix expected for proofs + robustness"
+    code_release: "Required (AEA Data & Code Repository)"
+  qje:
+    sections: [Introduction, Background, Data, Empirical_Strategy, Results, Conclusion]
+    word_limit: 12000
+    code_release: "Expected"
+  restud:
+    sections: [Introduction, Model, Data, Results, Conclusion]
+    word_limit: 15000
+    code_release: "Required"

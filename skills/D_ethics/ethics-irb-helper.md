@@ -1,3 +1,25 @@
+---
+id: ethics-irb-helper
+stage: D_ethics
+version: "1.0.0"
+description: "Prepare IRB-ready materials including risk assessment, informed consent, recruitment scripts, and data governance."
+inputs:
+  - type: DesignSpec
+    description: "Study design with participant details"
+outputs:
+  - type: EthicsPackage
+    artifact: "ethics_irb.md"
+constraints:
+  - "Must address all standard IRB categories (risk, consent, privacy, data security)"
+  - "Must comply with relevant regulations (GDPR, HIPAA, Common Rule)"
+failure_modes:
+  - "Incomplete risk assessment for vulnerable populations"
+  - "Missing data retention/destruction plan"
+tools: [filesystem]
+tags: [ethics, IRB, consent, privacy, GDPR, compliance]
+domain_aware: false
+---
+
 # Ethics / IRB Helper Skill
 
 Prepare an ethics-ready research plan and IRB-style documentation bundle (templates, checklists, and text drafts). This is organizational support, **not legal advice**.

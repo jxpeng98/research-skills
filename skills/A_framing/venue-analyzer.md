@@ -1,3 +1,27 @@
+---
+id: venue-analyzer
+stage: A_framing
+version: "1.0.0"
+description: "Analyze venue fit, formatting constraints, and reviewer expectations to scope and position a paper for a target publication."
+inputs:
+  - type: UserQuery
+    description: "Candidate venue(s) and paper type"
+  - type: RQSet
+    description: "Research questions or contribution type"
+outputs:
+  - type: VenueAnalysis
+    artifact: "framing/venue_analysis.md"
+constraints:
+  - "Must extract length, format, citation style, anonymization requirements"
+  - "Must identify must-not-fail items for the chosen venue"
+failure_modes:
+  - "Venue information not publicly available"
+  - "Paper type mismatch with venue scope"
+tools: [filesystem, scholarly-search]
+tags: [framing, venue, journal-selection, formatting]
+domain_aware: true
+---
+
 # Venue Analyzer Skill
 
 Analyze venue fit and constraints so the paper is scoped and written to match reviewer expectations.

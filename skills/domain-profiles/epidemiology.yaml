@@ -121,3 +121,37 @@ visualization_templates:
   - "Covariate balance (Love plot / SMD before/after matching)"
   - "Geographic / choropleth map of disease incidence"
   - "SIR/SEIR model fit vs observed data"
+
+reporting_standards:
+  primary: "STROBE Statement"
+  checklists: [STROBE, RECORD, PRISMA]
+  required_tables:
+    - "Flow diagram of study population"
+    - "Descriptive characteristics by exposure"
+    - "Adjusted and unadjusted association estimates"
+
+default_databases:
+  primary: [PubMed, MEDLINE, Embase]
+  secondary: [Global Health, CINAHL, Scopus]
+  preprints: [medRxiv]
+  query_syntax_notes: "PubMed MeSH; Embase Emtree; CINAHL headings"
+
+methodology_priors:
+  identification: "Causal inference methods required for observational data"
+  robustness: "Sensitivity analysis for unmeasured confounding (E-value)"
+  standard_hierarchy: [RCT, Cohort, Case_Control, Cross_Sectional, Ecological]
+  estimation_norms: "Report adjusted OR/RR/HR with 95% CI; DAG for confounding"
+
+venue_norms:
+  aje:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 3500
+    code_release: "Encouraged"
+  ije:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 3500
+    code_release: "Data availability statement required"
+  epidemiology:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 3000
+    code_release: "Encouraged"

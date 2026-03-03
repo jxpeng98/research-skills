@@ -1,3 +1,28 @@
+---
+id: theory-mapper
+stage: A_framing
+version: "1.0.0"
+description: "Map theoretical concepts, relationships, and frameworks to build visual and structured research foundations with Mermaid diagrams."
+inputs:
+  - type: RQSet
+    description: "Research questions defining scope"
+  - type: LiteratureCorpus
+    description: "Collected papers with theoretical content"
+outputs:
+  - type: TheoreticalFramework
+    artifact: "theoretical_framework.md"
+constraints:
+  - "Must include construct definitions with operational measures"
+  - "Must generate Mermaid diagram for relationships"
+  - "Must compare at least 2 theories when applicable"
+failure_modes:
+  - "Insufficient literature for theory identification"
+  - "No clear theoretical basis in the domain"
+tools: [filesystem, scholarly-search]
+tags: [framing, theory, constructs, conceptual-model, mermaid]
+domain_aware: false
+---
+
 # Theory Mapper Skill
 
 Map theoretical concepts, relationships, and frameworks for research foundation building.

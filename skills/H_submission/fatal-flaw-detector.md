@@ -1,3 +1,25 @@
+---
+id: fatal-flaw-detector
+stage: H_submission
+version: "1.0.0"
+description: "Constructive desk-reject analysis identifying critical flaws that would prevent publication."
+inputs:
+  - type: Manuscript
+    description: "Draft manuscript"
+outputs:
+  - type: FatalFlawAnalysis
+    artifact: "revision/fatal_flaw_analysis.md"
+constraints:
+  - "Must categorize flaws by severity (fatal/major/minor)"
+  - "Must propose specific remediation for each flaw"
+failure_modes:
+  - "False positive on methodological choices that are defensible"
+  - "Missing domain-specific fatal flaws"
+tools: [filesystem]
+tags: [submission, fatal-flaw, desk-reject, quality-gate, pre-submission]
+domain_aware: true
+---
+
 # Fatal Flaw Detector Skill
 
 Constructive desk-reject analysis: identify flaws likely to cause immediate rejection and propose mitigations.

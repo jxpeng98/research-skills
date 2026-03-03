@@ -1,3 +1,27 @@
+---
+id: gap-analyzer
+stage: A_framing
+version: "1.0.0"
+description: "Systematically identify and categorize research gaps from literature analysis using 5-type taxonomy and FINER prioritization."
+inputs:
+  - type: LiteratureCorpus
+    description: "Collected papers with extracted data"
+  - type: SearchResults
+    description: "Search strategy outputs"
+outputs:
+  - type: GapAnalysis
+    artifact: "gap_analysis.md"
+constraints:
+  - "Must use FINER criteria for prioritization"
+  - "Must cover all 5 gap types: theoretical, methodological, empirical, knowledge, population"
+failure_modes:
+  - "Insufficient literature base (<10 papers)"
+  - "No empirical gaps identified despite coverage holes"
+tools: [filesystem, scholarly-search]
+tags: [framing, gap-analysis, positioning, FINER]
+domain_aware: false
+---
+
 # Gap Analyzer Skill
 
 Systematically identify and categorize research gaps from literature analysis.

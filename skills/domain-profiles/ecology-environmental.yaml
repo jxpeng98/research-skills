@@ -118,3 +118,37 @@ visualization_templates:
   - "Occupancy map (site-level detection/occupancy)"
   - "Phylogenetic tree with trait mapping"
   - "Rank-abundance / species accumulation curve"
+
+reporting_standards:
+  primary: "ESA Reporting Guidelines"
+  checklists: [PRISMA-Eco, STROBE]
+  required_tables:
+    - "Study site characteristics"
+    - "Model comparison table (AIC/BIC)"
+    - "Effect size estimates with CI"
+
+default_databases:
+  primary: [Web of Science, Scopus, PubMed]
+  secondary: [Google Scholar, JSTOR, CAB Abstracts]
+  preprints: [bioRxiv, EcoEvoRxiv]
+  query_syntax_notes: "Web of Science uses Topic field; CAB uses thesaurus"
+
+methodology_priors:
+  identification: "Field experiments or natural experiments preferred; modeling common"
+  robustness: "Model selection via AIC/BIC; cross-validation; spatial autocorrelation checks"
+  standard_hierarchy: [Field_Experiment, Natural_Experiment, Observational_Modeling, Simulation, Meta_Analysis]
+  estimation_norms: "Report model fit metrics; verify distributional assumptions; spatial diagnostics"
+
+venue_norms:
+  ecology:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 10000
+    code_release: "Required (Dryad or Zenodo)"
+  ecology-letters:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 5000
+    code_release: "Required"
+  global-change-biology:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 8000
+    code_release: "Required"

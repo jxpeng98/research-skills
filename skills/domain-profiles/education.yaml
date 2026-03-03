@@ -114,3 +114,37 @@ visualization_templates:
   - "Growth curves (individual trajectories)"
   - "Joint display table (mixed methods integration)"
   - "CONSORT flow diagram (for intervention studies)"
+
+reporting_standards:
+  primary: "APA 7th"
+  checklists: [CONSORT, STROBE, COREQ, PRISMA]
+  required_tables:
+    - "Participant demographics"
+    - "Descriptive statistics by group"
+    - "Multilevel model results with ICC"
+
+default_databases:
+  primary: [ERIC, Education Source, PsycINFO]
+  secondary: [Google Scholar, Scopus, Web of Science]
+  preprints: [EdArXiv, SSRN]
+  query_syntax_notes: "ERIC uses ERIC Thesaurus descriptors; Education Source uses SU field"
+
+methodology_priors:
+  identification: "Mixed methods valued; RCTs less common due to ethical constraints"
+  robustness: "Sensitivity analysis for multilevel models; multiple comparison correction"
+  standard_hierarchy: [RCT, Quasi-experiment, Mixed_Methods, Case_Study, Action_Research]
+  estimation_norms: "Report ICC for multilevel; effect sizes with confidence intervals"
+
+venue_norms:
+  aer-education:
+    sections: [Introduction, Literature_Review, Methods, Results, Discussion, Implications]
+    word_limit: 10000
+    code_release: "Encouraged"
+  educational-researcher:
+    sections: [Introduction, Theoretical_Framework, Methods, Findings, Discussion]
+    word_limit: 8000
+    code_release: "Not required"
+  jrst:
+    sections: [Introduction, Literature_Review, Theoretical_Framework, Methodology, Results, Discussion]
+    word_limit: 12000
+    code_release: "Encouraged"

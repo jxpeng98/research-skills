@@ -1,3 +1,26 @@
+---
+id: question-refiner
+stage: A_framing
+version: "1.0.0"
+description: "Transform vague research topics into structured, answerable research questions using PICO/PEO frameworks and FINER evaluation."
+inputs:
+  - type: UserQuery
+    description: "Raw research topic or area of interest"
+outputs:
+  - type: RQSet
+    artifact: "framing/research_question.md"
+constraints:
+  - "Must apply PICO or PEO framework"
+  - "Must evaluate with FINER criteria"
+  - "Must generate inclusion/exclusion criteria"
+failure_modes:
+  - "Topic too broad to produce actionable RQ"
+  - "Missing domain context for framework selection"
+tools: [filesystem]
+tags: [framing, research-question, PICO, PEO, FINER]
+domain_aware: false
+---
+
 # Question Refiner Skill
 
 Transform vague research topics into structured, answerable research questions using academic frameworks.

@@ -1,3 +1,37 @@
+---
+id: study-designer
+stage: C_design
+version: "1.0.0"
+description: "Design empirical studies including sampling strategy, measures, procedures, and analysis plans with preregistration support."
+inputs:
+  - type: RQSet
+    description: "Research questions and hypotheses"
+  - type: TheoreticalFramework
+    description: "Theoretical framework for operationalization"
+    required: false
+outputs:
+  - type: DesignSpec
+    artifact: "study_design.md"
+  - type: AnalysisPlan
+    artifact: "analysis_plan.md"
+  - type: DataManagementPlan
+    artifact: "data_management_plan.md"
+  - type: Instruments
+    artifact: "instruments/"
+  - type: Preregistration
+    artifact: "preregistration.md"
+constraints:
+  - "Must justify design choice against alternatives"
+  - "Must include power analysis"
+  - "Must specify missingness handling"
+failure_modes:
+  - "Insufficient power for planned analysis"
+  - "Design-method mismatch with research questions"
+tools: [filesystem, metadata-registry]
+tags: [design, sampling, measures, analysis-plan, preregistration]
+domain_aware: true
+---
+
 # Study Designer Skill
 
 Design an empirical research study (quant/qual/mixed) from a research question and constraints, producing a protocol-style design doc + analysis plan + instruments skeleton.

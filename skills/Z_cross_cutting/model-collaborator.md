@@ -1,3 +1,25 @@
+---
+id: model-collaborator
+stage: Z_cross_cutting
+version: "1.0.0"
+description: "Coordinate execution and cross-review across model runtimes (Codex, Claude, Gemini) for multi-agent verification."
+inputs:
+  - type: TaskPacket
+    description: "Task specification for multi-agent execution"
+outputs:
+  - type: CollaborationTrace
+    artifact: "logs/model_collab_trace.md"
+constraints:
+  - "Must ensure independent execution before synthesis"
+  - "Must document agent disagreements explicitly"
+failure_modes:
+  - "Agent unavailable for scheduled collaboration"
+  - "Output format incompatible across agents"
+tools: [filesystem]
+tags: [cross-cutting, multi-agent, collaboration, Codex, Claude, Gemini]
+domain_aware: false
+---
+
 # Model Collaborator Skill
 
 Multi-model collaboration for academic research code tasks.

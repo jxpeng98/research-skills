@@ -1,3 +1,25 @@
+---
+id: metadata-enricher
+stage: Z_cross_cutting
+version: "1.0.0"
+description: "Normalize and enrich DOI, venue, year, author, and identifier metadata across all artifacts."
+inputs:
+  - type: PaperNotes
+    description: "Raw paper metadata from any stage"
+outputs:
+  - type: Bibliography
+    artifact: "bibliography.bib"
+constraints:
+  - "Must resolve DOI to canonical metadata"
+  - "Must handle missing identifiers gracefully"
+failure_modes:
+  - "DOI resolution service unavailable"
+  - "Conflicting metadata across sources"
+tools: [filesystem, metadata-registry]
+tags: [cross-cutting, metadata, DOI, normalization, enrichment]
+domain_aware: false
+---
+
 # Metadata Enricher Skill
 
 Normalize and complete bibliographic metadata for papers using authoritative sources.

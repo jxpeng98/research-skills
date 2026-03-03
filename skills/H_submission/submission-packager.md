@@ -1,3 +1,28 @@
+---
+id: submission-packager
+stage: H_submission
+version: "1.0.0"
+description: "Assemble submission-ready package: cover letter, compliance files, title page, disclosures, and supplementary materials."
+inputs:
+  - type: Manuscript
+    description: "Finalized manuscript"
+  - type: VenueAnalysis
+    description: "Target venue requirements"
+    required: false
+outputs:
+  - type: SubmissionPackage
+    artifact: "submission/cover_letter.md"
+constraints:
+  - "Must include all venue-required items"
+  - "Must generate CRediT author contributions when required"
+failure_modes:
+  - "Missing co-author information for disclosures"
+  - "Venue requirements changed since analysis"
+tools: [filesystem, submission-kit]
+tags: [submission, cover-letter, checklist, disclosures, supplementary]
+domain_aware: true
+---
+
 # Submission Packager Skill
 
 Assemble a submission-ready package: cover letter, required statements, reporting checklist, and a final “submission checklist” to reduce desk-reject and revision cycles.

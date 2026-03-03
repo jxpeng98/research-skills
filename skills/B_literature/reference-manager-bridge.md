@@ -1,3 +1,31 @@
+---
+id: reference-manager-bridge
+stage: B_literature
+version: "1.0.0"
+description: "Export and import references between the research system and Zotero, Mendeley, or EndNote in BibTeX, RIS, or CSL-JSON formats."
+inputs:
+  - type: Bibliography
+    description: "Existing bibliography file"
+  - type: PaperNotes
+    description: "Paper notes with metadata"
+outputs:
+  - type: Bibliography
+    artifact: "bibliography.bib"
+  - type: RISExport
+    artifact: "references.ris"
+  - type: CSLJSONExport
+    artifact: "references.json"
+constraints:
+  - "Must normalize metadata across all entries"
+  - "Must generate consistent tags for organization"
+failure_modes:
+  - "Citekey conflicts during bidirectional sync"
+  - "Metadata loss during format conversion"
+tools: [filesystem, metadata-registry]
+tags: [literature, references, Zotero, Mendeley, EndNote, BibTeX, RIS]
+domain_aware: false
+---
+
 # Reference Manager Bridge Skill
 
 Export and import references between the research system and reference management software.

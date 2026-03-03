@@ -1,3 +1,26 @@
+---
+id: rival-hypothesis-designer
+stage: C_design
+version: "1.0.0"
+description: "Proactively construct and address competitive theories and rival explanations to strengthen study design."
+inputs:
+  - type: DesignSpec
+    description: "Current study design"
+  - type: HypothesisSet
+    description: "Hypotheses to challenge"
+outputs:
+  - type: RivalHypotheses
+    artifact: "design/rival_hypotheses.md"
+constraints:
+  - "Must generate at least one rival explanation per key claim"
+  - "Must propose design features to rule out rivals"
+failure_modes:
+  - "Unable to articulate plausible rivals for purely exploratory work"
+tools: [filesystem]
+tags: [design, rival-hypotheses, threats-to-validity, competing-theories]
+domain_aware: false
+---
+
 # Rival Hypothesis Designer Skill
 
 Design against alternative explanations and reviewer objections by enumerating rivals and how to rule them out.

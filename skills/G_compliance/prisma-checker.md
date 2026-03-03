@@ -1,3 +1,27 @@
+---
+id: prisma-checker
+stage: G_compliance
+version: "1.0.0"
+description: "Verify PRISMA 2020 flow diagram completeness, checklist coverage, and reporting transparency for systematic reviews."
+inputs:
+  - type: Manuscript
+    description: "Draft systematic review manuscript"
+  - type: PRISMAFlowData
+    description: "Screening flow data"
+outputs:
+  - type: PRISMAChecklist
+    artifact: "prisma_checklist.md"
+constraints:
+  - "Must check all 27 PRISMA 2020 items"
+  - "Must flag missing items with specific remediation"
+failure_modes:
+  - "Incomplete screening data prevents flow verification"
+  - "Ambiguous reporting makes assessment uncertain"
+tools: [filesystem, reporting-guidelines]
+tags: [compliance, PRISMA, systematic-review, checklist, reporting]
+domain_aware: false
+---
+
 # PRISMA Checker Skill
 
 Verify PRISMA 2020 compliance and consistency across systematic review artifacts.

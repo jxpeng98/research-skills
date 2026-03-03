@@ -1,3 +1,36 @@
+---
+id: manuscript-architect
+stage: F_writing
+version: "1.0.0"
+description: "Build coherent paper structure from outline to section-level drafts with claim-evidence integrity checking."
+inputs:
+  - type: RQSet
+    description: "Research questions"
+  - type: EvidenceTable
+    description: "Synthesized evidence"
+  - type: DesignSpec
+    description: "Study design (for empirical papers)"
+    required: false
+outputs:
+  - type: ManuscriptOutline
+    artifact: "manuscript/outline.md"
+  - type: Manuscript
+    artifact: "manuscript/manuscript.md"
+  - type: ClaimGraph
+    artifact: "manuscript/claims_evidence_map.md"
+  - type: FiguresTablesPlan
+    artifact: "manuscript/figures_tables_plan.md"
+constraints:
+  - "Must maintain claim-evidence alignment across sections"
+  - "Must follow venue-specific sectioning requirements"
+failure_modes:
+  - "Evidence gaps discovered during writing"
+  - "Scope creep from unfocused claims"
+tools: [filesystem]
+tags: [writing, manuscript, outline, drafting, claim-evidence]
+domain_aware: true
+---
+
 # Manuscript Architect Skill
 
 Build and revise a full research paper manuscript across stages: outline → section drafts → coherence pass → compliance checks → submission-ready package.

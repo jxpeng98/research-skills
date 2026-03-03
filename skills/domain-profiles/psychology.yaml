@@ -124,3 +124,38 @@ visualization_templates:
   - "Scree plot + parallel analysis for EFA"
   - "Item characteristic curves (IRT)"
   - "Forest plot of effect sizes across studies"
+
+reporting_standards:
+  primary: "APA 7th Publication Manual"
+  checklists: [JARS-Quant, JARS-Qual, JARS-Mixed, PRISMA]
+  required_tables:
+    - "Descriptive statistics and correlations"
+    - "ANOVA/regression results with effect sizes"
+    - "Reliability coefficients for measures"
+
+default_databases:
+  primary: [PsycINFO, PubMed, Web of Science]
+  secondary: [Google Scholar, Scopus, ProQuest]
+  preprints: [PsyArXiv, OSF Preprints]
+  query_syntax_notes: "PsycINFO uses APA Thesaurus; PubMed uses MeSH"
+
+methodology_priors:
+  identification: "Experimental manipulation preferred; correlational requires justification"
+  robustness: "Effect size reporting mandatory; replication expectation growing"
+  standard_hierarchy: [RCT, Quasi-experiment, Longitudinal, Cross-sectional, Qualitative]
+  estimation_norms: "Report Cohen's d or eta-squared; confidence intervals preferred over p-values"
+
+venue_norms:
+  psychological-science:
+    sections: [Introduction, Method, Results, Discussion]
+    word_limit: 5000
+    appendix: "Supplemental materials on journal website"
+    code_release: "Encouraged (OSF badge program)"
+  jpsp:
+    sections: [Introduction, Method, Results, General_Discussion]
+    word_limit: 12000
+    code_release: "Encouraged"
+  psychol-bulletin:
+    sections: [Introduction, Method, Results, Discussion]
+    word_limit: 15000
+    code_release: "Expected for meta-analyses"

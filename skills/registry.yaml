@@ -1,0 +1,583 @@
+# ─────────────────────────────────────────────────────────────
+# Research Skills Registry — Machine-readable index of all skills
+# ─────────────────────────────────────────────────────────────
+# Validates against: schemas/skill.schema.json
+# Artifact type vocabulary: schemas/artifact-types.yaml
+# ─────────────────────────────────────────────────────────────
+
+skills:
+  # ══════════════════════════════════════════════════════════
+  # A_framing — Research question, theory, positioning
+  # ══════════════════════════════════════════════════════════
+  - id: question-refiner
+    stage: A_framing
+    version: "1.0.0"
+    file: skills/A_framing/question-refiner.md
+    summary: "Transform vague topics into structured RQs via PICO/PEO + FINER evaluation."
+    inputs: [UserQuery]
+    outputs: [RQSet]
+    tags: [framing, research-question, PICO, PEO, FINER]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: hypothesis-generator
+    stage: A_framing
+    version: "1.0.0"
+    file: skills/A_framing/hypothesis-generator.md
+    summary: "Translate RQs into testable hypotheses with mechanisms and boundary conditions."
+    inputs: [RQSet, TheoreticalFramework]
+    outputs: [HypothesisSet]
+    tags: [framing, hypothesis, propositions, mechanisms]
+    depends_on: [question-refiner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: theory-mapper
+    stage: A_framing
+    version: "1.0.0"
+    file: skills/A_framing/theory-mapper.md
+    summary: "Map theoretical concepts, relationships, and frameworks with Mermaid diagrams."
+    inputs: [RQSet, LiteratureCorpus]
+    outputs: [TheoreticalFramework]
+    tags: [framing, theory, constructs, conceptual-model, mermaid]
+    depends_on: [question-refiner, academic-searcher]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search]
+    domain_aware: false
+
+  - id: gap-analyzer
+    stage: A_framing
+    version: "1.0.0"
+    file: skills/A_framing/gap-analyzer.md
+    summary: "Identify and categorize research gaps using 5-type taxonomy with FINER prioritization."
+    inputs: [LiteratureCorpus, SearchResults]
+    outputs: [GapAnalysis]
+    tags: [framing, gap-analysis, positioning, FINER]
+    depends_on: [academic-searcher]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search]
+    domain_aware: false
+
+  - id: venue-analyzer
+    stage: A_framing
+    version: "1.0.0"
+    file: skills/A_framing/venue-analyzer.md
+    summary: "Analyze venue fit, formatting constraints, and reviewer expectations."
+    inputs: [UserQuery, RQSet]
+    outputs: [VenueAnalysis]
+    tags: [framing, venue, journal-selection, formatting]
+    depends_on: [question-refiner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search]
+    domain_aware: true
+
+  # ══════════════════════════════════════════════════════════
+  # B_literature — Search, screen, extract, cite
+  # ══════════════════════════════════════════════════════════
+  - id: academic-searcher
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/academic-searcher.md
+    summary: "Multi-database systematic search across Semantic Scholar, arXiv, OpenAlex."
+    inputs: [RQSet, SearchQueryPlan]
+    outputs: [SearchQueryPlan, SearchResults, SearchLog]
+    tags: [literature, search, databases, API, reproducibility]
+    depends_on: [question-refiner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search, fulltext-retrieval]
+    domain_aware: false
+
+  - id: paper-screener
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/paper-screener.md
+    summary: "Two-stage PRISMA-compliant systematic screening with decision logging."
+    inputs: [SearchResults, RQSet]
+    outputs: [ScreeningDecisionLog, PRISMAFlowData]
+    tags: [literature, screening, PRISMA, inclusion-exclusion]
+    depends_on: [academic-searcher]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, screening-tracker]
+    domain_aware: false
+
+  - id: paper-extractor
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/paper-extractor.md
+    summary: "Extract structured info from papers: metadata, design, findings, contributions."
+    inputs: [ScreeningDecisionLog]
+    outputs: [ExtractionTable, PaperNotes]
+    tags: [literature, extraction, data-collection, structured-notes]
+    depends_on: [paper-screener]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, extraction-store]
+    domain_aware: false
+
+  - id: citation-snowballer
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/citation-snowballer.md
+    summary: "Forward/backward citation tracing to expand corpus and find seminal works."
+    inputs: [SearchResults]
+    outputs: [SnowballLog]
+    tags: [literature, citations, snowballing, forward-backward]
+    depends_on: [academic-searcher]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search, citation-graph]
+    domain_aware: false
+
+  - id: fulltext-fetcher
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/fulltext-fetcher.md
+    summary: "Retrieve full-text PDFs via OA channels with PRISMA-compliant status tracking."
+    inputs: [ScreeningDecisionLog]
+    outputs: [FullTextStatus]
+    tags: [literature, fulltext, open-access, retrieval, PRISMA]
+    depends_on: [paper-screener]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, fulltext-retrieval]
+    domain_aware: false
+
+  - id: citation-formatter
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/citation-formatter.md
+    summary: "Format citations in APA/MLA/Chicago/IEEE/BibTeX with consistent citekeys."
+    inputs: [PaperNotes]
+    outputs: [Bibliography]
+    tags: [literature, citations, BibTeX, APA, formatting]
+    depends_on: [paper-extractor]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, metadata-registry]
+    domain_aware: false
+
+  - id: concept-extractor
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/concept-extractor.md
+    summary: "Expand search concepts with controlled vocabulary and Boolean query drafting."
+    inputs: [RQSet, PaperNotes]
+    outputs: [ConceptMap]
+    tags: [literature, keywords, concepts, boolean-query, controlled-vocabulary]
+    depends_on: [question-refiner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search]
+    domain_aware: true
+
+  - id: literature-mapper
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/literature-mapper.md
+    summary: "Build literature taxonomy with mechanism-based cluster labels and open problems."
+    inputs: [ExtractionTable]
+    outputs: [LiteratureMap]
+    tags: [literature, taxonomy, mapping, related-work, clustering]
+    depends_on: [paper-extractor]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: reference-manager-bridge
+    stage: B_literature
+    version: "1.0.0"
+    file: skills/B_literature/reference-manager-bridge.md
+    summary: "Export/import references between research system and Zotero/Mendeley/EndNote."
+    inputs: [Bibliography, PaperNotes]
+    outputs: [Bibliography, RISExport, CSLJSONExport]
+    tags: [literature, references, Zotero, Mendeley, EndNote, BibTeX, RIS]
+    depends_on: [citation-formatter]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, metadata-registry]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
+  # C_design — Study design, analysis planning, robustness
+  # ══════════════════════════════════════════════════════════
+  - id: study-designer
+    stage: C_design
+    version: "1.0.0"
+    file: skills/C_design/study-designer.md
+    summary: "Design empirical studies with sampling, measures, procedures, and preregistration."
+    inputs: [RQSet, TheoreticalFramework]
+    outputs: [DesignSpec, AnalysisPlan, Preregistration]
+    tags: [design, sampling, measures, analysis-plan, preregistration]
+    depends_on: [question-refiner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, metadata-registry]
+    domain_aware: true
+
+  - id: rival-hypothesis-designer
+    stage: C_design
+    version: "1.0.0"
+    file: skills/C_design/rival-hypothesis-designer.md
+    summary: "Construct competing theories and rival explanations to strengthen design."
+    inputs: [DesignSpec, HypothesisSet]
+    outputs: [RivalHypotheses]
+    tags: [design, rival-hypotheses, threats-to-validity, competing-theories]
+    depends_on: [study-designer, hypothesis-generator]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: robustness-planner
+    stage: C_design
+    version: "1.0.0"
+    file: skills/C_design/robustness-planner.md
+    summary: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
+    inputs: [DesignSpec, AnalysisPlan]
+    outputs: [RobustnessPlan]
+    tags: [design, robustness, sensitivity-analysis, endogeneity]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  # ══════════════════════════════════════════════════════════
+  # D_ethics — IRB, privacy, deidentification
+  # ══════════════════════════════════════════════════════════
+  - id: ethics-irb-helper
+    stage: D_ethics
+    version: "1.0.0"
+    file: skills/D_ethics/ethics-irb-helper.md
+    summary: "Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance."
+    inputs: [DesignSpec]
+    outputs: [EthicsPackage]
+    tags: [ethics, IRB, consent, privacy, GDPR, compliance]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: deidentification-planner
+    stage: D_ethics
+    version: "1.0.0"
+    file: skills/D_ethics/deidentification-planner.md
+    summary: "Design technical privacy measures via k-anonymity or differential privacy."
+    inputs: [DesignSpec, EthicsPackage]
+    outputs: [DeidentificationPlan]
+    tags: [ethics, privacy, deidentification, k-anonymity, differential-privacy]
+    depends_on: [ethics-irb-helper]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
+  # E_synthesis — Quality assessment, synthesis, bias
+  # ══════════════════════════════════════════════════════════
+  - id: evidence-synthesizer
+    stage: E_synthesis
+    version: "1.0.0"
+    file: skills/E_synthesis/evidence-synthesizer.md
+    summary: "Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting."
+    inputs: [ExtractionTable, QualityTable]
+    outputs: [EvidenceTable, SynthesisMatrix]
+    tags: [synthesis, meta-analysis, narrative, evidence-table, PRISMA]
+    depends_on: [quality-assessor]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, stats-engine]
+    domain_aware: false
+
+  - id: quality-assessor
+    stage: E_synthesis
+    version: "1.0.0"
+    file: skills/E_synthesis/quality-assessor.md
+    summary: "Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE."
+    inputs: [ExtractionTable]
+    outputs: [QualityTable, GRADESummary]
+    tags: [synthesis, quality, risk-of-bias, GRADE, RoB2, ROBINS-I]
+    depends_on: [paper-extractor]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: publication-bias-checker
+    stage: E_synthesis
+    version: "1.0.0"
+    file: skills/E_synthesis/publication-bias-checker.md
+    summary: "Evaluate publication bias via funnel plots, Egger's test, trim-and-fill."
+    inputs: [EvidenceTable]
+    outputs: [PublicationBiasReport]
+    tags: [synthesis, publication-bias, funnel-plot, fail-safe-N, trim-and-fill]
+    depends_on: [evidence-synthesizer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, stats-engine]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
+  # F_writing — Manuscript, meta-optimization
+  # ══════════════════════════════════════════════════════════
+  - id: manuscript-architect
+    stage: F_writing
+    version: "1.0.0"
+    file: skills/F_writing/manuscript-architect.md
+    summary: "Build paper structure from outline to section drafts with claim-evidence integrity."
+    inputs: [RQSet, EvidenceTable, DesignSpec]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+    tags: [writing, manuscript, outline, drafting, claim-evidence]
+    depends_on: [evidence-synthesizer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: meta-optimizer
+    stage: F_writing
+    version: "1.0.0"
+    file: skills/F_writing/meta-optimizer.md
+    summary: "Optimize abstract, title, keywords for indexing and discoverability."
+    inputs: [Manuscript]
+    outputs: [MetaOptimization]
+    tags: [writing, abstract, title, SEO, indexing, keywords]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  # ══════════════════════════════════════════════════════════
+  # G_compliance — PRISMA, reporting, tone
+  # ══════════════════════════════════════════════════════════
+  - id: prisma-checker
+    stage: G_compliance
+    version: "1.0.0"
+    file: skills/G_compliance/prisma-checker.md
+    summary: "Verify PRISMA 2020 flow diagram and all 27 checklist items."
+    inputs: [Manuscript, PRISMAFlowData]
+    outputs: [PRISMAChecklist]
+    tags: [compliance, PRISMA, systematic-review, checklist, reporting]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, reporting-guidelines]
+    domain_aware: false
+
+  - id: reporting-checker
+    stage: G_compliance
+    version: "1.0.0"
+    file: skills/G_compliance/reporting-checker.md
+    summary: "Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness."
+    inputs: [Manuscript, DesignSpec]
+    outputs: [ReportingChecklist]
+    tags: [compliance, reporting, CONSORT, STROBE, COREQ, guidelines]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, reporting-guidelines]
+    domain_aware: true
+
+  - id: tone-normalizer
+    stage: G_compliance
+    version: "1.0.0"
+    file: skills/G_compliance/tone-normalizer.md
+    summary: "Cut fluff, hedge words, and absolute claims for concise academic tone."
+    inputs: [Manuscript]
+    outputs: [ToneNormalization]
+    tags: [compliance, tone, academic-writing, editing, conciseness]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
+  # H_submission — Package, rebuttal, review
+  # ══════════════════════════════════════════════════════════
+  - id: submission-packager
+    stage: H_submission
+    version: "1.0.0"
+    file: skills/H_submission/submission-packager.md
+    summary: "Assemble submission package: cover letter, disclosures, supplementary materials."
+    inputs: [Manuscript, VenueAnalysis]
+    outputs: [SubmissionPackage]
+    tags: [submission, cover-letter, checklist, disclosures, supplementary]
+    depends_on: [manuscript-architect, tone-normalizer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, submission-kit]
+    domain_aware: true
+
+  - id: rebuttal-assistant
+    stage: H_submission
+    version: "1.0.0"
+    file: skills/H_submission/rebuttal-assistant.md
+    summary: "Generate point-by-point response matrix from reviewer comments."
+    inputs: [ReviewComments, Manuscript]
+    outputs: [ResponseToReviewers, ResponseLetter]
+    tags: [submission, rebuttal, revision, reviewer-response, point-by-point]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: peer-review-simulation
+    stage: H_submission
+    version: "1.0.0"
+    file: skills/H_submission/peer-review-simulation.md
+    summary: "Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2)."
+    inputs: [Manuscript]
+    outputs: [PeerReviewSimulation]
+    tags: [submission, peer-review, simulation, multi-persona, red-team]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: fatal-flaw-detector
+    stage: H_submission
+    version: "1.0.0"
+    file: skills/H_submission/fatal-flaw-detector.md
+    summary: "Desk-reject analysis identifying critical flaws blocking publication."
+    inputs: [Manuscript]
+    outputs: [FatalFlawAnalysis]
+    tags: [submission, fatal-flaw, desk-reject, quality-gate, pre-submission]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: reviewer-empathy-checker
+    stage: H_submission
+    version: "1.0.0"
+    file: skills/H_submission/reviewer-empathy-checker.md
+    summary: "Neutralize defensiveness in reviewer responses and verify exact addressing."
+    inputs: [ResponseToReviewers]
+    outputs: [EmpathyCheck]
+    tags: [submission, rebuttal, empathy, tone, reviewer-response]
+    depends_on: [rebuttal-assistant]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
+  # I_code — Specification, build, execution, review
+  # ══════════════════════════════════════════════════════════
+  - id: code-builder
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/code-builder.md
+    summary: "Convert academic methods into executable code with domain-profile library selection."
+    inputs: [AnalysisPlan, DomainProfile]
+    outputs: [AnalysisCode]
+    tags: [code, implementation, multi-language, domain-profiles, reproducibility]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: true
+
+  - id: code-specification
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/code-specification.md
+    summary: "Generate strict OPSX-style constraint sets before coding."
+    inputs: [UserQuery]
+    outputs: [CodeSpec]
+    tags: [code, specification, requirements, OPSX, constraints]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: code-planning
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/code-planning.md
+    summary: "Transform specs into parallelizable, zero-decision execution plans."
+    inputs: [CodeSpec]
+    outputs: [CodePlan]
+    tags: [code, planning, execution-plan, parallelization]
+    depends_on: [code-specification]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: code-execution
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/code-execution.md
+    summary: "Execute code plans with cProfile performance profiling and optimization."
+    inputs: [CodePlan]
+    outputs: [PerformanceProfile]
+    tags: [code, execution, profiling, performance, optimization]
+    depends_on: [code-planning]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: false
+
+  - id: code-review
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/code-review.md
+    summary: "Secondary model reviews code logic, security, and statistical validity."
+    inputs: [AnalysisCode, DomainProfile]
+    outputs: [CodeReview]
+    tags: [code, review, security, statistical-validity, domain-checklist]
+    depends_on: [code-builder]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: reproducibility-auditor
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/reproducibility-auditor.md
+    summary: "Verify seeds, containerization, and fail-graceful contingencies."
+    inputs: [AnalysisCode]
+    outputs: [ReproducibilityReport]
+    tags: [code, reproducibility, audit, random-seeds, containerization]
+    depends_on: [code-builder]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: stats-engine
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/stats-engine.md
+    summary: "Statistical modeling and hypothesis testing with domain-driven diagnostics."
+    inputs: [AnalysisPlan, DomainProfile]
+    outputs: [StatsReport]
+    tags: [code, statistics, modeling, hypothesis-testing, diagnostics]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, stats-engine, code-runtime]
+    domain_aware: true
+
+  # ══════════════════════════════════════════════════════════
+  # Z_cross_cutting — Multi-agent, metadata, QA
+  # ══════════════════════════════════════════════════════════
+  - id: metadata-enricher
+    stage: Z_cross_cutting
+    version: "1.0.0"
+    file: skills/Z_cross_cutting/metadata-enricher.md
+    summary: "Normalize and enrich DOI, venue, year, author metadata across artifacts."
+    inputs: [PaperNotes]
+    outputs: [Bibliography]
+    tags: [cross-cutting, metadata, DOI, normalization, enrichment]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, metadata-registry]
+    domain_aware: false
+
+  - id: model-collaborator
+    stage: Z_cross_cutting
+    version: "1.0.0"
+    file: skills/Z_cross_cutting/model-collaborator.md
+    summary: "Coordinate multi-agent execution and cross-review across model runtimes."
+    inputs: [TaskPacket]
+    outputs: [CollaborationTrace]
+    tags: [cross-cutting, multi-agent, collaboration, Codex, Claude, Gemini]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: self-critique
+    stage: Z_cross_cutting
+    version: "1.0.0"
+    file: skills/Z_cross_cutting/self-critique.md
+    summary: "Iterative red teaming and Socratic questioning for output quality assurance."
+    inputs: [AnyArtifact]
+    outputs: [CritiqueLog]
+    tags: [cross-cutting, critique, red-team, quality-assurance, Socratic]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false

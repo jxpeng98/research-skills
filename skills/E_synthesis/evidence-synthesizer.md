@@ -1,3 +1,29 @@
+---
+id: evidence-synthesizer
+stage: E_synthesis
+version: "1.0.0"
+description: "Synthesize evidence narratively, qualitatively, or quantitatively (meta-analysis) with PRISMA-aligned reporting."
+inputs:
+  - type: ExtractionTable
+    description: "Extracted study data"
+  - type: QualityTable
+    description: "Quality assessment results"
+outputs:
+  - type: EvidenceTable
+    artifact: "synthesis.md"
+  - type: SynthesisMatrix
+    artifact: "synthesis_matrix.md"
+constraints:
+  - "Must choose synthesis method based on data heterogeneity"
+  - "Must produce structured evidence table with claim-evidence-strength mapping"
+failure_modes:
+  - "Excessive heterogeneity prevents pooling"
+  - "Insufficient studies for quantitative synthesis"
+tools: [filesystem, stats-engine]
+tags: [synthesis, meta-analysis, narrative, evidence-table, PRISMA]
+domain_aware: false
+---
+
 # Evidence Synthesizer Skill
 
 Synthesize evidence across included studies into PRISMA-ready results. Supports:

@@ -112,3 +112,38 @@ visualization_templates:
   - "t-SNE / UMAP embedding plot"
   - "Hyperparameter sensitivity plot"
   - "Critical difference diagram (model comparison)"
+
+reporting_standards:
+  primary: "ML Reproducibility Checklist"
+  checklists: [NeurIPS_Reproducibility, ACL_Reproducibility]
+  required_tables:
+    - "Comparison with baselines on standard benchmarks"
+    - "Ablation study results"
+    - "Computational cost / training details"
+
+default_databases:
+  primary: [Semantic Scholar, arXiv, ACM Digital Library, IEEE Xplore]
+  secondary: [DBLP, Google Scholar, Scopus]
+  preprints: [arXiv, OpenReview]
+  query_syntax_notes: "arXiv uses subject categories (cs.AI, cs.CL, cs.LG); ACM uses CCS"
+
+methodology_priors:
+  identification: "Empirical evaluation on benchmarks; ablation studies expected"
+  robustness: "Multiple random seeds; statistical significance testing; error bars"
+  standard_hierarchy: [Benchmark_Evaluation, Ablation, Human_Evaluation, Theoretical_Analysis, Case_Study]
+  estimation_norms: "Report mean ± std over N runs; paired tests for comparisons"
+
+venue_norms:
+  neurips:
+    sections: [Introduction, Related_Work, Method, Experiments, Conclusion]
+    word_limit: 9000
+    appendix: "Unlimited supplementary"
+    code_release: "Strongly encouraged (reproducibility checklist)"
+  icml:
+    sections: [Introduction, Related_Work, Method, Experiments, Conclusion]
+    word_limit: 8000
+    code_release: "Encouraged"
+  acl:
+    sections: [Introduction, Related_Work, Method, Experiments, Analysis, Conclusion]
+    word_limit: 8000
+    code_release: "Expected (reproducibility checklist)"

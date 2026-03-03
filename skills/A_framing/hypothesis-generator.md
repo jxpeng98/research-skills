@@ -1,3 +1,27 @@
+---
+id: hypothesis-generator
+stage: A_framing
+version: "1.0.0"
+description: "Translate research questions into testable hypotheses or theory propositions with mechanisms and boundary conditions."
+inputs:
+  - type: RQSet
+    description: "Refined research questions from question-refiner"
+  - type: TheoreticalFramework
+    description: "Optional theoretical framework"
+    required: false
+outputs:
+  - type: HypothesisSet
+    artifact: "framing/hypothesis.md"
+constraints:
+  - "Each hypothesis must specify direction and expected sign"
+  - "Must include at least one rival explanation per key claim"
+failure_modes:
+  - "Research questions too exploratory for formal hypotheses"
+tools: [filesystem]
+tags: [framing, hypothesis, propositions, mechanisms]
+domain_aware: false
+---
+
 # Hypothesis Generator Skill
 
 Translate research questions into testable hypotheses (or theory propositions) with mechanisms and boundary conditions.

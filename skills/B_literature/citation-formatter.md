@@ -1,3 +1,25 @@
+---
+id: citation-formatter
+stage: B_literature
+version: "1.0.0"
+description: "Format citations and references in APA, MLA, Chicago, IEEE, Harvard, Vancouver, or BibTeX with consistent citekey generation."
+inputs:
+  - type: PaperNotes
+    description: "Extracted paper metadata"
+outputs:
+  - type: Bibliography
+    artifact: "bibliography.bib"
+constraints:
+  - "Must generate valid BibTeX entries"
+  - "Must follow target style guide precisely"
+failure_modes:
+  - "Incomplete metadata for proper citation"
+  - "Style ambiguity for edge cases"
+tools: [filesystem, metadata-registry]
+tags: [literature, citations, BibTeX, APA, formatting]
+domain_aware: false
+---
+
 # Citation Formatter Skill
 
 Format citations and references according to academic style guidelines.

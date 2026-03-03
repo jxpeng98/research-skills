@@ -129,3 +129,38 @@ visualization_templates:
   - "Calibration plot (predicted vs observed)"
   - "Table 1 (baseline characteristics, SMD column)"
   - "Cumulative incidence function plot (competing risks)"
+
+reporting_standards:
+  primary: "ICMJE Recommendations"
+  checklists: [CONSORT, STROBE, PRISMA, STARD, TRIPOD, SPIRIT]
+  required_tables:
+    - "CONSORT flow diagram"
+    - "Baseline characteristics table"
+    - "Primary and secondary outcomes"
+
+default_databases:
+  primary: [PubMed, MEDLINE, Embase]
+  secondary: [Cochrane Library, Web of Science, Scopus]
+  preprints: [medRxiv, bioRxiv]
+  query_syntax_notes: "PubMed uses MeSH terms; Embase uses Emtree; Boolean with field tags"
+
+methodology_priors:
+  identification: "RCT gold standard; observational studies require confounding control"
+  robustness: "Sensitivity analysis mandatory; intention-to-treat primary"
+  standard_hierarchy: [Systematic_Review, RCT, Cohort, Case_Control, Cross_Sectional, Case_Report]
+  estimation_norms: "Report HR/OR/RR with 95% CI; NNT for clinical significance"
+
+venue_norms:
+  nejm:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 2800
+    appendix: "Supplementary appendix standard"
+    code_release: "Data sharing statement required"
+  lancet:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 3500
+    code_release: "Data sharing encouraged"
+  bmj:
+    sections: [Introduction, Methods, Results, Discussion]
+    word_limit: 4000
+    code_release: "Encouraged (BMJ Open)"

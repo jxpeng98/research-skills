@@ -1,3 +1,27 @@
+---
+id: reporting-checker
+stage: G_compliance
+version: "1.0.0"
+description: "Validate reporting guideline completeness for target study type (CONSORT, STROBE, COREQ, SRQR, TRIPOD, etc.)."
+inputs:
+  - type: Manuscript
+    description: "Draft manuscript"
+  - type: DesignSpec
+    description: "Study design for guideline selection"
+outputs:
+  - type: ReportingChecklist
+    artifact: "reporting_checklist.md"
+constraints:
+  - "Must select appropriate guideline based on study design"
+  - "Must reference specific manuscript sections for each item"
+failure_modes:
+  - "No standard guideline exists for the study type"
+  - "Multiple guidelines applicable with conflicting requirements"
+tools: [filesystem, reporting-guidelines]
+tags: [compliance, reporting, CONSORT, STROBE, COREQ, guidelines]
+domain_aware: true
+---
+
 # Reporting Checker Skill
 
 Check whether an empirical manuscript or report is complete and aligned with an appropriate reporting guideline, producing a structured “what’s missing” action list.

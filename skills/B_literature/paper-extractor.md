@@ -1,3 +1,29 @@
+---
+id: paper-extractor
+stage: B_literature
+version: "1.0.0"
+description: "Extract structured information from papers including bibliographic metadata, methodology, findings, and contributions."
+inputs:
+  - type: ScreeningDecisionLog
+    description: "Papers that passed screening"
+  - type: FullTextAccess
+    description: "Full-text PDFs or URLs"
+outputs:
+  - type: ExtractionTable
+    artifact: "extraction_table.md"
+  - type: PaperNotes
+    artifact: "notes/"
+constraints:
+  - "Must extract all 7 framework categories (bibliographic, context, theory, methodology, findings, discussion, contributions)"
+  - "Must generate one note per paper under notes/"
+failure_modes:
+  - "Inconsistent reporting across papers"
+  - "Missing methodology details in source papers"
+tools: [filesystem, extraction-store]
+tags: [literature, extraction, data-collection, structured-notes]
+domain_aware: false
+---
+
 # Paper Extractor Skill
 
 Extract structured information from academic papers for analysis and synthesis.

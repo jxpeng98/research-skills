@@ -1,3 +1,27 @@
+---
+id: quality-assessor
+stage: E_synthesis
+version: "1.0.0"
+description: "Assess risk of bias, certainty of evidence, and study quality using appropriate tools (RoB 2, ROBINS-I, GRADE, etc.)."
+inputs:
+  - type: ExtractionTable
+    description: "Extracted study data"
+outputs:
+  - type: QualityTable
+    artifact: "quality_table.md"
+  - type: GRADESummary
+    artifact: "grade_sof.md"
+constraints:
+  - "Must select tool based on study design (RCT→RoB 2, observational→ROBINS-I)"
+  - "Must document rating justification per domain"
+failure_modes:
+  - "Insufficient reporting in source papers for assessment"
+  - "Assessor disagreement on borderline cases"
+tools: [filesystem]
+tags: [synthesis, quality, risk-of-bias, GRADE, RoB2, ROBINS-I]
+domain_aware: false
+---
+
 # Quality Assessor Skill
 
 Assess the quality and strength of academic evidence using standardized criteria.

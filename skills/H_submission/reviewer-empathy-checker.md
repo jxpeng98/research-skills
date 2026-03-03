@@ -1,3 +1,25 @@
+---
+id: reviewer-empathy-checker
+stage: H_submission
+version: "1.0.0"
+description: "Neutralize defensiveness in reviewer responses and ensure each concern is addressed with exact precision."
+inputs:
+  - type: ResponseToReviewers
+    description: "Draft response to reviewers"
+outputs:
+  - type: EmpathyCheck
+    artifact: "revision/reviewer_empathy_check.md"
+constraints:
+  - "Must flag defensive language"
+  - "Must verify each response directly addresses the reviewer's concern"
+failure_modes:
+  - "Cultural tone differences not accounted for"
+  - "Over-correction making responses seem obsequious"
+tools: [filesystem]
+tags: [submission, rebuttal, empathy, tone, reviewer-response]
+domain_aware: false
+---
+
 # Reviewer Empathy Checker Skill
 
 Neutralize defensiveness and ensure every reviewer concern is acknowledged and addressed concretely.

@@ -1,3 +1,25 @@
+---
+id: tone-normalizer
+stage: G_compliance
+version: "1.0.0"
+description: "Ruthlessly cut fluff, transition words, hedging, and absolute claims to produce concise, objective academic tone."
+inputs:
+  - type: Manuscript
+    description: "Draft text requiring tone normalization"
+outputs:
+  - type: ToneNormalization
+    artifact: "compliance/tone_normalization.md"
+constraints:
+  - "Must flag every hedge word and absolute claim"
+  - "Must preserve technical precision while improving readability"
+failure_modes:
+  - "Over-cutting removes necessary nuance"
+  - "Domain-specific hedging conventions not respected"
+tools: [filesystem]
+tags: [compliance, tone, academic-writing, editing, conciseness]
+domain_aware: false
+---
+
 # Tone Normalizer Skill
 
 Rewrite text into concise, objective academic tone and reduce reviewer-triggering overclaim.

@@ -114,3 +114,37 @@ visualization_templates:
   - "Network graph with community detection coloring"
   - "Causal impact plot (observed vs counterfactual)"
   - "Choropleth / spatial distribution map"
+
+reporting_standards:
+  primary: "APSA reporting guidelines"
+  checklists: [DA-RT]
+  required_tables:
+    - "Summary statistics"
+    - "Main regression results"
+    - "Robustness checks"
+
+default_databases:
+  primary: [JSTOR, Web of Science, Scopus, ProQuest Political Science]
+  secondary: [Google Scholar, SSRN, EBSCO]
+  preprints: [SSRN, SocArXiv]
+  query_syntax_notes: "JSTOR uses full-text; ProQuest uses thesaurus terms"
+
+methodology_priors:
+  identification: "Natural experiments and IV preferred; observational data common"
+  robustness: "Robustness to alternative specifications; matching as sensitivity check"
+  standard_hierarchy: [Natural_Experiment, RCT, IV, RD, DID, Matching, OLS]
+  estimation_norms: "Report both OLS and IV; cluster SE at appropriate level"
+
+venue_norms:
+  apsr:
+    sections: [Introduction, Theory, Data, Analysis, Conclusion]
+    word_limit: 12000
+    code_release: "Required (APSR Dataverse)"
+  ajps:
+    sections: [Introduction, Theory, Research_Design, Results, Conclusion]
+    word_limit: 10000
+    code_release: "Required"
+  jop:
+    sections: [Introduction, Theory, Data, Results, Conclusion]
+    word_limit: 10000
+    code_release: "Required"

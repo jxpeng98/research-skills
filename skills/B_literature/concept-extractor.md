@@ -1,3 +1,27 @@
+---
+id: concept-extractor
+stage: B_literature
+version: "1.0.0"
+description: "Expand and structure search concepts/keywords to build reproducible search strategy and avoid confirmation bias."
+inputs:
+  - type: RQSet
+    description: "Research questions for concept extraction"
+  - type: PaperNotes
+    description: "3-10 seed paper titles/abstracts"
+    required: false
+outputs:
+  - type: ConceptMap
+    artifact: "literature/concept_extraction.md"
+constraints:
+  - "Must add controlled vocabulary candidates (MeSH/ACM CCS/JEL) when relevant"
+  - "Must group into 2-5 concept buckets"
+failure_modes:
+  - "Domain-specific terminology not captured by initial seeds"
+tools: [filesystem, scholarly-search]
+tags: [literature, keywords, concepts, boolean-query, controlled-vocabulary]
+domain_aware: true
+---
+
 # Concept Extractor Skill
 
 Expand and structure search concepts/keywords to build a reproducible search strategy and avoid confirmation bias.

@@ -1,3 +1,25 @@
+---
+id: meta-optimizer
+stage: F_writing
+version: "1.0.0"
+description: "Optimize abstract, title, and keywords for indexing, discoverability, SEO, and reader engagement."
+inputs:
+  - type: Manuscript
+    description: "Draft manuscript with abstract"
+outputs:
+  - type: MetaOptimization
+    artifact: "manuscript/meta_optimization.md"
+constraints:
+  - "Must preserve academic tone while improving accessibility"
+  - "Must test against venue word limits"
+failure_modes:
+  - "Over-optimization sacrificing precision for engagement"
+  - "Keyword stuffing detected by reviewers"
+tools: [filesystem]
+tags: [writing, abstract, title, SEO, indexing, keywords]
+domain_aware: true
+---
+
 # Meta Optimizer Skill
 
 Optimize title, abstract, and keywords for indexing, discoverability, and reviewer scanning—without misrepresenting claims.

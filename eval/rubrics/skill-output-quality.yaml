@@ -1,0 +1,93 @@
+# ─────────────────────────────────────────────
+# Scoring Rubric: Skill Output Quality
+# ─────────────────────────────────────────────
+# Applied by eval runner to assess skill output quality
+
+rubric_id: skill-output-quality
+version: "1.0.0"
+
+dimensions:
+  - name: completeness
+    weight: 0.25
+    description: "All required sections and fields are present"
+    levels:
+      - score: 1
+        label: "Missing"
+        criteria: ">50% of required sections absent"
+      - score: 2
+        label: "Partial"
+        criteria: "25-50% of required sections absent"
+      - score: 3
+        label: "Mostly complete"
+        criteria: "<25% absent, no critical sections missing"
+      - score: 4
+        label: "Complete"
+        criteria: "All required sections present and populated"
+
+  - name: accuracy
+    weight: 0.25
+    description: "Content is factually correct and methodologically sound"
+    levels:
+      - score: 1
+        label: "Major errors"
+        criteria: "Fundamental methodological or factual errors"
+      - score: 2
+        label: "Minor errors"
+        criteria: "Non-critical inaccuracies or imprecisions"
+      - score: 3
+        label: "Mostly accurate"
+        criteria: "Substantively correct with minor issues"
+      - score: 4
+        label: "Accurate"
+        criteria: "Factually and methodologically sound throughout"
+
+  - name: domain_appropriateness
+    weight: 0.20
+    description: "Output follows domain conventions and uses appropriate methods/tools"
+    levels:
+      - score: 1
+        label: "Wrong domain"
+        criteria: "Uses methods/tools inappropriate for the domain"
+      - score: 2
+        label: "Generic"
+        criteria: "Correct but doesn't leverage domain profile"
+      - score: 3
+        label: "Domain-aware"
+        criteria: "Uses domain-appropriate methods and terminology"
+      - score: 4
+        label: "Expert-level"
+        criteria: "Demonstrates deep domain expertise in choices"
+
+  - name: actionability
+    weight: 0.15
+    description: "Output can be directly used by downstream skills or researcher"
+    levels:
+      - score: 1
+        label: "Not actionable"
+        criteria: "Vague or abstract, requires complete rework"
+      - score: 2
+        label: "Partially actionable"
+        criteria: "Some sections usable, others need clarification"
+      - score: 3
+        label: "Mostly actionable"
+        criteria: "Can be used with minor modifications"
+      - score: 4
+        label: "Fully actionable"
+        criteria: "Ready for direct use by next pipeline step"
+
+  - name: formatting
+    weight: 0.15
+    description: "Follows the skill's output contract format"
+    levels:
+      - score: 1
+        label: "Non-compliant"
+        criteria: "Does not follow expected output format"
+      - score: 2
+        label: "Partially compliant"
+        criteria: "General structure present but formatting inconsistent"
+      - score: 3
+        label: "Mostly compliant"
+        criteria: "Follows format with minor deviations"
+      - score: 4
+        label: "Fully compliant"
+        criteria: "Exact match to skill output contract"

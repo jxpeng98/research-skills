@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────
+# Eval Case: Empirical DID Study (Minimum Wage)
+# ─────────────────────────────────────────────
+
+case_id: empirical-did-minimum-wage
+pipeline: empirical-study
+description: "Difference-in-differences analysis of minimum wage increases on employment."
+
+input:
+  topic: "Effect of minimum wage increases on restaurant employment"
+  domain: economics
+  additional_context: "Using state-level variation in the US, 2015-2023"
+
+expected_outputs:
+  question-refiner:
+    artifact: framing/research_question.md
+    must_contain:
+      - "causal"
+      - "employment"
+    validation: "RQ frames causal question with identification strategy"
+
+  study-designer:
+    artifact: study_design.md
+    must_contain:
+      - "difference-in-differences"
+      - "parallel trends"
+      - "cluster"
+    validation: "Design specifies DID with clustering and parallel trends"
+
+  robustness-planner:
+    artifact: design/robustness_plan.md
+    must_contain:
+      - "placebo"
+      - "staggered"
+    validation: "Includes staggered DID robustness and placebo tests"
+
+  code-builder:
+    artifact: analysis/
+    must_contain:
+      - "fixest" or "pyfixest" or "reghdfe"
+    validation: "Uses appropriate DID library from economics domain profile"

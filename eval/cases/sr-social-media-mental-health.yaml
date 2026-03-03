@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────
+# Eval Case: Systematic Review (Social Media + Mental Health)
+# ─────────────────────────────────────────────
+# Tests the systematic-review-prisma pipeline end-to-end
+
+case_id: sr-social-media-mental-health
+pipeline: systematic-review-prisma
+description: "Systematic review of social media usage and adolescent mental health outcomes."
+
+input:
+  topic: "Impact of social media usage on adolescent mental health"
+  domain: psychology
+  additional_context: "Focus on longitudinal studies from 2018-2024"
+
+expected_outputs:
+  question-refiner:
+    artifact: framing/research_question.md
+    must_contain:
+      - "PICO" or "PEO"
+      - "inclusion criteria"
+      - "exclusion criteria"
+    validation: "RQ must be specific enough for database search"
+
+  academic-searcher:
+    artifact: search_strategy.md
+    must_contain:
+      - "PsycINFO"
+      - "PubMed"
+      - "Boolean"
+    validation: "At least 3 databases searched with documented queries"
+
+  paper-screener:
+    artifact: screening/prisma_flow.md
+    must_contain:
+      - "PRISMA"
+      - "excluded"
+      - "included"
+    validation: "Flow diagram data present with exclusion reasons"
+
+  evidence-synthesizer:
+    artifact: synthesis.md
+    must_contain:
+      - "evidence table"
+      - "strength"
+    validation: "Structured evidence table with claim-evidence mapping"

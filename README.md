@@ -47,7 +47,7 @@ Multi-client installer:
 ```
 
 Upgrade / auto-upgrade:
-- Guide: `guides/upgrade-research-skills.md`
+- Guide: `guides/basic/upgrade-research-skills.md`
 - CLI aliases (after pipx install): `rs` / `rsw` (same as `research-skills`)
 - Optional default upstream (omit `--repo`): set `RESEARCH_SKILLS_REPO=<owner>/<repo>`, or add `research-skills.toml` in your project root
 - Check updates: `rs check --repo <owner>/<repo>` (or `rs check` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py check ...`)
@@ -82,10 +82,11 @@ Collaboration rule:
 - Agents = drafting/review layer (primary/reviewer/fallback from capability map)
 
 Collaboration playbook:
-- `guides/agent-skill-collaboration.md`
-- `guides/install-multi-client.md`
-- `guides/cli-reference.md` (CLI command reference)
-- `guides/extend-research-skills.md` (how to extend/modify parts safely)
+- `guides/advanced/agent-skill-collaboration.md`
+- `guides/basic/install-multi-client.md`
+- `guides/advanced/cli-reference.md` (CLI command reference)
+- `guides/advanced/extend-research-skills.md` (how to extend/modify parts safely)
+- `guides/advanced/mcp-zotero-integration.md` (Connecting local citation managers)
 
 ## 0 → 1 Navigation (New Users)
 
@@ -365,7 +366,9 @@ research-skills/
 ├── skills/                   # Skill specs referenced by capability map (skill cards)
 ├── skills-core.md            # Token-optimized consolidated reference for skills
 ├── templates/                # Output templates (PRISMA, rebuttal, DMP, etc.)
-├── guides/                   # User-facing guides (install/upgrade/collab/CLI reference)
+├── guides/
+│   ├── basic/                # Basic usage, installation, upgrades
+│   └── advanced/             # Advanced features, CLI reference, MCP integration
 ├── scripts/                  # Install/upgrade/release automation + validators
 ├── research_skills/          # pipx CLI package (entrypoints: research-skills / rs / rsw)
 │   └── project.toml          # Packaged default upstream (CI-injected; overrideable)

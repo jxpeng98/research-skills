@@ -904,9 +904,9 @@ def validate_docs(root: Path, report: ValidationReport) -> None:
             f"{relative_path} should mention task-run for capability-map orchestration",
         )
         report.warn(
-            "guides/agent-skill-collaboration.md" in content,
+            "guides/advanced/agent-skill-collaboration.md" in content,
             f"{relative_path} references collaboration guide",
-            f"{relative_path} should reference guides/agent-skill-collaboration.md",
+            f"{relative_path} should reference guides/advanced/agent-skill-collaboration.md",
         )
         report.warn(
             "scripts/install_research_skill.sh" in content,
@@ -1051,22 +1051,22 @@ def validate_orchestrator(root: Path, report: ValidationReport) -> None:
 
 
 def validate_guides(root: Path, report: ValidationReport) -> None:
-    content = read_text(root, "guides/agent-skill-collaboration.md", report)
+    content = read_text(root, "guides/advanced/agent-skill-collaboration.md", report)
     if not content:
         return
     for token in ("Task ID", "required_skills", "task-run", "--summarizer", "--profile-file", "doctor"):
         report.check(
             token in content,
             f"collaboration guide includes {token}",
-            f"guides/agent-skill-collaboration.md missing key token: {token}",
+            f"guides/advanced/agent-skill-collaboration.md missing key token: {token}",
         )
     report.check(
         "RESEARCH_MCP_" in content,
         "collaboration guide documents external MCP env contract",
-        "guides/agent-skill-collaboration.md should include RESEARCH_MCP_ env contract",
+        "guides/advanced/agent-skill-collaboration.md should include RESEARCH_MCP_ env contract",
     )
 
-    install_content = read_text(root, "guides/install-multi-client.md", report)
+    install_content = read_text(root, "guides/basic/install-multi-client.md", report)
     if not install_content:
         return
     for token in (
@@ -1081,7 +1081,7 @@ def validate_guides(root: Path, report: ValidationReport) -> None:
         report.check(
             token in install_content,
             f"install guide includes {token}",
-            f"guides/install-multi-client.md missing token: {token}",
+            f"guides/basic/install-multi-client.md missing token: {token}",
         )
 
 
@@ -1143,7 +1143,7 @@ def validate_tests(root: Path, report: ValidationReport) -> None:
         "CollaborationMode.PARALLEL",
         "task_run(",
         "profile_file",
-        "Unknown agent profile",
+        "ConfigError",
     ):
         report.check(
             token in content,

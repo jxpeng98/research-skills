@@ -44,7 +44,7 @@ python3 scripts/validate_project_artifacts.py --cwd ./project --topic ai-in-educ
 ```
 
 升级 / 自动升级：
-- 指南：`guides/upgrade-research-skills.md`
+- 指南：`guides/basic/upgrade-research-skills.md`
 - 命令别名（pipx 安装后可用）：`rs` / `rsw`（等价于 `research-skills`）
 - 可选默认上游（省略 `--repo`）：设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml`
 - 检测更新：`rs check --repo <owner>/<repo>`（或设置了 `RESEARCH_SKILLS_REPO` 后直接 `rs check`；或 `python3 scripts/research_skill_update.py check ...`）
@@ -78,28 +78,29 @@ Beta 发布文档：
 - MCP = 证据/工具层
 - Agents = 起草与复核层（主执行/复核/回退由能力映射定义）
 
-协同增强指南：
-- `guides/agent-skill-collaboration.md`
-- `guides/install-multi-client.md`
-- `guides/cli-reference.md`（CLI 命令参考）
-- `guides/extend-research-skills.md`（如何对某一部分进行扩展/修改并保持一致性）
+协同增强指南协作手册：
+- `guides/advanced/agent-skill-collaboration.md`
+- `guides/basic/install-multi-client.md`
+- `guides/advanced/cli-reference.md`（CLI 命令参考）
+- `guides/advanced/extend-research-skills.md`（如何对某一部分进行扩展/修改并保持一致性）
+- `guides/advanced/mcp-zotero-integration.md` (连接本地文献管理软件)
 
 ## 0 → 1 导航（新用户从这里开始）
 
 如果你刚接触这个仓库，建议按以下顺序快速上手：
 
-1. **先看合同（单一真源）**：
-   - `standards/research-workflow-contract.yaml`（Task ID、必需产物、质量门、依赖顺序）
-2. **再看路由（谁负责做什么）**：
-   - `standards/mcp-agent-capability-map.yaml`（每个 Task 的 required skills/MCP + 主执行/复核/回退 agent）
-3. **安装到三端与项目**：
-   - 脚本安装：`./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
-   - 或 pipx + upgrade：`pipx install research-skills-installer` 然后 `rs upgrade --project-dir <project> --target all --doctor`
-4. **开始跑工作流**：
-   - Claude Code：在项目里用 `/paper` 或 `.agent/workflows/*.md` 的任一命令
-   - 命令行：`python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`
-5. **校验产物是否对齐合同**：
-   - `python3 scripts/validate_project_artifacts.py --cwd <project> --topic <topic> --task-id <task> --strict`
+1.  **先看合同（单一真源）**：
+    -   `standards/research-workflow-contract.yaml`（Task ID、必需产物、质量门、依赖顺序）
+2.  **再看路由（谁负责做什么）**：
+    -   `standards/mcp-agent-capability-map.yaml`（每个 Task 的 required skills/MCP + 主执行/复核/回退 agent）
+3.  **安装到三端与项目**：
+    -   脚本安装：`./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
+    -   或 pipx + upgrade：`pipx install research-skills-installer` 然后 `rs upgrade --project-dir <project> --target all --doctor`
+4.  **开始跑工作流**：
+    -   Claude Code：在项目里用 `/paper` 或 `.agent/workflows/*.md` 的任一命令
+    -   命令行：`python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`
+5.  **校验产物是否对齐合同**：
+    -   `python3 scripts/validate_project_artifacts.py --cwd <project> --topic <topic> --task-id <task> --strict`
 
 常见自定义入口：
 - 人格/审稿风格/运行参数：`standards/agent-profiles.example.json`（用于 `parallel` / `task-run`）
@@ -366,9 +367,11 @@ research-skills/
 ├── bridges/                  # 多端协同编排（Codex/Claude/Gemini bridge + orchestrator）
 ├── skills/                   # skills 规范卡片（被 capability-map 引用）
 ├── skills-core.md            # skills 的 token 优化汇总参考
-├── templates/                # 输出模板（PRISMA、rebuttal、DMP 等）
-├── guides/                   # 使用指南（安装/升级/协同/CLI 参考）
-├── scripts/                  # 安装/升级/发布自动化 + 校验器脚本
+├── templates/                # 各种输出模板（PRISMA, rebuttal, DMP等）
+├── guides/
+│   ├── basic/                # 基础使用、安装、升级
+│   └── advanced/             # 高级功能、CLI 参考、MCP集成
+├── scripts/                  # 安装/升级/发布自动化与验证脚本 + 校验器脚本
 ├── research_skills/          # pipx CLI 包（命令：research-skills / rs / rsw）
 │   └── project.toml          # 打包默认上游（CI 注入；可被覆盖）
 ├── release/                  # Release notes + 验收回执 + 模板

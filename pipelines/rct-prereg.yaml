@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────
+# RCT with Pre-registration Pipeline
+# ─────────────────────────────────────────────
+
+id: rct-prereg
+name: "RCT with Pre-registration"
+paper_type: rct
+description: "Randomized controlled trial with preregistration, ethics, and CONSORT reporting."
+
+steps:
+  - id: frame
+    skill: question-refiner
+    task_id: A1
+    outputs: [RQSet]
+
+  - id: hypothesize
+    skill: hypothesis-generator
+    task_id: A1_5
+    depends_on: [frame]
+    outputs: [HypothesisSet]
+
+  - id: design
+    skill: study-designer
+    task_id: C1
+    depends_on: [hypothesize]
+    outputs: [DesignSpec, AnalysisPlan, Preregistration]
+
+  - id: robustness
+    skill: robustness-planner
+    task_id: C2
+    depends_on: [design]
+    outputs: [RobustnessPlan]
+
+  - id: ethics
+    skill: ethics-irb-helper
+    task_id: D1
+    depends_on: [design]
+    outputs: [EthicsPackage]
+
+  - id: code
+    skill: code-builder
+    task_id: I1
+    depends_on: [design, robustness]
+    outputs: [AnalysisCode]
+
+  - id: stats
+    skill: stats-engine
+    task_id: I2
+    depends_on: [code]
+    outputs: [StatsReport]
+
+  - id: write
+    skill: manuscript-architect
+    task_id: F3
+    depends_on: [stats]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+
+  - id: consort-check
+    skill: reporting-checker
+    task_id: G3
+    depends_on: [write]
+    outputs: [ReportingChecklist]
+
+  - id: submit
+    skill: submission-packager
+    task_id: H1
+    depends_on: [consort-check]
+    outputs: [SubmissionPackage]

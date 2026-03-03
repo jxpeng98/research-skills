@@ -1,0 +1,108 @@
+# ─────────────────────────────────────────────
+# Empirical Study Pipeline
+# ─────────────────────────────────────────────
+
+id: empirical-study
+name: "Standard Empirical Paper"
+paper_type: empirical
+description: "RQ → design → data collection → analysis → writing for standard empirical research."
+
+steps:
+  - id: frame
+    skill: question-refiner
+    task_id: A1
+    outputs: [RQSet]
+    stop_condition: "User confirms research question"
+
+  - id: hypothesize
+    skill: hypothesis-generator
+    task_id: A1_5
+    depends_on: [frame]
+    outputs: [HypothesisSet]
+
+  - id: venue
+    skill: venue-analyzer
+    task_id: A5
+    depends_on: [frame]
+    outputs: [VenueAnalysis]
+    optional: true
+
+  - id: lit-search
+    skill: academic-searcher
+    task_id: B1
+    depends_on: [frame]
+    outputs: [SearchQueryPlan, SearchResults]
+
+  - id: theory
+    skill: theory-mapper
+    task_id: A2
+    depends_on: [frame, lit-search]
+    outputs: [TheoreticalFramework]
+    optional: true
+
+  - id: design
+    skill: study-designer
+    task_id: C1
+    depends_on: [hypothesize, theory]
+    outputs: [DesignSpec, AnalysisPlan]
+
+  - id: rivals
+    skill: rival-hypothesis-designer
+    task_id: C1_5
+    depends_on: [design]
+    outputs: [RivalHypotheses]
+
+  - id: robustness
+    skill: robustness-planner
+    task_id: C2
+    depends_on: [design]
+    outputs: [RobustnessPlan]
+
+  - id: ethics
+    skill: ethics-irb-helper
+    task_id: D1
+    depends_on: [design]
+    outputs: [EthicsPackage]
+    optional: true
+
+  - id: code
+    skill: code-builder
+    task_id: I1
+    depends_on: [design, robustness]
+    outputs: [AnalysisCode]
+
+  - id: stats
+    skill: stats-engine
+    task_id: I2
+    depends_on: [code]
+    outputs: [StatsReport]
+
+  - id: write
+    skill: manuscript-architect
+    task_id: F3
+    depends_on: [stats, lit-search]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+
+  - id: report-check
+    skill: reporting-checker
+    task_id: G3
+    depends_on: [write]
+    outputs: [ReportingChecklist]
+
+  - id: tone
+    skill: tone-normalizer
+    task_id: G4
+    depends_on: [write]
+    outputs: [ToneNormalization]
+
+  - id: flaw-check
+    skill: fatal-flaw-detector
+    task_id: H2
+    depends_on: [write]
+    outputs: [FatalFlawAnalysis]
+
+  - id: submit
+    skill: submission-packager
+    task_id: H1
+    depends_on: [report-check, tone, flaw-check]
+    outputs: [SubmissionPackage]

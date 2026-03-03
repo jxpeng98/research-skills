@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────
+# Systematic Review (PRISMA 2020) Pipeline
+# ─────────────────────────────────────────────
+# Model-agnostic DAG recipe — references skill IDs from registry.yaml
+# Execution layer: .agent/workflows/*.md (Claude Code) or research-paper-workflow/SKILL.md (Codex)
+
+id: systematic-review-prisma
+name: "Systematic Review (PRISMA 2020)"
+paper_type: systematic-review
+description: "End-to-end PRISMA-compliant systematic review from question formulation to submission."
+
+steps:
+  - id: frame
+    skill: question-refiner
+    task_id: A1
+    outputs: [RQSet]
+    stop_condition: "User confirms research question"
+
+  - id: concept
+    skill: concept-extractor
+    task_id: B1_5
+    depends_on: [frame]
+    outputs: [ConceptMap]
+
+  - id: search
+    skill: academic-searcher
+    task_id: B1
+    depends_on: [concept]
+    outputs: [SearchQueryPlan, SearchResults, SearchLog]
+
+  - id: snowball
+    skill: citation-snowballer
+    task_id: B3
+    depends_on: [search]
+    outputs: [SnowballLog]
+
+  - id: screen
+    skill: paper-screener
+    task_id: B1
+    depends_on: [search, snowball]
+    outputs: [ScreeningDecisionLog, PRISMAFlowData]
+
+  - id: fetch
+    skill: fulltext-fetcher
+    task_id: B1
+    depends_on: [screen]
+    outputs: [FullTextStatus]
+
+  - id: extract
+    skill: paper-extractor
+    task_id: B2
+    depends_on: [fetch]
+    outputs: [ExtractionTable, PaperNotes]
+
+  - id: assess
+    skill: quality-assessor
+    task_id: E1
+    depends_on: [extract]
+    outputs: [QualityTable, GRADESummary]
+
+  - id: synthesize
+    skill: evidence-synthesizer
+    task_id: E3
+    depends_on: [assess]
+    outputs: [EvidenceTable]
+    branch:
+      if: "quantitative_pooling_appropriate"
+      then: meta-analysis
+      else: narrative-synthesis
+
+  - id: bias-check
+    skill: publication-bias-checker
+    task_id: E4
+    depends_on: [synthesize]
+    outputs: [PublicationBiasReport]
+    optional: true
+
+  - id: write
+    skill: manuscript-architect
+    task_id: F3
+    depends_on: [synthesize, bias-check]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+
+  - id: prisma-check
+    skill: prisma-checker
+    task_id: G2
+    depends_on: [write]
+    outputs: [PRISMAChecklist]
+
+  - id: tone
+    skill: tone-normalizer
+    task_id: G4
+    depends_on: [write]
+    outputs: [ToneNormalization]
+
+  - id: submit
+    skill: submission-packager
+    task_id: H1
+    depends_on: [prisma-check, tone]
+    outputs: [SubmissionPackage]

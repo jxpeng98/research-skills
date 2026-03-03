@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────
+# Code-First Methods Paper Pipeline
+# ─────────────────────────────────────────────
+
+id: code-first-methods
+name: "Code-First Methods Paper"
+paper_type: methods
+description: "Methods paper where the code deliverable is central — spec → plan → build → review → package."
+
+steps:
+  - id: frame
+    skill: question-refiner
+    task_id: A1
+    outputs: [RQSet]
+
+  - id: spec
+    skill: code-specification
+    task_id: I0
+    depends_on: [frame]
+    outputs: [CodeSpec]
+
+  - id: plan
+    skill: code-planning
+    task_id: I1
+    depends_on: [spec]
+    outputs: [CodePlan]
+
+  - id: build
+    skill: code-builder
+    task_id: I1
+    depends_on: [plan]
+    outputs: [AnalysisCode]
+
+  - id: execute
+    skill: code-execution
+    task_id: I2
+    depends_on: [build]
+    outputs: [PerformanceProfile]
+
+  - id: review
+    skill: code-review
+    task_id: I3
+    depends_on: [build]
+    outputs: [CodeReview]
+
+  - id: audit
+    skill: reproducibility-auditor
+    task_id: I4
+    depends_on: [build]
+    outputs: [ReproducibilityReport]
+
+  - id: write
+    skill: manuscript-architect
+    task_id: F3
+    depends_on: [review, audit]
+    outputs: [ManuscriptOutline, Manuscript]
+
+  - id: submit
+    skill: submission-packager
+    task_id: H1
+    depends_on: [write]
+    outputs: [SubmissionPackage]

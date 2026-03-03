@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────
+# Theory / Conceptual Paper Pipeline
+# ─────────────────────────────────────────────
+
+id: theory-paper
+name: "Theory / Conceptual Paper"
+paper_type: theory
+description: "Build and present a theoretical contribution through literature synthesis and framework construction."
+
+steps:
+  - id: frame
+    skill: question-refiner
+    task_id: A1
+    outputs: [RQSet]
+
+  - id: search
+    skill: academic-searcher
+    task_id: B1
+    depends_on: [frame]
+    outputs: [SearchQueryPlan, SearchResults]
+
+  - id: extract
+    skill: paper-extractor
+    task_id: B2
+    depends_on: [search]
+    outputs: [ExtractionTable, PaperNotes]
+
+  - id: gap
+    skill: gap-analyzer
+    task_id: A4
+    depends_on: [extract]
+    outputs: [GapAnalysis]
+
+  - id: theory
+    skill: theory-mapper
+    task_id: A2
+    depends_on: [extract, gap]
+    outputs: [TheoreticalFramework]
+
+  - id: hypothesize
+    skill: hypothesis-generator
+    task_id: A1_5
+    depends_on: [theory]
+    outputs: [HypothesisSet]
+
+  - id: write
+    skill: manuscript-architect
+    task_id: F3
+    depends_on: [theory, gap, hypothesize]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+
+  - id: tone
+    skill: tone-normalizer
+    task_id: G4
+    depends_on: [write]
+    outputs: [ToneNormalization]
+
+  - id: submit
+    skill: submission-packager
+    task_id: H1
+    depends_on: [tone]
+    outputs: [SubmissionPackage]

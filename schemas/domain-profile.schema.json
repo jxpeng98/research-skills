@@ -1,0 +1,256 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://research-skills.dev/schemas/domain-profile.schema.json",
+    "title": "Domain Profile",
+    "description": "Schema for skills/domain-profiles/*.yaml files",
+    "type": "object",
+    "required": [
+        "domain",
+        "display_name",
+        "libraries",
+        "method_templates"
+    ],
+    "properties": {
+        "domain": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]+$",
+            "description": "Machine-readable domain identifier"
+        },
+        "display_name": {
+            "type": "string",
+            "description": "Human-readable domain name"
+        },
+        "libraries": {
+            "type": "object",
+            "description": "Language-specific library recommendations",
+            "properties": {
+                "python": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/libraryEntry"
+                    }
+                },
+                "r": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/libraryEntry"
+                    }
+                },
+                "stata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/libraryEntry"
+                    }
+                },
+                "matlab": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/libraryEntry"
+                    }
+                },
+                "julia": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/libraryEntry"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "method_templates": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "tier"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "tier": {
+                        "type": "string",
+                        "enum": [
+                            "standard",
+                            "advanced"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "languages": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "description": "Method templates with tier classification"
+        },
+        "stats_diagnostics": {
+            "type": "object",
+            "description": "Domain-specific statistical diagnostics"
+        },
+        "reporting_guidelines": {
+            "type": "object",
+            "description": "Reporting standards and guidelines"
+        },
+        "common_pitfalls": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "severity": {
+                        "type": "string",
+                        "enum": [
+                            "critical",
+                            "major",
+                            "minor"
+                        ]
+                    }
+                }
+            },
+            "description": "Common methodological pitfalls in this domain"
+        },
+        "visualization_templates": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            },
+            "description": "Domain-standard visualization patterns"
+        },
+        "reporting_standards": {
+            "type": "object",
+            "description": "Primary reporting standards, checklists, and required tables",
+            "properties": {
+                "primary": {
+                    "type": "string"
+                },
+                "checklists": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "required_tables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "default_databases": {
+            "type": "object",
+            "description": "Domain-specific database recommendations",
+            "properties": {
+                "primary": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "secondary": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preprints": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "query_syntax_notes": {
+                    "type": "string"
+                }
+            }
+        },
+        "methodology_priors": {
+            "type": "object",
+            "description": "Domain expectations for methodology choices",
+            "properties": {
+                "identification": {
+                    "type": "string"
+                },
+                "robustness": {
+                    "type": "string"
+                },
+                "standard_hierarchy": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "estimation_norms": {
+                    "type": "string"
+                }
+            }
+        },
+        "venue_norms": {
+            "type": "object",
+            "description": "Venue-specific norms (sections, word limits, code release)",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "sections": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "word_limit": {
+                        "type": "integer"
+                    },
+                    "appendix": {
+                        "type": "string"
+                    },
+                    "code_release": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "additionalProperties": true,
+    "$defs": {
+        "libraryEntry": {
+            "type": "object",
+            "required": [
+                "name",
+                "use"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "use": {
+                    "type": "string"
+                },
+                "install": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

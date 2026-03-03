@@ -1,0 +1,265 @@
+# Canonical artifact type vocabulary
+# Used across registry.yaml, skill frontmatter, and pipeline DAGs
+# Each type defines: name, description, typical file format, produced_by, consumed_by
+
+artifact_types:
+  # ── A_framing outputs ──
+  - name: RQSet
+    description: "Structured research questions with PICO/PEO framework and FINER evaluation"
+    format: markdown
+    produced_by: [question-refiner]
+    consumed_by: [study-designer, manuscript-architect, academic-searcher, hypothesis-generator]
+
+  - name: HypothesisSet
+    description: "Testable hypotheses with mechanisms, boundary conditions, and rival explanations"
+    format: markdown
+    produced_by: [hypothesis-generator]
+    consumed_by: [study-designer, rival-hypothesis-designer]
+
+  - name: TheoreticalFramework
+    description: "Mapped theories, constructs, relationships, and Mermaid diagrams"
+    format: markdown
+    produced_by: [theory-mapper]
+    consumed_by: [hypothesis-generator, manuscript-architect, study-designer]
+
+  - name: GapAnalysis
+    description: "Categorized research gaps with FINER prioritization matrix"
+    format: markdown
+    produced_by: [gap-analyzer]
+    consumed_by: [question-refiner, hypothesis-generator, manuscript-architect]
+
+  - name: VenueAnalysis
+    description: "Venue fit analysis with formatting constraints and reviewer expectations"
+    format: markdown
+    produced_by: [venue-analyzer]
+    consumed_by: [manuscript-architect, submission-packager, meta-optimizer]
+
+  # ── B_literature outputs ──
+  - name: SearchQueryPlan
+    description: "Reproducible search strategy with database-specific queries and Boolean logic"
+    format: markdown
+    produced_by: [academic-searcher]
+    consumed_by: [paper-screener, citation-snowballer]
+
+  - name: SearchResults
+    description: "Deduplicated search results with metadata in CSV format"
+    format: csv
+    produced_by: [academic-searcher]
+    consumed_by: [paper-screener, gap-analyzer, literature-mapper]
+
+  - name: SearchLog
+    description: "Timestamped reproducibility log of all database queries and results"
+    format: markdown
+    produced_by: [academic-searcher]
+    consumed_by: [prisma-checker]
+
+  - name: ScreeningDecisionLog
+    description: "Two-stage screening decisions with inclusion/exclusion reasons"
+    format: markdown
+    produced_by: [paper-screener]
+    consumed_by: [paper-extractor, fulltext-fetcher, evidence-synthesizer]
+
+  - name: PRISMAFlowData
+    description: "Counts and flow data for PRISMA 2020 flow diagram"
+    format: markdown
+    produced_by: [paper-screener]
+    consumed_by: [prisma-checker]
+
+  - name: ExtractionTable
+    description: "Structured data extraction from included papers"
+    format: markdown
+    produced_by: [paper-extractor]
+    consumed_by: [quality-assessor, evidence-synthesizer, literature-mapper]
+
+  - name: PaperNotes
+    description: "Individual paper extraction notes (one file per paper)"
+    format: markdown_directory
+    produced_by: [paper-extractor]
+    consumed_by: [citation-formatter, reference-manager-bridge, metadata-enricher]
+
+  - name: SnowballLog
+    description: "Forward/backward citation tracing log with relevance scores"
+    format: markdown
+    produced_by: [citation-snowballer]
+    consumed_by: [paper-screener]
+
+  - name: ConceptMap
+    description: "Structured search concepts with controlled vocabulary candidates"
+    format: markdown
+    produced_by: [concept-extractor]
+    consumed_by: [academic-searcher]
+
+  - name: LiteratureMap
+    description: "Taxonomy/map of literature with mechanism-based cluster labels"
+    format: markdown
+    produced_by: [literature-mapper]
+    consumed_by: [manuscript-architect, gap-analyzer]
+
+  - name: Bibliography
+    description: "BibTeX bibliography file with consistent citekeys"
+    format: bibtex
+    produced_by: [citation-formatter, reference-manager-bridge, metadata-enricher]
+    consumed_by: [manuscript-architect, submission-packager]
+
+  # ── C_design outputs ──
+  - name: DesignSpec
+    description: "Complete study design including sampling, measures, procedures"
+    format: markdown
+    produced_by: [study-designer]
+    consumed_by: [code-builder, ethics-irb-helper, rival-hypothesis-designer, robustness-planner, manuscript-architect, reporting-checker]
+
+  - name: AnalysisPlan
+    description: "Pre-specified analysis plan with methods and assumptions"
+    format: markdown
+    produced_by: [study-designer]
+    consumed_by: [robustness-planner, code-builder, stats-engine]
+
+  - name: RivalHypotheses
+    description: "Competing theories and rival explanations with design countermeasures"
+    format: markdown
+    produced_by: [rival-hypothesis-designer]
+    consumed_by: [study-designer, robustness-planner]
+
+  - name: RobustnessPlan
+    description: "Pre-specified robustness checks and sensitivity analyses"
+    format: markdown
+    produced_by: [robustness-planner]
+    consumed_by: [code-builder, stats-engine]
+
+  # ── D_ethics outputs ──
+  - name: EthicsPackage
+    description: "IRB-ready materials: risk assessment, consent, recruitment, data governance"
+    format: markdown
+    produced_by: [ethics-irb-helper]
+    consumed_by: [deidentification-planner, submission-packager]
+
+  - name: DeidentificationPlan
+    description: "Technical privacy measures and data transformation procedures"
+    format: markdown
+    produced_by: [deidentification-planner]
+    consumed_by: [code-builder]
+
+  # ── E_synthesis outputs ──
+  - name: EvidenceTable
+    description: "Structured claim→evidence→strength mapping table"
+    format: markdown
+    produced_by: [evidence-synthesizer]
+    consumed_by: [manuscript-architect, publication-bias-checker]
+
+  - name: QualityTable
+    description: "Risk-of-bias and certainty-of-evidence assessments per study"
+    format: markdown
+    produced_by: [quality-assessor]
+    consumed_by: [evidence-synthesizer]
+
+  - name: GRADESummary
+    description: "GRADE Summary of Findings table"
+    format: markdown
+    produced_by: [quality-assessor]
+    consumed_by: [manuscript-architect]
+
+  # ── F_writing outputs ──
+  - name: ManuscriptOutline
+    description: "Section-level outline with claim-evidence mapping"
+    format: markdown
+    produced_by: [manuscript-architect]
+    consumed_by: [tone-normalizer, reporting-checker]
+
+  - name: Manuscript
+    description: "Full draft manuscript text"
+    format: markdown
+    produced_by: [manuscript-architect]
+    consumed_by: [tone-normalizer, prisma-checker, reporting-checker, meta-optimizer, fatal-flaw-detector, peer-review-simulation, submission-packager]
+
+  - name: ClaimGraph
+    description: "Claim-evidence integrity map linking assertions to supporting data"
+    format: markdown
+    produced_by: [manuscript-architect]
+    consumed_by: [reporting-checker, self-critique]
+
+  - name: MetaOptimization
+    description: "Optimized abstract, title, and keywords for discoverability"
+    format: markdown
+    produced_by: [meta-optimizer]
+    consumed_by: [submission-packager]
+
+  # ── G_compliance outputs ──
+  - name: PRISMAChecklist
+    description: "PRISMA 2020 compliance checklist with item-by-item verification"
+    format: markdown
+    produced_by: [prisma-checker]
+    consumed_by: [submission-packager]
+
+  - name: ReportingChecklist
+    description: "Study-type-specific reporting guideline checklist (CONSORT/STROBE/etc.)"
+    format: markdown
+    produced_by: [reporting-checker]
+    consumed_by: [submission-packager]
+
+  - name: ToneNormalization
+    description: "Tone-normalized text with tracked changes and fluff removal"
+    format: markdown
+    produced_by: [tone-normalizer]
+    consumed_by: [manuscript-architect]
+
+  # ── H_submission outputs ──
+  - name: SubmissionPackage
+    description: "Cover letter, disclosures, title page, and supplementary materials"
+    format: markdown
+    produced_by: [submission-packager]
+    consumed_by: []
+
+  - name: ResponseToReviewers
+    description: "Point-by-point response matrix with action tags"
+    format: markdown
+    produced_by: [rebuttal-assistant]
+    consumed_by: [reviewer-empathy-checker]
+
+  - name: ResponseLetter
+    description: "Formatted response letter for editor submission"
+    format: markdown
+    produced_by: [rebuttal-assistant]
+    consumed_by: [reviewer-empathy-checker]
+
+  - name: PeerReviewSimulation
+    description: "Simulated multi-persona review with reconciled feedback"
+    format: markdown
+    produced_by: [peer-review-simulation]
+    consumed_by: [fatal-flaw-detector, manuscript-architect]
+
+  - name: FatalFlawAnalysis
+    description: "Critical flaw analysis with severity ratings and remediations"
+    format: markdown
+    produced_by: [fatal-flaw-detector]
+    consumed_by: [manuscript-architect]
+
+  # ── I_code outputs ──
+  - name: CodeSpec
+    description: "Strict constraint set and requirement specification for code"
+    format: markdown
+    produced_by: [code-specification]
+    consumed_by: [code-planning]
+
+  - name: CodePlan
+    description: "Parallelizable, zero-decision execution plan"
+    format: markdown
+    produced_by: [code-planning]
+    consumed_by: [code-execution]
+
+  - name: AnalysisCode
+    description: "Executable analysis code with tests and diagnostics"
+    format: code_directory
+    produced_by: [code-builder]
+    consumed_by: [code-review, code-execution, reproducibility-auditor]
+
+  - name: ReproducibilityReport
+    description: "Reproducibility audit covering seeds, environment, containerization"
+    format: markdown
+    produced_by: [reproducibility-auditor]
+    consumed_by: [submission-packager]
+
+  - name: StatsReport
+    description: "Statistical analysis results with effect sizes and diagnostics"
+    format: markdown
+    produced_by: [stats-engine]
+    consumed_by: [manuscript-architect, evidence-synthesizer]

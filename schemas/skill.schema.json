@@ -1,0 +1,109 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://research-skills.dev/schemas/skill.schema.json",
+    "title": "Skill Registry Entry",
+    "description": "Schema for entries in skills/registry.yaml",
+    "type": "object",
+    "required": [
+        "id",
+        "stage",
+        "version",
+        "file",
+        "summary",
+        "inputs",
+        "outputs"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$",
+            "description": "Unique kebab-case skill identifier"
+        },
+        "stage": {
+            "type": "string",
+            "enum": [
+                "A_framing",
+                "B_literature",
+                "C_design",
+                "D_ethics",
+                "E_synthesis",
+                "F_writing",
+                "G_compliance",
+                "H_submission",
+                "I_code",
+                "Z_cross_cutting"
+            ],
+            "description": "Research lifecycle stage"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Semantic version"
+        },
+        "file": {
+            "type": "string",
+            "pattern": "^skills/",
+            "description": "Relative path to skill markdown file"
+        },
+        "summary": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line summary of skill purpose"
+        },
+        "inputs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of typed artifact names consumed"
+        },
+        "outputs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "description": "List of typed artifact names produced"
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9-]+$"
+            },
+            "description": "Searchable keywords"
+        },
+        "depends_on": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Upstream skill IDs that typically run before this skill"
+        },
+        "compatible_models": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "codex",
+                    "claude",
+                    "gemini",
+                    "gpt"
+                ]
+            },
+            "description": "AI model runtimes that can execute this skill"
+        },
+        "tooling_requirements": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Required MCP providers or tool capabilities"
+        },
+        "domain_aware": {
+            "type": "boolean",
+            "description": "Whether skill behavior changes based on domain profile"
+        }
+    },
+    "additionalProperties": false
+}

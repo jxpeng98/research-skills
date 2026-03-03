@@ -25,7 +25,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 4. Evaluate with FINER criteria (Feasible, Interesting, Novel, Ethical, Relevant)
 5. Define inclusion/exclusion criteria + key search terms
 
-**Output:** Structured RQ, FINER assessment, inclusion/exclusion criteria
+**Output:** `RQSet` (Structured RQ, FINER assessment)
 
 ---
 
@@ -43,7 +43,63 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Templates:** `templates/study-design.md`, `templates/analysis-plan.md`, `templates/data-management-plan.md`
 
-**Output:** `study_design.md`, `analysis_plan.md`, `data_management_plan.md` (+ optional instruments/prereg)
+**Output:** `DesignSpec`, `AnalysisPlan`
+
+---
+
+## data-management-plan
+
+**Purpose:** Create FAIR-compliant data management plans
+
+**Process:**
+1. Define data types, formats, and metadata standards
+2. Specify storage, backup, and security procedures
+3. Detail access, sharing, and reuse policies
+4. Address ethical and legal compliance
+
+**Output:** `DataManagementPlan`
+
+---
+
+## data-dictionary-builder
+
+**Purpose:** Generate structured variable codebooks
+
+**Process:**
+1. Parse raw data or variable descriptions
+2. Define variable types, scales, and permitted values
+3. Document missing data codes and transformations
+4. Format into a canonical schema
+
+**Output:** `DataDictionary`
+
+---
+
+## variable-operationalizer
+
+**Purpose:** Map abstract constructs to measurable variables
+
+**Process:**
+1. Define theoretical constructs
+2. Identify measurement instruments or proxy variables
+3. Specify validation and reliability criteria
+4. Document scoring algorithms or indices
+
+**Output:** `OperationalizationMap`
+
+---
+
+## prereg-writer
+
+**Purpose:** Generate OSF/AsPredicted preregistration documents
+
+**Process:**
+1. Ingest DesignSpec and AnalysisPlan
+2. Format according to target registry template (e.g., OSF standard, AsPredicted)
+3. Ensure exact mapping of hypotheses to statistical tests
+4. Lock analysis decisions to prevent p-hacking
+
+**Output:** `PreregistrationDoc`
 
 ---
 
@@ -59,7 +115,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Template:** `templates/ethics-irb-pack.md`
 
-**Output:** `ethics_irb.md` (+ optional consent/recruitment scripts)
+**Output:** `EthicsPackage`
 
 ---
 
@@ -79,7 +135,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Fallback:** S2 → OpenAlex → Google Scholar
 
-**Outputs (contract-aligned):** `search_strategy.md`, `search_log.md`, `search_results.csv`
+**Outputs (contract-aligned):** `SearchQueryPlan`, `SearchLog`, `SearchResults`
 
 ---
 
@@ -95,7 +151,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Decisions:** INCLUDE / EXCLUDE (+ reason) / UNCERTAIN
 
-**Outputs (contract-aligned):** `screening/title_abstract.md`, `screening/full_text.md`, `screening/prisma_flow.md`
+**Outputs:** `ScreeningDecisionLog`, `PRISMAFlowData`
 
 ---
 
@@ -112,7 +168,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 - Discussion: Interpretation, Implications
 - Meta: Limitations, Future Research, Contributions
 
-**Outputs (contract-aligned):** `notes/` (per-paper notes) + `extraction_table.md`
+**Outputs:** `ExtractionTable`, `PaperNotes`
 
 ---
 
@@ -136,7 +192,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 - Qualitative → CASP
 - SRs → AMSTAR 2
 
-**Output:** Quality grade + RoB assessment
+**Output:** `QualityTable`, `GRADESummary`
 
 ---
 
@@ -155,6 +211,8 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Templates:** `templates/meta-analysis-plan.md`, `templates/effect-size-extraction-table.md`, `templates/meta-analysis-report.md`
 
+**Output:** `EvidenceTable`
+
 ---
 
 ## gap-analyzer
@@ -170,7 +228,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Process:** For each gap → Describe → Evidence → FINER prioritize → Suggest RQ
 
-**Output:** Gap analysis table with priority (H/M/L)
+**Output:** `GapAnalysis`
 
 ---
 
@@ -186,7 +244,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 5. Create theory comparison matrix
 6. Synthesize integrated framework
 
-**Output:** Theory profiles, construct map, visual model, comparison matrix
+**Output:** `TheoreticalFramework`
 
 ---
 
@@ -203,7 +261,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **APIs:** Semantic Scholar, OpenAlex, Crossref
 
-**Output:** Snowballing log with new unique papers
+**Output:** `SnowballLog`
 
 ---
 
@@ -235,7 +293,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **APIs:** Crossref (bibliographic), OpenAlex (OA + bibliometrics)
 
-**Output:** Enriched metadata + citekey + dedup keys
+**Output:** `Bibliography`
 
 ---
 
@@ -280,7 +338,35 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Templates:** `templates/manuscript-outline.md`, `templates/manuscript-skeleton.md`, `templates/claim-evidence-map.md`, `templates/figures-tables-plan.md`
 
-**Output:** `manuscript/` drafts + traceability maps
+**Output:** `ManuscriptOutline`, `Manuscript`, `ClaimGraph`
+
+---
+
+## table-generator
+
+**Purpose:** Generate publication-ready tables from statistical output
+
+**Process:**
+1. Parse raw statistical output (e.g., regression logs, summary stats)
+2. Format into standard academic styles (APA, IEEE, domain-specific)
+3. Generate Markdown, LaTeX, or HTML table code
+4. Ensure proper alignment, decimal precision, and significance starring
+
+**Output:** `FormattedTables`
+
+---
+
+## figure-specifier
+
+**Purpose:** Specify publication-quality figures with reproducible code
+
+**Process:**
+1. Analyze data structure and intended message
+2. Recommend appropriate visualization types (e.g., forest plots, scatter bounds)
+3. Specify aesthetics (color palettes, accessibility, typography)
+4. Generate reproducible plotting code (ggplot2, matplotlib, seaborn)
+
+**Output:** `FigureSpecs`, `PlottingCode`
 
 ---
 
@@ -295,7 +381,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Template:** `templates/reporting-checklist.md`
 
-**Output:** `reporting_checklist.md` (+ action items)
+**Output:** `ReportingChecklist`
 
 ---
 
@@ -310,7 +396,21 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Templates:** `templates/cover-letter.md`, `templates/submission-checklist.md`, `templates/title-page.md`, `templates/highlights.md`, `templates/suggested-reviewers.md`, `templates/author-contributions-credit.md`, `templates/funding-statement.md`, `templates/coi-statement.md`, `templates/data-availability.md`, `templates/ai-disclosure.md`, `templates/supplementary-inventory.md`
 
-**Output:** `submission/cover_letter.md`, `submission/submission_checklist.md`, `submission/title_page.md`, `submission/highlights.md`, `submission/suggested_reviewers.md`, `submission/author_contributions_credit.md`, `submission/funding_statement.md`, `submission/coi_statement.md`, `submission/data_availability.md`, `submission/ai_disclosure.md`, `submission/supplementary_inventory.md`
+**Output:** `SubmissionPackage`
+
+---
+
+## credit-taxonomy-helper
+
+**Purpose:** Generate CRediT author contribution statements
+
+**Process:**
+1. Map team members to 14 CRediT roles
+2. Resolve degrees of contribution (lead, equal, supporting)
+3. Apply venue-specific formatting
+4. Verify all authors are accounted for
+
+**Output:** `CRediTStatement`
 
 ---
 
@@ -325,7 +425,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Templates:** `templates/rebuttal-response-matrix.md`, `templates/rebuttal-letter.md`
 
-**Output:** `revision/response_matrix.md`, `revision/response_letter.md`
+**Output:** `ResponseToReviewers`, `ResponseLetter`
 
 ---
 
@@ -345,7 +445,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 - Sought = Retrieved + Not Retrieved
 - Included = Extracted = Assessed = Synthesized
 
-**Output:** Compliance report with action items
+**Output:** `PRISMAChecklist`
 
 ---
 
@@ -390,7 +490,21 @@ python -m bridges.orchestrator code-build \
   --method "GARCH" --domain finance --tier standard --lang python
 ```
 
-**Output:** Implementation + validation test + domain checklist pass/fail + diagnostic plots
+**Output:** `AnalysisCode`, `StatsReport`
+
+---
+
+## release-packager
+
+**Purpose:** Package code, data, and environment for reproducible releases
+
+**Process:**
+1. Audit dependencies and generate `requirements.txt` or `env.yaml`
+2. Validate directory structure and data paths
+3. Generate comprehensive `README.md`
+4. Assemble release bundle with appropriate licensing
+
+**Output:** `ReleasePackage`
 
 ## stats-engine (enhanced)
 

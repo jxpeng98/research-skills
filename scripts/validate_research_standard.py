@@ -1001,7 +1001,7 @@ def validate_orchestrator(root: Path, report: ValidationReport) -> None:
         "orchestrator.py exposes --summarizer-profile",
         "orchestrator.py should expose --summarizer-profile in parallel mode",
     )
-    for token in ("--profile", "--draft-profile", "--review-profile", "--triad-profile"):
+    for token in ("--profile", "--draft-profile", "--review-profile", "--triad-profile", "--role"):
         report.check(
             token in content,
             f"orchestrator.py exposes {token}",

@@ -9,6 +9,44 @@ OVERWRITE=0
 DRY_RUN=0
 RUN_DOCTOR=0
 
+# ── ANSI colors (respects NO_COLOR) ──────────────────────────────────────────
+if [[ -z "${NO_COLOR:-}" ]] && [[ -t 1 ]]; then
+  C_RESET='\033[0m'
+  C_BOLD='\033[1m'
+  C_DIM='\033[2m'
+  C_GREEN='\033[32m'
+  C_YELLOW='\033[33m'
+  C_CYAN='\033[36m'
+  C_RED='\033[31m'
+else
+  C_RESET='' C_BOLD='' C_DIM='' C_GREEN='' C_YELLOW='' C_CYAN='' C_RED=''
+fi
+
+# ── Output helpers ───────────────────────────────────────────────────────────
+section() {
+  printf "\n${C_BOLD}${C_CYAN}─── %s ${C_DIM}%s${C_RESET}\n" "$1" "$(printf '─%.0s' $(seq 1 $((40 - ${#1}))))"
+}
+
+ok() {
+  printf "  ${C_GREEN}✓${C_RESET}  %-12s → %s\n" "$1" "$2"
+}
+
+skip() {
+  printf "  ${C_DIM}○  %-12s → %s (skipped)${C_RESET}\n" "$1" "$2"
+}
+
+info() {
+  printf "  ${C_DIM}%s${C_RESET}\n" "$*"
+}
+
+warn() {
+  printf "  ${C_YELLOW}⚠${C_RESET}  %s\n" "$*"
+}
+
+err() {
+  printf "  ${C_RED}✗${C_RESET}  %s\n" "$*" >&2
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -52,7 +90,8 @@ resolve_abs() {
   python3 -c 'import os,sys; print(os.path.abspath(os.path.expanduser(sys.argv[1])))' "$1"
 }
 
-copy_item() {
+# ── Core copy logic (silent – callers handle display) ────────────────────────
+_copy_item() {
   local src="$1"
   local dest="$2"
   local src_abs dest_abs
@@ -60,14 +99,12 @@ copy_item() {
   dest_abs="$(resolve_abs "$dest")"
 
   if [[ "$src_abs" == "$dest_abs" ]]; then
-    log "skip same path: $dest_abs"
-    return 0
+    return 1  # same-path skip
   fi
 
   if [[ -e "$dest" || -L "$dest" ]]; then
     if [[ "$OVERWRITE" -ne 1 ]]; then
-      log "skip exists (use --overwrite): $dest"
-      return 0
+      return 2  # exists skip
     fi
     run_cmd rm -rf "$dest"
   fi
@@ -79,17 +116,41 @@ copy_item() {
   else
     run_cmd cp -R "$src_abs" "$dest"
   fi
-  log "installed: $dest"
+  return 0
+}
+
+copy_item_display() {
+  local src="$1"
+  local dest="$2"
+  local label="${3:-File}"
+  local ret=0
+  _copy_item "$src" "$dest" || ret=$?
+  case $ret in
+    0) ok "$label" "$dest" ;;
+    1) skip "$label" "$dest (same path)" ;;
+    2) skip "$label" "$dest (use --overwrite)" ;;
+  esac
+  return 0
 }
 
 copy_workflows_for_claude() {
   local workflows_src="$ROOT_DIR/.agent/workflows"
   local workflows_dest="$PROJECT_DIR/.agent/workflows"
   ensure_dir "$workflows_dest"
+  local count=0
   local workflow_file
   for workflow_file in "$workflows_src"/*.md; do
-    copy_item "$workflow_file" "$workflows_dest/$(basename "$workflow_file")"
+    local ret=0
+    _copy_item "$workflow_file" "$workflows_dest/$(basename "$workflow_file")" || ret=$?
+    if [[ $ret -eq 0 ]]; then
+      count=$((count + 1))
+    fi
   done
+  if [[ $count -gt 0 ]]; then
+    ok "Workflows" "$workflows_dest/ ($count files)"
+  else
+    skip "Workflows" "$workflows_dest/ (already up-to-date)"
+  fi
 }
 
 write_gemini_quickstart() {
@@ -98,7 +159,7 @@ write_gemini_quickstart() {
   local profile_dest="$quickstart_dir/agent-profiles.example.json"
 
   if [[ -e "$quickstart_path" && "$OVERWRITE" -ne 1 ]]; then
-    log "skip exists (use --overwrite): $quickstart_path"
+    skip "Quickstart" "$quickstart_path (use --overwrite)"
   else
     ensure_dir "$quickstart_dir"
     if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -116,12 +177,13 @@ python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --t
 ```
 EOF
     fi
-    log "installed: $quickstart_path"
+    ok "Quickstart" "$quickstart_path"
   fi
 
-  copy_item "$ROOT_DIR/standards/agent-profiles.example.json" "$profile_dest"
+  copy_item_display "$ROOT_DIR/standards/agent-profiles.example.json" "$profile_dest" "Profiles"
 }
 
+# ── Parse arguments ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --target)
@@ -192,37 +254,122 @@ CODEX_SKILL_DEST="${CODEX_HOME:-$HOME/.codex}/skills/research-paper-workflow"
 CLAUDE_SKILL_DEST="${CLAUDE_CODE_HOME:-$HOME/.claude}/skills/research-paper-workflow"
 GEMINI_SKILL_DEST="${GEMINI_HOME:-$HOME/.gemini}/skills/research-paper-workflow"
 
-log "source skill: $SKILL_SRC"
-log "project dir: $PROJECT_DIR"
-log "target: $TARGET"
-log "mode: $MODE"
+# ── Header ───────────────────────────────────────────────────────────────────
+printf "\n${C_BOLD}Research Skills Installer${C_RESET}\n"
+info "source:  $SKILL_SRC"
+info "project: $PROJECT_DIR"
+info "target:  $TARGET  |  mode: $MODE"
 
+# ── Install targets ──────────────────────────────────────────────────────────
 if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
-  log "installing Codex skill"
-  copy_item "$SKILL_SRC" "$CODEX_SKILL_DEST"
+  section "Codex"
+  copy_item_display "$SKILL_SRC" "$CODEX_SKILL_DEST" "Skill"
 fi
 
 if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
-  log "installing Claude skill bundle"
-  copy_item "$SKILL_SRC" "$CLAUDE_SKILL_DEST"
+  section "Claude"
+  copy_item_display "$SKILL_SRC" "$CLAUDE_SKILL_DEST" "Skill"
   copy_workflows_for_claude
   if [[ -f "$PROJECT_DIR/CLAUDE.md" && "$OVERWRITE" -ne 1 ]]; then
-    copy_item "$ROOT_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.research-skills.md"
+    copy_item_display "$ROOT_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.research-skills.md" "CLAUDE.md"
   else
-    copy_item "$ROOT_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.md"
+    copy_item_display "$ROOT_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.md" "CLAUDE.md"
   fi
 fi
 
 if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
-  log "installing Gemini skill bundle"
-  copy_item "$SKILL_SRC" "$GEMINI_SKILL_DEST"
+  section "Gemini"
+  copy_item_display "$SKILL_SRC" "$GEMINI_SKILL_DEST" "Skill"
   write_gemini_quickstart
 fi
 
+# ── Doctor ───────────────────────────────────────────────────────────────────
 if [[ "$RUN_DOCTOR" -eq 1 ]]; then
-  log "running orchestrator doctor"
-  run_cmd python3 -m bridges.orchestrator doctor --cwd "$PROJECT_DIR"
+  section "Doctor"
+  DOCTOR_OUTPUT=$(run_cmd python3 -m bridges.orchestrator doctor --cwd "$PROJECT_DIR" 2>&1) || true
+  
+  # Parse JSON output and render human-friendly summary
+  if command -v python3 &>/dev/null; then
+    python3 -c "
+import sys, json
+
+raw = sys.stdin.read()
+# Strip any non-JSON preamble (e.g. language selection prompts)
+json_start = raw.find('{')
+if json_start < 0:
+    print(raw)
+    sys.exit(0)
+preamble = raw[:json_start].strip()
+if preamble:
+    for line in preamble.splitlines():
+        print(f'  {line}')
+    print()
+
+try:
+    data = json.loads(raw[json_start:])
+except json.JSONDecodeError:
+    print(raw)
+    sys.exit(0)
+
+analysis = data.get('merged_analysis', '')
+recs = data.get('recommendations', [])
+confidence = data.get('confidence', 0)
+
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
+RED = '\033[31m'
+DIM = '\033[2m'
+RESET = '\033[0m'
+BOLD = '\033[1m'
+
+import os
+if os.environ.get('NO_COLOR') or not sys.stdout.isatty():
+    GREEN = YELLOW = RED = DIM = RESET = BOLD = ''
+
+# Parse check details from merged_analysis
+ok_count = analysis.count('[OK]')
+warn_count = analysis.count('[WARNING]')
+err_count = analysis.count('[ERROR]')
+total = ok_count + warn_count + err_count
+
+if total > 0:
+    bar_width = 30
+    ok_bar = int(ok_count / total * bar_width)
+    warn_bar = int(warn_count / total * bar_width)
+    err_bar = bar_width - ok_bar - warn_bar
+    bar = f'{GREEN}{\"█\" * ok_bar}{YELLOW}{\"█\" * warn_bar}{RED}{\"█\" * err_bar}{RESET}'
+    print(f'  {bar}  {ok_count}/{total} passed')
+    print()
+
+# Show individual check lines
+for line in analysis.splitlines():
+    line = line.strip()
+    if line.startswith('- [OK]'):
+        detail = line[len('- [OK] '):]
+        print(f'  {GREEN}✓{RESET}  {detail}')
+    elif line.startswith('- [WARNING]'):
+        detail = line[len('- [WARNING] '):]
+        print(f'  {YELLOW}⚠{RESET}  {DIM}{detail}{RESET}')
+    elif line.startswith('- [ERROR]'):
+        detail = line[len('- [ERROR] '):]
+        print(f'  {RED}✗{RESET}  {detail}')
+
+if recs:
+    print()
+    print(f'  {BOLD}Recommendations:{RESET}')
+    for r in recs:
+        print(f'  {DIM}•  {r}{RESET}')
+" <<< "$DOCTOR_OUTPUT"
+  else
+    echo "$DOCTOR_OUTPUT"
+  fi
 fi
 
-log "done"
-log "restart Codex / Claude Code / Gemini CLI after installation."
+# ── Footer ───────────────────────────────────────────────────────────────────
+printf "\n${C_GREEN}${C_BOLD}✓ Installation complete${C_RESET}"
+case "$TARGET" in
+  all)  printf " ${C_DIM}(codex + claude + gemini)${C_RESET}" ;;
+  *)    printf " ${C_DIM}($TARGET)${C_RESET}" ;;
+esac
+printf "\n"
+printf "  ${C_DIM}Restart Codex / Claude Code / Gemini CLI to activate.${C_RESET}\n\n"

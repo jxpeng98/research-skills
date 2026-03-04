@@ -596,11 +596,26 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
     else:
         tar_url = f"https://github.com/{resolved_repo}/archive/refs/heads/{ref}.tar.gz"
 
+    # Styled header
+    _is_tty = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+    _bold = "\033[1m" if _is_tty else ""
+    _dim = "\033[2m" if _is_tty else ""
+    _cyan = "\033[36m" if _is_tty else ""
+    _green = "\033[32m" if _is_tty else ""
+    _reset = "\033[0m" if _is_tty else ""
+
+    beta_label = f" {_dim}(beta){_reset}" if getattr(args, "beta", False) else ""
+    print(f"\n{_bold}{_cyan}─── Upgrade {'─' * 33}{_reset}")
+    print(f"  {_dim}repo:{_reset}    {resolved_repo}")
+    print(f"  {_dim}ref:{_reset}     {ref}{beta_label}")
+    print(f"  {_dim}project:{_reset} {project_dir}")
+
     with tempfile.TemporaryDirectory(prefix="research-skills-upgrade-") as temp_dir:
         temp_root = Path(temp_dir)
         archive_path = temp_root / "repo.tar.gz"
-        print(f"[upgrade] download: {tar_url}")
+        print(f"  {_dim}↓ downloading...{_reset}", end="", flush=True)
         _download(tar_url, archive_path)
+        print(f"\r  {_green}✓{_reset} downloaded      ")
         extracted_root = _extract_tarball(archive_path, temp_root / "src")
         install_script = extracted_root / "scripts" / "install_research_skill.sh"
         if not install_script.exists():
@@ -624,7 +639,6 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
         if args.dry_run:
             cmd.append("--dry-run")
 
-        print("[upgrade] install: " + " ".join(cmd))
         result = subprocess.run(cmd, cwd=str(extracted_root), check=False)
         return int(result.returncode)
 

@@ -10,7 +10,9 @@ First, bind the capability to a standard Task ID (`A1`~`I8`):
 - **Literature & Review**: `B1`~`B5`
 - **Study Design / Ethics**: `C1`~`D2`
 - **Evidence Synthesis**: `E1`~`E5`
-- **Drafting & Submission**: `F1`~`H4`
+- **Drafting**: `F1`~`F6`
+- **Compliance & Proofread**: `G1`~`J4` (Including de-AI and humanization)
+- **Submission & Rebuttal**: `H1`~`H4`
 - **Code & Replication**: `I1`~`I8` (Includes CCG strict-constraint code engine)
 
 Once the target task is determined, you can reuse the unified orchestration chain: `plan -> mcp-evidence -> primary-agent-draft -> review-agent-check -> validator-gate`.
@@ -126,7 +128,13 @@ A profile can define:
 - Recommended MCPs: `metadata-registry`, `reporting-guidelines`
 - Agent combination: Primary `claude`, Review `codex`
 
-### E. Submission and Rebuttal (`H1`~`H4`)
+### E. Proofread & De-AI (`J1`~`J4`)
+
+- **Multi-AI Triad Iteration**: Use triad mode to perform iterative de-AI. Drafter rewrites text, Reviewer checks for AI fingerprints, and Auditor ensures scientific accuracy.
+- Recommended skills: `proofread-editor`, `ai-detector`, `similarity-checker`
+- Agent combination: Primary `claude`, Review `gemini`, Triad `codex` (via `task-run --triad`)
+
+### F. Submission and Rebuttal (`H1`~`H4`)
 
 - **Multi-Role Expert Cross-Review (H3-H4)**: Before final submission, use parallel invocations to simulate harsh reviewers (Methodologist, Domain Expert) across a cross-review (H3) and execute a Fatal Flaw Desktop-reject scan (H4).
 - Recommended skills: `submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`

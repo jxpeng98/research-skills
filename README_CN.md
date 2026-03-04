@@ -21,6 +21,7 @@
 - 🧠 **理论框架构建** - 概念关系映射与假设推导
 - ✍️ **学术写作辅助** - 严格对齐各领域的学术语言规范
 - 🧑‍⚖️ **多角色专家互审** - 平行独立审稿模拟（Methodologist, Domain Expert, "Reviewer 2"）
+- 🔎 **AI 去痕与终审校对** - 多 AI 协作去 AI 化改写、降重检测、终审校对
 - 🚀 **CCG 强约束代码引擎** - 需求/规划/执行/Review 四步严格拆分的可靠研究代码实施
 - 🤖 **多模型（Multi-Model）协同** - 混合调度 Codex、Claude、Gemini 跨阶段作业
 - ⚡ **Token 深度优化** - 采用分层结构，指令 Token 开销降低 ~90%
@@ -71,6 +72,7 @@ rsk upgrade --target all --project-dir . --doctor
 | `/submission-prep` | 投稿材料打包生成 | `/submission-prep ai-in-education CHI` |
 | `/rebuttal` | 审稿意见回复与矩阵生成 | `/rebuttal ai-in-education` |
 | `/code-build` | CCG驱动的研究代码规划与实施 | `/code-build "Staggered DID" --domain econ` |
+| `/proofread` | AI 去痕与终审校对 | `/proofread ai-in-education` |
 
 如果你**通过纯命令行调度编排**（执行指定的 Task ID）：
 ```bash
@@ -201,7 +203,7 @@ research-skills/
 ├── .agent/workflows/         # Claude Code 挂载的斜杠 / 指令文件
 ├── bridges/                  # Python Orchestrator 多端路由通信网桥
 ├── skills/                   # 系统全系学术卡片
-│   ├── [...]                 # 对应阶段 A 到 I
+│   ├── [...]                 # 对应阶段 A 到 J
 │   └── domain-profiles/      # (动态挂载的领域知识图谱 Economics, Bio等)
 ├── schemas/                  # Validator 数据验证
 ├── eval/                     # 性能及覆盖率对焦 Test Cases

@@ -10,7 +10,9 @@
 - **文献与综述**：`B1`~`B5`
 - **研究设计/伦理**：`C1`~`D2`
 - **证据综合**：`E1`~`E5`
-- **写作与投稿**：`F1`~`H4`
+- **写作**：`F1`~`F6`
+- **合规与校对**：`G1`~`J4` (含去AI化改写)
+- **投稿与返修**：`H1`~`H4`
 - **代码与复现**：`I1`~`I8` (包含 CCG 强约束代码引擎)
 
 只要确定目标任务，就能复用统一编排链：`plan -> mcp-evidence -> primary-agent-draft -> review-agent-check -> validator-gate`。
@@ -126,7 +128,13 @@ profile 可定义：
 - 推荐 MCP：`metadata-registry`, `reporting-guidelines`
 - agent 组合：主执行 `claude`，复核 `codex`
 
-### E. 投稿与返修（`H1`~`H4`）
+### E. 去痕与终审校对（`J1`~`J4`）
+
+- **多 AI 协作迭代**：使用 `--triad` 模式进行循环去 AI 化。主执行负责重写，复核负责检查 AI 痕迹，三端负责查验科学准确性。
+- 推荐 skills：`proofread-editor`, `ai-detector`, `similarity-checker`
+- agent 组合：主执行 `claude`，复核 `gemini`，三端 `codex` (通过 `task-run --triad`)
+
+### F. 投稿与返修（`H1`~`H4`）
 
 - **多角色专家互审 (H3-H4)**：在正式投稿前，通过平行调用模拟 Methodologist、Domain Expert 等苛刻审稿人进行交叉审查（H3），并执行 Desktop-reject 致命缺陷排查（H4）。
 - 推荐 skills：`submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`

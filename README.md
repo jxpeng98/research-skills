@@ -21,6 +21,7 @@ A systematic research skills system designed for Claude Code, providing tools fo
 - 🧠 **Theoretical Framework Building** - Concept relationship mapping
 - ✍️ **Academic Writing Assistance** - Standard-compliant formatting
 - 🧑‍⚖️ **Multi-Persona Peer Review** - Parallel, independent cross-reviews (Methodologist, Domain Expert, "Reviewer 2")
+- 🔎 **AI De-fingerprinting & Proofread** - Multi-AI collaborative de-AI rewriting, similarity reduction, and final proofread
 - 🚀 **CCG Code Execution** - Strict Spec -> Plan -> Execute -> Review isolation for code reliability
 - 🛡️ **Iterative Critique Loop (Red Teaming)** - AI self-review and Socratic questioning to continuously narrow down and refine outputs
 - 🤖 **Multi-Model Collaboration** - Codex + Claude + Gemini coordination across research stages
@@ -72,6 +73,7 @@ If you are using **Claude Code**, try any of these commands:
 | `/submission-prep` | Submission package | `/submission-prep ai-in-education CHI` |
 | `/rebuttal` | Rebuttal / revision response | `/rebuttal ai-in-education` |
 | `/code-build` | CCG-driven Research code execution | `/code-build "Staggered DID" --domain econ` |
+| `/proofread` | AI de-fingerprinting & final proofread | `/proofread ai-in-education` |
 
 If you are using the **CLI directly**, orchestrate a specific Task ID:
 ```bash
@@ -214,7 +216,7 @@ research-skills/
 ├── .agent/workflows/         # Claude Code slash-commands
 ├── bridges/                  # Multi-model orchestration (Codex/Claude/Gemini)
 ├── skills/                   # Skill specs referenced by capability map
-│   ├── [...]                 # Stages A through I
+│   ├── [...]                 # Stages A through J
 │   └── domain-profiles/      # Domain-specific configs (economics, cs-ai, etc.)
 ├── schemas/                  # JSON schemas + artifact type vocab
 ├── eval/                     # Golden test cases

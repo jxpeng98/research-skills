@@ -508,7 +508,7 @@ def cmd_align(args: argparse.Namespace) -> int:
     print("")
     print("What pipx installs:")
     print("- A global CLI (per-user). It does NOT auto-modify your projects.")
-    print("- CLI aliases: `research-skills`, `rs`, `rsw` (same behavior).")
+    print("- CLI aliases: `research-skills`, `rsk`, `rsw` (same behavior).")
     print("")
     print(f"What `{prog} upgrade` modifies:")
     print("- Global skills: ~/.codex|~/.claude|~/.gemini under `skills/research-paper-workflow/`")

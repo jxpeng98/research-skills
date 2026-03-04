@@ -48,10 +48,10 @@ Multi-client installer:
 
 Upgrade / auto-upgrade:
 - Guide: `guides/basic/upgrade-research-skills.md`
-- CLI aliases (after pipx install): `rs` / `rsw` (same as `research-skills`)
+- CLI aliases (after pipx install): `rsk` / `rsw` (same as `research-skills`)
 - Optional default upstream (omit `--repo`): set `RESEARCH_SKILLS_REPO=<owner>/<repo>`, or add `research-skills.toml` in your project root
-- Check updates: `rs check --repo <owner>/<repo>` (or `rs check` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py check ...`)
-- Upgrade (no fork / no git clone required): `rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all` (or omit `--repo` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py upgrade ...`)
+- Check updates: `rsk check --repo <owner>/<repo>` (or `rsk check` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py check ...`)
+- Upgrade (no fork / no git clone required): `rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all` (or omit `--repo` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py upgrade ...`)
 
 CI pipeline:
 - `.github/workflows/ci.yml` (runs `py_compile`, strict validator, and unit tests on PR/push)
@@ -98,7 +98,7 @@ If you're new to this repo, this is the fastest way to understand and run it:
    - `standards/mcp-agent-capability-map.yaml` (required skills/MCP + primary/review/fallback agents per Task ID)
 3. **Install into your clients/project**:
    - Script: `./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
-   - Or pipx + upgrade: `pipx install research-skills-installer` then `rs upgrade --project-dir <project> --target all --doctor`
+   - Or pipx + upgrade: `pipx install research-skills-installer` then `rsk upgrade --project-dir <project> --target all --doctor`
 4. **Run a workflow**:
    - In Claude Code: use `/paper` or any `.agent/workflows/*.md` command in your project
    - CLI: `python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`

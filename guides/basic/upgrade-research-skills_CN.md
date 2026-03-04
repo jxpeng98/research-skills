@@ -16,11 +16,11 @@ pipx install research-skills-installer
 # - rs
 # - rsw
 # 你也可以设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>` 后省略 --repo
-rs check --repo <owner>/<repo>
-rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
+rsk check --repo <owner>/<repo>
+rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
 ```
 
-> 注意：pip 安装/升级的是“升级器 CLI”；真正把 skill/workflows 覆盖到三端目录与 project 的动作，仍由 `rs upgrade`（等价于 `research-skills upgrade`）来执行（显式可控、不会在 pip 安装时偷偷写用户目录）。
+> 注意：pip 安装/升级的是“升级器 CLI”；真正把 skill/workflows 覆盖到三端目录与 project 的动作，仍由 `rsk upgrade`（等价于 `research-skills upgrade`）来执行（显式可控、不会在 pip 安装时偷偷写用户目录）。
 
 ## 1) 你需要升级的到底是什么？
 
@@ -43,7 +43,7 @@ rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --d
 
 ```bash
 # 如果已设置 RESEARCH_SKILLS_REPO，可省略 --repo
-rs check --repo <owner>/<repo>
+rsk check --repo <owner>/<repo>
 # 或在仓库内运行（等价）：
 python3 scripts/research_skill_update.py check --repo <owner>/<repo>
 ```
@@ -67,8 +67,8 @@ repo = "<owner>/<repo>" # 或 Git URL
 此后可直接运行：
 
 ```bash
-rs check
-rs upgrade --project-dir . --target all --doctor
+rsk check
+rsk upgrade --project-dir . --target all --doctor
 ```
 
 ---
@@ -79,7 +79,7 @@ rs upgrade --project-dir . --target all --doctor
 
 ```bash
 # 如果已设置 RESEARCH_SKILLS_REPO，可省略 --repo
-rs upgrade \
+rsk upgrade \
   --repo <owner>/<repo> \
   --project-dir /path/to/your/project \
   --target all \
@@ -132,11 +132,11 @@ git pull
 
 1) 定期 check：
 ```bash
-rs check --repo <owner>/<repo>
+rsk check --repo <owner>/<repo>
 ```
 2) 返回码为 1 时执行 upgrade：
 ```bash
-rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
+rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
 ```
 
 如果你希望我把这套升级检测做成 Codex Automation（定期跑并生成 inbox 结果），告诉我运行频率和要覆盖的 project 路径即可。

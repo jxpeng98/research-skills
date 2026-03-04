@@ -28,10 +28,10 @@ Use the unified installer:
 
 ## Upgrade
 
-- CLI aliases (after pipx install): `rs` / `rsw` (same as `research-skills`)
+- CLI aliases (after pipx install): `rsk` / `rsw` (same as `research-skills`)
 - Optional default upstream (omit `--repo`): set `RESEARCH_SKILLS_REPO=<owner>/<repo>`, or add `research-skills.toml` in your project root
-- Check updates: `rs check --repo <owner>/<repo>` (or `rs check` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py check ...`)
-- Upgrade (no fork / no git clone required): `rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all` (or omit `--repo` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py upgrade ...`)
+- Check updates: `rsk check --repo <owner>/<repo>` (or `rsk check` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py check ...`)
+- Upgrade (no fork / no git clone required): `rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all` (or omit `--repo` if `RESEARCH_SKILLS_REPO` is set; or `python3 scripts/research_skill_update.py upgrade ...`)
 - Full guide: `guides/basic/upgrade-research-skills.md`
 
 ## Verify

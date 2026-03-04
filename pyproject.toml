@@ -26,7 +26,7 @@ Repository = "https://github.com/jxpeng98/research-skills"
 
 [project.scripts]
 research-skills = "research_skills.cli:main"
-rs = "research_skills.cli:main"
+rsk = "research_skills.cli:main"
 rsw = "research_skills.cli:main"
 
 [tool.setuptools]

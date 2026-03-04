@@ -45,10 +45,10 @@ python3 scripts/validate_project_artifacts.py --cwd ./project --topic ai-in-educ
 
 升级 / 自动升级：
 - 指南：`guides/basic/upgrade-research-skills.md`
-- 命令别名（pipx 安装后可用）：`rs` / `rsw`（等价于 `research-skills`）
+- 命令别名（pipx 安装后可用）：`rsk` / `rsw`（等价于 `research-skills`）
 - 可选默认上游（省略 `--repo`）：设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml`
-- 检测更新：`rs check --repo <owner>/<repo>`（或设置了 `RESEARCH_SKILLS_REPO` 后直接 `rs check`；或 `python3 scripts/research_skill_update.py check ...`）
-- 直接升级（不需要 fork / 不需要 git clone）：`rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（或设置了 `RESEARCH_SKILLS_REPO` 后省略 `--repo`；或 `python3 scripts/research_skill_update.py upgrade ...`）
+- 检测更新：`rsk check --repo <owner>/<repo>`（或设置了 `RESEARCH_SKILLS_REPO` 后直接 `rsk check`；或 `python3 scripts/research_skill_update.py check ...`）
+- 直接升级（不需要 fork / 不需要 git clone）：`rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（或设置了 `RESEARCH_SKILLS_REPO` 后省略 `--repo`；或 `python3 scripts/research_skill_update.py upgrade ...`）
 
 CI 流水线：
 - `.github/workflows/ci.yml`（在 PR/push 上运行 `py_compile`、严格校验与单元测试）
@@ -95,7 +95,7 @@ Beta 发布文档：
     -   `standards/mcp-agent-capability-map.yaml`（每个 Task 的 required skills/MCP + 主执行/复核/回退 agent）
 3.  **安装到三端与项目**：
     -   脚本安装：`./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
-    -   或 pipx + upgrade：`pipx install research-skills-installer` 然后 `rs upgrade --project-dir <project> --target all --doctor`
+    -   或 pipx + upgrade：`pipx install research-skills-installer` 然后 `rsk upgrade --project-dir <project> --target all --doctor`
 4.  **开始跑工作流**：
     -   Claude Code：在项目里用 `/paper` 或 `.agent/workflows/*.md` 的任一命令
     -   命令行：`python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`
@@ -389,7 +389,7 @@ research-skills/
 │   ├── basic/                # 基础使用、安装、升级
 │   └── advanced/             # 高级功能、CLI 参考、MCP集成
 ├── scripts/                  # 安装/升级/发布自动化与验证脚本 + 校验器脚本
-├── research_skills/          # pipx CLI 包（命令：research-skills / rs / rsw）
+├── research_skills/          # pipx CLI 包（命令：research-skills / rsk / rsw）
 │   └── project.toml          # 打包默认上游（CI 注入；可被覆盖）
 ├── release/                  # Release notes + 验收回执 + 模板
 ├── tests/                    # 编排器单元测试（mock bridges）

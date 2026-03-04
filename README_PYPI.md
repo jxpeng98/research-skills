@@ -26,19 +26,19 @@ pipx install research-skills-installer
 Main command and aliases:
 
 - `research-skills`
-- `rs`
+- `rsk`
 - `rsw`
 
 ### Check updates
 
 ```bash
-rs check
+rsk check
 ```
 
 ### Upgrade assets
 
 ```bash
-rs upgrade --project-dir /path/to/project --target all --doctor
+rsk upgrade --project-dir /path/to/project --target all --doctor
 ```
 
 The package includes a default upstream repo (`jxpeng98/research-skills`), so `--repo` is optional.
@@ -70,8 +70,8 @@ source ~/.zshrc
 Now you can run:
 
 ```bash
-rs check
-rs upgrade --project-dir /path/to/project --target all --doctor
+rsk check
+rsk upgrade --project-dir /path/to/project --target all --doctor
 ```
 
 ### Option B: Project-level override
@@ -93,7 +93,7 @@ This keeps the override local to that project.
 pipx install research-skills-installer
 
 # Upgrade assets into your project
-rs upgrade --project-dir /path/to/project --target all --doctor
+rsk upgrade --project-dir /path/to/project --target all --doctor
 ```
 
 ## Links

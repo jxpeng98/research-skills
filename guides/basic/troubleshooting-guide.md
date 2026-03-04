@@ -38,7 +38,7 @@ These errors occur when the YAML contracts or JSON config maps contain invalid s
 - **Fix**: Restore the `.yaml` files from version control. Run `python3 scripts/validate_research_standard.py --strict` to pinpoint YAML syntax errors.
 
 ### `[ERR-RS-CFG-003]` Unknown Task ID or invalid phase logic requested.
-- **Cause**: You tried to run `rs task-run --task-id X99`, but `X99` does not exist in the platform mapping.
+- **Cause**: You tried to run `rsk task-run --task-id X99`, but `X99` does not exist in the platform mapping.
 - **Fix**: Refer to `standards/research-workflow-contract.yaml` to see all valid tasks (A1-I8).
 
 ---

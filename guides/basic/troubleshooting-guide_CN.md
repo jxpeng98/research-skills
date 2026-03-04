@@ -38,7 +38,7 @@
 - **修复**：从版本控制中恢复 `.yaml` 文件。运行 `python3 scripts/validate_research_standard.py --strict` 来精确定位 YAML 语法错误。
 
 ### `[ERR-RS-CFG-003]` 请求了未知的 Task ID 或无效的阶段逻辑。
-- **原因**：你尝试运行 `rs task-run --task-id X99`，但 `X99` 在平台映射表中不存在。
+- **原因**：你尝试运行 `rsk task-run --task-id X99`，但 `X99` 在平台映射表中不存在。
 - **修复**：参考 `standards/research-workflow-contract.yaml` 查看所有有效的任务 ID（A1-I8）。
 
 ---

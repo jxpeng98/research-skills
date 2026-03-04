@@ -28,10 +28,10 @@
 
 ## 升级指南
 
-- 命令别名（pipx 安装后可用）：`rs` / `rsw`（等价于 `research-skills`）
+- 命令别名（pipx 安装后可用）：`rsk` / `rsw`（等价于 `research-skills`）
 - 可选默认上游（省略 `--repo`）：设置环境变量 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml` 文件
-- 检测更新：`rs check --repo <owner>/<repo>`（配置了默认上游后可直接使用 `rs check`；或使用源码脚本 `python3 scripts/research_skill_update.py check ...`）
-- 一键升级（无需 fork 或 git clone）：`rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（配置默认上游后可省略 `--repo`；或使用源码脚本 `python3 scripts/research_skill_update.py upgrade ...`）
+- 检测更新：`rsk check --repo <owner>/<repo>`（配置了默认上游后可直接使用 `rsk check`；或使用源码脚本 `python3 scripts/research_skill_update.py check ...`）
+- 一键升级（无需 fork 或 git clone）：`rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（配置默认上游后可省略 `--repo`；或使用源码脚本 `python3 scripts/research_skill_update.py upgrade ...`）
 - 完整升级指南：`guides/basic/upgrade-research-skills_CN.md`
 
 ## 验证安装

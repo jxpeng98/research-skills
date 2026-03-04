@@ -18,11 +18,11 @@ pipx install research-skills-installer
 # - rs
 # - rsw
 # You can also set `RESEARCH_SKILLS_REPO=<owner>/<repo>` to omit the --repo flag
-rs check --repo <owner>/<repo>
-rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
+rsk check --repo <owner>/<repo>
+rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
 ```
 
-> Note: pip installs/upgrades the "updater CLI." The actual process of overwriting the skill/workflow files into the client directories and your project is still performed by `rs upgrade` (or `research-skills upgrade`). This keeps the process explicit and prevents background file modifications during a pip install.
+> Note: pip installs/upgrades the "updater CLI." The actual process of overwriting the skill/workflow files into the client directories and your project is still performed by `rsk upgrade` (or `research-skills upgrade`). This keeps the process explicit and prevents background file modifications during a pip install.
 
 ## 1) What exactly are you upgrading?
 
@@ -45,7 +45,7 @@ Upgrading simply means **overwriting these target paths with the new version** (
 
 ```bash
 # If RESEARCH_SKILLS_REPO is set, --repo can be omitted
-rs check --repo <owner>/<repo>
+rsk check --repo <owner>/<repo>
 # Or run within the repository (equivalent):
 python3 scripts/research_skill_update.py check --repo <owner>/<repo>
 ```
@@ -69,8 +69,8 @@ repo = "<owner>/<repo>" # Or Git URL
 Afterward, you can run:
 
 ```bash
-rs check
-rs upgrade --project-dir . --target all --doctor
+rsk check
+rsk upgrade --project-dir . --target all --doctor
 ```
 
 ---
@@ -81,7 +81,7 @@ This directly downloads the GitHub release archive and executes the installation
 
 ```bash
 # If RESEARCH_SKILLS_REPO is set, --repo can be omitted
-rs upgrade \
+rsk upgrade \
   --repo <owner>/<repo> \
   --project-dir /path/to/your/project \
   --target all \
@@ -134,11 +134,11 @@ You can use cron/CI to do a "weekly check + upgrade if available":
 
 1) Check periodically:
 ```bash
-rs check --repo <owner>/<repo>
+rsk check --repo <owner>/<repo>
 ```
 2) If exit code is 1, execute upgrade:
 ```bash
-rs upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
+rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
 ```
 
 If you want this upgrade detection integrated as a Codex Automation (run periodically and generate inbox results), just let me know the run frequency and target project paths.

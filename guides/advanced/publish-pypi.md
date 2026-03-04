@@ -23,6 +23,20 @@ This project uses the [Trusted Publisher](https://docs.pypi.org/trusted-publishe
 2. Click "New environment" and name it `pypi`.
 3. (Optional) Add protection rules (e.g., only allow deployment from the `main` branch, require approval, etc.).
 
+### 0.3 TestPyPI Trusted Publisher
+
+This repository includes a dedicated TestPyPI workflow: `.github/workflows/publish-testpypi.yml`.
+
+1. Log in to [test.pypi.org](https://test.pypi.org).
+2. Go to Account settings → Publishing.
+3. Add a pending publisher (or add a publisher under the existing project) with:
+   - **PyPI Project Name**: `research-skills-installer`
+   - **Owner**: `jxpeng98`
+   - **Repository name**: `research-skills`
+   - **Workflow name**: `publish-testpypi.yml`
+   - **Environment name**: `testpypi`
+4. In GitHub repository Settings → Environments, create environment `testpypi`.
+
 ---
 
 ## 1) Routine Publishing Workflow
@@ -70,7 +84,19 @@ You can monitor the progress on the **Actions** page of your GitHub repository.
 
 ## 2) Local Verification (Optional Before Publishing)
 
-If you want to confirm the package builds correctly locally before pushing:
+Recommended one-command preflight:
+
+```bash
+bash scripts/pypi_preflight.sh
+```
+
+If you want to run checks without rebuilding artifacts:
+
+```bash
+bash scripts/pypi_preflight.sh --no-build
+```
+
+Equivalent manual steps:
 
 ```bash
 # Install build tools
@@ -96,17 +122,26 @@ rs check --repo <owner>/<repo>
 
 ---
 
-## 3) Publishing to TestPyPI (Optional)
+## 3) Publishing to TestPyPI (Recommended Before Production)
 
-If you wish to publish to TestPyPI first for testing, you can upload manually:
+Use the GitHub Actions workflow (manual trigger, no tag required):
+
+1. Open GitHub Actions.
+2. Select **Publish to TestPyPI**.
+3. Click **Run workflow** on the target branch.
+
+The workflow will build, validate, and publish with Trusted Publishing to TestPyPI.
+
+Install and verify from TestPyPI:
 
 ```bash
-# Register at test.pypi.org and obtain an API token first
-twine upload --repository testpypi dist/*
-
-# Install and test from TestPyPI
 pip install --index-url https://test.pypi.org/simple/ research-skills-installer
 ```
+
+Recommended order:
+
+- Run **Publish to TestPyPI** and validate install/CLI behavior.
+- After validation passes, push release tag `v*` to trigger **Publish to PyPI**.
 
 ---
 
@@ -117,8 +152,10 @@ When cutting a release, follow these steps:
 - [ ] Confirm all features are merged into `main`.
 - [ ] Ensure CI is passing (Green `ci.yml`).
 - [ ] Run release preflight: `./scripts/release_automation.sh pre --tag v<version>`
+- [ ] Run package preflight: `bash scripts/pypi_preflight.sh`
 - [ ] Update version number: `./scripts/bump-version.sh <version>`
 - [ ] Commit version changes.
+- [ ] Run GitHub Actions `Publish to TestPyPI` and validate package installation from TestPyPI.
 - [ ] Create a tag: `git tag v<version>`
 - [ ] Push: `git push origin main --tags`
 - [ ] Confirm the `Publish to PyPI` workflow succeeded on GitHub Actions.
@@ -136,6 +173,7 @@ Ensure the tag format starts with `v` (e.g., `v0.1.0b7`) and that the `.github/w
 ### Q: PyPI publishing failed with "403 Forbidden"?
 
 This is typically an issue with the Trusted Publisher setup:
+
 - Make sure the workflow name on PyPI exactly matches `publish-pypi.yml`.
 - Make sure the GitHub environment name exactly matches `pypi`.
 - Verify the owner and repository names are correct.
@@ -143,6 +181,11 @@ This is typically an issue with the Trusted Publisher setup:
 ### Q: Upload failed because the version number already exists?
 
 PyPI does not allow overwriting published versions. If you need to ship a fix, you must increment the version number (e.g., `0.1.0b7` → `0.1.0b8`).
+
+### Q: Is TestPyPI auto-triggered?
+
+No. `publish-testpypi.yml` is `workflow_dispatch` only (manual trigger), so it does not create extra tags.
+Production PyPI remains tag-triggered via `publish-pypi.yml` (`v*`).
 
 ### Q: How do I recall/withdraw a published version?
 

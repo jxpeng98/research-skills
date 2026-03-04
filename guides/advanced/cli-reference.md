@@ -5,15 +5,15 @@ This document outlines all "executable entry points" (pipx CLI / Python module /
 ## 0) Command Name Conventions
 
 - `research-skills`: The main CLI (available after pipx/venv installation).
-- `rs` / `rsw`: Short aliases (completely equivalent to `research-skills`).
+- `rsk` / `rsw`: Short aliases (completely equivalent to `research-skills`).
 
-The rest of this document will use `rs` as the example.
+The rest of this document will use `rsk` as the example.
 
 ---
 
 ## 1) How Upstream Repositories are Resolved (Omitting `--repo`)
 
-Many commands need to know "which GitHub repository to query/download releases from." The resolution order for `rs` upstream is as follows (highest to lowest priority):
+Many commands need to know "which GitHub repository to query/download releases from." The resolution order for `rsk` upstream is as follows (highest to lowest priority):
 
 1. CLI Argument: `--repo <owner/repo|Git URL>`
 2. Environment Variable: `RESEARCH_SKILLS_REPO=<owner/repo|Git URL>`
@@ -39,16 +39,16 @@ repo = "owner/repo"   # Or url = "https://github.com/owner/repo.git"
 
 ---
 
-## 2) `rs` (Installer & Updater CLI)
+## 2) `rsk` (Installer & Updater CLI)
 
-### 2.1 `rs check` (Check versions/Available updates)
+### 2.1 `rsk check` (Check versions/Available updates)
 
 Use Case:
 - Outputs the CLI version, local repo version (if run from a clone), and installed versions across all 3 client directories.
 - Optional: Queries the upstream latest release tag and determines if an upgrade is needed.
 
 ```bash
-rs check [--repo <owner/repo|url>] [--json] [--strict-network]
+rsk check [--repo <owner/repo|url>] [--json] [--strict-network]
 ```
 
 Key Flags:
@@ -61,14 +61,14 @@ Exit Codes:
 - `1`: Update available.
 - `2`: Invalid argument.
 
-### 2.2 `rs upgrade` (Download release & execute installers)
+### 2.2 `rsk upgrade` (Download release & execute installers)
 
 Use Case:
 - Downloads the upstream release (defaults to latest tag `.tar.gz`).
 - Extracts it and executes `scripts/install_research_skill.sh`.
 
 ```bash
-rs upgrade \
+rsk upgrade \
   [--repo <owner/repo|url>] \
   [--ref <tag-or-branch>] \
   [--ref-type tag|branch] \
@@ -85,12 +85,12 @@ Notes:
 - `--mode link` is suitable for "maintaining a local clone" (symlink-based installation); `--mode copy` is best for one-off installs or CI.
 - The command exits with the error code returned by the underlying bash installation script.
 
-### 2.3 `rs align` (Quick Reference Guide)
+### 2.3 `rsk align` (Quick Reference Guide)
 
 Use Case: Prints an overview of "what pipx installed / paths modified by upgrades / common commands".
 
 ```bash
-rs align [--repo <owner/repo|url>]
+rsk align [--repo <owner/repo|url>]
 ```
 
 ---

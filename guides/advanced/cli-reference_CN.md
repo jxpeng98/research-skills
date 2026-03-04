@@ -5,15 +5,15 @@
 ## 0) 命令名约定
 
 - `research-skills`：主 CLI（pipx/venv 安装后提供）
-- `rs` / `rsw`：短别名（与 `research-skills` 完全等价）
+- `rsk` / `rsw`：短别名（与 `research-skills` 完全等价）
 
-下文统一用 `rs` 作为示例。
+下文统一用 `rsk` 作为示例。
 
 ---
 
 ## 1) Upstream（上游仓库）如何确定（如何省略 `--repo`）
 
-很多命令需要知道“去哪个 GitHub 仓库查询/下载 release”。`rs` 的上游解析优先级如下（从高到低）：
+很多命令需要知道“去哪个 GitHub 仓库查询/下载 release”。`rsk` 的上游解析优先级如下（从高到低）：
 
 1. CLI 参数：`--repo <owner/repo|Git URL>`
 2. 环境变量：`RESEARCH_SKILLS_REPO=<owner/repo|Git URL>`
@@ -39,16 +39,16 @@ repo = "owner/repo"   # 或 url = "https://github.com/owner/repo.git"
 
 ---
 
-## 2) `rs`（安装/升级器 CLI）
+## 2) `rsk`（安装/升级器 CLI）
 
-### 2.1 `rs check`（检查版本/是否有更新）
+### 2.1 `rsk check`（检查版本/是否有更新）
 
 用途：
 - 输出 CLI 版本、本地 repo 版本（若在仓库内运行）、三端已安装版本
 - 可选：查询上游最新 release tag，并判断是否需要升级
 
 ```bash
-rs check [--repo <owner/repo|url>] [--json] [--strict-network]
+rsk check [--repo <owner/repo|url>] [--json] [--strict-network]
 ```
 
 关键参数：
@@ -61,14 +61,14 @@ rs check [--repo <owner/repo|url>] [--json] [--strict-network]
 - `1`：检测到更新可用
 - `2`：参数错误
 
-### 2.2 `rs upgrade`（下载 release 并执行三端安装脚本）
+### 2.2 `rsk upgrade`（下载 release 并执行三端安装脚本）
 
 用途：
 - 下载上游 release（默认 latest tag 的 tar.gz）
 - 解压后运行其中的 `scripts/install_research_skill.sh`
 
 ```bash
-rs upgrade \
+rsk upgrade \
   [--repo <owner/repo|url>] \
   [--ref <tag-or-branch>] \
   [--ref-type tag|branch] \
@@ -85,12 +85,12 @@ rs upgrade \
 - `--mode link` 适合“长期维护一个本地 clone”的场景（软链接安装）；`--mode copy` 更适合一次性安装/CI。
 - 退出码为安装脚本返回码（若安装失败，沿用其错误码）。
 
-### 2.3 `rs align`（快速参考）
+### 2.3 `rsk align`（快速参考）
 
 用途：打印“pipx 安装了什么 / upgrade 会修改哪些路径 / 常见用法”。
 
 ```bash
-rs align [--repo <owner/repo|url>]
+rsk align [--repo <owner/repo|url>]
 ```
 
 ---

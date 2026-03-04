@@ -1,134 +1,122 @@
 # Academic Deep Research Skills
 
-一套专为学术研究场景设计的 Claude Code 深度研究技能系统。
+一套专为 Claude Code 设计的深化学术研究技能系统。提供从系统性文献综述、数据提取、理论框架构建到论文起草与评审的全套流水线。
+
+<div align="center">
+  <a href="#-快速开始-0--1">🚀 快速开始</a> | 
+  <a href="guides/advanced/cli-reference_CN.md">💻 CLI 命令大全</a> | 
+  <a href="guides/advanced/agent-skill-collaboration_CN.md">🤝 代理人协同指南</a> | 
+  <a href="guides/advanced/extend-research-skills_CN.md">🛠️ 如何二次开发/贡献</a> | 
+  <a href="TODO_ROADMAP.md">🗺️ Roadmap 蓝图</a>
+</div>
 
 ## 功能特性
 
-- 📚 **系统性文献综述** - 遵循 PRISMA 方法论
-- 📖 **论文深度阅读** - 结构化笔记 + BibTeX
+- 📚 **系统性文献综述** - 遵循 PRISMA 2020 方法论
+- 📖 **论文深度阅读** - 结构化笔记 + BibTeX 引用生成
 - 🧪 **证据综合与 Meta 分析** - 叙述/定性/定量综合（对齐 PRISMA）
 - 📝 **完整论文草稿** - 大纲→全文→claim-evidence 校验→图表规划
 - 🧩 **研究设计到发表** - 研究设计、伦理/IRB、投稿打包、rebuttal 返修流程
-- 🔍 **研究 Gap 识别** - 5类学术空白分析
-- 🧠 **理论框架构建** - 概念关系映射
-- ✍️ **学术写作辅助** - 符合学术规范
-- 🧑‍⚖️ **多角色专家互审** - 平行独立审稿模拟与致命缺陷测试
-- 🚀 **CCG 强约束代码引擎** - 将需求/规划/执行/Review严格拆分的可靠研究代码实施
-- 🧱 **跨模型标准合同** - 用统一 Task ID 和产物路径对齐 Codex/Claude/Gemini
+- 🔍 **研究 Gap 识别** - 5类学术空白深度分析
+- 🧠 **理论框架构建** - 概念关系映射与假设推导
+- ✍️ **学术写作辅助** - 严格对齐各领域的学术语言规范
+- 🧑‍⚖️ **多角色专家互审** - 平行独立审稿模拟（Methodologist, Domain Expert, "Reviewer 2"）
+- 🚀 **CCG 强约束代码引擎** - 需求/规划/执行/Review 四步严格拆分的可靠研究代码实施
+- 🤖 **多模型（Multi-Model）协同** - 混合调度 Codex、Claude、Gemini 跨阶段作业
+- ⚡ **Token 深度优化** - 采用分层结构，指令 Token 开销降低 ~90%
 
-## 标准化层
+---
 
-统一标准入口（单一真源）：
-- `standards/research-workflow-contract.yaml`
-- `standards/mcp-agent-capability-map.yaml`（按 Task ID 编排 MCP + agent）
-- Task ID：`A1` ... `I8`
-- 产物根目录：`RESEARCH/[topic]/`
+## 🚀 快速开始 (0 → 1)
 
-可移植 Codex skill 包：
-- `research-paper-workflow/SKILL.md`
+这是熟悉并在你的项目中运行该系统最快的方式。
 
-本地一致性校验器：
+### 1. 安装 CLI（推荐方式）
+
+推荐使用 `pipx` 全局安装 Research Skills 编排工具：
 
 ```bash
-python3 scripts/validate_research_standard.py
-python3 -m unittest tests.test_orchestrator_workflows -v
-
-# 项目产物校验（在你的项目中运行）
-python3 scripts/validate_project_artifacts.py --cwd ./project --topic ai-in-education --task-id H1 --strict
+pipx install research-skills-installer
 ```
 
-多端安装脚本：
+安装完成后，你可以使用 `research-skills` 命令，或短别名 `rsk` 和 `rsw`。
+
+### 2. 初始化你的项目环境
+运行 upgrade 指令，会将最新的技能包、工作流文件安全地拷贝到当前项目以及本地代理工具（如 `~/.claude/`）的组件目录中。
 
 ```bash
-./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
+cd /path/to/your/project
+rsk upgrade --target all --project-dir . --doctor
 ```
 
-升级 / 自动升级：
-- 指南：`guides/basic/upgrade-research-skills.md`
-- 命令别名（pipx 安装后可用）：`rsk` / `rsw`（等价于 `research-skills`）
-- 可选默认上游（省略 `--repo`）：设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml`
-- 检测更新：`rsk check --repo <owner>/<repo>`（或设置了 `RESEARCH_SKILLS_REPO` 后直接 `rsk check`；或 `python3 scripts/research_skill_update.py check ...`）
-- 直接升级（不需要 fork / 不需要 git clone）：`rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（或设置了 `RESEARCH_SKILLS_REPO` 后省略 `--repo`；或 `python3 scripts/research_skill_update.py upgrade ...`）
+*提示：你可以随时使用 `rsk check` 来检测上游是否有新版本更新。*
 
-CI 流水线：
-- `.github/workflows/ci.yml`（在 PR/push 上运行 `py_compile`、严格校验与单元测试）
+### 3. 开始跑工作流
+在项目目录打开终端，Claude Code 会自动读取挂载的 `RESEARCH/` 相关命令集。
 
-Beta 发布文档：
-- `release/v0.1.0-beta.2.md`
-- `release/v0.1.0-beta.1.md`
-- `release/rollback.md`
-- `release/automation.md`
-- `release/templates/beta-acceptance-template.md`
+如果你正在使用 **Claude Code**，请直接输入以下快捷指令：
 
-如需把警告也视为失败，使用 `--strict`。
+| 命令 | 用途 | 示例 |
+|------|------|------|
+| `/paper` | 论文写作工作流入口（基于对话选择） | `/paper ai-in-education CHI` |
+| `/lit-review` | 系统性文献综述 | `/lit-review transformer architecture 2020-2024` |
+| `/paper-read` | 深度阅读单篇论文 | `/paper-read https://arxiv.org/abs/2303.08774` |
+| `/find-gap` | 识别研究空白（5种 Gap） | `/find-gap LLM in education` |
+| `/build-framework` | 构建理论框架与概念图谱 | `/build-framework technology acceptance` |
+| `/academic-write` | 学术段落/章节写作辅助 | `/academic-write introduction AI ethics` |
+| `/paper-write` | 完整论文（草稿端到端） | `/paper-write ai-in-education empirical CHI` |
+| `/synthesize` | 证据综合 / Meta 分析规划 | `/synthesize ai-in-education` |
+| `/study-design` | 实证研究设计 | `/study-design ai-in-education` |
+| `/ethics-check` | 伦理评估与 IRB 审查材料 | `/ethics-check ai-in-education` |
+| `/submission-prep` | 投稿材料打包生成 | `/submission-prep ai-in-education CHI` |
+| `/rebuttal` | 审稿意见回复与矩阵生成 | `/rebuttal ai-in-education` |
+| `/code-build` | CCG驱动的研究代码规划与实施 | `/code-build "Staggered DID" --domain econ` |
 
-发布自动化：
-
+如果你**通过纯命令行调度编排**（执行指定的 Task ID）：
 ```bash
-./scripts/release_automation.sh pre --tag v0.1.0-beta.2
-./scripts/release_automation.sh post --tag v0.1.0-beta.2
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd . --triad
 ```
 
-`pre --tag` 在缺少 `release/<tag>.md` 时会自动生成草稿。
-`pre --tag` 在检查通过后也会自动回填 validator/unittest/smoke 的结果行。
-也可手动生成：`./scripts/generate_release_notes.sh --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2`。
+---
 
-协同分工规则：
-- Skill = 流程路由层（`task_id`、输出路径、质量门）
-- MCP = 证据/工具层
-- Agents = 起草与复核层（主执行/复核/回退由能力映射定义）
+## 🧬 动态领域挂载 (Dynamic Domains)
 
-协同增强指南协作手册：
-- `guides/advanced/agent-skill-collaboration.md`
-- `guides/basic/install-multi-client.md`
-- `guides/advanced/cli-reference.md`（CLI 命令参考）
-- `guides/advanced/extend-research-skills.md`（如何对某一部分进行扩展/修改并保持一致性）
-- `guides/advanced/mcp-zotero-integration.md` (连接本地文献管理软件)
+**为什么没有针对 Economics、Computer Science 或 Biology 单独做拆分安装包？**
 
-## 0 → 1 导航（新用户从这里开始）
+在系统架构上，我们**将“核心执行管线”与“学科专业知识”彻底解耦**。
+当你执行在客户端执行安装时，获取的仅仅是纯“骨架”能力（比如如何做系统性综述，如何规划提纲）。 
 
-如果你刚接触这个仓库，建议按以下顺序快速上手：
+实际执行时，特定的检查清单（如经济学的平行趋势检验、生物的 IRB 安全条例）均通过 `--domain` 以 **动态按需挂载 (Runtime Injection)** 方式实现。
+例如，使用 `/code-build --domain economics` 时，系统在运行时只读取 `skills/domain-profiles/economics.yaml`，完全屏蔽不相关的领域代码库与Prompt。这种设计保持了底层的极致精简并杜绝了 Prompt 污染。
 
-1.  **先看合同（单一真源）**：
-    -   `standards/research-workflow-contract.yaml`（Task ID、必需产物、质量门、依赖顺序）
-2.  **再看路由（谁负责做什么）**：
-    -   `standards/mcp-agent-capability-map.yaml`（每个 Task 的 required skills/MCP + 主执行/复核/回退 agent）
-3.  **安装到三端与项目**：
-    -   脚本安装：`./scripts/install_research_skill.sh --target all --project-dir <project> --doctor`
-    -   或 pipx + upgrade：`pipx install research-skills-installer` 然后 `rsk upgrade --project-dir <project> --target all --doctor`
-4.  **开始跑工作流**：
-    -   Claude Code：在项目里用 `/paper` 或 `.agent/workflows/*.md` 的任一命令
-    -   命令行：`python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd <project> --triad`
-5.  **校验产物是否对齐合同**：
-    -   `python3 scripts/validate_project_artifacts.py --cwd <project> --topic <topic> --task-id <task> --strict`
+---
 
-常见自定义入口：
-- 人格/审稿风格/运行参数：`standards/agent-profiles.example.json`（用于 `parallel` / `task-run`）
-- 各阶段 DoD/检查清单：`research-paper-workflow/references/stage-*.md`
-- 项目默认上游：`research-skills.toml`（或环境变量 `RESEARCH_SKILLS_REPO`）
+## 🏗 标准化层与跨模型契约
+为了让 Codex、Claude、Gemini 输出可相互继承的中间件，系统使用严苛的“契约”驱动运转。
 
-## Skills + Agents 协同流程（ASCII）
+- **工作流契约**: `standards/research-workflow-contract.yaml` (所有 Task ID，必需前置条件与质量门规范)
+- **能力映射路由**: `standards/mcp-agent-capability-map.yaml` (所有 MCP 工具代理，自动 fallback 以及检查清单）
+- **落盘规范**: 所有代理人生成的学术内容必须严格落进 `RESEARCH/[topic]/` 对应目录下。
+
+### Skills + Agents 协同流程（ASCII）
 
 ```text
 用户目标 / Prompt
         |
         v
 Skill 路由层（Task ID + paper_type）
-  - standards/research-workflow-contract.yaml
-  - standards/mcp-agent-capability-map.yaml
         |
         +--------------------------+
         |                          |
         v                          v
 MCP 证据采集                  Agent 运行时路由
-(search/extraction/stats)     (codex / claude / gemini)
         |                          |
         +------------+-------------+
                      v
-                 Draft 生成
+                  Draft 生成
                      |
                      v
-                 Review 复核
+                  Review 复核
                      |
          +-----------+-----------+
          |                       |
@@ -142,273 +130,81 @@ MCP 证据采集                  Agent 运行时路由
            质量门 + 产物落盘输出
               -> RESEARCH/[topic]/...
 ```
+*(详情请参考 [guides/advanced/agent-skill-collaboration.md](guides/advanced/agent-skill-collaboration.md))*
 
-## 快速开始
+---
 
-### 安装
+## 多模型并发审查 (`orchestrator`)
 
-将此仓库克隆到你的项目中，Claude Code 会自动识别 `.agent/workflows/` 中的命令。
-
-```bash
-git clone <repository-url> research-skills
-```
-
-安装到 Codex + Claude Code + Gemini：
+支持通过 Orchestrator 网桥，联动本地不同接口服务执行复合流。
+*(需预先在环境变量配置了 `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`)*
 
 ```bash
-cd research-skills
-./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
+# 并发分析：三端平行背靠背审查，并由 Claude 做 Summary
+python -m bridges.orchestrator parallel --prompt "分析数据的可靠性约束" --cwd . --summarizer claude
+
+# 契约执行：强制按照 F3 的要求调度
+python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
+
+# MCP环境严格测试：如果没有相关搜素工具环境则强制阻挡
+python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
 ```
 
-安装脚本说明：
-- `--target codex|claude|gemini|all` 选择安装目标。
-- `--mode copy|link` 控制复制或软链接。
-- `--overwrite` 覆盖已有安装。
-- `--dry-run` 预览安装动作，不写文件。
+---
 
-### 使用命令
+## 支持接入的学术数据库映射
 
-| 命令 | 用途 | 示例 |
-|------|------|------|
-| `/paper` | 论文写作工作流入口（选择路径） | `/paper ai-in-education CHI` |
-| `/lit-review` | 系统性文献综述 | `/lit-review transformer architecture 2020-2024` |
-| `/paper-read` | 深度阅读论文 | `/paper-read https://arxiv.org/abs/2303.08774` |
-| `/find-gap` | 识别研究空白 | `/find-gap LLM in education` |
-| `/build-framework` | 构建理论框架 | `/build-framework technology acceptance` |
-| `/academic-write` | 学术写作辅助 | `/academic-write introduction AI ethics` |
-| `/paper-write` | 完整论文草稿 | `/paper-write ai-in-education empirical CHI` |
-| `/synthesize` | 证据综合 / Meta 分析 | `/synthesize ai-in-education` |
-| `/study-design` | 实证研究设计 | `/study-design ai-in-education` |
-| `/ethics-check` | 伦理/IRB 文档包 | `/ethics-check ai-in-education` |
-| `/submission-prep` | 投稿打包 | `/submission-prep ai-in-education CHI` |
-| `/rebuttal` | 返修/回复审稿意见 | `/rebuttal ai-in-education` |
-| `/code-build` | CCG驱动的研究代码实施 | `/code-build \"Staggered DID\" --domain econ` |
+| API 来源 | 用途 | 覆盖范围 |
+|--------|---------|----------|
+| Semantic Scholar | 第一搜索源文献检索 | 200M+ 论文 |
+| arXiv | 理工科预印本读取 | 全集 |
+| OpenAlex | 文献计量与本体网络 | 250M+ 作品 |
+| Crossref | DOI 源数据核对验证 | 140M+ DOIs |
 
-Task ID 建议：
-- 与用户确认 `paper_type + task_id`（例如 `systematic-review + E3`）
-- 严格按照 `standards/research-workflow-contract.yaml` 的输出路径落盘
+---
 
-## 三端并发分析（parallel）
+## 开发者与贡献者指引
 
-并发执行 `codex + claude + gemini`，再由总结端做综合分析：
+由于该项目为高度结构化的学术框架，禁止直接魔改导致 Schema 失效报错。
+
+### CI 流水线与本地验证
+如果你修改了 yaml 合同、修改了路由链路，或者修改了 `.md` 的依赖产物节点，请必须使用以下命令校验通过：
 
 ```bash
-# 预检：检查本地 CLI、API Key、MCP 命令绑定
-python -m bridges.orchestrator doctor --cwd ./project
+# 验证框架格式合同 (无 warning 方可合并)
+python3 scripts/validate_research_standard.py --strict
+# 运行单元测试
+python3 -m unittest tests.test_orchestrator_workflows -v
 
-python -m bridges.orchestrator parallel \
-  --prompt "分析该研究方案的主要风险与改进点" \
-  --cwd ./project \
-  --summarizer claude
-
-# 可选：按运行自定义人格/风格/权限（非全局）
-python -m bridges.orchestrator parallel \
-  --prompt "审查该研究方案的证据风险与修复顺序" \
-  --cwd ./project \
-  --summarizer claude \
-  --profile-file ./standards/agent-profiles.example.json \
-  --profile strict-review \
-  --summarizer-profile strict-review
+# 验证你在项目里最新跑出来的数据结果结构是否与合同相符
+python3 scripts/validate_project_artifacts.py --cwd ./project  --topic <topic> --task-id H1 --strict
 ```
 
-说明：
-- `doctor` 会检查 CLI 可用性、关键环境变量、标准文件、外部 MCP 命令绑定。
-- 默认尝试三端并发；若某端不可用，会自动退化为双端或单端。
-- `--summarizer` 指定并发后负责总结归纳的端（`codex|claude|gemini`）。
-- `--profile-file/--profile/--summarizer-profile` 支持按本次运行注入人格、审稿风格和工具权限配置。
-- 运行时默认启用非交互执行（`CI=1`、`TERM=dumb`）+ 硬超时，避免并发阶段卡死。
-
-## 依赖计划（task-plan）
-
-在执行某个 Task ID 之前，先用合同中的 `dependency_catalog` 生成依赖顺序，并检查 `RESEARCH/[topic]/` 下哪些前置产物已存在：
-
+### 发版自动化 (Release Automation)
+由 CI 接管或手动拉草稿：
 ```bash
-python -m bridges.orchestrator task-plan \
-  --task-id H1 \
-  --paper-type empirical \
-  --topic ai-in-education \
-  --cwd ./project
+./scripts/release_automation.sh pre --tag v0.1.0-beta.2
+./scripts/release_automation.sh post --tag v0.1.0-beta.2
 ```
 
-## Agent 编排（task-run）
+---
 
-使用 Task ID + 能力映射做标准化协同：
-
-```bash
-python -m bridges.orchestrator task-run \
-  --task-id F3 \
-  --paper-type empirical \
-  --topic ai-in-education \
-  --cwd ./project
-
-# 可选：强制要求所需 MCP 可用
-python -m bridges.orchestrator task-run \
-  --task-id B1 \
-  --paper-type systematic-review \
-  --topic ai-in-education \
-  --cwd ./project \
-  --mcp-strict
-
-# 可选：强制要求所需技能规范文件可用
-python -m bridges.orchestrator task-run \
-  --task-id F3 \
-  --paper-type empirical \
-  --topic ai-in-education \
-  --cwd ./project \
-  --skills-strict
-
-# 可选：启用三端独立审查（Codex + Claude + Gemini）
-python -m bridges.orchestrator task-run \
-  --task-id G3 \
-  --paper-type empirical \
-  --topic ai-in-education \
-  --cwd ./project \
-  --triad
-
-# 可选：按阶段覆盖 profile（draft/review/triad 分开控制）
-python -m bridges.orchestrator task-run \
-  --task-id F3 \
-  --paper-type empirical \
-  --topic ai-in-education \
-  --cwd ./project \
-  --profile-file ./standards/agent-profiles.example.json \
-  --profile default \
-  --draft-profile rapid-draft \
-  --review-profile strict-review \
-  --triad-profile strict-review
-```
-
-说明：
-- `task-run` 会读取 `standards/mcp-agent-capability-map.yaml` 选择主执行/复核/回退 agent。
-- `task-run` 已支持 `codex`、`claude`、`gemini` 三端运行时直连执行。
-- 若映射到本地不可用 agent，会按能力映射自动回退到可用运行时 agent。
-- `task-run` 会自动注入 `task_skill_mapping.required_skills` 到 draft/review 提示词。
-- `task-run` 会自动注入 `skill_catalog` 中的 `required_skill_cards`（类别、focus、默认产物、技能规范路径）。
-- `task-run` 会自动注入 `task_plan`（依赖 + 完成度状态）到 task packet 与提示词。
-- `task-run --profile-file` + `--draft-profile/--review-profile/--triad-profile` 可对不同阶段单独设定 profile，而不改全局默认。
-- `task-run --skills-strict` 会在技能规范文件缺失时阻断执行。
-- `task-run --triad` 会增加第三端独立审查，使非代码阶段也能稳定三端协同。
-- 外部 MCP 可通过环境变量命令接入，例如：`RESEARCH_MCP_SCHOLARLY_SEARCH_CMD`。
-
-Profile 模板：`standards/agent-profiles.example.json`
-  - 在 Profile 中支持配置 `output_language`（例如 `"output_language": "zh-CN"`），在保持英文内核提示词（保障模型推理最优化）的前提下，强制系统输出本地化语言。
-
-## 核心工作流
-
-### 1. 系统性文献综述 `/lit-review`
-
-遵循 PRISMA 2020 方法论：
-
-```
-研究问题定义 (PICO/PEO)
-       ↓
-多学术数据库检索 (Semantic Scholar, arXiv, Google Scholar)
-       ↓
-标题/摘要筛选 → 全文筛选
-       ↓
-数据提取 + 质量评估
-       ↓
-证据综合（可选 Meta 分析） + PRISMA 流程图
-```
-
-### 2. 论文深度阅读 `/paper-read`
-
-从论文中提取：
-- 研究问题 (RQs)
-- 理论框架
-- 研究方法 (设计、样本、分析)
-- 核心发现
-- 贡献与局限性
-- Future Work
-
-输出格式：Markdown 笔记 + BibTeX 引用
-
-### 3. 研究 Gap 识别 `/find-gap`
-
-识别以下类型的研究空白：
-- **理论 Gap** - 框架不完整或冲突
-- **方法论 Gap** - 研究方法存在局限
-- **实证 Gap** - 缺乏特定情境证据
-- **知识 Gap** - 某主题研究不足
-- **人群 Gap** - 特定群体未被研究
-
-### 4. 理论框架构建 `/build-framework`
-
-- 现有理论梳理与对比
-- 概念关系映射 (Mermaid 图谱)
-- 假设/命题推导
-
-### 5. 学术写作辅助 `/academic-write`
-
-支持论文各章节：
-- Introduction (研究背景、问题陈述)
-- Literature Review (主题组织、批判性综述)
-- Methodology (方法论证明)
-- Discussion (发现解释、理论对话)
-- Conclusion (贡献总结、局限性)
-
-## 学术证据评级
-
-| 等级 | 证据类型 |
-|------|----------|
-| **A** | 系统性综述、Meta 分析、RCT |
-| **B** | 队列研究、高影响因子期刊论文 |
-| **C** | 案例研究、专家意见、会议论文 |
-| **D** | 预印本、工作论文 |
-| **E** | 轶事、理论推测 |
-
-## 目录结构
+## 目录结构介绍
 
 ```
 research-skills/
-├── docs/                     # 框架约定、快速指南、扩展指南
-├── pipelines/                # 编排 DAG 配置（PRISMA 综述等）
-├── roles/                    # 角色配置（PI、Methods Lead 等的 profile + 技能偏好）
-├── schemas/                  # JSON/YAML Schemas (技能、产物、profile 定义)
-├── eval/                     # Evaluation harness（golden tests + 评分标准）
-├── standards/                # 规范合同 + 能力映射（Task ID、输出路径、路由）
-├── research-paper-workflow/  # 可移植 skill 包（安装到 Codex/Claude/Gemini）
-├── .agent/workflows/         # Claude Code 项目工作流（/paper 等命令入口）
-├── bridges/                  # 多端协同编排（Codex/Claude/Gemini bridge + orchestrator）
-├── skills/                   # skills 规范卡片（按 A-I 阶段和 domain-profiles 组织）
-│   ├── A_framing/            # 研究问题与假设
-│   ├── B_literature/         # 检索、筛选、提取
-│   ├── C_design/             # 研究设计与分析规划
-│   ├── D_ethics/             # 伦理与 IRB
-│   ├── E_synthesis/          # 证据评级与合成
-│   ├── F_writing/            # 草稿撰写与图表生成
-│   ├── G_compliance/         # 报告规范与 PRISMA 检查
-│   ├── H_submission/         # 投稿打包与审稿意见回复
-│   ├── I_code/               # 代码规划、实现与质量保证
-│   ├── Z_cross_cutting/      # 工具技能（自我纠错、统一语气）
-│   ├── domain-profiles/      # 领域特性与验证规则（经济学、生物医学等）
-│   └── registry.yaml         # 所有技能的 central index 注册表
-├── skills-core.md            # skills 的 token 优化汇总参考
-├── templates/                # 各种输出模板（PRISMA, rebuttal, DMP等）
-├── guides/
-│   ├── basic/                # 基础使用、安装、升级
-│   └── advanced/             # 高级功能、CLI 参考、MCP集成
-├── scripts/                  # 安装/升级/发布自动化与验证脚本 + 校验器脚本
-├── research_skills/          # pipx CLI 包（命令：research-skills / rsk / rsw）
-│   └── project.toml          # 打包默认上游（CI 注入；可被覆盖）
-├── release/                  # Release notes + 验收回执 + 模板
-├── tests/                    # 编排器单元测试（mock bridges）
-├── .github/workflows/        # GitHub Actions：CI 与发布自动化
-├── RESEARCH/                 # 示例/生成的研究产物根目录（契约输出根）
-├── TODO_ROADMAP.md           # 长期路线图
-├── CLAUDE.md                 # Claude Code 快速参考（安装进项目）
-├── pyproject.toml            # pip 打包配置（console scripts 等）
-├── README.md                 # 英文文档
-└── README_CN.md              # 本文件
+├── standards/                # 核心合同真源：workflow/capability map
+├── research-paper-workflow/  # 各大平台无缝挂载的便携 Skill 技能包
+├── .agent/workflows/         # Claude Code 挂载的斜杠 / 指令文件
+├── bridges/                  # Python Orchestrator 多端路由通信网桥
+├── skills/                   # 系统全系学术卡片
+│   ├── [...]                 # 对应阶段 A 到 I
+│   └── domain-profiles/      # (动态挂载的领域知识图谱 Economics, Bio等)
+├── schemas/                  # Validator 数据验证
+├── eval/                     # 性能及覆盖率对焦 Test Cases
+├── guides/                   # 最佳实践与深潜开发文档
+├── scripts/                  # CI 维护器
+└── tests/                    # 单元测试验证
 ```
 
-## 学术数据库支持
-
-- **Semantic Scholar** - 跨领域 (2亿+论文)，API 直接调用
-- **arXiv** - 物理/数学/CS/AI，API 直接调用
-- **Google Scholar** - 跨领域，通过网页搜索
-- **PubMed** - 生物医学，通过网页搜索
-
-## License
-
-MIT
+许可协议: MIT

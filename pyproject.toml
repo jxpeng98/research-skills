@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "research-skills-installer"
-version = "0.1.0b10"
+version = "0.1.0b11"
 description = "Installer/upgrader CLI for research-skills (Codex / Claude Code / Gemini) without requiring a git fork."
 readme = "README_PYPI.md"
 requires-python = ">=3.12"

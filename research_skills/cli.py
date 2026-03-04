@@ -452,13 +452,13 @@ def cmd_check(args: argparse.Namespace) -> int:
     print(f"   - Status: {pip_status}")
     
     print("")
-    print("2) System Environment")
+    print("2) Host CLIs & API Keys (System)")
     for k, v in sys_env.items():
         icon = "✓" if v["status"] == "ok" else "✗"
         print(f"   - {k}: {icon} {v['detail']}")
         
     print("")
-    print("3) Installed Skills")
+    print("3) Installed Workflow Skills (Payload)")
     if repo_root:
         print(f"   - Detected repo root: {repo_root}")
     if local:

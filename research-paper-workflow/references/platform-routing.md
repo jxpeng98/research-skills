@@ -17,6 +17,7 @@ Use this mapping to keep behavior consistent across tools.
 - `H1` -> `/submission-prep`
 - `H2` -> `/rebuttal`
 - `I1-I3` -> `/code-build`
+- `J1-J4` -> `/proofread`
 
 ## Codex
 
@@ -27,9 +28,11 @@ Use this mapping to keep behavior consistent across tools.
   - use `primary_agent` for draft
   - use `review_agent` for independent check
   - use `fallback_agent` when primary fails
+- For proofread tasks (`J1`–`J4`), recommend `--triad` mode for iterative de-AI
 
 ## Gemini
 
 - Prompt pattern:
   `Execute Task {ID} for paper_type {paper_type} in RESEARCH/{topic} and produce contract outputs.`
 - Keep task IDs and output file names unchanged
+- For proofread: `Execute Task J2 for paper_type {paper_type} in RESEARCH/{topic} using multi-agent collaboration to de-AI rewrite.`

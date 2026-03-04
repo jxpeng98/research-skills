@@ -51,6 +51,10 @@ artifacts:
     - "submission/supplementary_inventory.md"
     - "revision/response_matrix.md"
     - "revision/response_letter.md"
+    - "proofread/ai_detection_report.md"
+    - "proofread/humanized_manuscript.md"
+    - "proofread/similarity_report.md"
+    - "proofread/proofread_checklist.md"
 
 paper_types:
   - id: "empirical"
@@ -128,6 +132,13 @@ stages:
       - "prisma_checklist.md"
       - "manuscript/claims_evidence_map.md"
       - "compliance/tone_normalization.md"
+  - id: "J"
+    name: "proofread-de-ai"
+    outputs:
+      - "proofread/ai_detection_report.md"
+      - "proofread/humanized_manuscript.md"
+      - "proofread/similarity_report.md"
+      - "proofread/proofread_checklist.md"
   - id: "H"
     name: "submission-revision"
     outputs:
@@ -446,6 +457,26 @@ task_catalog:
     title: "code-review"
     outputs:
       - "code/code_review.md"
+  J1:
+    stage: "J"
+    title: "ai-fingerprint-scan"
+    outputs:
+      - "proofread/ai_detection_report.md"
+  J2:
+    stage: "J"
+    title: "human-voice-rewrite"
+    outputs:
+      - "proofread/humanized_manuscript.md"
+  J3:
+    stage: "J"
+    title: "similarity-originality-check"
+    outputs:
+      - "proofread/similarity_report.md"
+  J4:
+    stage: "J"
+    title: "final-proofread"
+    outputs:
+      - "proofread/proofread_checklist.md"
 
 dependency_catalog:
   A1:
@@ -768,6 +799,30 @@ dependency_catalog:
     recommended_next:
       - "H1"
 
+  J1:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_prerequisites:
+      - "G4"
+    recommended_next:
+      - "J2"
+  J2:
+    prerequisites_all:
+      - "J1"
+    recommended_next:
+      - "J3"
+  J3:
+    prerequisites_all:
+      - "J2"
+    recommended_next:
+      - "J4"
+  J4:
+    prerequisites_all:
+      - "J3"
+    recommended_next:
+      - "H1"
+
   H1:
     prerequisites_all:
       - "F3"
@@ -916,6 +971,10 @@ platform_mapping:
     I6: "/code-build [topic] --focus code_planning"
     I7: "/code-build [topic] --focus execution_performance"
     I8: "/code-build [topic] --focus code_review"
+    J1: "/proofread [topic] --focus ai_detection"
+    J2: "/proofread [topic] --focus humanize"
+    J3: "/proofread [topic] --focus similarity"
+    J4: "/proofread [topic] --focus final_proofread"
   codex:
     entry: "$research-paper-workflow"
     task_selector: "Use Task ID from task_catalog (for example F3 or G1)"

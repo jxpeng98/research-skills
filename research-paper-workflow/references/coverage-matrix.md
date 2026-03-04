@@ -16,6 +16,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 | Manuscript drafting | Required | Required | Required | Required |
 | Compliance checks | Required | Required | Required | Required |
 | Submission + revision kit | Required | Required | Required | Required |
+| Proofread & de-AI | Required | Required | Required | Required |
 | Code/repro support | Optional | Optional | Required | Optional |
 
 ## Recommended Minimum Task Coverage
@@ -28,6 +29,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Ethics: `D1` and/or `D2` + `D3` (as applicable)
 - Writing: `F1`, `F3`, `F4`, `F5`, `F6`
 - Compliance: `G1`, `G3`, `G4`
+- Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)
 - Submission/revision: `H1` (and `H3/H4` strongly recommended pre-submission)
 - Code support: `I4` (recommended) + `I5–I8` (if code is a core contribution)
 
@@ -38,6 +40,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Synthesis: `E1`, `E2` (if pooling), `E3` (if pooling), `E3_5`, `E4` (optional), `E5`
 - Writing: `F1`, `F3`, `F4`, `F5`, `F6`
 - Compliance: `G2` (PRISMA), plus `G3`, `G4`
+- Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)
 - Submission/revision: `H1`, `H2` (post-review), `H3/H4` recommended pre-submission
 
 ### `methods`
@@ -47,6 +50,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Design/evaluation: `C1`, `C3`, `C3_5`, `C4` (as applicable)
 - Writing: `F1`, `F3`, `F4`, `F5`, `F6`
 - Compliance: `G1`, `G3`, `G4`
+- Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)
 - Code support: `I5`, `I6`, `I7`, `I8` (typically required); `I4` recommended
 - Submission/revision: `H1`, `H3/H4` recommended pre-submission
 
@@ -57,6 +61,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Design: `C*` optional (only if theory is supported by empirical/archival validation)
 - Writing: `F1`, `F3`, `F4`, `F5`, `F6`
 - Compliance: `G1`, `G3`, `G4`
+- Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)
 - Submission/revision: `H1`, `H3/H4` recommended pre-submission
 
 ## Reporting Guideline Reminder

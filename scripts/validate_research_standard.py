@@ -53,6 +53,7 @@ WORKFLOW_TASK_EXPECTATIONS = {
     ".agent/workflows/study-design.md": {"C1", "C2", "C3", "C4", "C5"},
     ".agent/workflows/submission-prep.md": {"H1"},
     ".agent/workflows/synthesize.md": {"E1", "E2", "E3", "E4", "E5"},
+    ".agent/workflows/proofread.md": {"J1", "J2", "J3", "J4"},
 }
 RELEASE_NOTE_FILE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
 

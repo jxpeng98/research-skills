@@ -22,6 +22,7 @@ Use this contract as the single source of truth for:
 - `E`: Evidence synthesis
 - `F`: Manuscript writing
 - `G`: Polishing and compliance
+- `J`: Proofread and de-AI
 - `H`: Submission and revision
 - `I`: Research code support
 
@@ -81,6 +82,10 @@ Use this contract as the single source of truth for:
 | `I6` | I | Code planning | `code/plan.md` |
 | `I7` | I | Code execution | `code/performance_profile.md` |
 | `I8` | I | Code review | `code/code_review.md` |
+| `J1` | J | AI fingerprint scan | `proofread/ai_detection_report.md` |
+| `J2` | J | Human-voice rewrite | `proofread/humanized_manuscript.md` |
+| `J3` | J | Similarity & originality check | `proofread/similarity_report.md` |
+| `J4` | J | Final proofread | `proofread/proofread_checklist.md` |
 
 ## Quality Gates
 
@@ -100,5 +105,6 @@ Use these when you need more operational detail than the task table provides:
 - `references/stage-E-synthesis.md`
 - `references/stage-F-writing.md`
 - `references/stage-G-compliance.md`
+- `references/stage-J-proofread.md`
 - `references/stage-H-submission.md`
 - `references/stage-I-code.md`

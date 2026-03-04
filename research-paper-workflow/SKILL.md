@@ -36,5 +36,6 @@ Run a model-agnostic paper workflow using shared Task IDs and artifact contracts
   - `references/stage-E-synthesis.md`
   - `references/stage-F-writing.md`
   - `references/stage-G-compliance.md`
+  - `references/stage-J-proofread.md`
   - `references/stage-H-submission.md`
   - `references/stage-I-code.md`

@@ -1,6 +1,18 @@
 # Multi-Client Install Guide (Codex / Claude Code / Gemini)
 
-Use the unified installer:
+## 1. Install CLI (Recommended)
+
+Using `pipx` is the recommended way to install the Research Skills Orchestrator:
+
+```bash
+pipx install research-skills-installer
+# After installation, you can initialize your environment:
+rsk upgrade --target all --project-dir /path/to/project --doctor
+```
+
+## 2. Alternative: Bash Script
+
+If you don't use pipx, you can use the unified installer script directly from the repository:
 
 ```bash
 ./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor

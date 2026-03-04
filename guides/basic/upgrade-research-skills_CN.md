@@ -13,7 +13,7 @@
 pipx install research-skills-installer
 # 提供 3 个等价命令（任选其一）：
 # - research-skills
-# - rs
+# - rsk
 # - rsw
 # 你也可以设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>` 后省略 --repo
 rsk check --repo <owner>/<repo>

@@ -1,6 +1,18 @@
 # 多端客户端安装指南 (Codex / Claude Code / Gemini)
 
-使用统一安装脚本：
+## 1. 安装 CLI（推荐）
+
+推荐使用 `pipx` 来安装 Research Skills Orchestrator：
+
+```bash
+pipx install research-skills-installer
+# 安装完成后，可以使用 rsk 初始化安装环境：
+rsk upgrade --target all --project-dir /path/to/project --doctor
+```
+
+## 2. 备选方案：Bash 安装脚本
+
+如果你不使用 pipx，可以直接使用仓库中的统一安装脚本：
 
 ```bash
 ./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor

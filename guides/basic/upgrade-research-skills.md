@@ -15,7 +15,7 @@ After publishing to PyPI (or an internal registry), the standard usage on your m
 pipx install research-skills-installer
 # This provides 3 equivalent commands (choose any):
 # - research-skills
-# - rs
+# - rsk
 # - rsw
 # You can also set `RESEARCH_SKILLS_REPO=<owner>/<repo>` to omit the --repo flag
 rsk check --repo <owner>/<repo>

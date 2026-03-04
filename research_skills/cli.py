@@ -16,7 +16,7 @@ from pathlib import Path
 
 from . import __version__
 
-TAG_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?$")
+TAG_PATTERN = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+)|b(\d+))?$")
 RELEASE_NOTE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
 OWNER_REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
@@ -34,7 +34,7 @@ class Version:
         if not match:
             return None
         major, minor, patch = (int(match.group(i)) for i in range(1, 4))
-        beta_raw = match.group(4)
+        beta_raw = match.group(4) or match.group(5)
         beta = int(beta_raw) if beta_raw is not None else None
         return cls(major=major, minor=minor, patch=patch, beta=beta)
 
@@ -300,6 +300,26 @@ def _latest_release_tag(repo: str) -> str:
     except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
         pass
 
+    # Fallback: list all releases (includes pre-releases / betas) and pick newest by semver.
+    # GitHub's /releases/latest only returns non-prerelease, non-draft releases,
+    # so repos with only beta releases would 404 on that endpoint.
+    list_url = f"https://api.github.com/repos/{repo}/releases?per_page=20"
+    try:
+        releases = _http_get_json(list_url)
+        if isinstance(releases, list) and releases:
+            best: tuple[tuple[int, int, int, int], str] | None = None
+            for rel in releases:
+                rel_tag = str(rel.get("tag_name", "")).strip()
+                parsed = Version.parse(rel_tag)
+                if parsed:
+                    key = parsed.sort_key()
+                    if best is None or key > best[0]:
+                        best = (key, rel_tag)
+            if best:
+                return best[1]
+    except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
+        pass
+
     html_url = f"https://github.com/{repo}/releases/latest"
     headers = {"User-Agent": "research-skills-updater"}
     request = urllib.request.Request(html_url, headers=headers)
@@ -311,9 +331,71 @@ def _latest_release_tag(repo: str) -> str:
     return tag
 
 
+def _check_pip_version() -> tuple[str, str]:
+    """Returns (latest_version, status_message)."""
+    try:
+        url = "https://pypi.org/pypi/research-skills-installer/json"
+        req = urllib.request.Request(url, headers={"User-Agent": "research-skills-updater"})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode("utf-8", errors="replace"))
+            latest = data.get("info", {}).get("version", "")
+            if not latest:
+                return "", "unavailable (no version in PyPI response)"
+            
+            parsed_latest = Version.parse(latest)
+            parsed_current = Version.parse(__version__)
+            if parsed_latest and parsed_current:
+                if parsed_latest.sort_key() > parsed_current.sort_key():
+                    return latest, "update available → pipx upgrade research-skills-installer"
+                return latest, "up-to-date"
+            return latest, "unknown comparison"
+    except Exception as e:
+        return "", f"unavailable ({e})"
+
+
+def _check_system_env() -> dict[str, dict[str, str]]:
+    """Check CLI and API key availability."""
+    results = {}
+    
+    # 1. CLIs
+    for cli in ("codex", "claude", "gemini"):
+        path = shutil.which(cli)
+        if not path:
+            mise_shim = Path.home() / ".local" / "share" / "mise" / "shims" / cli
+            if mise_shim.exists() and os.access(mise_shim, os.X_OK):
+                path = str(mise_shim)
+                
+        if path:
+            results[f"{cli} CLI"] = {"status": "ok", "detail": path}
+        else:
+            hints = {
+                "claude": "not found (install: npm i -g @anthropic-ai/claude-code)",
+                "gemini": "not found (install: npm i -g @google/gemini-cli)"
+            }
+            hint = hints.get(cli, "not found")
+            results[f"{cli} CLI"] = {"status": "error", "detail": hint}
+
+    # 2. API Keys
+    for env in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY"):
+        if os.environ.get(env, "").strip():
+            results[env] = {"status": "ok", "detail": "configured"}
+        else:
+            results[env] = {"status": "error", "detail": "not set"}
+            
+    return results
+
+
 def cmd_check(args: argparse.Namespace) -> int:
     repo_root = _find_repo_root(Path.cwd())
     local = _local_repo_version(repo_root) if repo_root else None
+    
+    # 1. Check PIP version
+    pip_latest, pip_status = _check_pip_version()
+    
+    # 2. Check System Env
+    sys_env = _check_system_env()
+    
+    # 3. Check Installed Skills
     installed: dict[str, dict[str, object]] = {}
     for client, path in _installed_skill_dirs().items():
         installed[client] = {
@@ -325,6 +407,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         if found:
             installed[client]["version"] = found[0]
 
+    # 4. Check Upstream Release
     resolved_repo, resolved_source = _resolve_upstream_repo(getattr(args, "repo", None), repo_root)
 
     latest_tag = ""
@@ -336,9 +419,18 @@ def cmd_check(args: argparse.Namespace) -> int:
         except Exception as exc:  # noqa: BLE001
             if args.strict_network:
                 raise
-            latest_tag = f"<unavailable: {exc}>"
+            hint = ""
+            if "404" in str(exc) and not _github_token():
+                hint = " (private repo? set GITHUB_TOKEN or GH_TOKEN)"
+            latest_tag = f"<unavailable: {exc}{hint}>"
 
     payload = {
+        "cli_package": {
+            "installed": __version__,
+            "latest_pypi": pip_latest,
+            "status": pip_status,
+        },
+        "system_environment": sys_env,
         "repo": resolved_repo or "",
         "repo_source": resolved_source or "",
         "local_repo_version": local[0] if local else "",
@@ -350,28 +442,42 @@ def cmd_check(args: argparse.Namespace) -> int:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 0
 
-    print("Research Skills Update Check")
+    print("Research Skills Check")
+    print("=====================")
     print("")
-    print(f"- CLI version: {__version__}")
+    print("1) CLI Package")
+    print(f"   - Installed: {__version__}")
+    if pip_latest:
+        print(f"   - Latest (PyPI): {pip_latest}")
+    print(f"   - Status: {pip_status}")
+    
+    print("")
+    print("2) System Environment")
+    for k, v in sys_env.items():
+        icon = "✓" if v["status"] == "ok" else "✗"
+        print(f"   - {k}: {icon} {v['detail']}")
+        
+    print("")
+    print("3) Installed Skills")
     if repo_root:
-        print(f"- Detected repo root: {repo_root}")
+        print(f"   - Detected repo root: {repo_root}")
     if local:
-        print(f"- Local repo version: {local[0]}")
-    print("")
-    print("Installed skill versions:")
+        print(f"   - Local repo version: {local[0]}")
     for client in ("codex", "claude", "gemini"):
         item = installed[client]
         status = "installed" if item["installed"] else "not-installed"
         version = item["version"] or "<unknown>"
-        print(f"- {client}: {status}, version={version}, path={item['path']}")
+        print(f"   - {client}: {status}, version={version}, path={item['path']}")
+
     print("")
+    print("4) Upstream Release")
     if resolved_repo:
         suffix = f" (from {resolved_source})" if resolved_source else ""
-        print(f"- Upstream repo: {resolved_repo}{suffix}")
-        print(f"- Latest upstream release: {latest_tag}")
+        print(f"   - Repo: {resolved_repo}{suffix}")
+        print(f"   - Latest: {latest_tag}")
     else:
         print(
-            "- Latest upstream release: <skipped (pass --repo, set RESEARCH_SKILLS_REPO, or add research-skills.toml)>"
+            "   - Latest: <skipped (pass --repo, set RESEARCH_SKILLS_REPO, or add research-skills.toml)>"
         )
 
     if latest_version:
@@ -386,13 +492,10 @@ def cmd_check(args: argparse.Namespace) -> int:
             if parsed:
                 local_versions.append(parsed)
         if local_versions and latest_version.sort_key() > max(v.sort_key() for v in local_versions):
-            print("")
-            print("Update available.")
-            print(
-                "Run: research-skills upgrade "
-                f"--repo {resolved_repo} --project-dir <your-project> --target all"
-            )
+            print(f"   - Status: update available -> rsk upgrade --repo {resolved_repo} --project-dir <your-project> --target all")
             return 1
+        elif resolved_repo:
+            print("   - Status: up-to-date")
 
     return 0
 

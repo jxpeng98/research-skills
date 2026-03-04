@@ -213,13 +213,20 @@ else
 fi
 
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+  # Block beta tags from triggering a formal GitHub release
+  if [[ "$TAG" == *beta* || "$TAG" =~ b[0-9]+ ]]; then
+    echo "[postflight] warning: tag '$TAG' is recognized as a beta release. Skipped formalized GitHub Release."
+    CREATE_RELEASE=0
+  fi
+
   if gh release view "$TAG" --repo "$REPO_SLUG" >/dev/null 2>&1; then
     echo "[postflight] GitHub release exists: $TAG"
   elif [[ "$CREATE_RELEASE" -eq 1 ]]; then
     gh release create "$TAG" \
       --repo "$REPO_SLUG" \
       --title "$TAG" \
-      --notes-file "$RELEASE_NOTE_PATH"
+      --notes-file "$RELEASE_NOTE_PATH" \
+      dist/*
     echo "[postflight] GitHub release created: $TAG"
   else
     echo "[postflight] warning: GitHub release not found (use --create-release to publish)"

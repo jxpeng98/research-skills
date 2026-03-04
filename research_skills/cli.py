@@ -290,15 +290,16 @@ def _http_get_json(url: str) -> dict:
     return json.loads(payload)
 
 
-def _latest_release_tag(repo: str) -> str:
-    api_url = f"https://api.github.com/repos/{repo}/releases/latest"
-    try:
-        payload = _http_get_json(api_url)
-        tag = str(payload.get("tag_name", "")).strip()
-        if tag:
-            return tag
-    except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
-        pass
+def _latest_release_tag(repo: str, include_beta: bool = False) -> str:
+    if not include_beta:
+        api_url = f"https://api.github.com/repos/{repo}/releases/latest"
+        try:
+            payload = _http_get_json(api_url)
+            tag = str(payload.get("tag_name", "")).strip()
+            if tag:
+                return tag
+        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
+            pass
 
     # Fallback: list all releases (includes pre-releases / betas) and pick newest by semver.
     # GitHub's /releases/latest only returns non-prerelease, non-draft releases,
@@ -312,6 +313,8 @@ def _latest_release_tag(repo: str) -> str:
                 rel_tag = str(rel.get("tag_name", "")).strip()
                 parsed = Version.parse(rel_tag)
                 if parsed:
+                    if not include_beta and parsed.beta is not None:
+                        continue
                     key = parsed.sort_key()
                     if best is None or key > best[0]:
                         best = (key, rel_tag)
@@ -320,15 +323,38 @@ def _latest_release_tag(repo: str) -> str:
     except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
         pass
 
-    html_url = f"https://github.com/{repo}/releases/latest"
-    headers = {"User-Agent": "research-skills-updater"}
-    request = urllib.request.Request(html_url, headers=headers)
-    with urllib.request.urlopen(request, timeout=20) as response:
-        final_url = response.geturl()
-    tag = final_url.rstrip("/").split("/")[-1].strip()
-    if not tag:
-        raise RuntimeError(f"Unable to resolve latest release tag from {final_url}")
-    return tag
+    # Fallback 2: Check standard Git tags if there are no GitHub Release objects
+    tags_url = f"https://api.github.com/repos/{repo}/tags?per_page=50"
+    try:
+        tags_payload = _http_get_json(tags_url)
+        if isinstance(tags_payload, list) and tags_payload:
+            best: tuple[tuple[int, int, int, int], str] | None = None
+            for t_obj in tags_payload:
+                t_name = str(t_obj.get("name", "")).strip()
+                parsed = Version.parse(t_name)
+                if parsed:
+                    if not include_beta and parsed.beta is not None:
+                        continue
+                    key = parsed.sort_key()
+                    if best is None or key > best[0]:
+                        best = (key, t_name)
+            if best:
+                return best[1]
+    except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
+        pass
+
+    if not include_beta:
+        html_url = f"https://github.com/{repo}/releases/latest"
+        headers = {"User-Agent": "research-skills-updater"}
+        request = urllib.request.Request(html_url, headers=headers)
+        with urllib.request.urlopen(request, timeout=20) as response:
+            final_url = response.geturl()
+        tag = final_url.rstrip("/").split("/")[-1].strip()
+        if not tag or tag.lower() == "releases":
+            raise RuntimeError(f"Unable to resolve latest release tag from {final_url} (no published releases found)")
+        return tag
+    
+    raise RuntimeError(f"Unable to resolve latest tag for {repo}")
 
 
 def _check_pip_version() -> tuple[str, str]:
@@ -414,7 +440,7 @@ def cmd_check(args: argparse.Namespace) -> int:
     latest_version: Version | None = None
     if resolved_repo:
         try:
-            latest_tag = _latest_release_tag(resolved_repo)
+            latest_tag = _latest_release_tag(resolved_repo, include_beta=getattr(args, "beta", False))
             latest_version = Version.parse(latest_tag)
         except Exception as exc:  # noqa: BLE001
             if args.strict_network:
@@ -557,8 +583,13 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
     ref = args.ref
     ref_type = args.ref_type
     if not ref:
-        ref = _latest_release_tag(resolved_repo)
-        ref_type = "tag"
+        try:
+            ref = _latest_release_tag(resolved_repo, include_beta=getattr(args, "beta", False))
+            ref_type = "tag"
+        except Exception as exc:
+            print(f"[error] Failed to resolve latest release for '{resolved_repo}': {exc}", file=sys.stderr)
+            print("        Suggestion: If this repo uses no formal releases, manually specify: `rsk upgrade --ref main --ref-type head`", file=sys.stderr)
+            return 1
 
     if ref_type == "tag":
         tar_url = f"https://github.com/{resolved_repo}/archive/refs/tags/{ref}.tar.gz"
@@ -648,6 +679,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Fail if upstream version check fails (default: warn and continue)",
     )
+    check.add_argument("--beta", action="store_true", help="Include beta/pre-release tags in checks")
 
     upgrade = subparsers.add_parser("upgrade", help="Download release archive and run installer with overwrite")
     upgrade.add_argument(
@@ -670,6 +702,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["codex", "claude", "gemini", "all"],
         help="Install target (default: all)",
     )
+    upgrade.add_argument("--beta", action="store_true", help="Include beta/pre-release tags for upgrade")
     upgrade.add_argument(
         "--mode",
         default="copy",

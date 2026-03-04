@@ -67,6 +67,11 @@ jobs:
       - name: Inject packaged upstream defaults
         run: bash scripts/inject_project_toml.sh
 
+      - name: Build packaged assets for release attachment
+        run: |
+          pip install build twine
+          python -m build
+
       - name: Run release automation
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

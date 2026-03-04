@@ -9,5 +9,3 @@ build/
 # Local agent artifacts generated during `rsk` install tests
 .gemini/
 .claude/
-.agent/
-CLAUDE.md

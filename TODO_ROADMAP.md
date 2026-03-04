@@ -4,6 +4,8 @@
 > 审查结论：综合评分 **8/10**，修复 P0 后可达 **9+/10**。
 > 关联文件：`BETA_TODO.md`（Beta 发布门槛，P0 已全部完成）
 
+**[2026-03] Note**: The GPT-5.2 Restructuring Feedback (Phases 1-9) targeting machine-discoverability, schemas, roles, and pipelines has been **fully implemented**. See `README.md` and `docs/quickstart.md` for new structure details.
+
 ---
 
 ## 评分快照
@@ -373,12 +375,12 @@
   - 对已有项目，用户希望“最小侵入式升级”（更可控、更可回滚）。
 - **涉及文件**:
   - `scripts/install_research_skill.sh`
-  - `research_skills/cli.py`（`rs upgrade` 透传 flags）
+  - `research_skills/cli.py`（`rsk upgrade` 透传 flags）
   - `guides/basic/install-multi-client.md`
   - `guides/basic/upgrade-research-skills.md`
 - **修复方案**:
   - [ ] 安装脚本新增 `--parts`（逗号分隔）或 `--no-<part>`：例如 `skill,workflows,claude_md,gemini_quickstart,profiles`
-  - [ ] `rs upgrade` 增加同名参数，并透传到安装脚本（保持 `--dry-run` 可预览）
+  - [ ] `rsk upgrade` 增加同名参数，并透传到安装脚本（保持 `--dry-run` 可预览）
   - [ ] `--overwrite` 语义细化到部件级：只覆盖被选择的 parts
   - [ ] 文档补齐：推荐的“最小升级”命令与常见组合
 - **验收**:
@@ -388,7 +390,7 @@
 
 ---
 
-### P2-9: `rs` 增加 `doctor` 与 `init` 子命令（降低上手与排障成本） [U2]
+### P2-9: `rsk` 增加 `doctor` 与 `init` 子命令（降低上手与排障成本） [U2]
 
 - **严重度**: Medium
 - **来源**: 用户体验（安装/升级闭环）
@@ -400,12 +402,12 @@
   - `guides/advanced/cli-reference.md`
   - `guides/basic/upgrade-research-skills.md`
 - **修复方案**:
-  - [ ] `rs doctor --project-dir <path>`：等价执行 orchestrator doctor（并输出结构化建议）
-  - [ ] `rs init --repo <owner/repo> --project-dir <path>`：写入 `research-skills.toml`（若已存在则保持幂等/提示）
-  - [ ] 可选：`rs init` 同时落盘 `.env.example` 或提示关键 env vars（只提示不写 secrets）
+  - [ ] `rsk doctor --project-dir <path>`：等价执行 orchestrator doctor（并输出结构化建议）
+  - [ ] `rsk init --repo <owner/repo> --project-dir <path>`：写入 `research-skills.toml`（若已存在则保持幂等/提示）
+  - [ ] 可选：`rsk init` 同时落盘 `.env.example` 或提示关键 env vars（只提示不写 secrets）
 - **验收**:
-  - 新用户只用 `rs init` + `rs upgrade --doctor` 就能完成闭环；
-  - 排障路径统一收敛到 `rs doctor`。
+  - 新用户只用 `rsk init` + `rsk upgrade --doctor` 就能完成闭环；
+  - 排障路径统一收敛到 `rsk doctor`。
 
 ---
 
@@ -583,4 +585,4 @@ P3-8（独立，偏体验增强）
 - [ ] CI 流水线包含路径一致性校验 + 双合同等价性校验
 - [ ] `task-run` 支持 `--domain` 且能注入 economics/finance profile
 - [ ] 安装/升级支持 `--parts` 部件化控制（可做到“只更新 skills 不写项目文件”）
-- [ ] `rs doctor` / `rs init` 可用，并在文档中给出推荐闭环
+- [ ] `rsk doctor` / `rsk init` 可用，并在文档中给出推荐闭环

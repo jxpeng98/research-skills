@@ -542,6 +542,7 @@ class ModelOrchestrator:
                 f"### {agent.upper()} OUTPUT\n{responses[agent].content}"
             )
         failed_text = ", ".join(failed_agents) if failed_agents else "none"
+        joined_outputs = "\n\n".join(output_blocks)
         return f"""Synthesize multi-agent parallel analysis into one actionable conclusion.
 
 Original task:
@@ -551,7 +552,7 @@ Successful analyzers: {", ".join(success_agents)}
 Failed analyzers: {failed_text}
 
 Analyzer outputs:
-{"\n\n".join(output_blocks)}
+{joined_outputs}
 
 Produce sections:
 - Consensus Summary

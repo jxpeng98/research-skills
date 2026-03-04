@@ -193,6 +193,9 @@ python3 -m unittest tests.test_orchestrator_workflows -v
 python3 scripts/validate_project_artifacts.py --cwd ./project  --topic <topic> --task-id H1 --strict
 ```
 
+If you wish to test the legacy installation method, the script is located at: `scripts/install_research_skill.sh`
+
+
 ### Release Automation
 ```bash
 # Auto-generate release docs and append validation smoke checks

@@ -180,6 +180,9 @@ python3 -m unittest tests.test_orchestrator_workflows -v
 python3 scripts/validate_project_artifacts.py --cwd ./project  --topic <topic> --task-id H1 --strict
 ```
 
+如果你希望测试传统的底层安装脚本能力，请使用: `scripts/install_research_skill.sh`
+
+
 ### 发版自动化 (Release Automation)
 由 CI 接管或手动拉草稿：
 ```bash

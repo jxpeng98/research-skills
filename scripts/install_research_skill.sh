@@ -271,9 +271,9 @@ if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
   copy_item_display "$SKILL_SRC" "$CLAUDE_SKILL_DEST" "Skill"
   copy_workflows_for_claude
   if [[ -f "$PROJECT_DIR/CLAUDE.md" && "$OVERWRITE" -ne 1 ]]; then
-    copy_item_display "$ROOT_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.research-skills.md" "CLAUDE.md"
+    copy_item_display "$ROOT_DIR/templates/CLAUDE.project.md" "$PROJECT_DIR/CLAUDE.research-skills.md" "CLAUDE.md"
   else
-    copy_item_display "$ROOT_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.md" "CLAUDE.md"
+    copy_item_display "$ROOT_DIR/templates/CLAUDE.project.md" "$PROJECT_DIR/CLAUDE.md" "CLAUDE.md"
   fi
 fi
 

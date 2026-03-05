@@ -863,9 +863,9 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
         if not content:
             continue
         report.check(
-            "standards/research-workflow-contract.yaml" in content,
-            f"{relative_path} references canonical contract",
-            f"{relative_path} missing canonical contract reference",
+            "research-paper-workflow" in content,
+            f"{relative_path} references global skill",
+            f"{relative_path} missing global skill reference",
         )
         for task_id in sorted(expected_ids):
             report.check(

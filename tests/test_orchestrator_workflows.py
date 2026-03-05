@@ -81,7 +81,7 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         )
 
         self.assertEqual(result.mode, "parallel")
-        self.assertIn("## Parallel Execution", result.merged_analysis)
+        self.assertIn("## 并发执行分析", result.merged_analysis)
         self.assertEqual(len(orchestrator.runtime_calls), 4)
         called_agents = [call["agent"] for call in orchestrator.runtime_calls]
         self.assertIn("codex", called_agents)
@@ -154,9 +154,9 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             parallel_summarizer="claude",
         )
 
-        self.assertIn("## Parallel Execution (dual)", result.merged_analysis)
-        self.assertIn("- Failed agents: gemini", result.merged_analysis)
-        self.assertIn("## Synthesis", result.merged_analysis)
+        self.assertIn("## 并发执行分析 (双重/Dual)", result.merged_analysis)
+        self.assertIn("- 失败的 Agent: gemini", result.merged_analysis)
+        self.assertIn("## 综合归纳 (Synthesis)", result.merged_analysis)
 
     def test_parallel_unknown_profile_returns_structured_error(self) -> None:
         from bridges.errors import ConfigError
@@ -180,9 +180,9 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         )
 
         self.assertEqual(result.mode, "task-run")
-        self.assertIn("## Draft (", result.merged_analysis)
-        self.assertIn("## Review (", result.merged_analysis)
-        self.assertIn("## Agent Profiles", result.merged_analysis)
+        self.assertIn("## 起草阶段草稿 (", result.merged_analysis)
+        self.assertIn("## 复核阶段审查 (", result.merged_analysis)
+        self.assertIn("## 运行预案 (Agent Profiles)", result.merged_analysis)
         self.assertGreaterEqual(len(orchestrator.runtime_calls), 2)
         directives = [call["profile_directive"] for call in orchestrator.runtime_calls]
         self.assertTrue(any("(stage: draft)" in directive for directive in directives))

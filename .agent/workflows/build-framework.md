@@ -7,7 +7,7 @@ argument-hint: [理论名称或研究概念]
 
 Build a theoretical framework for your research by mapping concepts, theories, and their relationships.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `A3` theoretical framing
 
 ## Topic

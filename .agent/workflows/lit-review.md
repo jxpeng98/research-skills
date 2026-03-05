@@ -7,7 +7,7 @@ argument-hint: [研究主题] [可选:年份范围如2020-2024]
 
 Execute a systematic literature review following PRISMA 2020 methodology.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `B1` systematic review pipeline
 
 ## Topic

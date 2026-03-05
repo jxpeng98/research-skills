@@ -7,7 +7,7 @@ argument-hint: [研究领域或主题]
 
 Systematically identify research gaps and opportunities in a given research area.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `A4` research gap scan
 
 ## Research Area

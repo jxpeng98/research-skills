@@ -7,7 +7,7 @@ argument-hint: [RESEARCH下topic文件夹名]
 
 Prepare ethics-ready documentation for a study. This is organizational support, not legal advice.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `D1` ethics pack
 
 ## Project

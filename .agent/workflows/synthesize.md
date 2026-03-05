@@ -7,7 +7,7 @@ argument-hint: [RESEARCH下的topic文件夹名] [可选: outcome_id]
 
 Synthesize included studies into PRISMA-ready results using narrative, qualitative, and/or quantitative meta-analysis methods.
 
-Canonical Task IDs from `standards/research-workflow-contract.yaml`:
+Canonical Task IDs (from the globally installed `research-paper-workflow` skill):
 - `E1` synthesis strategy
 - `E2` effect size table
 - `E3` meta-analysis results

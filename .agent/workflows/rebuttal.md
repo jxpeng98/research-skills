@@ -7,7 +7,7 @@ argument-hint: [RESEARCH下topic文件夹名]
 
 Turn reviews into a structured revision and response package.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `H2` rebuttal package
 
 ## Project

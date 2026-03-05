@@ -57,6 +57,8 @@ All outputs are written to `RESEARCH/[topic]/proofread/`:
 
 ## References
 
-- Task definitions: `references/workflow-contract.md`
-- Stage playbook: `references/stage-J-proofread.md`
-- Contract: `standards/research-workflow-contract.yaml`
+Detailed task definitions and stage playbooks are in the globally installed
+`research-paper-workflow` skill (auto-loaded by your AI coding tool).
+Key references within the skill:
+- `references/workflow-contract.md` — canonical task & output definitions
+- `references/stage-J-proofread.md` — stage playbook

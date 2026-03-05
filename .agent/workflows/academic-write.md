@@ -7,7 +7,7 @@ argument-hint: [章节类型:title/keywords/abstract/introduction/related-work/l
 
 Assist with academic paper writing for different sections.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `F2` single-section writing
 
 ## Request

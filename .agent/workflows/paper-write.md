@@ -7,7 +7,7 @@ argument-hint: [RESEARCH下topic文件夹名] [可选: paper_type empirical|sr|t
 
 Draft a complete research paper manuscript from existing project artifacts, covering outline, section drafts, and integrity/compliance passes.
 
-Canonical Task IDs from `standards/research-workflow-contract.yaml`:
+Canonical Task IDs (from the globally installed `research-paper-workflow` skill):
 - `F1` outline only
 - `F3` full draft
 - `F4` claim-evidence map

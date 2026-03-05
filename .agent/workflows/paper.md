@@ -8,9 +8,8 @@ argument-hint: [可选: RESEARCH下topic文件夹名] [可选: venue]
 Provide a systematic “choose-your-path” workflow for writing research papers. The user selects:
 1) paper type, and 2) what they want to do right now (stage/section).
 
-Use the canonical standard contract:
-- `standards/research-workflow-contract.yaml`
-- Task IDs (`A1` ... `I8`) and output paths in that file are authoritative.
+Use the canonical standard contract from the globally installed `research-paper-workflow` skill.
+Task IDs (`A1` ... `I8`) and output paths in `references/workflow-contract.md` are authoritative.
 
 ## Context
 

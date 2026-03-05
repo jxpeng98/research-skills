@@ -6,7 +6,7 @@ description: Build academic research code from paper descriptions or methodology
 
 Generates research code supporting multiple disciplines and complexity levels.
 
-Canonical Task IDs from `standards/research-workflow-contract.yaml`:
+Canonical Task IDs (from the globally installed `research-paper-workflow` skill):
 - `I1` method implementation
 - `I2` reproduction
 - `I3` data pipeline

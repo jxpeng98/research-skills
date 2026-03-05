@@ -7,7 +7,7 @@ argument-hint: [研究主题或RESEARCH下topic文件夹名]
 
 Design an empirical study (quant/qual/mixed) and produce protocol-style artifacts.
 
-Canonical Task IDs from `standards/research-workflow-contract.yaml`:
+Canonical Task IDs (from the globally installed `research-paper-workflow` skill):
 - `C1` study design
 - `C2` instruments
 - `C3` analysis plan

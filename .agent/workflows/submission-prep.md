@@ -7,7 +7,7 @@ argument-hint: [RESEARCH下topic文件夹名] [可选: venue]
 
 Assemble a submission-ready package for a target venue.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `H1` submission package
 
 ## Target

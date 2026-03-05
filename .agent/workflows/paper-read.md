@@ -7,7 +7,7 @@ argument-hint: [论文URL、DOI或标题]
 
 Conduct in-depth reading and structured analysis of an academic paper.
 
-Canonical Task ID from `standards/research-workflow-contract.yaml`:
+Canonical Task ID (from the globally installed `research-paper-workflow` skill):
 - `B2` targeted paper reading
 
 ## Paper

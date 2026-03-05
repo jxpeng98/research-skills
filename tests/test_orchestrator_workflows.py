@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 from typing import Any
 
@@ -377,6 +378,64 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         agents_called = [c["agent"] for c in orchestrator.runtime_calls]
         self.assertEqual(agents_called.count("claude"), 2)
         self.assertEqual(agents_called.count("codex"), 2)
+
+    @unittest.mock.patch("sys.stdin.isatty", return_value=False)
+    def test_interactive_mode_skips_when_no_tty(self, mock_isatty) -> None:
+        """Ensure interactive flag is ignored if not running in a true TTY."""
+        orchestrator = MockOrchestrator()
+        # MockOrchestrator doesn't accept interactive in init natively, so we set it
+        orchestrator.interactive = True 
+        
+        result = orchestrator.execute(
+            mode=CollaborationMode.SINGLE,
+            cwd=REPO_ROOT,
+            prompt="test interactive bypass",
+            single_model="codex",
+        )
+        # Should execute normally without blocking for input
+        self.assertTrue(result.codex_response.success)
+        self.assertEqual(len(orchestrator.runtime_calls), 1)
+
+    @unittest.mock.patch("sys.stdin.isatty", return_value=True)
+    @unittest.mock.patch("builtins.input", side_effect=["y"])
+    def test_interactive_mode_proceeds_on_yes(self, mock_input, mock_isatty) -> None:
+        """Ensure interactive mode runs the agent when user types Y."""
+        orchestrator = MockOrchestrator()
+        orchestrator.interactive = True 
+        
+        result = orchestrator.execute(
+            mode=CollaborationMode.SINGLE,
+            cwd=REPO_ROOT,
+            prompt="test interactive yes",
+            single_model="codex",
+        )
+        
+        self.assertTrue(result.codex_response.success)
+        self.assertEqual(len(orchestrator.runtime_calls), 1)
+        mock_input.assert_called_once()
+
+    @unittest.mock.patch("sys.stdin.isatty", return_value=True)
+    @unittest.mock.patch("builtins.input", side_effect=["n"])
+    def test_interactive_mode_skips_on_no(self, mock_input, mock_isatty) -> None:
+        """Ensure interactive mode aborts execution when user types n."""
+        # Need to use the real base execute so it hits the _execute_runtime_agent behavior
+        orchestrator = MockOrchestrator()
+        # Restore the original _execute_runtime_agent logic to test the skip
+        orchestrator._execute_runtime_agent = ModelOrchestrator._execute_runtime_agent.__get__(orchestrator, ModelOrchestrator)
+        orchestrator.interactive = True 
+        
+        # execution will fail because real Claude/Codex APIs aren't mocked here, 
+        # but the Interactive skip happens BEFORE the API call
+        result = orchestrator.execute(
+            mode=CollaborationMode.SINGLE,
+            cwd=REPO_ROOT,
+            prompt="test interactive no",
+            single_model="codex",
+        )
+        
+        self.assertFalse(result.codex_response.success)
+        self.assertIn("Skipped by user", result.codex_response.error)
+        mock_input.assert_called_once()
 
 
 if __name__ == "__main__":

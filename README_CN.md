@@ -148,6 +148,9 @@ python -m bridges.orchestrator parallel --prompt "分析数据的可靠性约束
 # 契约执行：强制按照 F3 的要求调度
 python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
 
+# 步进交互模式 (Interactive Mode)：在调用任何 Agent 前暂停并提示输入 Y/n 确认
+python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
+
 # MCP环境严格测试：如果没有相关搜素工具环境则强制阻挡
 python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
 ```

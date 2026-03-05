@@ -140,6 +140,7 @@ class ModelOrchestrator:
         gemini_sandbox: bool = False,
         standards_dir: Path | None = None,
         mcp_timeout_seconds: int = 20,
+        interactive: bool = False,
     ):
         """Initialize orchestrator with bridges."""
         self.codex = CodexBridge(sandbox=codex_sandbox)
@@ -147,6 +148,7 @@ class ModelOrchestrator:
         self.gemini = GeminiBridge(sandbox=gemini_sandbox)
         self.standards_dir = standards_dir or self.DEFAULT_STANDARDS_DIR
         self.mcp_connector = MCPConnector(timeout_seconds=mcp_timeout_seconds)
+        self.interactive = interactive
 
     def _deep_merge_dict(self, base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
         merged: dict[str, Any] = dict(base)
@@ -1525,6 +1527,28 @@ Provide your verification assessment.
         if profile_directive:
             final_prompt = f"{prompt}\n\n{profile_directive}"
         options = runtime_options or {}
+        
+        if getattr(self, "interactive", False) and sys.stdin.isatty():
+            print(f"\n\033[94m[Interactive Step]\033[0m Ready to execute agent: \033[1m{agent_name}\033[0m")
+            print(f"Directory: {cwd}")
+            if profile_directive:
+                print(f"Profile context: {profile_directive[:100]}...")
+            
+            while True:
+                choice = input("Proceed? [Y]es / [n]o, skip agent / [p]rompt view / [q]uit: ").strip().lower()
+                if choice in ('', 'y', 'yes'):
+                    print("\033[92mExecuting...\033[0m")
+                    break
+                elif choice in ('n', 'no'):
+                    print("\033[93mSkipped agent execution.\033[0m")
+                    return BridgeResponse.from_error(agent_name, "Skipped by user in interactive mode.")
+                elif choice in ('q', 'quit'):
+                    print("\033[91mAborted by user.\033[0m")
+                    sys.exit(0)
+                elif choice == 'p':
+                    print("\n\033[90m--- PROMPT START ---\033[0m\n" + final_prompt + "\n\033[90m--- PROMPT END ---\033[0m\n")
+                else:
+                    print("Invalid choice. Please enter Y, n, p, or q.")
         if agent_name == "codex":
             return self.codex.execute(final_prompt, cwd, **options)
         if agent_name == "claude":
@@ -2394,6 +2418,11 @@ def main():
     parser = argparse.ArgumentParser(
         description="Multi-Model Orchestrator for Academic Research"
     )
+    parser.add_argument(
+        "-i", "--interactive",
+        action="store_true",
+        help="Run in interactive step-by-step mode (requires TTY)",
+    )
     
     subparsers = parser.add_subparsers(dest="mode", required=True)
     
@@ -2551,7 +2580,7 @@ def main():
 
     args = parser.parse_args()
     
-    orchestrator = ModelOrchestrator()
+    orchestrator = ModelOrchestrator(interactive=getattr(args, "interactive", False))
     
     if args.mode == "code-build":
         result = orchestrator.code_build(

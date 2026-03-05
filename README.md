@@ -151,6 +151,9 @@ python -m bridges.orchestrator parallel --prompt "Analyze code safety" --cwd . -
 # Task-run - execute canonical Task ID with capability-map agent routing
 python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
 
+# Interactive Step-by-Step Mode (pauses for Y/n confirmation before agent execution)
+python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
+
 # Enforce strict capabilities
 python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
 ```

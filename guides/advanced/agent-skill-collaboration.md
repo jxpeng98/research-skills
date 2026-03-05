@@ -149,6 +149,10 @@ It is recommended to run a pre-flight check first:
 python -m bridges.orchestrator doctor --cwd ./project
 ```
 
+### Auto vs Interactive Mode
+By default, the orchestrator runs in **Auto Mode**, executing all agents and synthesis steps seamlessly.
+To enable **Interactive Step-by-Step Mode** (pauses for human `Y/n/p/q` confirmation before invoking any agent), append `-i` or `--interactive` to any command. Note: inside an AI chat terminal (like Claude Code), simply ask the AI to do it "step by step" via natural language instead of using `-i`.
+
 Use `task-run` to execute by task and automatically inject `required_skills + required_skill_cards`:
 
 ```bash
@@ -160,7 +164,8 @@ python -m bridges.orchestrator task-run \
   --context "Target venue style and strict claim-evidence alignment" \
   --mcp-strict \
   --skills-strict \
-  --triad
+  --triad \
+  -i  # (Optional) Interactive step-by-step
 ```
 
 `--triad` automatically invokes a third runtime agent for an independent audit after the primary draft and review, maintaining a three-end collaboration even during the non-code `A`~`H` phases.
@@ -171,7 +176,8 @@ Parallel Analysis Mode (Not restricted by Task ID):
 python -m bridges.orchestrator parallel \
   --prompt "Review the risks, evidence gaps, and improvement priorities for the current study design" \
   --cwd ./project \
-  --summarizer claude
+  --summarizer claude \
+  -i
 ```
 
 This mode defaults to concurrent multi-agent execution (Codex/Claude/Gemini) followed by a synthesis analysis; it auto-downgrades to dual or single agents if three are not available.

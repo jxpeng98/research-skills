@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
 
 from bridges.base_bridge import BridgeResponse
+from bridges import i18n as i18n_module
 from bridges.mcp_connectors import MCPEvidence
 from bridges.orchestrator import CollaborationMode, ModelOrchestrator
 
@@ -57,6 +59,20 @@ class MockOrchestrator(ModelOrchestrator):
 
 
 class OrchestratorWorkflowTests(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self._prev_cli_lang = os.environ.get("RESEARCH_CLI_LANG")
+        os.environ["RESEARCH_CLI_LANG"] = "zh-CN"
+        i18n_module._current_lang = None
+
+    def tearDown(self) -> None:
+        if self._prev_cli_lang is None:
+            os.environ.pop("RESEARCH_CLI_LANG", None)
+        else:
+            os.environ["RESEARCH_CLI_LANG"] = self._prev_cli_lang
+        i18n_module._current_lang = None
+        super().tearDown()
+
     def _write_profile_file(self, payload: dict[str, Any]) -> Path:
         handle = tempfile.NamedTemporaryFile(
             mode="w",

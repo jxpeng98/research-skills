@@ -467,7 +467,10 @@ class ModelOrchestrator:
                 summary_directive,
             )
 
-        parallel_header = get_text("parallel_execution") if execution_level == "full" else get_text("parallel_execution_dual")
+        if execution_level == "triad":
+            parallel_header = get_text("parallel_execution")
+        else:
+            parallel_header = get_text("parallel_execution_dual")
         merged_parts: list[str] = [
             parallel_header,
             f"- Requested agents: {', '.join(requested_agents)}",

@@ -11,52 +11,82 @@ steps:
   - id: frame
     skill: question-refiner
     task_id: A1
+    owner_functional_agent: research-orchestrator
     outputs: [RQSet]
 
   - id: spec
     skill: code-specification
-    task_id: I0
+    task_id: I5
+    owner_functional_agent: methodology-agent
     depends_on: [frame]
     outputs: [CodeSpec]
 
   - id: plan
     skill: code-planning
-    task_id: I1
+    task_id: I6
+    owner_functional_agent: methodology-agent
     depends_on: [spec]
     outputs: [CodePlan]
 
   - id: build
     skill: code-builder
     task_id: I1
+    owner_functional_agent: methodology-agent
     depends_on: [plan]
     outputs: [AnalysisCode]
 
   - id: execute
     skill: code-execution
-    task_id: I2
+    task_id: I7
+    owner_functional_agent: analysis-agent
     depends_on: [build]
     outputs: [PerformanceProfile]
 
   - id: review
     skill: code-review
-    task_id: I3
+    task_id: I8
+    owner_functional_agent: methodology-agent
     depends_on: [build]
     outputs: [CodeReview]
 
   - id: audit
     skill: reproducibility-auditor
     task_id: I4
+    owner_functional_agent: methodology-agent
     depends_on: [build]
     outputs: [ReproducibilityReport]
+
+  - id: stats
+    skill: stats-engine
+    task_id: I2
+    owner_functional_agent: analysis-agent
+    depends_on: [execute]
+    outputs: [StatsReport]
+
+  - id: interpret
+    skill: analysis-interpreter
+    task_id: F3
+    owner_functional_agent: writing-agent
+    depends_on: [stats]
+    outputs: [ResultInterpretation]
+
+  - id: effect-size
+    skill: effect-size-interpreter
+    task_id: F3
+    owner_functional_agent: writing-agent
+    depends_on: [stats]
+    outputs: [EffectInterpretation]
 
   - id: write
     skill: manuscript-architect
     task_id: F3
-    depends_on: [review, audit]
+    owner_functional_agent: writing-agent
+    depends_on: [review, audit, interpret, effect-size]
     outputs: [ManuscriptOutline, Manuscript]
 
   - id: submit
     skill: submission-packager
     task_id: H1
+    owner_functional_agent: publication-agent
     depends_on: [write]
     outputs: [SubmissionPackage]

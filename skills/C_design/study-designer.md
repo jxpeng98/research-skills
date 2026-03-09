@@ -41,6 +41,17 @@ Design an empirical research study (quant/qual/mixed) from a research question a
 - After `/find-gap` and `/build-framework`, when you want to run an empirical study.
 - When you have a topic + tentative RQs/hypotheses but no concrete methodology yet.
 
+## Granularity Boundary
+
+`study-designer` owns the design package as a whole:
+- design choice rationale
+- construct-to-measure mapping
+- sampling and procedure logic
+- analysis summary handoff
+- governance and preregistration pointers
+
+Do not split these into separate top-level skills unless a new artifact path and direct pipeline dependency are required. If the change is only about output structure, update `templates/study-design.md` or related templates instead.
+
 ## Inputs (Ask / Collect)
 
 1. **Research question(s)** and whether the goal is *causal*, *descriptive*, or *predictive*
@@ -111,8 +122,15 @@ Draft preregistration content and decision rules. Keep deviations tracked with d
   - Interview guide → `RESEARCH/[topic]/instruments/interview_guide.md` (use `templates/interview-guide.md`)
 - Prereg draft (optional) → `RESEARCH/[topic]/preregistration.md` (use `templates/preregistration-template.md`)
 
+Design package handoff expectations:
+- `study_design.md` owns the rationale and protocol spine
+- `analysis_plan.md` owns estimator and inference detail
+- `data_management_plan.md` owns governance and retention detail
+- `instruments/` owns collection instruments
+- `preregistration.md` owns prereg wording
+
 ## Notes
 
 - This skill is not legal advice; for ethics/IRB packaging, use **ethics-irb-helper**.
 - For implementation code, pair with **code-builder** (and **model-collaborator** when helpful).
-
+- For downstream variable or dataset specifics, pair with **variable-constructor** and **dataset-finder** rather than splitting the design rationale itself.

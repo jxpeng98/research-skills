@@ -11,13 +11,14 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 | Search + screening artifacts | Optional | Required | Optional | Optional |
 | Extraction + quality appraisal | Optional | Required | Optional | Optional |
 | Study design + analysis plan | Required | Optional | Required | Optional |
+| Data readiness (dataset + variables + pipeline plan) | Required | Optional | Recommended | Optional |
 | Ethics + governance | Required | Optional | Optional | Optional |
 | Synthesis / meta-analysis | Optional | Required | Optional | Optional |
 | Manuscript drafting | Required | Required | Required | Required |
 | Compliance checks | Required | Required | Required | Required |
 | Submission + revision kit | Required | Required | Required | Required |
 | Proofread & de-AI | Required | Required | Required | Required |
-| Code/repro support | Optional | Optional | Required | Optional |
+| Code/repro support | Recommended | Optional | Required | Optional |
 
 ## Recommended Minimum Task Coverage
 
@@ -26,6 +27,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Framing: `A1`, `A1_5`, `A2`, `A5`
 - Literature: `B2`, `B6`, `B4` (related work)
 - Design: `C1`, `C2` (if needed), `C3`, `C3_5`, `C4`
+- Data: `I3`
 - Ethics: `D1` and/or `D2` + `D3` (as applicable)
 - Writing: `F1`, `F3`, `F4`, `F5`, `F6`
 - Compliance: `G1`, `G3`, `G4`
@@ -48,6 +50,7 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Framing: `A1`, `A1_5`, `A2`, `A3`, `A5`
 - Literature: `B2`, `B6`, `B4`
 - Design/evaluation: `C1`, `C3`, `C3_5`, `C4` (as applicable)
+- Data/code pipeline: `I3` (recommended when evaluation depends on reproducible data assembly)
 - Writing: `F1`, `F3`, `F4`, `F5`, `F6`
 - Compliance: `G1`, `G3`, `G4`
 - Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)

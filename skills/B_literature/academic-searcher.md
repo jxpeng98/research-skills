@@ -38,6 +38,18 @@ Execute comprehensive literature searches using:
 - arXiv API (CS/AI/Physics/Math)
 - Web search for Google Scholar, PubMed, etc.
 
+## Granularity Boundary
+
+Treat the following as embedded subflows or provider calls inside `academic-searcher`, not separate top-level skills:
+
+- Query drafting / Boolean assembly
+- Keyword expansion / synonym expansion
+- Provider-specific search translation
+- Crossref / OpenAlex metadata verification
+- Deduplication and result normalization
+
+If a change only affects one of those concerns, update this skill, its templates, or the MCP/provider layer instead of creating a new top-level skill.
+
 ## Related Task IDs
 
 - `B1` (systematic review pipeline)
@@ -48,6 +60,10 @@ Execute comprehensive literature searches using:
 - `RESEARCH/[topic]/search_strategy.md`
 - `RESEARCH/[topic]/search_log.md`
 - `RESEARCH/[topic]/search_results.csv`
+
+Template references:
+- `templates/search-strategy.md`
+- `templates/search-log.md`
 
 ## Supported Databases
 
@@ -101,6 +117,8 @@ Parameters:
 - sortBy: relevance
 ```
 
+Use `templates/search-strategy.md` to keep concept groups, synonyms, limits, and provider translations in one canonical structure.
+
 ### Step 2: Execute Searches
 
 For each database:
@@ -148,6 +166,15 @@ Identify and merge duplicates based on:
 ### Step 5: Output
 
 Write the canonical artifacts (CSV + logs) first; optional narrative summaries can be added after.
+
+#### `search_strategy.md` (canonical planning artifact)
+
+Minimum sections:
+- Research question + scope
+- Concept groups and keyword expansion
+- Provider-specific query translations
+- Date/language/type filters
+- Deduplication and exclusion rules
 
 #### `search_results.csv` (one row per record)
 

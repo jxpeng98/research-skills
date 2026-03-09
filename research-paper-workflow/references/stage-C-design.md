@@ -7,9 +7,9 @@ This stage converts framing into an executable plan: design choices, measurement
 - `C1` → `study_design.md`
 - `C1_5` → `design/rival_hypotheses.md`
 - `C2` → `instruments/`
-- `C3` → `analysis_plan.md`
+- `C3` → `analysis_plan.md`, `design/variable_spec.md`
 - `C3_5` → `design/robustness_plan.md`
-- `C4` → `data_management_plan.md`
+- `C4` → `data_management_plan.md`, `design/dataset_plan.md`
 - `C5` → `preregistration.md`
 
 ## Quality gate focus
@@ -103,6 +103,7 @@ Specify *before* you see results: estimands, models, assumptions, missingness, a
 - Model family specified with covariates and functional forms
 - Missing data strategy specified
 - Multiple comparisons / researcher degrees of freedom addressed
+- Variable roles, coding, and transformation rules are frozen in `design/variable_spec.md`
 
 Minimum structure: `analysis_plan.md`
 
@@ -134,6 +135,15 @@ Minimum structure: `analysis_plan.md`
 - ...
 ```
 
+Companion artifact: `design/variable_spec.md`
+
+```markdown
+# Variable Specification
+
+| Role | Variable | Source | Unit / Coding | Transformation | Notes |
+|---|---|---|---|---|---|
+```
+
 ---
 
 ## C3_5 — Robustness / Sensitivity Plan
@@ -156,8 +166,20 @@ Treat as a reproducibility + ethics artifact.
 - Storage, access control, retention, and sharing plan
 - De-identification linkage (D3) if human/sensitive data
 - Code/data availability statement draft inputs (for D2/H1)
+- Dataset feasibility, provenance, and access constraints are captured in `design/dataset_plan.md`
 
-Write into: `data_management_plan.md`.
+Write into:
+- `data_management_plan.md`
+- `design/dataset_plan.md`
+
+Recommended minimal structure for `design/dataset_plan.md`
+
+```markdown
+# Dataset Plan
+
+| Dataset | Coverage | Access | Key variables | Risks |
+|---|---|---|---|---|
+```
 
 ---
 
@@ -170,4 +192,3 @@ Use when the venue/community values preregistration or when you want to lock in 
 - Deviations policy described
 
 Write into: `preregistration.md`.
-

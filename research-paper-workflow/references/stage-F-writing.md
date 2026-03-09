@@ -6,9 +6,9 @@ This stage turns artifacts into a publishable narrative: outline → draft → c
 
 - `F1` → `manuscript/outline.md`
 - `F2` → `manuscript/manuscript.md` (section-level drafting)
-- `F3` → `manuscript/manuscript.md` (full draft)
+- `F3` → `manuscript/manuscript.md`, `manuscript/results_interpretation.md`, `manuscript/effect_interpretation.md`
 - `F4` → `manuscript/claims_evidence_map.md`
-- `F5` → `manuscript/figures_tables_plan.md`
+- `F5` → `manuscript/figures_tables_plan.md`, `manuscript/tables/`, `manuscript/figures/`
 - `F6` → `manuscript/meta_optimization.md`
 
 ## Quality gate focus
@@ -49,8 +49,13 @@ Write into: `manuscript/manuscript.md` (or a section placeholder within it).
 - Methods contain enough detail for replication (given the artifact set)
 - Results are consistent with analysis plan and reported with uncertainty
 - Limitations discuss validity threats (not only “small sample”)
+- Result narration is externalized enough to support reuse in `manuscript/results_interpretation.md`
+- Effect magnitude is translated into practical terms in `manuscript/effect_interpretation.md` when applicable
 
-Write into: `manuscript/manuscript.md`.
+Write into:
+- `manuscript/manuscript.md`
+- `manuscript/results_interpretation.md`
+- `manuscript/effect_interpretation.md`
 
 ---
 
@@ -85,6 +90,10 @@ Plan visuals early so the narrative has “anchors”.
 
 Write into: `manuscript/figures_tables_plan.md`.
 
+Recommended pairing:
+- `table-generator` for `manuscript/tables/`
+- `figure-specifier` for `manuscript/figures/`
+
 ---
 
 ## F6 — Abstract & Title Optimization (Indexing / SEO / Reviewer Scanning)
@@ -95,4 +104,3 @@ Write into: `manuscript/figures_tables_plan.md`.
 - Keywords reflect both author terms and common index terms (without stuffing)
 
 Write into: `manuscript/meta_optimization.md`.
-

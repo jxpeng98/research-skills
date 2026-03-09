@@ -13,54 +13,63 @@ steps:
   - id: frame
     skill: question-refiner
     task_id: A1
+    owner_functional_agent: research-orchestrator
     outputs: [RQSet]
     stop_condition: "User confirms research question"
 
   - id: concept
     skill: concept-extractor
     task_id: B1_5
+    owner_functional_agent: literature-agent
     depends_on: [frame]
     outputs: [ConceptMap]
 
   - id: search
     skill: academic-searcher
     task_id: B1
+    owner_functional_agent: literature-agent
     depends_on: [concept]
     outputs: [SearchQueryPlan, SearchResults, SearchLog]
 
   - id: snowball
     skill: citation-snowballer
     task_id: B3
+    owner_functional_agent: literature-agent
     depends_on: [search]
     outputs: [SnowballLog]
 
   - id: screen
     skill: paper-screener
     task_id: B1
+    owner_functional_agent: literature-agent
     depends_on: [search, snowball]
     outputs: [ScreeningDecisionLog, PRISMAFlowData]
 
   - id: fetch
     skill: fulltext-fetcher
     task_id: B1
+    owner_functional_agent: literature-agent
     depends_on: [screen]
     outputs: [FullTextStatus]
 
   - id: extract
     skill: paper-extractor
     task_id: B2
+    owner_functional_agent: literature-agent
     depends_on: [fetch]
     outputs: [ExtractionTable, PaperNotes]
 
   - id: assess
     skill: quality-assessor
     task_id: E1
+    owner_functional_agent: analysis-agent
     depends_on: [extract]
     outputs: [QualityTable, GRADESummary]
 
   - id: synthesize
     skill: evidence-synthesizer
     task_id: E3
+    owner_functional_agent: analysis-agent
     depends_on: [assess]
     outputs: [EvidenceTable]
     branch:
@@ -70,7 +79,8 @@ steps:
 
   - id: bias-check
     skill: publication-bias-checker
-    task_id: E4
+    task_id: E3_5
+    owner_functional_agent: analysis-agent
     depends_on: [synthesize]
     outputs: [PublicationBiasReport]
     optional: true
@@ -78,23 +88,27 @@ steps:
   - id: write
     skill: manuscript-architect
     task_id: F3
+    owner_functional_agent: writing-agent
     depends_on: [synthesize, bias-check]
     outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
 
   - id: prisma-check
     skill: prisma-checker
     task_id: G2
+    owner_functional_agent: publication-agent
     depends_on: [write]
     outputs: [PRISMAChecklist]
 
   - id: tone
     skill: tone-normalizer
     task_id: G4
+    owner_functional_agent: writing-agent
     depends_on: [write]
     outputs: [ToneNormalization]
 
   - id: submit
     skill: submission-packager
     task_id: H1
+    owner_functional_agent: publication-agent
     depends_on: [prisma-check, tone]
     outputs: [SubmissionPackage]

@@ -8,6 +8,10 @@ description: "Manuscript drafting, tone normalization, meta-optimization, and pr
 
 preferred_skills:
   - manuscript-architect
+  - analysis-interpreter
+  - effect-size-interpreter
+  - table-generator
+  - figure-specifier
   - meta-optimizer
   - tone-normalizer
   - submission-packager

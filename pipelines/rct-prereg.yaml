@@ -4,65 +4,82 @@
 
 id: rct-prereg
 name: "RCT with Pre-registration"
-paper_type: rct
+paper_type: empirical
 description: "Randomized controlled trial with preregistration, ethics, and CONSORT reporting."
 
 steps:
   - id: frame
     skill: question-refiner
     task_id: A1
+    owner_functional_agent: research-orchestrator
     outputs: [RQSet]
 
   - id: hypothesize
     skill: hypothesis-generator
     task_id: A1_5
+    owner_functional_agent: theory-agent
     depends_on: [frame]
     outputs: [HypothesisSet]
 
   - id: design
     skill: study-designer
     task_id: C1
+    owner_functional_agent: methodology-agent
     depends_on: [hypothesize]
-    outputs: [DesignSpec, AnalysisPlan, Preregistration]
+    outputs: [DesignSpec, AnalysisPlan]
+
+  - id: prereg
+    skill: study-designer
+    task_id: C5
+    owner_functional_agent: methodology-agent
+    depends_on: [design]
+    outputs: [Preregistration]
 
   - id: robustness
     skill: robustness-planner
-    task_id: C2
+    task_id: C3_5
+    owner_functional_agent: methodology-agent
     depends_on: [design]
     outputs: [RobustnessPlan]
 
   - id: ethics
     skill: ethics-irb-helper
     task_id: D1
+    owner_functional_agent: publication-agent
     depends_on: [design]
     outputs: [EthicsPackage]
 
   - id: code
     skill: code-builder
     task_id: I1
+    owner_functional_agent: methodology-agent
     depends_on: [design, robustness]
     outputs: [AnalysisCode]
 
   - id: stats
     skill: stats-engine
     task_id: I2
+    owner_functional_agent: analysis-agent
     depends_on: [code]
     outputs: [StatsReport]
 
   - id: write
     skill: manuscript-architect
     task_id: F3
+    owner_functional_agent: writing-agent
     depends_on: [stats]
     outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
 
   - id: consort-check
     skill: reporting-checker
-    task_id: G3
+    task_id: G1
+    owner_functional_agent: publication-agent
     depends_on: [write]
     outputs: [ReportingChecklist]
 
   - id: submit
     skill: submission-packager
     task_id: H1
+    owner_functional_agent: publication-agent
     depends_on: [consort-check]
     outputs: [SubmissionPackage]

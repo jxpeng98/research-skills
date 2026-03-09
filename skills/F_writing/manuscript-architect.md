@@ -40,6 +40,18 @@ Build and revise a full research paper manuscript across stages: outline → sec
 - You want to draft a paper from an existing `RESEARCH/[topic]/` project folder (empirical study or systematic review).
 - You have partial materials (notes, tables, analysis plan, results) and want a coherent manuscript.
 
+## Granularity Boundary
+
+Keep these as embedded writing subflows inside `manuscript-architect` unless they own a separate contract artifact:
+
+- story spine construction
+- section-level drafting
+- paragraph ordering and transitions
+- results anchoring against tables/figures
+- section-to-section coherence passes
+
+If the need is only "write a better intro / abstract / discussion paragraph", update this skill or its templates before introducing another top-level writing skill.
+
 ## Inputs (Ask / Collect)
 
 1. Paper type: **empirical** / **systematic review** / **theory** / **methods** (default: empirical)
@@ -61,6 +73,12 @@ RESEARCH/[topic]/manuscript/
 ├── claims_evidence_map.md
 └── figures_tables_plan.md
 ```
+
+Primary template references:
+- `templates/manuscript-outline.md`
+- `templates/manuscript-skeleton.md`
+- `templates/claim-evidence-map.md`
+- `templates/figures-tables-plan.md`
 
 ### Step 1: Define Contribution & Story
 
@@ -120,3 +138,8 @@ Optionally draft:
 - Claim-evidence map → `RESEARCH/[topic]/manuscript/claims_evidence_map.md`
 - Figures/tables plan → `RESEARCH/[topic]/manuscript/figures_tables_plan.md`
 
+Companion artifacts that should be referenced, not re-modeled as standalone writing skills:
+- `manuscript/results_interpretation.md`
+- `manuscript/effect_interpretation.md`
+- `manuscript/tables/`
+- `manuscript/figures/`

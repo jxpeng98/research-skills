@@ -9,6 +9,8 @@ description: "Statistical engine, code tasks, domain diagnostics, and analysis v
 preferred_skills:
   - stats-engine
   - code-builder
+  - data-cleaning-planner
+  - data-merge-planner
   - code-execution
   - code-review
   - evidence-synthesizer

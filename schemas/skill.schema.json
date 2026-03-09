@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://research-skills.dev/schemas/skill.schema.json",
     "title": "Skill Registry Entry",
-    "description": "Schema for entries in skills/registry.yaml",
+    "description": "Schema for entries in skills/registry.yaml. This is the internal skill-spec registry truth; portable skill packages and hand-written skill.yaml files are out of scope.",
     "type": "object",
     "required": [
         "id",
@@ -43,7 +43,7 @@
         "file": {
             "type": "string",
             "pattern": "^skills/",
-            "description": "Relative path to skill markdown file"
+            "description": "Relative path to an internal skill markdown file under skills/ (not a portable skill package)"
         },
         "summary": {
             "type": "string",

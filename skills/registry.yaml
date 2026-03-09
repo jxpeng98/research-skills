@@ -81,7 +81,7 @@ skills:
     stage: B_literature
     version: "1.0.0"
     file: skills/B_literature/academic-searcher.md
-    summary: "Multi-database systematic search across Semantic Scholar, arXiv, OpenAlex."
+    summary: "Own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill."
     inputs: [RQSet, SearchQueryPlan]
     outputs: [SearchQueryPlan, SearchResults, SearchLog]
     tags: [literature, search, databases, API, reproducibility]
@@ -107,7 +107,7 @@ skills:
     stage: B_literature
     version: "1.0.0"
     file: skills/B_literature/paper-extractor.md
-    summary: "Extract structured info from papers: metadata, design, findings, contributions."
+    summary: "Extract structured theory, method, data, findings, and limitation slots into notes and rollups."
     inputs: [ScreeningDecisionLog]
     outputs: [ExtractionTable, PaperNotes]
     tags: [literature, extraction, data-collection, structured-notes]
@@ -201,9 +201,9 @@ skills:
     stage: C_design
     version: "1.0.0"
     file: skills/C_design/study-designer.md
-    summary: "Design empirical studies with sampling, measures, procedures, and preregistration."
+    summary: "Own study design rationale, measures, analysis summary, and design handoff artifacts in one package."
     inputs: [RQSet, TheoreticalFramework]
-    outputs: [DesignSpec, AnalysisPlan, Preregistration]
+    outputs: [DesignSpec, AnalysisPlan, DataManagementPlan, Instruments, Preregistration]
     tags: [design, sampling, measures, analysis-plan, preregistration]
     depends_on: [question-refiner]
     compatible_models: [codex, claude, gemini, gpt]
@@ -234,6 +234,32 @@ skills:
     depends_on: [study-designer]
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: dataset-finder
+    stage: C_design
+    version: "1.0.0"
+    file: skills/C_design/dataset-finder.md
+    summary: "Identify feasible datasets, access routes, and coverage risks before implementation."
+    inputs: [RQSet, DesignSpec, AnalysisPlan]
+    outputs: [DatasetPlan]
+    tags: [design, data, datasets, provenance, feasibility]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search, metadata-registry]
+    domain_aware: true
+
+  - id: variable-constructor
+    stage: C_design
+    version: "1.0.0"
+    file: skills/C_design/variable-constructor.md
+    summary: "Operationalize constructs into auditable variables, coding rules, and transformations."
+    inputs: [DesignSpec, AnalysisPlan, HypothesisSet, DatasetPlan]
+    outputs: [VariableSpec]
+    tags: [design, variables, operationalization, coding, measures]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, metadata-registry]
     domain_aware: true
 
   # ══════════════════════════════════════════════════════════
@@ -314,13 +340,65 @@ skills:
     stage: F_writing
     version: "1.0.0"
     file: skills/F_writing/manuscript-architect.md
-    summary: "Build paper structure from outline to section drafts with claim-evidence integrity."
+    summary: "Own story spine, section drafting, and visual planning as one manuscript package."
     inputs: [RQSet, EvidenceTable, DesignSpec]
-    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph, FiguresTablesPlan]
     tags: [writing, manuscript, outline, drafting, claim-evidence]
     depends_on: [evidence-synthesizer]
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: analysis-interpreter
+    stage: F_writing
+    version: "1.0.0"
+    file: skills/F_writing/analysis-interpreter.md
+    summary: "Translate model output into bounded narrative interpretation for manuscript results."
+    inputs: [StatsReport, AnalysisPlan, RobustnessPlan]
+    outputs: [ResultInterpretation]
+    tags: [writing, results, interpretation, robustness, uncertainty]
+    depends_on: [stats-engine]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: effect-size-interpreter
+    stage: F_writing
+    version: "1.0.0"
+    file: skills/F_writing/effect-size-interpreter.md
+    summary: "Explain the substantive magnitude of estimates in interpretable units."
+    inputs: [StatsReport, DesignSpec, VenueAnalysis]
+    outputs: [EffectInterpretation]
+    tags: [writing, results, effect-size, magnitude, interpretation]
+    depends_on: [stats-engine]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: table-generator
+    stage: F_writing
+    version: "1.0.0"
+    file: skills/F_writing/table-generator.md
+    summary: "Generate publication-ready tables from statistical output with venue-aware formatting."
+    inputs: [StatsReport, VenueAnalysis]
+    outputs: [FormattedTables]
+    tags: [writing, tables, formatting, APA, publication-ready]
+    depends_on: [stats-engine]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: figure-specifier
+    stage: F_writing
+    version: "1.0.0"
+    file: skills/F_writing/figure-specifier.md
+    summary: "Specify publication-quality figures with reproducible code and accessibility guidance."
+    inputs: [StatsReport, VenueAnalysis]
+    outputs: [FigureSpecs]
+    tags: [writing, figures, visualization, accessibility, publication-ready]
+    depends_on: [stats-engine]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
     domain_aware: true
 
   - id: meta-optimizer
@@ -458,6 +536,32 @@ skills:
     outputs: [AnalysisCode]
     tags: [code, implementation, multi-language, domain-profiles, reproducibility]
     depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: true
+
+  - id: data-cleaning-planner
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/data-cleaning-planner.md
+    summary: "Define reproducible cleaning rules for validation, missingness, and harmonization."
+    inputs: [DatasetPlan, VariableSpec, AnalysisPlan]
+    outputs: [CleaningPlan]
+    tags: [code, data, cleaning, missingness, validation]
+    depends_on: [dataset-finder, variable-constructor]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: true
+
+  - id: data-merge-planner
+    stage: I_code
+    version: "1.0.0"
+    file: skills/I_code/data-merge-planner.md
+    summary: "Define join logic, key validation, and provenance controls for multi-source data."
+    inputs: [DatasetPlan, VariableSpec, CleaningPlan]
+    outputs: [MergePlan]
+    tags: [code, data, merge, joins, provenance]
+    depends_on: [dataset-finder, variable-constructor, data-cleaning-planner]
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem, code-runtime]
     domain_aware: true

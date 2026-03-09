@@ -29,7 +29,7 @@ Produce publication-ready formatted tables from statistical output.
 
 ## Related Task IDs
 
-- `F4` (tables and figures)
+- `F5` (tables and figures)
 
 ## Output (contract path)
 

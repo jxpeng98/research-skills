@@ -30,7 +30,7 @@ Design and specify publication-quality figures with reproducible code.
 
 ## Related Task IDs
 
-- `F4` (tables and figures)
+- `F5` (tables and figures)
 
 ## Output (contract path)
 

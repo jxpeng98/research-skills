@@ -11,52 +11,61 @@ steps:
   - id: frame
     skill: question-refiner
     task_id: A1
+    owner_functional_agent: research-orchestrator
     outputs: [RQSet]
 
   - id: search
     skill: academic-searcher
     task_id: B1
+    owner_functional_agent: literature-agent
     depends_on: [frame]
     outputs: [SearchQueryPlan, SearchResults]
 
   - id: extract
     skill: paper-extractor
     task_id: B2
+    owner_functional_agent: literature-agent
     depends_on: [search]
     outputs: [ExtractionTable, PaperNotes]
 
   - id: gap
     skill: gap-analyzer
     task_id: A4
+    owner_functional_agent: theory-agent
     depends_on: [extract]
     outputs: [GapAnalysis]
 
   - id: theory
     skill: theory-mapper
-    task_id: A2
+    task_id: A3
+    owner_functional_agent: theory-agent
     depends_on: [extract, gap]
     outputs: [TheoreticalFramework]
 
   - id: hypothesize
     skill: hypothesis-generator
     task_id: A1_5
+    owner_functional_agent: theory-agent
     depends_on: [theory]
     outputs: [HypothesisSet]
 
   - id: write
     skill: manuscript-architect
     task_id: F3
+    owner_functional_agent: writing-agent
     depends_on: [theory, gap, hypothesize]
     outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
 
   - id: tone
     skill: tone-normalizer
     task_id: G4
+    owner_functional_agent: writing-agent
     depends_on: [write]
     outputs: [ToneNormalization]
 
   - id: submit
     skill: submission-packager
     task_id: H1
+    owner_functional_agent: publication-agent
     depends_on: [tone]
     outputs: [SubmissionPackage]

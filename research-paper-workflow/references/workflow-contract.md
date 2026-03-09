@@ -46,9 +46,9 @@ Use this contract as the single source of truth for:
 | `C1` | C | Study design | `study_design.md` |
 | `C1_5` | C | Rival hypothesis design | `design/rival_hypotheses.md` |
 | `C2` | C | Instruments | `instruments/` |
-| `C3` | C | Analysis plan | `analysis_plan.md` |
+| `C3` | C | Analysis plan | `analysis_plan.md`, `design/variable_spec.md` |
 | `C3_5` | C | Robustness check plan | `design/robustness_plan.md` |
-| `C4` | C | Data management plan | `data_management_plan.md` |
+| `C4` | C | Data management plan | `data_management_plan.md`, `design/dataset_plan.md` |
 | `C5` | C | Preregistration draft | `preregistration.md` |
 | `D1` | D | Ethics pack | `ethics_irb.md` |
 | `D2` | D | Ethics statements | `manuscript/manuscript.md` |
@@ -61,9 +61,9 @@ Use this contract as the single source of truth for:
 | `E5` | E | Integrated synthesis | `synthesis.md` |
 | `F1` | F | Manuscript outline | `manuscript/outline.md` |
 | `F2` | F | Single section writing | `manuscript/manuscript.md` |
-| `F3` | F | Full draft | `manuscript/manuscript.md` |
+| `F3` | F | Full draft | `manuscript/manuscript.md`, `manuscript/results_interpretation.md`, `manuscript/effect_interpretation.md` |
 | `F4` | F | Claim-evidence map | `manuscript/claims_evidence_map.md` |
-| `F5` | F | Figures/tables plan | `manuscript/figures_tables_plan.md` |
+| `F5` | F | Figures/tables plan | `manuscript/figures_tables_plan.md`, `manuscript/tables/`, `manuscript/figures/` |
 | `F6` | F | Abstract & Title Optimization | `manuscript/meta_optimization.md` |
 | `G1` | G | Reporting completeness | `reporting_checklist.md` |
 | `G2` | G | PRISMA compliance | `prisma_checklist.md` |
@@ -76,7 +76,7 @@ Use this contract as the single source of truth for:
 | `H4` | H | Fatal flaw analysis | `revision/fatal_flaw_analysis.md` |
 | `I1` | I | Method implementation | `analysis/` |
 | `I2` | I | Reproduction | `analysis/` |
-| `I3` | I | Data pipeline | `analysis/` |
+| `I3` | I | Data pipeline | `analysis/`, `data/cleaning_plan.md`, `data/merge_plan.md` |
 | `I4` | I | Code reproducibility audit | `code/reproducibility_audit.md` |
 | `I5` | I | Code specification | `code/code_specification.md` |
 | `I6` | I | Code planning | `code/plan.md` |

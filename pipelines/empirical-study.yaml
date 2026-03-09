@@ -11,18 +11,21 @@ steps:
   - id: frame
     skill: question-refiner
     task_id: A1
+    owner_functional_agent: research-orchestrator
     outputs: [RQSet]
     stop_condition: "User confirms research question"
 
   - id: hypothesize
     skill: hypothesis-generator
     task_id: A1_5
+    owner_functional_agent: theory-agent
     depends_on: [frame]
     outputs: [HypothesisSet]
 
   - id: venue
     skill: venue-analyzer
     task_id: A5
+    owner_functional_agent: publication-agent
     depends_on: [frame]
     outputs: [VenueAnalysis]
     optional: true
@@ -30,12 +33,14 @@ steps:
   - id: lit-search
     skill: academic-searcher
     task_id: B1
+    owner_functional_agent: literature-agent
     depends_on: [frame]
     outputs: [SearchQueryPlan, SearchResults]
 
   - id: theory
     skill: theory-mapper
-    task_id: A2
+    task_id: A3
+    owner_functional_agent: theory-agent
     depends_on: [frame, lit-search]
     outputs: [TheoreticalFramework]
     optional: true
@@ -43,66 +48,133 @@ steps:
   - id: design
     skill: study-designer
     task_id: C1
+    owner_functional_agent: methodology-agent
     depends_on: [hypothesize, theory]
     outputs: [DesignSpec, AnalysisPlan]
+
+  - id: dataset
+    skill: dataset-finder
+    task_id: C4
+    owner_functional_agent: data-agent
+    depends_on: [design]
+    outputs: [DatasetPlan]
+
+  - id: variables
+    skill: variable-constructor
+    task_id: C3
+    owner_functional_agent: methodology-agent
+    depends_on: [design, dataset]
+    outputs: [VariableSpec]
 
   - id: rivals
     skill: rival-hypothesis-designer
     task_id: C1_5
+    owner_functional_agent: methodology-agent
     depends_on: [design]
     outputs: [RivalHypotheses]
 
   - id: robustness
     skill: robustness-planner
-    task_id: C2
+    task_id: C3_5
+    owner_functional_agent: methodology-agent
     depends_on: [design]
     outputs: [RobustnessPlan]
 
   - id: ethics
     skill: ethics-irb-helper
     task_id: D1
-    depends_on: [design]
+    owner_functional_agent: publication-agent
+    depends_on: [design, dataset]
     outputs: [EthicsPackage]
     optional: true
+
+  - id: cleaning
+    skill: data-cleaning-planner
+    task_id: I3
+    owner_functional_agent: data-agent
+    depends_on: [dataset, variables]
+    outputs: [CleaningPlan]
+
+  - id: merge
+    skill: data-merge-planner
+    task_id: I3
+    owner_functional_agent: data-agent
+    depends_on: [dataset, variables, cleaning]
+    outputs: [MergePlan]
 
   - id: code
     skill: code-builder
     task_id: I1
-    depends_on: [design, robustness]
+    owner_functional_agent: methodology-agent
+    depends_on: [design, robustness, variables, cleaning, merge]
     outputs: [AnalysisCode]
 
   - id: stats
     skill: stats-engine
     task_id: I2
+    owner_functional_agent: analysis-agent
     depends_on: [code]
     outputs: [StatsReport]
+
+  - id: interpret
+    skill: analysis-interpreter
+    task_id: F3
+    owner_functional_agent: writing-agent
+    depends_on: [stats]
+    outputs: [ResultInterpretation]
+
+  - id: effect-size
+    skill: effect-size-interpreter
+    task_id: F3
+    owner_functional_agent: writing-agent
+    depends_on: [stats]
+    outputs: [EffectInterpretation]
+
+  - id: tables
+    skill: table-generator
+    task_id: F5
+    owner_functional_agent: writing-agent
+    depends_on: [stats]
+    outputs: [FormattedTables]
+
+  - id: figures
+    skill: figure-specifier
+    task_id: F5
+    owner_functional_agent: writing-agent
+    depends_on: [stats]
+    outputs: [FigureSpecs]
 
   - id: write
     skill: manuscript-architect
     task_id: F3
-    depends_on: [stats, lit-search]
-    outputs: [ManuscriptOutline, Manuscript, ClaimGraph]
+    owner_functional_agent: writing-agent
+    depends_on: [lit-search, stats, interpret, effect-size, tables, figures]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph, FiguresTablesPlan]
 
   - id: report-check
     skill: reporting-checker
-    task_id: G3
+    task_id: G1
+    owner_functional_agent: publication-agent
     depends_on: [write]
     outputs: [ReportingChecklist]
 
   - id: tone
     skill: tone-normalizer
     task_id: G4
+    owner_functional_agent: writing-agent
     depends_on: [write]
     outputs: [ToneNormalization]
 
   - id: flaw-check
     skill: fatal-flaw-detector
-    task_id: H2
+    task_id: H4
+    owner_functional_agent: publication-agent
     depends_on: [write]
     outputs: [FatalFlawAnalysis]
 
   - id: submit
     skill: submission-packager
     task_id: H1
+    owner_functional_agent: publication-agent
     depends_on: [report-check, tone, flaw-check]
     outputs: [SubmissionPackage]

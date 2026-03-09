@@ -23,6 +23,29 @@ EXPECTED_TASK_IDS = {
 }
 EXPECTED_QUALITY_GATES = {"Q1", "Q2", "Q3", "Q4"}
 EXPECTED_AGENTS = {"codex", "claude", "gemini"}
+EXPECTED_FUNCTIONAL_AGENTS = {
+    "research-orchestrator",
+    "literature-agent",
+    "theory-agent",
+    "methodology-agent",
+    "data-agent",
+    "analysis-agent",
+    "writing-agent",
+    "publication-agent",
+}
+EXPECTED_SKILL_STAGES = {
+    "A_framing",
+    "B_literature",
+    "C_design",
+    "D_ethics",
+    "E_synthesis",
+    "F_writing",
+    "G_compliance",
+    "H_submission",
+    "I_code",
+    "Z_cross_cutting",
+}
+EXPECTED_ROUTING_STAGE_IDS = EXPECTED_STAGE_IDS | {"J"}
 EXPECTED_PACKET_FIELDS = {
     "task_id",
     "paper_type",
@@ -79,6 +102,15 @@ class ValidationReport:
             return
         self.warnings.append(warn_msg)
         print(f"[WARN] {warn_msg}")
+
+
+@dataclass
+class SkillRegistryEntry:
+    id: str
+    stage: str
+    file: str
+    inputs: list[str]
+    outputs: list[str]
 
 
 def read_text(root: Path, relative_path: str, report: ValidationReport) -> str:
@@ -160,6 +192,123 @@ def parse_yaml_list(section: str, item_indent: int) -> list[str]:
             item = item[1:-1]
         values.append(item)
     return values
+
+
+def strip_quotes(value: str) -> str:
+    value = value.strip()
+    if (value.startswith('"') and value.endswith('"')) or (
+        value.startswith("'") and value.endswith("'")
+    ):
+        return value[1:-1]
+    return value
+
+
+def parse_inline_yaml_list(block: str, key: str, indent: int) -> list[str]:
+    match = re.search(
+        rf"^\s{{{indent}}}{re.escape(key)}:\s*\[(.*?)\]\s*$",
+        block,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    if not match:
+        return []
+    raw = match.group(1).strip()
+    if not raw:
+        return []
+    return [strip_quotes(item) for item in re.split(r"\s*,\s*", raw) if item.strip()]
+
+
+def iter_yaml_list_blocks(section: str, item_indent: int) -> list[tuple[str, str]]:
+    pattern = re.compile(
+        rf"^\s{{{item_indent}}}-\s*id:\s*([A-Za-z0-9_-]+)\s*$",
+        flags=re.MULTILINE,
+    )
+    matches = list(pattern.finditer(section))
+    blocks: list[tuple[str, str]] = []
+    for index, match in enumerate(matches):
+        start = match.start()
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(section)
+        blocks.append((match.group(1), section[start:end]))
+    return blocks
+
+
+def parse_artifact_types(content: str) -> list[str]:
+    return re.findall(
+        r'^\s*-\s*name:\s*([A-Za-z][A-Za-z0-9]+)\s*$',
+        content,
+        flags=re.MULTILINE,
+    )
+
+
+def parse_skill_registry_entries(content: str) -> dict[str, SkillRegistryEntry]:
+    section = extract_top_level_section(content, "skills")
+    entries: dict[str, SkillRegistryEntry] = {}
+    for skill_id, block in iter_yaml_list_blocks(section, item_indent=2):
+        stage = parse_yaml_scalar(block, "stage", indent=4)
+        file_path = parse_yaml_scalar(block, "file", indent=4)
+        inputs = parse_inline_yaml_list(block, "inputs", indent=4)
+        outputs = parse_inline_yaml_list(block, "outputs", indent=4)
+        entries[skill_id] = SkillRegistryEntry(
+            id=skill_id,
+            stage=stage,
+            file=file_path,
+            inputs=inputs,
+            outputs=outputs,
+        )
+    return entries
+
+
+def parse_map_skill_registry(content: str) -> set[str]:
+    section = extract_top_level_section(content, "skill_registry")
+    return set(parse_yaml_list(section, item_indent=2))
+
+
+def parse_map_skill_catalog_files(content: str) -> dict[str, str]:
+    section = extract_top_level_section(content, "skill_catalog")
+    files: dict[str, str] = {}
+    for skill_name, block in re.findall(
+        r"^\s{2}([a-z0-9-]+):\n((?:^\s{4}.*\n?)+)",
+        section,
+        flags=re.MULTILINE,
+    ):
+        files[skill_name] = parse_yaml_scalar(block, "file", indent=4)
+    return files
+
+
+def parse_task_skill_mapping(content: str) -> dict[str, set[str]]:
+    section = extract_top_level_section(content, "task_skill_mapping")
+    task_map: dict[str, set[str]] = {}
+    for task_id, block in re.findall(
+        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+        section,
+        flags=re.MULTILINE,
+    ):
+        task_map[task_id] = set(
+            parse_yaml_list(extract_nested_section(block, "required_skills", indent=4), item_indent=6)
+        )
+    return task_map
+
+
+def parse_task_functional_routing(content: str) -> tuple[dict[str, str], dict[str, str]]:
+    routing_section = extract_top_level_section(content, "task_functional_routing")
+    defaults_section = extract_nested_section(routing_section, "defaults_by_stage", indent=2)
+    routing_defaults = {
+        stage: owner
+        for stage, owner in re.findall(
+            r'^\s{4}([A-Z]):\s*"?(.*?)"?\s*$',
+            defaults_section,
+            flags=re.MULTILINE,
+        )
+    }
+    overrides_section = extract_nested_section(routing_section, "overrides", indent=2)
+    routing_overrides = {
+        task_id: owner
+        for task_id, owner in re.findall(
+            r'^\s{4}([A-I][0-9_]+):\s*"?(.*?)"?\s*$',
+            overrides_section,
+            flags=re.MULTILINE,
+        )
+    }
+    return routing_defaults, routing_overrides
 
 
 def select_latest_release_note(root: Path) -> Path | None:
@@ -485,6 +634,128 @@ def validate_portable_skill(root: Path, report: ValidationReport) -> None:
             )
 
 
+def validate_skill_registry(root: Path, report: ValidationReport) -> None:
+    artifact_content = read_text(root, "schemas/artifact-types.yaml", report)
+    artifact_types = parse_artifact_types(artifact_content) if artifact_content else []
+    artifact_type_set = set(artifact_types)
+    report.check(
+        bool(artifact_types),
+        "Artifact type vocabulary is non-empty",
+        "schemas/artifact-types.yaml must define at least one artifact type",
+    )
+    report.check(
+        len(artifact_type_set) == len(artifact_types),
+        "Artifact type vocabulary has unique names",
+        "schemas/artifact-types.yaml contains duplicate artifact type names",
+    )
+
+    registry_content = read_text(root, "skills/registry.yaml", report)
+    if not registry_content:
+        return
+
+    registry_entries = parse_skill_registry_entries(registry_content)
+    report.check(
+        bool(registry_entries),
+        "skills/registry.yaml contains skill entries",
+        "skills/registry.yaml must contain at least one skill entry",
+    )
+
+    seen_files: set[str] = set()
+    for skill_id in sorted(registry_entries):
+        entry = registry_entries[skill_id]
+        report.check(
+            entry.stage in EXPECTED_SKILL_STAGES,
+            f"Registry stage is canonical for {skill_id}",
+            f"skills/registry.yaml stage must be canonical for {skill_id}: {entry.stage}",
+        )
+        report.check(
+            bool(entry.file),
+            f"Registry file path exists for {skill_id}",
+            f"skills/registry.yaml missing file path for {skill_id}",
+        )
+        if entry.file:
+            report.check(
+                entry.file.startswith("skills/"),
+                f"Registry file path stays under skills/ for {skill_id}",
+                f"skills/registry.yaml file path must stay under skills/ for {skill_id}: {entry.file}",
+            )
+            report.check(
+                entry.file not in seen_files,
+                f"Registry file path is unique for {skill_id}",
+                f"skills/registry.yaml duplicates file path: {entry.file}",
+            )
+            seen_files.add(entry.file)
+            report.check(
+                (root / entry.file).exists(),
+                f"Registry file exists on disk for {skill_id}",
+                f"skills/registry.yaml points to missing file for {skill_id}: {entry.file}",
+            )
+            report.check(
+                re.search(rf"^skills/{re.escape(entry.stage)}/{re.escape(skill_id)}\.md$", entry.file)
+                is not None,
+                f"Registry file path matches stage/id for {skill_id}",
+                (
+                    "skills/registry.yaml file path must match stage/id convention for "
+                    f"{skill_id}: {entry.file}"
+                ),
+            )
+
+        report.check(
+            set(entry.inputs).issubset(artifact_type_set),
+            f"Registry inputs use known artifact types for {skill_id}",
+            (
+                f"skills/registry.yaml inputs for {skill_id} reference unknown artifact types: "
+                f"{ids_to_text(set(entry.inputs) - artifact_type_set) or 'none'}"
+            ),
+        )
+        report.check(
+            set(entry.outputs).issubset(artifact_type_set),
+            f"Registry outputs use known artifact types for {skill_id}",
+            (
+                f"skills/registry.yaml outputs for {skill_id} reference unknown artifact types: "
+                f"{ids_to_text(set(entry.outputs) - artifact_type_set) or 'none'}"
+            ),
+        )
+
+        skill_path = root / entry.file
+        if not skill_path.exists():
+            continue
+        frontmatter, _body = parse_frontmatter(skill_path.read_text(encoding="utf-8"))
+        report.check(
+            frontmatter.get("id") == skill_id,
+            f"Skill frontmatter id matches registry for {skill_id}",
+            (
+                f"{entry.file} frontmatter id mismatch: "
+                f"{frontmatter.get('id', '<missing>')} vs registry {skill_id}"
+            ),
+        )
+        report.check(
+            frontmatter.get("stage") == entry.stage,
+            f"Skill frontmatter stage matches registry for {skill_id}",
+            (
+                f"{entry.file} frontmatter stage mismatch: "
+                f"{frontmatter.get('stage', '<missing>')} vs registry {entry.stage}"
+            ),
+        )
+
+
+def validate_single_skill_source_of_truth(root: Path, report: ValidationReport) -> None:
+    forbidden = sorted(
+        path.relative_to(root)
+        for pattern in ("skill.yaml", "skill.yml")
+        for path in root.rglob(pattern)
+        if path.is_file()
+    )
+    report.check(
+        not forbidden,
+        "Repository has no hand-written skill.yaml/skill.yml files",
+        (
+            "Found hand-written skill truth files that would create a third source of truth: "
+            f"{', '.join(str(path) for path in forbidden)}"
+        ),
+    )
+
+
 def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     map_content = read_text(root, "standards/mcp-agent-capability-map.yaml", report)
     if not map_content:
@@ -575,6 +846,42 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
         "Agent registry has duplicate entries",
     )
 
+    functional_agent_section = extract_top_level_section(map_content, "functional_agent_registry")
+    functional_agent_list = parse_yaml_list(functional_agent_section, item_indent=2)
+    functional_agent_registry = set(functional_agent_list)
+    report.check(
+        functional_agent_registry.issuperset(EXPECTED_FUNCTIONAL_AGENTS),
+        "Functional agent registry includes required baseline agents",
+        (
+            "Functional agent registry missing required agents: "
+            f"{ids_to_text(EXPECTED_FUNCTIONAL_AGENTS - functional_agent_registry) or 'none'}"
+        ),
+    )
+    report.check(
+        len(functional_agent_registry) == len(functional_agent_list),
+        "Functional agent registry has unique entries",
+        "Functional agent registry has duplicate entries",
+    )
+
+    functional_agents_section = extract_top_level_section(map_content, "functional_agents")
+    functional_agent_blocks = {
+        found: block
+        for found, block in re.findall(
+            r"^\s{2}([a-z0-9-]+):\n((?:^\s{4}.*\n?)+)",
+            functional_agents_section,
+            flags=re.MULTILINE,
+        )
+    }
+    report.check(
+        set(functional_agent_blocks) == functional_agent_registry,
+        "functional_agents section covers all registered functional agents",
+        (
+            "functional_agents mismatch. Missing: "
+            f"{ids_to_text(functional_agent_registry - set(functional_agent_blocks)) or 'none'}; "
+            f"Extra: {ids_to_text(set(functional_agent_blocks) - functional_agent_registry) or 'none'}"
+        ),
+    )
+
     skill_section = extract_top_level_section(map_content, "skill_registry")
     skill_list = parse_yaml_list(skill_section, item_indent=2)
     skill_registry = set(skill_list)
@@ -587,6 +894,18 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
         len(skill_registry) == len(skill_list),
         "Skill registry has unique entries",
         "Skill registry has duplicate entries",
+    )
+
+    registry_content = read_text(root, "skills/registry.yaml", report)
+    registry_entries = parse_skill_registry_entries(registry_content) if registry_content else {}
+    report.check(
+        skill_registry == set(registry_entries),
+        "Capability-map skill registry matches skills/registry.yaml",
+        (
+            "Capability-map skill registry mismatch vs skills/registry.yaml. Missing: "
+            f"{ids_to_text(set(registry_entries) - skill_registry) or 'none'}; "
+            f"Extra: {ids_to_text(skill_registry - set(registry_entries)) or 'none'}"
+        ),
     )
     for skill_name in sorted(skill_registry):
         pass # The existence of the file is validated via skill_catalog below
@@ -652,6 +971,124 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
             f"Skill catalog entry has default_outputs: {skill_name}",
             f"Skill catalog entry missing default_outputs: {skill_name}",
         )
+        if skill_name in registry_entries:
+            report.check(
+                skill_file == registry_entries[skill_name].file,
+                f"Skill catalog file matches registry for {skill_name}",
+                (
+                    f"Skill catalog file mismatch for {skill_name}: "
+                    f"{skill_file} vs registry {registry_entries[skill_name].file}"
+                ),
+            )
+
+    for functional_agent_name in sorted(functional_agent_registry):
+        block = functional_agent_blocks.get(functional_agent_name, "")
+        agent_file = parse_yaml_scalar(block, "file", indent=4)
+        focus = parse_yaml_scalar(block, "focus", indent=4)
+        mapped_role = parse_yaml_scalar(block, "mapped_role", indent=4)
+        owns_stages = set(
+            parse_yaml_list(extract_nested_section(block, "owns_stages", indent=4), item_indent=6)
+        )
+        report.check(
+            bool(agent_file),
+            f"Functional agent has file: {functional_agent_name}",
+            f"functional_agents entry missing file: {functional_agent_name}",
+        )
+        if agent_file:
+            report.check(
+                agent_file.startswith("roles/"),
+                f"Functional agent file stays under roles/: {functional_agent_name}",
+                f"functional_agents file should stay under roles/: {functional_agent_name} -> {agent_file}",
+            )
+            report.check(
+                (root / agent_file).exists(),
+                f"Functional agent role file exists: {functional_agent_name}",
+                f"functional_agents file missing on disk: {functional_agent_name} -> {agent_file}",
+            )
+        report.check(
+            bool(focus),
+            f"Functional agent has focus: {functional_agent_name}",
+            f"functional_agents entry missing focus: {functional_agent_name}",
+        )
+        report.check(
+            bool(owns_stages),
+            f"Functional agent owns stages: {functional_agent_name}",
+            f"functional_agents entry missing owns_stages: {functional_agent_name}",
+        )
+        report.check(
+            owns_stages.issubset(EXPECTED_ROUTING_STAGE_IDS),
+            f"Functional agent owns canonical stages: {functional_agent_name}",
+            (
+                f"functional_agents entry for {functional_agent_name} references unknown stages: "
+                f"{ids_to_text(owns_stages - EXPECTED_ROUTING_STAGE_IDS) or 'none'}"
+            ),
+        )
+
+        if agent_file and (root / agent_file).exists():
+            role_content = read_text(root, agent_file, report)
+            role_id = parse_yaml_scalar(role_content, "id", indent=0)
+            preferred_skills = set(
+                parse_yaml_list(extract_top_level_section(role_content, "preferred_skills"), item_indent=2)
+            )
+            expected_role_id = mapped_role or functional_agent_name
+            report.check(
+                bool(role_id),
+                f"Role file declares id: {functional_agent_name}",
+                f"{agent_file} missing top-level id",
+            )
+            if role_id:
+                report.check(
+                    role_id == expected_role_id,
+                    f"Role file id matches functional mapping: {functional_agent_name}",
+                    (
+                        f"{agent_file} id mismatch for {functional_agent_name}: "
+                        f"{role_id} vs expected {expected_role_id}"
+                    ),
+                )
+            report.check(
+                preferred_skills.issubset(skill_registry),
+                f"Role preferred_skills are registered for {functional_agent_name}",
+                (
+                    f"{agent_file} references unknown preferred_skills: "
+                    f"{ids_to_text(preferred_skills - skill_registry) or 'none'}"
+                ),
+            )
+
+    routing_defaults, routing_overrides = parse_task_functional_routing(map_content)
+    report.check(
+        set(routing_defaults) == EXPECTED_ROUTING_STAGE_IDS,
+        "task_functional_routing defaults cover canonical stages",
+        (
+            "task_functional_routing defaults mismatch. Missing: "
+            f"{ids_to_text(EXPECTED_ROUTING_STAGE_IDS - set(routing_defaults)) or 'none'}; "
+            f"Extra: {ids_to_text(set(routing_defaults) - EXPECTED_ROUTING_STAGE_IDS) or 'none'}"
+        ),
+    )
+    report.check(
+        set(routing_defaults.values()).issubset(functional_agent_registry),
+        "task_functional_routing defaults use registered functional agents",
+        (
+            "task_functional_routing defaults reference unknown functional agents: "
+            f"{ids_to_text(set(routing_defaults.values()) - functional_agent_registry) or 'none'}"
+        ),
+    )
+
+    report.check(
+        set(routing_overrides).issubset(EXPECTED_TASK_IDS),
+        "task_functional_routing overrides reference canonical Task IDs",
+        (
+            "task_functional_routing overrides reference unknown Task IDs: "
+            f"{ids_to_text(set(routing_overrides) - EXPECTED_TASK_IDS) or 'none'}"
+        ),
+    )
+    report.check(
+        set(routing_overrides.values()).issubset(functional_agent_registry),
+        "task_functional_routing overrides use registered functional agents",
+        (
+            "task_functional_routing overrides reference unknown functional agents: "
+            f"{ids_to_text(set(routing_overrides.values()) - functional_agent_registry) or 'none'}"
+        ),
+    )
 
     skill_map_section = extract_top_level_section(map_content, "task_skill_mapping")
     skill_map_ids = {
@@ -769,6 +1206,18 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
                 f"{ids_to_text(quality_gates - EXPECTED_QUALITY_GATES) or 'none'}"
             ),
         )
+        resolved_owner = routing_overrides.get(task_id) or routing_defaults.get(task_id[0])
+        report.check(
+            bool(resolved_owner),
+            f"{task_id} resolves to a functional owner",
+            f"{task_id} has no functional owner in task_functional_routing",
+        )
+        if resolved_owner:
+            report.check(
+                resolved_owner in functional_agent_registry,
+                f"{task_id} functional owner is registered",
+                f"{task_id} resolves to unknown functional owner: {resolved_owner}",
+            )
 
 
 def validate_cross_file_consistency(root: Path, report: ValidationReport) -> None:
@@ -857,6 +1306,173 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
             "coverage-matrix.md has broad capability rows",
             "coverage-matrix.md appears too short; expected at least 8 capability rows",
         )
+
+
+def validate_pipelines(root: Path, report: ValidationReport) -> None:
+    registry_content = read_text(root, "skills/registry.yaml", report)
+    artifact_content = read_text(root, "schemas/artifact-types.yaml", report)
+    map_content = read_text(root, "standards/mcp-agent-capability-map.yaml", report)
+    if not registry_content or not artifact_content or not map_content:
+        return
+
+    registry_entries = parse_skill_registry_entries(registry_content)
+    artifact_types = set(parse_artifact_types(artifact_content))
+    task_skill_map = parse_task_skill_mapping(map_content)
+    routing_defaults, routing_overrides = parse_task_functional_routing(map_content)
+    functional_registry = parse_yaml_list(
+        extract_top_level_section(map_content, "functional_agent_registry"),
+        item_indent=2,
+    )
+    functional_agent_registry = set(functional_registry)
+
+    pipeline_dir = root / "pipelines"
+    pipeline_paths = sorted(pipeline_dir.glob("*.yaml"))
+    report.check(
+        bool(pipeline_paths),
+        "pipelines/ contains YAML pipeline definitions",
+        "pipelines/ must contain at least one .yaml pipeline definition",
+    )
+
+    for pipeline_path in pipeline_paths:
+        relative_path = str(pipeline_path.relative_to(root))
+        content = read_text(root, relative_path, report)
+        if not content:
+            continue
+
+        pipeline_id = parse_yaml_scalar(content, "id", indent=0)
+        pipeline_paper_type = parse_yaml_scalar(content, "paper_type", indent=0)
+        report.check(
+            bool(pipeline_id),
+            f"{relative_path} declares pipeline id",
+            f"{relative_path} missing top-level id",
+        )
+        if pipeline_id:
+            report.check(
+                pipeline_path.stem == pipeline_id,
+                f"{relative_path} filename matches pipeline id",
+                f"{relative_path} filename must match top-level id {pipeline_id}",
+            )
+        report.check(
+            pipeline_paper_type in EXPECTED_PAPER_TYPES,
+            f"{relative_path} paper_type is canonical",
+            f"{relative_path} has non-canonical paper_type: {pipeline_paper_type or '<missing>'}",
+        )
+
+        steps_section = extract_top_level_section(content, "steps")
+        step_blocks = iter_yaml_list_blocks(steps_section, item_indent=2)
+        report.check(
+            bool(step_blocks),
+            f"{relative_path} contains step blocks",
+            f"{relative_path} must contain at least one pipeline step",
+        )
+
+        step_ids = [step_id for step_id, _block in step_blocks]
+        report.check(
+            len(step_ids) == len(set(step_ids)),
+            f"{relative_path} step ids are unique",
+            f"{relative_path} has duplicate pipeline step ids",
+        )
+        step_id_set = set(step_ids)
+
+        for step_id, block in step_blocks:
+            skill_name = parse_yaml_scalar(block, "skill", indent=4)
+            task_id = parse_yaml_scalar(block, "task_id", indent=4)
+            outputs = parse_inline_yaml_list(block, "outputs", indent=4)
+            depends_on = parse_inline_yaml_list(block, "depends_on", indent=4)
+            owner = parse_yaml_scalar(block, "owner_functional_agent", indent=4)
+
+            report.check(
+                bool(skill_name),
+                f"{relative_path} step {step_id} has skill",
+                f"{relative_path} step {step_id} missing skill",
+            )
+            if skill_name:
+                report.check(
+                    skill_name in registry_entries,
+                    f"{relative_path} step {step_id} skill is registered",
+                    (
+                        f"{relative_path} step {step_id} references unknown skill: "
+                        f"{skill_name}"
+                    ),
+                )
+
+            report.check(
+                task_id in EXPECTED_TASK_IDS,
+                f"{relative_path} step {step_id} task_id is canonical",
+                (
+                    f"{relative_path} step {step_id} references unknown task_id: "
+                    f"{task_id or '<missing>'}"
+                ),
+            )
+
+            report.check(
+                len(outputs) > 0,
+                f"{relative_path} step {step_id} declares outputs",
+                f"{relative_path} step {step_id} missing outputs list",
+            )
+            report.check(
+                set(outputs).issubset(artifact_types),
+                f"{relative_path} step {step_id} outputs use known artifact types",
+                (
+                    f"{relative_path} step {step_id} references unknown artifact types: "
+                    f"{ids_to_text(set(outputs) - artifact_types) or 'none'}"
+                ),
+            )
+
+            if skill_name in registry_entries:
+                registry_outputs = set(registry_entries[skill_name].outputs)
+                report.check(
+                    set(outputs).issubset(registry_outputs),
+                    f"{relative_path} step {step_id} outputs match registry skill outputs",
+                    (
+                        f"{relative_path} step {step_id} outputs are not declared by "
+                        f"{skill_name}: {ids_to_text(set(outputs) - registry_outputs) or 'none'}"
+                    ),
+                )
+
+            report.check(
+                set(depends_on).issubset(step_id_set),
+                f"{relative_path} step {step_id} depends_on references known steps",
+                (
+                    f"{relative_path} step {step_id} depends_on unknown step ids: "
+                    f"{ids_to_text(set(depends_on) - step_id_set) or 'none'}"
+                ),
+            )
+
+            if task_id in task_skill_map and skill_name:
+                report.check(
+                    skill_name in task_skill_map[task_id],
+                    f"{relative_path} step {step_id} skill is allowed for {task_id}",
+                    (
+                        f"{relative_path} step {step_id} uses skill {skill_name} which is not "
+                        f"listed in task_skill_mapping.{task_id}"
+                    ),
+                )
+
+            resolved_owner = routing_overrides.get(task_id) or routing_defaults.get(task_id[:1])
+            report.check(
+                bool(owner),
+                f"{relative_path} step {step_id} declares owner_functional_agent",
+                f"{relative_path} step {step_id} missing owner_functional_agent",
+            )
+            if owner:
+                report.check(
+                    owner in functional_agent_registry,
+                    f"{relative_path} step {step_id} owner_functional_agent is registered",
+                    (
+                        f"{relative_path} step {step_id} owner_functional_agent is unknown: "
+                        f"{owner}"
+                    ),
+                )
+                if resolved_owner:
+                    report.check(
+                        owner == resolved_owner,
+                        f"{relative_path} step {step_id} owner_functional_agent matches task routing",
+                        (
+                            f"{relative_path} step {step_id} owner_functional_agent mismatch: "
+                            f"{owner} vs expected {resolved_owner} for task {task_id}"
+                        ),
+                    )
 
     for relative_path, expected_ids in WORKFLOW_TASK_EXPECTATIONS.items():
         content = read_text(root, relative_path, report)
@@ -1447,9 +2063,12 @@ def main() -> int:
 
     print(f"Validating research standard in: {root}")
     validate_contract(root, report)
+    validate_skill_registry(root, report)
+    validate_single_skill_source_of_truth(root, report)
     validate_mcp_agent_map(root, report)
     validate_portable_skill(root, report)
     validate_cross_file_consistency(root, report)
+    validate_pipelines(root, report)
     validate_mcp_connector(root, report)
     validate_claude_bridge(root, report)
     validate_base_bridge(root, report)

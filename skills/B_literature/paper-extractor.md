@@ -36,6 +36,17 @@ Systematically extract key information from papers including:
 - Findings and contributions
 - Methodological details
 
+## Granularity Boundary
+
+The following are structured extraction slots inside `paper-extractor`, not separate top-level skills:
+
+- Methodology extraction
+- Dataset / data-source extraction
+- Theory extraction
+- Limitation extraction
+
+If a new requirement only changes one slot, extend `templates/paper-note.md` or `templates/extraction-table.md` rather than adding another extractor skill.
+
 ## Related Task IDs
 
 - `B2` (targeted paper reading)
@@ -47,6 +58,11 @@ Systematically extract key information from papers including:
 - Paper notes → `RESEARCH/[topic]/notes/`
 - Extraction rollup → `RESEARCH/[topic]/extraction_table.md`
 - (If pooling) effect inputs → `RESEARCH/[topic]/effect_size_table.md`
+
+Template references:
+- `templates/paper-note.md`
+- `templates/extraction-table.md`
+- `templates/effect-size-extraction-table.md` (when pooling)
 
 ## Extraction Framework
 
@@ -95,6 +111,16 @@ Systematically extract key information from papers including:
 | Analysis Methods | What analytical techniques? |
 | Validity/Reliability | What measures of rigor? |
 
+### 4.5 Dataset / Data Source Slot
+
+| Field | Extraction Prompt |
+|-------|------------------|
+| Data Source | What dataset, archive, platform, or field setting is used? |
+| Access Type | Public / restricted / proprietary / collected by authors? |
+| Time Window | What observation period is covered? |
+| Unit of Analysis | Individual / firm / country / document / etc. |
+| Merge / Linkage | Are multiple sources combined? How? |
+
 ### 5. Findings
 
 | Field | Extraction Prompt |
@@ -124,9 +150,12 @@ Systematically extract key information from papers including:
 | Limitations | What limitations acknowledged? |
 | Future Research | What future work suggested? |
 
+These slots should be reflected both in the per-paper note and in the rollup extraction table.
+
 ## Extraction Output Template
 
 Write one note per paper under `notes/{citekey}.md`, and then roll up key fields into `extraction_table.md`.
+Use the paper note template as the canonical note structure instead of creating separate slot-specific note files.
 
 ```markdown
 # Paper Extraction: [Short Citation]
@@ -215,6 +244,13 @@ For multiple papers, create summary extraction table:
 | 1 | | | | | | | | A-E |
 | 2 | | | | | | | | A-E |
 ```
+
+At minimum, the rollup should preserve:
+- Theory / framework slot
+- Method / identification slot
+- Dataset / source slot
+- Main findings slot
+- Limitations slot
 
 ## Usage
 

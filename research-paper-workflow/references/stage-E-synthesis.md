@@ -85,6 +85,7 @@ Rule of thumb: if a future-you cannot recompute the value from the paper + notes
 - Heterogeneity reported and interpreted
 - Sensitivity analyses reported
 - Figures/tables referenced (forest plot, etc.) if generated
+- If magnitude interpretation will feed the manuscript discussion, key translations can be carried forward into `manuscript/effect_interpretation.md`
 
 Write into: `meta_analysis_results.md`.
 
@@ -126,6 +127,7 @@ Write into: `grade_sof.md`.
 - `synthesis.md` conclusions are supported by extraction + quality tables
 - `synthesis_matrix.md` makes the narrative traceable (themes × papers)
 - Limitations and certainty statements are calibrated (avoid overclaim)
+- Downstream manuscript drafting can reuse concise interpretation notes from E3/E5 in `manuscript/results_interpretation.md`
 
 Suggested structure: `synthesis.md`
 
@@ -148,4 +150,3 @@ Suggested structure: `synthesis.md`
 
 ## Implications & gaps
 ```
-

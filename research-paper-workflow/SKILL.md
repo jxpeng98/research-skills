@@ -7,6 +7,8 @@ description: Standardized end-to-end workflow for academic paper production acro
 
 Run a model-agnostic paper workflow using shared Task IDs and artifact contracts.
 
+Treat this package as the portable entry skill for clients. Do not treat it as the only source of truth for internal capability specs; the canonical internal contract and routing layers live in `standards/` plus the referenced stage playbooks.
+
 ## Quick Start
 
 1. Ask for `paper_type`: `empirical`, `systematic-review`, `methods`, or `theory`.
@@ -18,6 +20,8 @@ Run a model-agnostic paper workflow using shared Task IDs and artifact contracts
 
 - Use the canonical task and output definitions in `references/workflow-contract.md`.
 - Keep stage labels and task IDs unchanged across models.
+- Treat this package as an entry surface, not as a replacement for repo-internal skill specs or capability-map routing.
+- Do not infer stage order alphabetically when the contract exposes explicit ordering metadata.
 - If a requested output is missing prerequisites, create a gap note and ask whether to:
   1. continue with placeholders, or
   2. run the prerequisite task first.

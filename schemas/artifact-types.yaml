@@ -114,6 +114,42 @@ artifact_types:
     produced_by: [study-designer]
     consumed_by: [robustness-planner, code-builder, stats-engine]
 
+  - name: DataManagementPlan
+    description: "FAIR-aligned plan covering storage, governance, sharing, and retention"
+    format: markdown
+    produced_by: [study-designer, data-management-plan]
+    consumed_by: [ethics-irb-helper, deidentification-planner, submission-packager]
+
+  - name: Instruments
+    description: "Survey, interview, observation, or extraction instrument package"
+    format: markdown_directory
+    produced_by: [study-designer, data-dictionary-builder]
+    consumed_by: [ethics-irb-helper, code-builder]
+
+  - name: Preregistration
+    description: "Preregistration draft specifying hypotheses, design, and decision rules"
+    format: markdown
+    produced_by: [study-designer, prereg-writer]
+    consumed_by: [reporting-checker, submission-packager]
+
+  - name: DatasetPlan
+    description: "Feasible dataset options, access routes, provenance, and coverage constraints"
+    format: markdown
+    produced_by: [dataset-finder]
+    consumed_by: [data-cleaning-planner, data-merge-planner, ethics-irb-helper, code-builder]
+
+  - name: VariableSpec
+    description: "Operational variable specification with source, unit, coding, and transformations"
+    format: markdown
+    produced_by: [variable-constructor]
+    consumed_by: [data-cleaning-planner, data-merge-planner, code-builder, stats-engine]
+
+  - name: DataDictionary
+    description: "Codebook defining variable labels, types, coding rules, and provenance"
+    format: markdown
+    produced_by: [data-dictionary-builder]
+    consumed_by: [code-builder, data-cleaning-planner]
+
   - name: RivalHypotheses
     description: "Competing theories and rival explanations with design countermeasures"
     format: markdown
@@ -146,6 +182,12 @@ artifact_types:
     produced_by: [evidence-synthesizer]
     consumed_by: [manuscript-architect, publication-bias-checker]
 
+  - name: SynthesisMatrix
+    description: "Cross-study synthesis matrix aligning studies, constructs, methods, and outcomes"
+    format: markdown
+    produced_by: [evidence-synthesizer]
+    consumed_by: [manuscript-architect, publication-bias-checker]
+
   - name: QualityTable
     description: "Risk-of-bias and certainty-of-evidence assessments per study"
     format: markdown
@@ -157,6 +199,12 @@ artifact_types:
     format: markdown
     produced_by: [quality-assessor]
     consumed_by: [manuscript-architect]
+
+  - name: PublicationBiasReport
+    description: "Bias diagnostics such as funnel asymmetry, fail-safe N, or trim-and-fill results"
+    format: markdown
+    produced_by: [publication-bias-checker]
+    consumed_by: [manuscript-architect, reporting-checker]
 
   # ── F_writing outputs ──
   - name: ManuscriptOutline
@@ -176,6 +224,36 @@ artifact_types:
     format: markdown
     produced_by: [manuscript-architect]
     consumed_by: [reporting-checker, self-critique]
+
+  - name: FiguresTablesPlan
+    description: "Planned figures and tables with purpose, evidence linkage, and placement"
+    format: markdown
+    produced_by: [manuscript-architect]
+    consumed_by: [table-generator, figure-specifier]
+
+  - name: ResultInterpretation
+    description: "Narrative interpretation of model results, uncertainty, and robustness implications"
+    format: markdown
+    produced_by: [analysis-interpreter]
+    consumed_by: [manuscript-architect, reporting-checker]
+
+  - name: EffectInterpretation
+    description: "Magnitude-focused interpretation translating estimates into substantive effects"
+    format: markdown
+    produced_by: [effect-size-interpreter]
+    consumed_by: [manuscript-architect, reporting-checker]
+
+  - name: FormattedTables
+    description: "Publication-ready tables in draft and exportable formats"
+    format: markdown_directory
+    produced_by: [table-generator]
+    consumed_by: [manuscript-architect, submission-packager]
+
+  - name: FigureSpecs
+    description: "Reproducible figure specifications, captions, and rendering instructions"
+    format: markdown_directory
+    produced_by: [figure-specifier]
+    consumed_by: [manuscript-architect, submission-packager]
 
   - name: MetaOptimization
     description: "Optimized abstract, title, and keywords for discoverability"
@@ -252,6 +330,18 @@ artifact_types:
     produced_by: [code-builder]
     consumed_by: [code-review, code-execution, reproducibility-auditor]
 
+  - name: CleaningPlan
+    description: "Executable cleaning rules for validation, missingness, and harmonization"
+    format: markdown
+    produced_by: [data-cleaning-planner]
+    consumed_by: [code-builder, code-execution]
+
+  - name: MergePlan
+    description: "Join logic, key validation, and provenance rules for multi-source datasets"
+    format: markdown
+    produced_by: [data-merge-planner]
+    consumed_by: [code-builder, code-execution]
+
   - name: ReproducibilityReport
     description: "Reproducibility audit covering seeds, environment, containerization"
     format: markdown
@@ -262,4 +352,89 @@ artifact_types:
     description: "Statistical analysis results with effect sizes and diagnostics"
     format: markdown
     produced_by: [stats-engine]
-    consumed_by: [manuscript-architect, evidence-synthesizer]
+    consumed_by: [manuscript-architect, evidence-synthesizer, analysis-interpreter, effect-size-interpreter, table-generator, figure-specifier]
+
+  # ── Cross-cutting and integration types ──
+  - name: UserQuery
+    description: "Original user request or problem statement packet"
+    format: markdown
+    produced_by: []
+    consumed_by: [question-refiner, venue-analyzer, code-specification]
+
+  - name: AnyArtifact
+    description: "Generic placeholder for any artifact entering a critique or QA pass"
+    format: markdown
+    produced_by: []
+    consumed_by: [self-critique]
+
+  - name: TaskPacket
+    description: "Structured orchestration packet containing task metadata and execution requirements"
+    format: markdown
+    produced_by: [research-orchestrator]
+    consumed_by: [model-collaborator]
+
+  - name: CollaborationTrace
+    description: "Execution trace showing handoffs, reviews, and cross-model decisions"
+    format: markdown
+    produced_by: [model-collaborator]
+    consumed_by: [research-orchestrator]
+
+  - name: CritiqueLog
+    description: "Structured red-team critique log with identified weaknesses and fixes"
+    format: markdown
+    produced_by: [self-critique]
+    consumed_by: [research-orchestrator]
+
+  - name: LiteratureCorpus
+    description: "Working literature corpus assembled from search and screening steps"
+    format: markdown
+    produced_by: [academic-searcher, paper-screener]
+    consumed_by: [theory-mapper, gap-analyzer]
+
+  - name: FullTextStatus
+    description: "Status ledger for full-text retrieval attempts and source provenance"
+    format: markdown
+    produced_by: [fulltext-fetcher]
+    consumed_by: [paper-extractor, paper-screener]
+
+  - name: RISExport
+    description: "Reference library export in RIS format"
+    format: ris
+    produced_by: [reference-manager-bridge]
+    consumed_by: []
+
+  - name: CSLJSONExport
+    description: "Reference library export in CSL-JSON format"
+    format: json
+    produced_by: [reference-manager-bridge]
+    consumed_by: []
+
+  - name: ReviewComments
+    description: "Reviewer or editor comments requiring structured response"
+    format: markdown
+    produced_by: []
+    consumed_by: [rebuttal-assistant]
+
+  - name: EmpathyCheck
+    description: "Tone and responsiveness review for rebuttal documents"
+    format: markdown
+    produced_by: [reviewer-empathy-checker]
+    consumed_by: [rebuttal-assistant]
+
+  - name: PerformanceProfile
+    description: "Performance profiling output for executed research code"
+    format: markdown
+    produced_by: [code-execution]
+    consumed_by: [code-review, reproducibility-auditor]
+
+  - name: CodeReview
+    description: "Structured review of research code correctness, security, and statistical logic"
+    format: markdown
+    produced_by: [code-review]
+    consumed_by: [code-builder, reproducibility-auditor]
+
+  - name: DomainProfile
+    description: "Domain-specific coding and method preferences used to guide implementation"
+    format: markdown
+    produced_by: []
+    consumed_by: [code-builder, code-review]

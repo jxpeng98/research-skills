@@ -731,8 +731,9 @@ Produce sections:
         session_id: str | None = None,
     ) -> CollaborationResult:
         """Single model execution for simple tasks."""
+        runtime_options = {"session_id": session_id} if session_id else {}
+        resp = self._execute_runtime_agent(model, prompt, cwd, runtime_options)
         if model == "codex":
-            resp = self.codex.execute(prompt, cwd, session_id=session_id)
             return CollaborationResult(
                 mode="single",
                 task_description=prompt[:200],
@@ -741,7 +742,6 @@ Produce sections:
                 confidence=1.0 if resp.success else 0.0,
             )
         if model == "claude":
-            resp = self.claude.execute(prompt, cwd, session_id=session_id)
             return CollaborationResult(
                 mode="single",
                 task_description=prompt[:200],
@@ -750,7 +750,6 @@ Produce sections:
                 confidence=1.0 if resp.success else 0.0,
             )
         if model == "gemini":
-            resp = self.gemini.execute(prompt, cwd, session_id=session_id)
             return CollaborationResult(
                 mode="single",
                 task_description=prompt[:200],
@@ -1027,6 +1026,144 @@ Provide your verification assessment.
             "any_of_requirements": any_of_requirements,
         }
 
+    def _load_task_functional_plan(
+        self,
+        task_id: str,
+        capability_map: str | None = None,
+    ) -> dict[str, Any]:
+        capability_map = capability_map or self._read_standard("mcp-agent-capability-map.yaml")
+        functional_agent_registry = set(
+            self._parse_yaml_list(
+                self._extract_top_level_section(capability_map, "functional_agent_registry"),
+                item_indent=2,
+            )
+        )
+        if not functional_agent_registry:
+            raise ValueError(
+                "functional_agent_registry is missing or empty in mcp-agent-capability-map.yaml"
+            )
+
+        routing_section = self._extract_top_level_section(
+            capability_map,
+            "task_functional_routing",
+        )
+        defaults_section = self._extract_nested_section(
+            routing_section,
+            "defaults_by_stage",
+            indent=2,
+        )
+        routing_defaults = {
+            stage: owner
+            for stage, owner in re.findall(
+                r'^\s{4}([A-Z]):\s*"?(.*?)"?\s*$',
+                defaults_section,
+                flags=re.MULTILINE,
+            )
+        }
+        overrides_section = self._extract_nested_section(
+            routing_section,
+            "overrides",
+            indent=2,
+        )
+        routing_overrides = {
+            routed_task: owner
+            for routed_task, owner in re.findall(
+                r'^\s{4}([A-I][0-9_]+):\s*"?(.*?)"?\s*$',
+                overrides_section,
+                flags=re.MULTILINE,
+            )
+        }
+
+        stage_id = task_id[:1]
+        stage_default_owner = routing_defaults.get(stage_id, "")
+        functional_owner = routing_overrides.get(task_id) or stage_default_owner
+        owner_source = "override" if task_id in routing_overrides else "stage-default"
+        if not functional_owner:
+            raise ValueError(f"Task {task_id} has no functional owner in task_functional_routing")
+        if functional_owner not in functional_agent_registry:
+            raise ValueError(
+                f"Task {task_id} resolves to unknown functional owner: {functional_owner}"
+            )
+
+        functional_agents_section = self._extract_top_level_section(
+            capability_map,
+            "functional_agents",
+        )
+        agent_match = re.search(
+            rf"^\s{{2}}{re.escape(functional_owner)}:\n((?:^\s{{4}}.*\n?)+)",
+            functional_agents_section,
+            flags=re.MULTILINE,
+        )
+        if not agent_match:
+            raise ValueError(
+                f"Functional owner {functional_owner} missing from functional_agents catalog"
+            )
+        agent_block = agent_match.group(1)
+        role_file = self._parse_yaml_scalar(agent_block, "file", indent=4)
+        mapped_role = self._parse_yaml_scalar(agent_block, "mapped_role", indent=4)
+        focus = self._parse_yaml_scalar(agent_block, "focus", indent=4)
+
+        role_id = mapped_role or functional_owner
+        display_name = functional_owner
+        tone = ""
+        preferred_skills: list[str] = []
+        if role_file:
+            role_path = self.standards_dir.parent / role_file
+            if role_path.exists():
+                role_content = role_path.read_text(encoding="utf-8")
+                role_id = self._parse_yaml_scalar(role_content, "id", indent=0) or role_id
+                display_name = (
+                    self._parse_yaml_scalar(role_content, "display_name", indent=0)
+                    or display_name
+                )
+                tone = self._parse_yaml_scalar(role_content, "tone", indent=0)
+                preferred_skills = self._parse_yaml_list(
+                    self._extract_top_level_section(role_content, "preferred_skills"),
+                    item_indent=2,
+                )
+
+        return {
+            "functional_owner": functional_owner,
+            "functional_owner_source": owner_source,
+            "functional_stage_default_owner": stage_default_owner,
+            "functional_stage_id": stage_id,
+            "functional_role_id": role_id,
+            "functional_display_name": display_name,
+            "functional_role_file": role_file,
+            "functional_focus": focus,
+            "functional_tone": tone,
+            "functional_preferred_skills": preferred_skills,
+        }
+
+    def _build_functional_handoff_trace(
+        self,
+        task_ids: list[str],
+        capability_map: str | None = None,
+    ) -> dict[str, Any]:
+        capability_map = capability_map or self._read_standard("mcp-agent-capability-map.yaml")
+        trace: list[dict[str, Any]] = []
+        owner_chain: list[str] = []
+
+        for routed_task in task_ids:
+            functional_plan = self._load_task_functional_plan(routed_task, capability_map)
+            trace.append(
+                {
+                    "task_id": routed_task,
+                    "functional_owner": functional_plan["functional_owner"],
+                    "functional_owner_source": functional_plan["functional_owner_source"],
+                    "functional_role_id": functional_plan["functional_role_id"],
+                    "functional_display_name": functional_plan["functional_display_name"],
+                }
+            )
+            if not owner_chain or owner_chain[-1] != functional_plan["functional_owner"]:
+                owner_chain.append(functional_plan["functional_owner"])
+
+        return {
+            "trace": trace,
+            "owner_chain": owner_chain,
+            "owner_chain_text": " -> ".join(owner_chain),
+        }
+
     def task_plan(
         self,
         task_id: str,
@@ -1041,6 +1178,10 @@ Provide your verification assessment.
         try:
             artifact_root, _required_outputs = self._load_task_outputs(normalized_task)
             plan = self._build_task_plan(normalized_task)
+            agent_plan = self._load_task_agent_plan(normalized_task)
+            functional_handoff = self._build_functional_handoff_trace(
+                plan["requires_all_order"],
+            )
         except (FileNotFoundError, ValueError) as exc:
             return CollaborationResult(
                 mode="task-plan",
@@ -1087,6 +1228,9 @@ Provide your verification assessment.
         recommended_prereq = [
             str(x) for x in root_deps.get("recommended_prerequisites", []) if str(x).strip()
         ]
+        runtime_plan = dict(agent_plan.get("runtime_plan", {}))
+        handoff_trace = functional_handoff.get("trace", [])
+        handoff_chain = functional_handoff.get("owner_chain", [])
 
         mermaid_lines = ["graph TD"]
         for node in plan["requires_all_order"]:
@@ -1104,8 +1248,52 @@ Provide your verification assessment.
             f"- artifact_root: `{artifact_root}`",
             f"- project_root: `{project_root}`",
             "",
-            "### Required prerequisites (prerequisites_all, transitive)",
+            "### Functional routing",
+            (
+                f"- target_owner: `{agent_plan['functional_owner']}` "
+                f"[{agent_plan['functional_owner_source']}]"
+            ),
+            f"- role: `{agent_plan['functional_role_id']}`",
         ]
+        if agent_plan.get("functional_display_name"):
+            summary_lines.append(f"- display_name: {agent_plan['functional_display_name']}")
+        if agent_plan.get("functional_focus"):
+            summary_lines.append(f"- focus: {agent_plan['functional_focus']}")
+        if agent_plan.get("functional_tone"):
+            summary_lines.append(f"- tone: {agent_plan['functional_tone']}")
+        if handoff_chain:
+            summary_lines.append(
+                "- handoff_chain: " + " -> ".join(f"`{owner}`" for owner in handoff_chain)
+            )
+        else:
+            summary_lines.append("- handoff_chain: None")
+
+        summary_lines.extend(
+            [
+                "",
+                "### Functional handoff trace",
+            ]
+        )
+        if handoff_trace:
+            for item in handoff_trace:
+                summary_lines.append(
+                    f"- `{item['task_id']}` -> `{item['functional_owner']}` "
+                    f"[{item['functional_owner_source']}]"
+                )
+        else:
+            summary_lines.append("- None")
+
+        summary_lines.extend(
+            [
+                "",
+                "### Runtime routing plan",
+                f"- draft: `{runtime_plan.get('primary_agent', '-') or '-'}`",
+                f"- review: `{runtime_plan.get('review_agent', '-') or '-'}`",
+                f"- fallback: `{runtime_plan.get('fallback_agent', '-') or '-'}`",
+                "",
+                "### Required prerequisites (prerequisites_all, transitive)",
+            ]
+        )
         if required_chain:
             for index, node in enumerate(required_chain, start=1):
                 status = "OK" if completion.get(node) else "MISSING"
@@ -1176,6 +1364,16 @@ Provide your verification assessment.
                 "any_of_requirements": any_of_status,
                 "recommended_prerequisites": recommended_prereq,
                 "recommended_next": recommended_next,
+                "functional_owner": agent_plan["functional_owner"],
+                "functional_owner_source": agent_plan["functional_owner_source"],
+                "functional_role_id": agent_plan["functional_role_id"],
+                "functional_display_name": agent_plan["functional_display_name"],
+                "functional_focus": agent_plan["functional_focus"],
+                "functional_tone": agent_plan["functional_tone"],
+                "functional_preferred_skills": agent_plan["functional_preferred_skills"],
+                "functional_handoff_trace": handoff_trace,
+                "functional_owner_chain": handoff_chain,
+                "runtime_plan": runtime_plan,
                 "mermaid": mermaid,
             },
         )
@@ -1303,6 +1501,8 @@ Provide your verification assessment.
         if not quality_gates:
             raise ValueError(f"Task {task_id} has empty quality_gates")
 
+        functional_plan = self._load_task_functional_plan(task_id, capability_map)
+
         return {
             "required_mcp": required_mcp,
             "required_skills": required_skills,
@@ -1310,7 +1510,13 @@ Provide your verification assessment.
             "primary_agent": primary_agent,
             "review_agent": review_agent,
             "fallback_agent": fallback_agent,
+            "runtime_plan": {
+                "primary_agent": primary_agent,
+                "review_agent": review_agent,
+                "fallback_agent": fallback_agent,
+            },
             "quality_gates": quality_gates,
+            **functional_plan,
         }
 
     def _check_command_available(self, command: str) -> tuple[bool, str]:
@@ -1720,6 +1926,8 @@ Execution rules:
 3. For each deliverable, cite the MCP evidence source used.
 4. Apply every required skill in required_skills as a method constraint in your draft process.
    - Use required_skill_cards for concrete method focus and default outputs.
+   - Respect functional_owner as the accountable research owner for this task.
+   - Preserve upstream assumptions recorded in functional_handoff_trace.
 5. Explicitly check quality_gates and mark each as PASS/WARN/FAIL.
 6. If required input is missing, list it under "Missing Inputs" and continue with placeholders.
 
@@ -1784,6 +1992,7 @@ Review checklist:
 3. Required_skills usage fidelity and completeness.
 4. Internal consistency (claims/methods/evidence alignment).
 5. Missing citations, assumptions, or unresolved risks.
+6. Functional-owner scope fit and handoff consistency against functional_handoff_trace.
 {critique_section}
 
 Dynamic Literature-Based Critique:
@@ -1834,6 +2043,7 @@ Audit checklist:
 2. Verify contract output paths and quality gates.
 3. Check claim-method-evidence integrity.
 4. Prioritize top 3 fixes by impact.
+5. Confirm the draft stays within the functional_owner scope and handoff chain.
 
 Return sections:
 - Triad Verdict (PASS/BLOCK)
@@ -2011,6 +2221,48 @@ Return sections:
                 "status": "unavailable",
                 "detail": plan_result.merged_analysis,
             }
+        functional_handoff_trace = [
+            dict(item)
+            for item in packet["task_plan"].get("functional_handoff_trace", [])
+            if isinstance(item, dict)
+        ]
+        functional_owner_chain = [
+            str(item)
+            for item in packet["task_plan"].get("functional_owner_chain", [])
+            if str(item).strip()
+        ]
+        packet.update(
+            {
+                "functional_owner": agent_plan["functional_owner"],
+                "functional_owner_source": agent_plan["functional_owner_source"],
+                "functional_role_id": agent_plan["functional_role_id"],
+                "functional_display_name": agent_plan["functional_display_name"],
+                "functional_focus": agent_plan["functional_focus"],
+                "functional_tone": agent_plan["functional_tone"],
+                "functional_preferred_skills": agent_plan["functional_preferred_skills"],
+                "functional_handoff_trace": functional_handoff_trace,
+                "functional_owner_chain": functional_owner_chain,
+                "runtime_plan": dict(agent_plan.get("runtime_plan", {})),
+            }
+        )
+        routing_notes.append(
+            f"Functional owner resolved for {normalized_task}: "
+            f"{agent_plan['functional_owner']} "
+            f"(role={agent_plan['functional_role_id']}, "
+            f"source={agent_plan['functional_owner_source']})."
+        )
+        if agent_plan.get("functional_focus"):
+            routing_notes.append(f"Functional focus: {agent_plan['functional_focus']}")
+        if functional_owner_chain:
+            routing_notes.append(
+                "Functional handoff chain: " + " -> ".join(functional_owner_chain) + "."
+            )
+        routing_notes.append(
+            "Runtime plan: "
+            f"draft={agent_plan['primary_agent']}, "
+            f"review={agent_plan['review_agent']}, "
+            f"fallback={agent_plan['fallback_agent']}."
+        )
         try:
             skill_cards, skill_notes = self._collect_skill_context(
                 packet,

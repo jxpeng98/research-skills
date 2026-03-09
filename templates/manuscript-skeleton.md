@@ -27,10 +27,10 @@ Save to: RESEARCH/[topic]/manuscript/manuscript.md
 ### 3.6 Ethics (if applicable)
 
 ## 4. Results
-[Tables/figures referenced in-text.]
+[Tables/figures referenced in-text. Align with `manuscript/results_interpretation.md`, `manuscript/effect_interpretation.md`, `manuscript/tables/`, and `manuscript/figures/`.]
 
 ## 5. Discussion
-[Interpretation + literature dialogue + implications.]
+[Interpretation + literature dialogue + implications. Reuse the bounded interpretation notes rather than re-inferring from scratch.]
 
 ## 6. Limitations
 [Threats to validity + scope conditions.]
@@ -40,4 +40,3 @@ Save to: RESEARCH/[topic]/manuscript/manuscript.md
 
 ## References
 [Generated from bibliography / citation toolchain.]
-

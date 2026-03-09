@@ -15,13 +15,13 @@ Customize columns based on your research questions.
 
 ## General Extraction Table
 
-| ID | Citation | Year | Country | Study Design | Sample | Main Findings | Quality |
-|----|----------|------|---------|--------------|--------|---------------|---------|
-| 1 | | | | | N= | | A-E |
-| 2 | | | | | N= | | A-E |
-| 3 | | | | | N= | | A-E |
-| 4 | | | | | N= | | A-E |
-| 5 | | | | | N= | | A-E |
+| ID | Citation | Year | Country | Theory | Study Design | Dataset / Source | Sample | Main Findings | Limitations | Quality |
+|----|----------|------|---------|--------|--------------|------------------|--------|---------------|-------------|---------|
+| 1 | | | | | | | N= | | | A-E |
+| 2 | | | | | | | N= | | | A-E |
+| 3 | | | | | | | N= | | | A-E |
+| 4 | | | | | | | N= | | | A-E |
+| 5 | | | | | | | N= | | | A-E |
 
 ---
 
@@ -47,6 +47,7 @@ Customize columns based on your research questions.
 | Study Design | [ ] RCT [ ] Quasi-experimental [ ] Cohort [ ] Cross-sectional [ ] Case study [ ] Qualitative [ ] Mixed methods |
 | Theoretical Framework | |
 | Research Questions | |
+| Identification Strategy | |
 
 #### Population/Sample
 
@@ -74,6 +75,7 @@ Customize columns based on your research questions.
 | Field | Value |
 |-------|-------|
 | Methods | [ ] Survey [ ] Interview [ ] Observation [ ] Experiment [ ] Secondary data [ ] Other |
+| Dataset / Source | |
 | Instruments | |
 | Time Period | |
 | Data Type | [ ] Cross-sectional [ ] Longitudinal |
@@ -105,6 +107,15 @@ Customize columns based on your research questions.
 1. 
 2. 
 3. 
+
+#### Limitation Tags
+
+| Type | Note |
+|---|---|
+| Measurement | |
+| Identification / Design | |
+| Sample / External validity | |
+| Data quality / missingness | |
 
 #### Future Research
 

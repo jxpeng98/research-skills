@@ -66,6 +66,10 @@ Theme C: why your angle is needed (citations)
 - Secondary outcomes:
 - Robustness checks:
 - Subgroups/heterogeneity:
+- Companion interpretation note: `manuscript/results_interpretation.md`
+- Companion magnitude note: `manuscript/effect_interpretation.md`
+- Table anchors:
+- Figure anchors:
 
 ### 5. Discussion
 - Interpretation (link to RQs/hypotheses):
@@ -93,5 +97,6 @@ Theme C: why your angle is needed (citations)
 | Key citations | `bibliography.bib` + paper notes | TODO | |
 | Methods detail | `study_design.md` / `analysis_plan.md` | TODO | |
 | Results tables/figures | analysis outputs | TODO | |
+| Results interpretation | `manuscript/results_interpretation.md` | TODO | |
+| Effect interpretation | `manuscript/effect_interpretation.md` | TODO | |
 | Ethics statement | `ethics_irb.md` | TODO | |
-

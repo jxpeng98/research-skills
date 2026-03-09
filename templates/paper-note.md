@@ -19,6 +19,16 @@ Save to: RESEARCH/[topic]/notes/[citekey].md
 | **Evidence Rating** | [ ] A [ ] B [ ] C [ ] D [ ] E |
 | **Read Date** | |
 
+## Extraction Slot Summary
+
+| Slot | Quick Capture |
+|---|---|
+| Theory | |
+| Method / Identification | |
+| Dataset / Data Source | |
+| Main Finding | |
+| Limitations | |
+
 ## Quick Summary
 
 <!-- 2-3 sentence summary of the paper -->
@@ -70,6 +80,17 @@ Save to: RESEARCH/[topic]/notes/[citekey].md
 | Moderator | | |
 | Mediator | | |
 
+### Dataset / Data Source
+
+| Field | Value |
+|---|---|
+| Dataset / Archive / Platform | |
+| Access Type | Public / Restricted / Proprietary / Author-collected |
+| Time Window | |
+| Unit of Analysis | |
+| Multi-source Merge | Y / N |
+| Provenance Notes | |
+
 ### Core Concepts (for qualitative/theoretical)
 
 | Concept | Definition | Operationalization |
@@ -119,6 +140,15 @@ Save to: RESEARCH/[topic]/notes/[citekey].md
 1. 
 2. 
 3. 
+
+### Limitation Classification
+
+| Type | Note |
+|---|---|
+| Measurement | |
+| Identification / Design | |
+| Sample / External validity | |
+| Data availability / quality | |
 
 ## Future Research Directions
 

@@ -32,10 +32,128 @@ mcp_registry:
   - "reporting-guidelines"
   - "submission-kit"
 
+# Provider adapters and database-specific connectors belong in MCP / bridge space.
+# They should not be modeled as top-level skills unless they own a distinct contract artifact.
+skill_granularity_policy:
+  top_level_skill_criteria:
+    - "Consumes typed inputs and produces typed outputs"
+    - "Owns at least one stable artifact path under RESEARCH/[topic]/"
+    - "Is worth direct task/pipeline dependency wiring"
+    - "Carries distinct failure modes or review expectations"
+  keep_as_embedded_subflow:
+    - "query-builder"
+    - "keyword-expander"
+    - "methodology-extractor"
+    - "dataset-extractor"
+    - "theory-extractor"
+    - "limitation-extractor"
+  keep_in_provider_layer:
+    - "semantic-scholar-search"
+    - "crossref-search"
+    - "openalex-search"
+    - "database-connector"
+    - "zotero-sync"
+    - "doi-metadata-lookup"
+
+provider_capability_examples:
+  scholarly-search:
+    includes:
+      - "semantic-scholar-search"
+      - "crossref-search"
+      - "openalex-search"
+      - "keyword expansion against provider indexes"
+  metadata-registry:
+    includes:
+      - "doi lookup"
+      - "venue normalization"
+      - "citation export/import metadata sync"
+  fulltext-retrieval:
+    includes:
+      - "oa resolution"
+      - "repository fallback"
+      - "publisher landing-page resolution"
+
 agent_registry:
   - "codex"
   - "claude"
   - "gemini"
+
+# Runtime agent registry above is intentionally model-only.
+# Functional ownership is tracked separately below so we do not mix
+# "who owns the research responsibility" with "which model executes it".
+functional_agent_registry:
+  - "research-orchestrator"
+  - "literature-agent"
+  - "theory-agent"
+  - "methodology-agent"
+  - "data-agent"
+  - "analysis-agent"
+  - "writing-agent"
+  - "publication-agent"
+
+functional_agents:
+  research-orchestrator:
+    file: "roles/research-orchestrator.yaml"
+    focus: "Cross-stage planning, prerequisite checks, contract integrity, and handoff management."
+    owns_stages:
+      - "A"
+      - "B"
+      - "C"
+      - "D"
+      - "E"
+      - "F"
+      - "G"
+      - "H"
+      - "I"
+      - "J"
+  literature-agent:
+    file: "roles/literature-ra.yaml"
+    mapped_role: "literature-ra"
+    focus: "Search, screening, extraction, citation expansion, and literature mapping."
+    owns_stages:
+      - "B"
+  theory-agent:
+    file: "roles/theory-agent.yaml"
+    mapped_role: "theory-agent"
+    focus: "Theoretical framing, mechanism building, hypothesis logic, and gap interpretation."
+    owns_stages:
+      - "A"
+  methodology-agent:
+    file: "roles/methods-lead.yaml"
+    mapped_role: "methods-lead"
+    focus: "Study design, identification strategy, robustness, and preregistration design."
+    owns_stages:
+      - "C"
+  data-agent:
+    file: "roles/data-agent.yaml"
+    mapped_role: "data-agent"
+    focus: "Dataset strategy, data management, privacy controls, and data-pipeline handoff."
+    owns_stages:
+      - "C"
+      - "D"
+      - "I"
+  analysis-agent:
+    file: "roles/statistician.yaml"
+    mapped_role: "statistician"
+    focus: "Quantitative execution, diagnostics, synthesis, and numerical interpretation."
+    owns_stages:
+      - "E"
+      - "I"
+  writing-agent:
+    file: "roles/science-writer.yaml"
+    mapped_role: "science-writer"
+    focus: "Drafting, restructuring, tone control, and claim presentation."
+    owns_stages:
+      - "F"
+  publication-agent:
+    file: "roles/compliance-officer.yaml"
+    mapped_role: "compliance-officer"
+    focus: "Reporting checklist ownership, submission packaging, rebuttal, and compliance review."
+    owns_stages:
+      - "D"
+      - "G"
+      - "H"
+      - "J"
 
 skill_registry:
   - "question-refiner"
@@ -67,11 +185,19 @@ skill_registry:
   - "literature-mapper"
   - "rival-hypothesis-designer"
   - "robustness-planner"
+  - "dataset-finder"
+  - "variable-constructor"
   - "deidentification-planner"
   - "publication-bias-checker"
+  - "analysis-interpreter"
+  - "effect-size-interpreter"
+  - "table-generator"
+  - "figure-specifier"
   - "meta-optimizer"
   - "tone-normalizer"
   - "reviewer-empathy-checker"
+  - "data-cleaning-planner"
+  - "data-merge-planner"
   - "reproducibility-auditor"
   - "stats-engine"
   - "peer-review-simulation"
@@ -91,7 +217,7 @@ skill_catalog:
   academic-searcher:
     file: "skills/B_literature/academic-searcher.md"
     category: "literature-discovery"
-    focus: "Build reproducible multi-source search queries and seed corpus."
+    focus: "Own query design, provider-backed retrieval, and deduplicated search outputs."
     default_outputs:
       - "search_strategy.md"
       - "search_results.csv"
@@ -107,7 +233,7 @@ skill_catalog:
   paper-extractor:
     file: "skills/B_literature/paper-extractor.md"
     category: "data-extraction"
-    focus: "Extract structured study attributes, outcomes, and effect inputs."
+    focus: "Extract structured theory, method, data, finding, and limitation slots."
     default_outputs:
       - "notes/"
       - "extraction_table.md"
@@ -165,7 +291,7 @@ skill_catalog:
   study-designer:
     file: "skills/C_design/study-designer.md"
     category: "study-design"
-    focus: "Design sampling, measures, procedures, and analysis plans."
+    focus: "Own study design rationale, measures, analysis summary, and design handoff artifacts."
     default_outputs:
       - "study_design.md"
       - "analysis_plan.md"
@@ -188,12 +314,36 @@ skill_catalog:
   manuscript-architect:
     file: "skills/F_writing/manuscript-architect.md"
     category: "manuscript-structure"
-    focus: "Build coherent paper structure from outline to section-level drafts."
+    focus: "Own story spine, section drafting, and visual planning as one manuscript package."
     default_outputs:
       - "manuscript/outline.md"
       - "manuscript/manuscript.md"
       - "manuscript/claims_evidence_map.md"
       - "manuscript/figures_tables_plan.md"
+  analysis-interpreter:
+    file: "skills/F_writing/analysis-interpreter.md"
+    category: "manuscript-structure"
+    focus: "Translate statistical output into bounded result narratives."
+    default_outputs:
+      - "manuscript/results_interpretation.md"
+  effect-size-interpreter:
+    file: "skills/F_writing/effect-size-interpreter.md"
+    category: "manuscript-structure"
+    focus: "Explain estimate magnitude and practical importance in readable terms."
+    default_outputs:
+      - "manuscript/effect_interpretation.md"
+  table-generator:
+    file: "skills/F_writing/table-generator.md"
+    category: "manuscript-structure"
+    focus: "Generate venue-aware publication tables from statistical output."
+    default_outputs:
+      - "manuscript/tables/"
+  figure-specifier:
+    file: "skills/F_writing/figure-specifier.md"
+    category: "manuscript-structure"
+    focus: "Specify reproducible figures with accessibility and caption guidance."
+    default_outputs:
+      - "manuscript/figures/"
   prisma-checker:
     file: "skills/G_compliance/prisma-checker.md"
     category: "prisma-compliance"
@@ -235,6 +385,18 @@ skill_catalog:
     focus: "Translate methods into reproducible implementation and validation."
     default_outputs:
       - "analysis/"
+  data-cleaning-planner:
+    file: "skills/I_code/data-cleaning-planner.md"
+    category: "research-code"
+    focus: "Define reproducible cleaning rules before execution."
+    default_outputs:
+      - "data/cleaning_plan.md"
+  data-merge-planner:
+    file: "skills/I_code/data-merge-planner.md"
+    category: "research-code"
+    focus: "Define join logic, key validation, and multi-source provenance controls."
+    default_outputs:
+      - "data/merge_plan.md"
   model-collaborator:
     file: "skills/Z_cross_cutting/model-collaborator.md"
     category: "multi-agent-verification"
@@ -284,6 +446,18 @@ skill_catalog:
     focus: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
     default_outputs:
       - "design/robustness_plan.md"
+  dataset-finder:
+    file: "skills/C_design/dataset-finder.md"
+    category: "study-design"
+    focus: "Identify feasible datasets, access routes, and coverage risks."
+    default_outputs:
+      - "design/dataset_plan.md"
+  variable-constructor:
+    file: "skills/C_design/variable-constructor.md"
+    category: "study-design"
+    focus: "Operationalize constructs into variable definitions and transformation rules."
+    default_outputs:
+      - "design/variable_spec.md"
   deidentification-planner:
     file: "skills/D_ethics/deidentification-planner.md"
     category: "ethics-compliance"
@@ -362,6 +536,106 @@ skill_catalog:
     focus: "Secondary model reviews code logic, security, and statistical validity."
     default_outputs:
       - "code/code_review.md"
+
+skill_boundary_notes:
+  academic-searcher:
+    owns_contract_artifacts:
+      - "search_strategy.md"
+      - "search_results.csv"
+      - "search_log.md"
+    embedded_subflows:
+      - "query drafting"
+      - "keyword expansion"
+      - "provider-specific query translation"
+      - "deduplication and metadata normalization"
+    provider_dependencies:
+      - "scholarly-search"
+      - "metadata-registry"
+    templates:
+      - "templates/search-strategy.md"
+      - "templates/search-log.md"
+  paper-extractor:
+    owns_contract_artifacts:
+      - "notes/"
+      - "extraction_table.md"
+    embedded_subflows:
+      - "theory extraction slot"
+      - "methodology extraction slot"
+      - "dataset extraction slot"
+      - "limitation extraction slot"
+    provider_dependencies:
+      - "extraction-store"
+    templates:
+      - "templates/paper-note.md"
+      - "templates/extraction-table.md"
+  study-designer:
+    owns_contract_artifacts:
+      - "study_design.md"
+      - "analysis_plan.md"
+      - "data_management_plan.md"
+      - "instruments/"
+      - "preregistration.md"
+    embedded_subflows:
+      - "design choice rationale"
+      - "construct-to-measure mapping"
+      - "sampling and power planning"
+      - "handoff planning to dataset and variable specs"
+    provider_dependencies:
+      - "metadata-registry"
+    templates:
+      - "templates/study-design.md"
+      - "templates/analysis-plan.md"
+      - "templates/data-management-plan.md"
+  manuscript-architect:
+    owns_contract_artifacts:
+      - "manuscript/outline.md"
+      - "manuscript/manuscript.md"
+      - "manuscript/claims_evidence_map.md"
+      - "manuscript/figures_tables_plan.md"
+    embedded_subflows:
+      - "story spine construction"
+      - "section-level drafting"
+      - "results anchoring"
+      - "figure/table placement planning"
+    provider_dependencies:
+      - "filesystem"
+    templates:
+      - "templates/manuscript-outline.md"
+      - "templates/manuscript-skeleton.md"
+      - "templates/claim-evidence-map.md"
+      - "templates/figures-tables-plan.md"
+
+# Additive metadata only: this section documents who conceptually owns a task.
+# Runtime execution still uses task_execution.primary_agent/review_agent/fallback_agent.
+task_functional_routing:
+  defaults_by_stage:
+    A: "research-orchestrator"
+    B: "literature-agent"
+    C: "methodology-agent"
+    D: "publication-agent"
+    E: "analysis-agent"
+    F: "writing-agent"
+    G: "publication-agent"
+    H: "publication-agent"
+    I: "analysis-agent"
+    J: "publication-agent"
+  overrides:
+    A1_5: "theory-agent"
+    A2: "theory-agent"
+    A3: "theory-agent"
+    A4: "theory-agent"
+    A5: "publication-agent"
+    B4: "writing-agent"
+    C4: "data-agent"
+    D3: "data-agent"
+    G4: "writing-agent"
+    H2_5: "writing-agent"
+    I1: "methodology-agent"
+    I3: "data-agent"
+    I4: "methodology-agent"
+    I5: "methodology-agent"
+    I6: "methodology-agent"
+    I8: "methodology-agent"
 
 task_skill_mapping:
   A1:
@@ -444,6 +718,7 @@ task_skill_mapping:
   C3:
     required_skills:
       - "study-designer"
+      - "variable-constructor"
       - "code-builder"
   C3_5:
     required_skills:
@@ -452,6 +727,8 @@ task_skill_mapping:
   C4:
     required_skills:
       - "study-designer"
+      - "dataset-finder"
+      - "variable-constructor"
       - "ethics-irb-helper"
   C5:
     required_skills:
@@ -510,6 +787,8 @@ task_skill_mapping:
   F3:
     required_skills:
       - "manuscript-architect"
+      - "analysis-interpreter"
+      - "effect-size-interpreter"
       - "citation-formatter"
       - "reporting-checker"
       - "self-critique"
@@ -520,6 +799,8 @@ task_skill_mapping:
   F5:
     required_skills:
       - "manuscript-architect"
+      - "table-generator"
+      - "figure-specifier"
       - "metadata-enricher"
   F6:
     required_skills:
@@ -577,11 +858,14 @@ task_skill_mapping:
   I2:
     required_skills:
       - "code-builder"
+      - "stats-engine"
       - "model-collaborator"
       - "metadata-enricher"
   I3:
     required_skills:
       - "code-builder"
+      - "data-cleaning-planner"
+      - "data-merge-planner"
       - "model-collaborator"
       - "metadata-enricher"
   I4:
@@ -776,6 +1060,7 @@ task_execution:
   C3:
     required_mcp:
       - "filesystem"
+      - "metadata-registry"
       - "stats-engine"
     primary_agent: "codex"
     review_agent: "claude"
@@ -795,6 +1080,7 @@ task_execution:
   C4:
     required_mcp:
       - "filesystem"
+      - "scholarly-search"
       - "metadata-registry"
     primary_agent: "claude"
     review_agent: "gemini"
@@ -948,6 +1234,7 @@ task_execution:
   F5:
     required_mcp:
       - "filesystem"
+      - "code-runtime"
     primary_agent: "codex"
     review_agent: "claude"
     fallback_agent: "gemini"
@@ -1082,6 +1369,7 @@ task_execution:
       - "filesystem"
       - "code-runtime"
       - "extraction-store"
+      - "metadata-registry"
     primary_agent: "codex"
     review_agent: "gemini"
     fallback_agent: "claude"

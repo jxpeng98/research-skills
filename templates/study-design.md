@@ -24,6 +24,13 @@ Save to: RESEARCH/[topic]/study_design.md
 - **Unit of analysis**:
 - **Setting/context**:
 
+### Design decision log
+| Decision | Chosen option | Rejected alternatives | Reason |
+|---|---|---|---|
+| Study type | | | |
+| Unit of analysis | | | |
+| Timing / panel structure | | | |
+
 ## 4) Population, Sampling, Recruitment
 - **Target population**:
 - **Inclusion/exclusion criteria**:
@@ -79,6 +86,16 @@ Ethics pack: `RESEARCH/[topic]/ethics_irb.md`
 
 Full plan: `RESEARCH/[topic]/data_management_plan.md`
 
+## 10.5) Handoff Artifacts
+
+| Artifact | Purpose | Owner |
+|---|---|---|
+| `analysis_plan.md` | Estimands, models, inference rules | `study-designer` |
+| `design/variable_spec.md` | Operational variable definitions | `variable-constructor` |
+| `design/dataset_plan.md` | Dataset feasibility and source strategy | `dataset-finder` |
+| `data_management_plan.md` | Governance, storage, retention | `study-designer` |
+| `instruments/` | Collection instruments | `study-designer` |
+
 ## 11) Preregistration (Optional)
 - Registry (OSF/AsPredicted/etc.):
 - What will be pre-specified:
@@ -90,4 +107,3 @@ Draft: `RESEARCH/[topic]/preregistration.md`
 | Milestone | Date | Owner | Notes |
 |----------|------|-------|------|
 | | | | |
-

@@ -1,63 +1,102 @@
 # Quick Start Guide
 
-## 1. Explore the Framework
+This guide focuses on stable user-facing entrypoints. You do not need to understand `skills/`, `roles/`, or `pipelines/` to start using the system.
 
-```
-research-skills/
-├── skills/                # All 50 skill files organized by stage (A-I, Z)
-│   ├── A_framing/         # Research question, theory, positioning
-│   ├── B_literature/      # Search, screen, extract, cite
-│   ├── C_design/          # Study design, analysis, robustness
-│   ├── D_ethics/          # IRB, privacy, deidentification
-│   ├── E_synthesis/       # Quality assessment, synthesis, bias
-│   ├── F_writing/         # Manuscript, tables, figures, meta
-│   ├── G_compliance/      # PRISMA, reporting, tone
-│   ├── H_submission/      # Package, rebuttal, review, CRediT
-│   ├── I_code/            # Spec, plan, build, review, release
-│   ├── Z_cross_cutting/   # Multi-agent, metadata, QA, tone
-│   ├── domain-profiles/   # Domain-specific configs (10 domains)
-│   └── registry.yaml      # Machine-readable index of all skills
-├── pipelines/             # Abstract pipeline DAGs
-├── roles/                 # Research team role configs
-├── schemas/               # JSON schemas + artifact type vocab
-├── eval/                  # Golden test cases + rubrics + runner
-└── docs/                  # This documentation
-```
+## 1. Pick an Entry Mode
 
-## 2. Run a Pipeline
+Use one of these stable entrypoints:
 
-Choose a pipeline that matches your paper type:
+| Entry mode | Use when | Entry |
+|---|---|---|
+| Claude Code commands | You want slash-command UX inside a project | `.agent/workflows/*.md` commands such as `/paper`, `/lit-review`, `/paper-write` |
+| Orchestrator CLI | You want explicit task routing and validation | `python3 -m bridges.orchestrator task-plan|task-run|doctor` |
+| Portable skill package | You want the cross-client installable entry skill | `research-paper-workflow/` |
 
-| Pipeline | Paper Type |
-|---|---|
-| `systematic-review-prisma` | Systematic review |
-| `empirical-study` | Standard empirical paper |
-| `theory-paper` | Theory / conceptual paper |
-| `rct-prereg` | RCT with preregistration |
-| `code-first-methods` | Code-centric methods paper |
+## 2. Validate Local Readiness
 
-## 3. Select a Domain Profile
-
-Specify your domain via `--domain economics` (or similar) to activate domain-specific:
-- Library recommendations
-- Statistical diagnostics
-- Reporting guidelines
-- Venue norms
-
-Available: `economics`, `psychology`, `biomedical`, `cs-ai`, `education`, `epidemiology`, `finance`, `political-science`, `ecology-environmental`
-
-## 4. Optional: Select a Role
-
-Use `--role pi` to configure quality thresholds and preferred skills:
-- `pi` — Principal Investigator
-- `methods-lead` — Methods specialist
-- `literature-ra` — Literature research assistant
-- `statistician` — Statistical analysis focus
-- `science-writer` — Writing and presentation
-- `compliance-officer` — Reporting and ethics
-
-## 5. Validate Your Setup
+From the repo root:
 
 ```bash
-python3 scripts/validate_research_standard.py
+python3 -m bridges.orchestrator doctor --cwd .
+python3 scripts/validate_research_standard.py --strict
 ```
+
+Use `doctor` to check runtime CLIs, API keys, and MCP command wiring.
+Use the validator to confirm the repo standards are internally consistent.
+
+## 3. Choose a Paper Type
+
+The canonical paper-type pipelines are:
+
+| Paper type | Pipeline | Typical use |
+|---|---|---|
+| `systematic-review` | `systematic-review-prisma` | PRISMA-style evidence review |
+| `empirical` | `empirical-study` | Standard empirical research paper |
+| `empirical` | `rct-prereg` | RCT with preregistration and reporting checks |
+| `theory` | `theory-paper` | Conceptual or theory-building paper |
+| `methods` | `code-first-methods` | Methods paper where code is a first-class deliverable |
+
+## 4. Plan Before You Run
+
+Inspect prerequisites and routing before execution:
+
+```bash
+python3 -m bridges.orchestrator task-plan \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd .
+```
+
+`task-plan` shows:
+
+- contract outputs
+- prerequisite tasks
+- functional owner
+- functional handoff trace
+- runtime plan (`draft` / `review` / `fallback`)
+
+## 5. Run a Canonical Task
+
+Execute one task with routing, MCP evidence collection, and review:
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd . \
+  --triad
+```
+
+Common options:
+
+- `--mcp-strict`: block if required MCP providers are unavailable
+- `--skills-strict`: block if required internal skill specs are missing
+- `--triad`: request a third independent audit when available
+- `--profile`, `--draft-profile`, `--review-profile`, `--triad-profile`: select execution profiles
+
+## 6. Use Claude Code Commands When You Want UX
+
+If you prefer command entrypoints instead of explicit Task IDs, use the Claude workflow commands after installation into your project:
+
+```text
+/paper
+/lit-review
+/paper-read
+/find-gap
+/study-design
+/paper-write
+/submission-prep
+```
+
+These commands are entry UX only. The canonical task and artifact truth still lives in `standards/`.
+
+## 7. Know When to Switch to Maintainer Docs
+
+Use this guide for operation.
+Switch to maintainer docs only when you are changing the system itself:
+
+- Architecture and layer model: `README.md`
+- Edit rules and decision boundaries: `docs/conventions.md`
+- Where to modify specific behavior: `guides/advanced/extend-research-skills.md`

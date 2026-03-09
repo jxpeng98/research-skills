@@ -8,6 +8,67 @@ This guide answers two questions:
 
 ---
 
+## 0) Terminology and Layer Model
+
+Before editing anything, distinguish these layers clearly:
+
+- **Contract**: `standards/research-workflow-contract.yaml`
+  - Canonical tasks, artifact paths, and quality gates.
+- **Capability Map**: `standards/mcp-agent-capability-map.yaml`
+  - Which skills, MCP providers, and runtime agents a task uses.
+- **Internal Skill Specs**: `skills/*/*.md`
+  - Repo-internal reusable execution specifications. These are not automatically portable client skills.
+- **Portable Skill Package**: `research-paper-workflow/`
+  - Cross-client entry skill distributed to Codex / Claude / Gemini.
+- **Functional Agents**: currently represented mainly by `roles/` and pipeline ownership patterns
+  - This is the research responsibility layer: literature, methods, writing, compliance, etc.
+- **Runtime Agents**: `codex`, `claude`, `gemini`
+  - These are model executors selected by the capability map and bridges.
+- **Pipelines**: `pipelines/`
+  - Abstract DAG definitions and handoff plans.
+- **Workflows**: `.agent/workflows/`
+  - Claude Code interaction layer and user entrypoints.
+- **Bridges**: `bridges/`
+  - Runtime adapters and orchestration behavior.
+
+Rule of thumb:
+- If you are changing what the system must produce, change the contract.
+- If you are changing who owns or routes a task, change the capability map and possibly `roles/`.
+- If you are changing how a reusable step is executed, change an internal skill spec.
+- If you are changing the end-user entry skill installed to clients, change `research-paper-workflow/`.
+
+## 0.1) Old Structure -> Current Structure Mapping
+
+If you worked on an earlier version of the repo, use this map first:
+
+| Old mental model | Current structure | Edit first |
+|---|---|---|
+| "The skill package is the system" | `research-paper-workflow/` is only the portable distribution surface | `standards/` or `skills/`, not the portable package |
+| "Agent means Claude/Codex/Gemini" | Split into `functional agents` (`roles/`) and `runtime agents` (`standards/` + `bridges/`) | `roles/` for ownership, `capability map` for runtime routing |
+| "Slash command = workflow truth" | `.agent/workflows/` is only the entry layer; `pipelines/` is the DAG layer | `pipelines/` first, then `.agent/workflows/` |
+| "A new micro-step needs a new skill file" | Many changes belong in templates, parent skill fields, or MCP/provider logic | `templates/`, parent skill markdown, or MCP/bridge layer |
+| "Bridges can patch missing standards" | `bridges/` should execute standards, not replace them | Fix `standards/` first |
+
+## 0.2) Stable Entry vs Internal Layers
+
+For users, the stable entrypoints are:
+
+- `research-paper-workflow/` as the portable client skill package
+- `.agent/workflows/*.md` as Claude Code command entrypoints
+- `python3 -m bridges.orchestrator task-plan|task-run|doctor` as orchestration entrypoints
+
+For maintainers, the internal layers are:
+
+- `standards/` for truth
+- `roles/` and `skills/` for reusable responsibility and execution behavior
+- `pipelines/` for DAG sequencing
+- `bridges/` for runtime behavior
+
+If a user-visible command changes but the underlying truth did not, update the entry layer only.
+If the truth changes, start upstream and let the entry layers follow.
+
+---
+
 ## 1) Workflow Overview (A–I)
 
 ### 1.1 Runtime Flow (Skill + MCP + Agents)
@@ -16,7 +77,8 @@ This guide answers two questions:
 User intent (Natural Language)
   -> Selects paper_type + task_id + topic
   -> Parses standard contract (contract: outputs / gates)
-  -> Parses capability map (capability-map: required_skills / agents / mcp)
+  -> Parses capability map (capability-map: required_skills / runtime agents / mcp)
+  -> Resolves functional ownership (roles / pipeline responsibility)
   -> plan
   -> mcp-evidence
   -> primary-agent-draft
@@ -28,6 +90,7 @@ User intent (Natural Language)
 Single Source of Truth:
 - The contract (Tasks and Outputs): `standards/research-workflow-contract.yaml`
 - The orchestration (Routing of skills/mcp/agents): `standards/mcp-agent-capability-map.yaml`
+- Functional ownership conventions: `roles/` + `pipelines/`
 - Stage DoD (Detailed "Definition of Done"): `research-paper-workflow/references/stage-*.md`
 
 ### 1.2 Stage Map (Recommended starting point)
@@ -54,13 +117,56 @@ For the recommended minimum coverage (what tasks must be done for a given `paper
 Categorizing your changes will directly determine which file layer you should edit:
 
 1. **Change "What Must Be Produced"** (Artifact paths / Task output sets / Quality gates): Edit `standards/research-workflow-contract.yaml`
-2. **Change "Who Does This Task / How It is Coordinated"** (Three-client routing, MCP dependencies, required_skills): Edit `standards/mcp-agent-capability-map.yaml`
+2. **Change "Who Owns This Task / How It is Coordinated"** (functional owner, three-client routing, MCP dependencies, required_skills): Edit `standards/mcp-agent-capability-map.yaml` and possibly `roles/`
 3. **Change "Definition of Done"** (DoD, granular steps, checklists): Edit `research-paper-workflow/references/stage-*.md`
-4. **Change "Specific Execution Specs / Output Formats"** (Skill descriptions, reusable structures): Edit `skills/*/*.md` and/or `templates/*`
-5. **Change "Claude Code Menus / Routing Experience"** (Command entry points / Menu items): Edit `.agent/workflows/*.md`
-6. **Change "Orchestrator Behavior"** (task-run injection, concurrency strategies, external MCP command protocols): Edit `bridges/*.py`
+4. **Change "Specific Execution Specs / Output Formats"** (internal skill-spec descriptions, reusable structures): Edit `skills/*/*.md` and/or `templates/*`
+5. **Change "Portable Client Entry Skill"** (what Codex / Claude / Gemini users install as the cross-client entry package): Edit `research-paper-workflow/`
+6. **Change "Claude Code Menus / Routing Experience"** (command entry points / menu items): Edit `.agent/workflows/*.md`
+7. **Change "Orchestrator Behavior"** (task-run injection, concurrency strategies, external MCP command protocols): Edit `bridges/*.py`
 
 > Rule of Thumb: **Change the contract first (if artifacts/paths change) → then update the capability-map (who does it) → then add details to stage playbooks / skills / templates (how to do it) → finally, update workflows (interaction layer).**
+
+## 2.2) Fast Entry Map: "Where Should I Start?"
+
+| You want to change... | Start here | Then check |
+|---|---|---|
+| Required output paths or stage deliverables | `standards/research-workflow-contract.yaml` | `skills/registry.yaml`, templates, workflow references |
+| Functional owner or runtime routing | `standards/mcp-agent-capability-map.yaml` | `roles/`, `pipelines/`, `bridges/` |
+| How a reusable step behaves | `skills/*/*.md` | `templates/`, stage references |
+| A repeated table / markdown structure | `templates/` | Parent skill markdown |
+| External provider / search / stats connector | `bridges/` + MCP registry | capability map task bindings |
+| Claude slash-command menu or UX | `.agent/workflows/*.md` | `pipelines/`, README/quickstart |
+| Cross-client portable skill behavior | `research-paper-workflow/` | workflow references, README |
+
+## 2.1) Should This Become a New Top-Level Skill?
+
+Before adding a new file under `skills/`, run this filter:
+
+1. Does it consume typed inputs and produce typed outputs?
+2. Does it own a stable artifact path under `RESEARCH/[topic]/`?
+3. Will a pipeline or task need to depend on it directly?
+4. Does it justify separate failure modes or review logic?
+
+If any answer is "no", do not add a new top-level skill yet.
+
+Default destinations when the answer is "no":
+
+- **Provider/API/database adapter**: add or reuse an MCP/provider entry in `standards/mcp-agent-capability-map.yaml`
+- **Micro-step inside an existing capability**: expand the parent skill markdown and its templates
+- **Field-level extraction variant**: add structured slots to `templates/paper-note.md` / `templates/extraction-table.md`
+- **Formatting helper without its own contract artifact**: keep it as a subsection of the parent skill
+
+Examples that should stay out of `skills/`:
+
+- `semantic-scholar-search`
+- `crossref-search`
+- `database-connector`
+- `query-builder`
+- `keyword-expander`
+- `methodology-extractor`
+- `dataset-extractor`
+- `theory-extractor`
+- `limitation-extractor`
 
 ---
 
@@ -70,7 +176,7 @@ Categorizing your changes will directly determine which file layer you should ed
 
 Focus your edits here (Top to bottom priority):
 1. `research-paper-workflow/references/stage-<X>-*.md`: Add check lists, DoD, and common failure modes.
-2. `skills/<A-I_stage>/<skill>.md`: Add low-freedom output structures (tables, specific fields, formatting rules).
+2. `skills/<A-I_stage>/<skill>.md`: Add low-freedom output structures (tables, specific fields, formatting rules) to the internal skill spec.
 3. `templates/<template>.md`: Extract repetitive structures into a template (makes it stable and reusable).
 
 **DO NOT CHANGE**:
@@ -89,7 +195,7 @@ You must make coordinated updates across the entire chain:
    - `research-paper-workflow/references/workflow-contract.md`: Update the task table (to maintain portable skill consistency).
 4. Artifact Structure (As needed)
    - `templates/`: Add the template.
-   - `skills/`: Add the output format and "definition of done."
+   - `skills/`: Add the output format and "definition of done" to the internal skill spec.
 
 ### 3.3 "I want to add a completely new Task ID."
 
@@ -109,7 +215,11 @@ Steps:
    - `scripts/validate_research_standard.py`: Add the new Task ID to the expected sets.
 6. Optional: Create/Update the stage playbook (to explain the DoD).
 
-### 3.4 "I want to add a new Skill (More granular module)."
+### 3.4 "I want to add a new internal Skill Spec (More granular module)."
+
+Start by applying the top-level skill filter in section `2.1`.
+
+Only proceed when the new capability clearly owns its own typed artifact and direct orchestration value.
 
 1. Create a new skill specification file: `skills/<A-I_stage>/<skill-name>.md`
 2. Register it in the orchestration map: `standards/mcp-agent-capability-map.yaml`
@@ -118,7 +228,22 @@ Steps:
    - Include the skill in the related task's `task_skill_mapping.<task_id>.required_skills`
 3. If the skill requires a stable structure: push the structure down into `templates/` and reference the template path within the skill markdown.
 
-### 3.5 "I want to integrate a new external MCP (e.g., local tools for scholar/search/stats)."
+If you instead need a client-installable entry skill, edit or create a package under `research-paper-workflow/` style rather than adding it to `skills/`.
+
+If the capability turns out to be a provider wrapper or a field-level sub-extractor, stop and:
+
+1. Extend the parent skill markdown.
+2. Extend the relevant template(s).
+3. Route the provider dependency through `mcp_registry` instead of `skill_registry`.
+
+### 3.5 "I want to change who owns a task without changing the runtime model."
+
+1. Start with `roles/` to clarify the functional-owner concept and preferred skill set.
+2. Update `standards/mcp-agent-capability-map.yaml` if task ownership, required skills, or review expectations change.
+3. Update `pipelines/` if the handoff sequence between literature / methods / writing / compliance responsibilities changes.
+4. Only touch `bridges/` if the runtime execution logic itself must change.
+
+### 3.6 "I want to integrate a new external MCP (e.g., local tools for scholar/search/stats)."
 
 1. Add the provider name to `mcp_registry` in `standards/mcp-agent-capability-map.yaml`.
 2. Reference it under `task_execution.<task_id>.required_mcp` for relevant tasks.
@@ -149,6 +274,7 @@ python3 -m bridges.orchestrator doctor --cwd .
 ## 5) Recommended Commit Granularity (Avoid breaking everything at once)
 
 - **Step One**: Only modify `standards/` (contract / capability-map), run validator.
-- **Step Two**: Add `references/stage-*.md` (DoD), `skills/*/` (execution specs), `templates/` (structured templates).
+- **Step Two**: Add `references/stage-*.md` (DoD), `skills/*/` (internal execution specs), `templates/` (structured templates).
 - **Step Three**: Fix `.agent/workflows/` (Interaction layer routing/menus).
-- **Step Four**: Run a full validation suite and update release notes (if issuing a beta).
+- **Step Four**: Fix `research-paper-workflow/` if the portable client-facing package also needs to reflect the change.
+- **Step Five**: Run a full validation suite and update release notes (if issuing a beta).

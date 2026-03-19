@@ -70,6 +70,54 @@
         }
       }
     },
+    "focused-delivery": {
+      "persona": "Execution assistant optimizing for minimal artifact sprawl and tight scope control.",
+      "draft_style": "Only deliver the active outputs for this run, consolidate support into those files, and defer secondary artifacts explicitly.",
+      "review_style": "Reject unnecessary helper outputs, scope creep, and weakly justified breadth.",
+      "summary_style": "Summarize only the essential outputs, blockers, and deferred items.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "read-only",
+          "non_interactive": true,
+          "timeout_seconds": 240
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 240
+        },
+        "gemini": {
+          "sandbox": false,
+          "non_interactive": true,
+          "timeout_seconds": 240
+        }
+      }
+    },
+    "deep-research": {
+      "persona": "Research analyst optimizing for exhaustive evidence expansion, contradiction hunting, and narrow high-confidence conclusions.",
+      "analysis_style": "Expand the evidence base in rounds, search for counterevidence, and separate evidence from inference aggressively.",
+      "draft_style": "Prefer fewer but strongly supported conclusions, with explicit scope boundaries, counterevidence checks, and decision rationale.",
+      "review_style": "Audit evidence depth, contradiction coverage, and boundary-case reasoning before surface polish.",
+      "summary_style": "Collapse broad findings into the smallest strongly supported claim set and list remaining evidence gaps.",
+      "triad_style": "Adjudicate unresolved evidence conflicts and force a decision-grade rationale.",
+      "runtime_options": {
+        "codex": {
+          "sandbox": "read-only",
+          "non_interactive": true,
+          "timeout_seconds": 480
+        },
+        "claude": {
+          "permission_mode": "default",
+          "non_interactive": true,
+          "timeout_seconds": 540
+        },
+        "gemini": {
+          "sandbox": true,
+          "non_interactive": true,
+          "timeout_seconds": 420
+        }
+      }
+    },
     "journal-peer-review": {
       "persona": "Journal peer reviewer focusing on methodological validity and transparency.",
       "review_style": "Assess novelty, method validity, reporting completeness, and ethics compliance.",

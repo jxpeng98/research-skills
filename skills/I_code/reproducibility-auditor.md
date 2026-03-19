@@ -45,19 +45,59 @@ Audit a project for computational reproducibility and document a rerun recipe.
 - **Execution**: one-command rerun path (or a short ordered list)
 - **Outputs**: paths are stable and documented
 
-## Minimal audit format (`code/reproducibility_audit.md`)
+## Required audit format (`code/reproducibility_audit.md`)
 
 ```markdown
+---
+task_id: I4
+template_type: reproducibility_audit
+topic: <topic>
+primary_artifact: code/reproducibility_audit.md
+---
+
 # Reproducibility Audit
 
-## Environment
+## Audit Contract Block
+```json
+{
+  "task_id": "I4",
+  "topic": "<topic>",
+  "audit_artifact": "code/reproducibility_audit.md",
+  "reviewed_artifacts": ["code/plan.md", "code/performance_profile.md"],
+  "environment_files": ["requirements.txt"],
+  "seed_policy_status": "PASS | WARN | BLOCK",
+  "rerun_entrypoints": [
+    {"command": "..."}
+  ],
+  "verdict": "PASS | WARN | BLOCK",
+  "blocking_gaps": ["..."]
+}
+```
 
-## Data provenance
+## Audit Scope
+- ...
 
-## Run instructions
+## Environment Evidence
+- ...
+
+## Data Provenance / Immutability
+- ...
+
+## Determinism / Seed Control
+- ...
+
+## Rerun Recipe
 1. ...
 
-## Determinism notes
+## Failure Points / Recovery
+- ...
 
-## Known failure points
+## Audit Verdict
+- ...
+
+## Required Remediations
+- ...
+
+## Confidence
+- 0.xx
 ```

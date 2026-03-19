@@ -128,29 +128,70 @@ When `--domain` is specified, load the corresponding `skills/domain-profiles/*.y
 - [ ] Zero-inflation addressed if count data
 - [ ] SDM: spatial block cross-validation used
 
-## Minimal review format (`code/code_review.md`)
+## Required review format (`code/code_review.md`)
 
 ```markdown
+---
+task_id: I8
+template_type: code_review
+topic: <topic>
+primary_artifact: code/code_review.md
+---
+
 # Code Review
 
-## Summary
+## Review Contract Block
+```json
+{
+  "task_id": "I8",
+  "topic": "<topic>",
+  "review_target": "<code / notebook / pipeline>",
+  "spec_source": "code/code_specification.md",
+  "plan_source": "code/plan.md",
+  "review_artifact": "code/code_review.md",
+  "verdict": "PASS | BLOCK",
+  "blocking_findings": [
+    {"finding_id": "P1-01"}
+  ],
+  "review_coverage": [
+    "method_fidelity",
+    "statistical_validity",
+    "reproducibility"
+  ]
+}
+```
 
-## Domain: [domain]
-
-## High-severity findings
-1. ...
-
-## Medium / low findings
+## Verdict
 - ...
 
-## Domain-specific checklist
+## Scope Reviewed
+- ...
+
+## Findings Table
+| Finding ID | Severity | Area | Evidence | Required Action |
+| --- | --- | --- | --- | --- |
+| P1-01 | P1 | statistical_validity | ... | ... |
+
+## Blocking Findings
+1. ...
+
+## Non-Blocking Findings
+- ...
+
+## Domain Checklist Status
 - [ ] Item 1 (from domain profile)
 - [ ] Item 2
 - ...
 
-## Reproducibility notes
+## Reproducibility / Statistical Validity
 - ...
 
-## Suggested fixes (ordered)
+## Required Fix Order
 1. ...
+
+## Residual Risks
+- ...
+
+## Confidence
+- 0.xx
 ```

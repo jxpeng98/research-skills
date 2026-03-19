@@ -32,9 +32,18 @@
 
 这是熟悉并在你的项目中运行该系统最快的方式。
 
-### 1. 安装 CLI（推荐方式）
+### 1. 安装 Skills（推荐方式）
 
-推荐使用 `pipx` 全局安装 Research Skills 编排工具：
+更通用的安装方式是直接使用 shell bootstrap，不依赖 Python，只需要 `bash` 和 `curl`/`wget`、`tar`：
+
+```bash
+cd /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+```
+
+它会同时安装 workflow 资产，以及 shell CLI：`research-skills`、`rsk`、`rsw`，默认落到 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`。
+
+如果你的机器已经有 Python，仍然可以用 `pipx` 安装升级器 CLI：
 
 ```bash
 pipx install research-skills-installer
@@ -51,6 +60,10 @@ rsk upgrade --target all --project-dir . --doctor
 ```
 
 *提示：你可以随时使用 `rsk check` 来检测上游是否有新版本更新。*
+
+如果你已经使用了上面的 shell bootstrap，那么这一步已经完成；后续需要刷新安装内容时，重新执行并加上 `--overwrite` 即可。
+
+*注意：shell 版 `rsk check|upgrade|align` 不需要 Python；`--doctor` 和 orchestrator 相关命令仍然需要 `python3`。*
 
 ### 3. 开始跑工作流
 在项目目录打开终端，Claude Code 会自动读取挂载的 `RESEARCH/` 相关命令集。
@@ -71,13 +84,254 @@ rsk upgrade --target all --project-dir . --doctor
 | `/ethics-check` | 伦理评估与 IRB 审查材料 | `/ethics-check ai-in-education` |
 | `/submission-prep` | 投稿材料打包生成 | `/submission-prep ai-in-education CHI` |
 | `/rebuttal` | 审稿意见回复与矩阵生成 | `/rebuttal ai-in-education` |
-| `/code-build` | CCG驱动的研究代码规划与实施 | `/code-build "Staggered DID" --domain econ` |
+| `/code-build` | 严格 Stage-I 学术代码流 | `/code-build "Staggered DID" --topic policy-effects --domain econ --focus full` |
 | `/proofread` | AI 去痕与终审校对 | `/proofread ai-in-education` |
 
 如果你**通过纯命令行调度编排**（执行指定的 Task ID）：
 ```bash
 python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd . --triad
 ```
+
+---
+
+## CLI 安装与参数说明
+
+这一节只说明“安装器/升级器 CLI”本身，不展开 orchestrator 的研究执行参数。
+
+### 1. CLI 有哪几种安装方式
+
+#### 方案 A：Shell bootstrap 安装 CLI（推荐）
+
+适用场景：
+- 机器上没有 Python
+- 你只想快速安装 `research-skills` / `rsk` / `rsw`
+- 你希望同时把 workflow 资产也装好
+
+命令：
+
+```bash
+cd /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --project-dir "$PWD" \
+  --target all
+```
+
+效果：
+- 安装 shell CLI：`research-skills`、`rsk`、`rsw`
+- 安装 `research-paper-workflow` skill 到对应客户端目录
+- 安装项目内 `.agent/workflows/`、`CLAUDE.md`、`.gemini/` 等集成文件
+
+默认 CLI 目录：
+- `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
+
+如果装完后命令不可用，通常是因为这个目录不在 `PATH` 中。可在 shell 配置里加入：
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+#### 方案 B：通过 `pipx` 安装 Python CLI
+
+适用场景：
+- 机器上已经有 Python
+- 你想继续使用现有 PyPI 分发方式
+
+命令：
+
+```bash
+pipx install research-skills-installer
+```
+
+效果：
+- 安装 Python 版 `research-skills` / `rsk` / `rsw`
+- CLI 本身进入 PATH
+- 不会自动把 workflow 资产写入你的项目，仍需手动执行 `rsk upgrade`
+
+#### 方案 C：从本地仓库安装 shell CLI
+
+适用场景：
+- 你已经 clone 了这个仓库
+- 你希望控制安装目录，或用 `link` 模式维护本地副本
+
+命令：
+
+```bash
+./scripts/install_research_skill.sh \
+  --target all \
+  --project-dir /path/to/project \
+  --install-cli \
+  --overwrite
+```
+
+### 2. Shell bootstrap 参数说明
+
+入口脚本：
+- `scripts/bootstrap_research_skill.sh`
+
+常用参数：
+
+| 参数 | 作用 | 默认值 / 说明 |
+|------|------|---------------|
+| `--repo <owner/repo|git-url>` | 指定上游 GitHub 仓库 | 默认取 `RESEARCH_SKILLS_REPO`，否则 `jxpeng98/research-skills` |
+| `--ref <tag-or-branch>` | 指定安装的版本或分支 | 默认自动解析 latest release |
+| `--ref-type <tag|branch>` | 指定 `--ref` 是 tag 还是 branch | 默认 `tag` |
+| `--target <codex|claude|gemini|all>` | 指定写入哪些客户端目录 | 默认 `all` |
+| `--project-dir <path>` | 指定项目集成文件的写入目录 | 默认当前目录 |
+| `--install-cli` | 安装 shell CLI | 默认开启 |
+| `--no-cli` | 跳过 shell CLI 安装，只装 workflow 资产 | 与 `--install-cli` 相反 |
+| `--cli-dir <path>` | 指定 shell CLI 安装目录 | 默认 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
+| `--overwrite` | 覆盖已存在的 skill / CLI / 项目文件 | 默认关闭 |
+| `--doctor` | 安装后运行环境预检 | 仅在存在 `python3` 时执行 |
+| `--dry-run` | 只打印将要执行的动作 | 不实际下载和写文件 |
+
+示例：
+
+```bash
+# 安装指定 tag
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --repo jxpeng98/research-skills \
+  --ref v0.1.0-beta.6 \
+  --ref-type tag \
+  --project-dir "$PWD" \
+  --target all \
+  --overwrite
+
+# 只装 workflow，不装 CLI
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --project-dir "$PWD" \
+  --target claude \
+  --no-cli
+
+# 预演安装动作
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --project-dir "$PWD" \
+  --target codex \
+  --dry-run
+```
+
+### 3. 本地安装脚本参数说明
+
+入口脚本：
+- `scripts/install_research_skill.sh`
+
+常用参数：
+
+| 参数 | 作用 | 默认值 / 说明 |
+|------|------|---------------|
+| `--target <codex|claude|gemini|all>` | 指定写入哪些客户端目录 | 默认 `all` |
+| `--mode <copy|link>` | 复制文件或创建软链接 | 默认 `copy` |
+| `--project-dir <path>` | 指定项目集成文件写入目录 | 默认当前目录 |
+| `--install-cli` | 安装 shell CLI | 默认关闭 |
+| `--no-cli` | 跳过 shell CLI 安装 | 默认行为 |
+| `--cli-dir <path>` | 指定 shell CLI 安装目录 | 默认 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
+| `--overwrite` | 覆盖已有目标 | 默认关闭 |
+| `--doctor` | 安装后运行 `python3 -m bridges.orchestrator doctor` | 仅在存在 `python3` 时执行 |
+| `--dry-run` | 只打印将要执行的动作 | 不实际写文件 |
+
+说明：
+- 如果你想长期维护一个本地 clone，推荐 `--mode link`
+- 如果你只想一次性安装，推荐 `--mode copy`
+- `--mode link` 适合本地仓库安装，不适合远程 bootstrap
+
+### 4. `rsk` / `research-skills` CLI 子命令说明
+
+shell CLI 和 Python CLI 共享相同的命令名：
+- `research-skills`
+- `rsk`
+- `rsw`
+
+#### `rsk check`
+
+用途：
+- 查看本地已安装 skill 版本
+- 查看上游最新 release
+- 判断是否有可升级版本
+
+参数：
+
+| 参数 | 作用 |
+|------|------|
+| `--repo <owner/repo|url>` | 指定上游仓库 |
+| `--json` | 输出 JSON，便于脚本或 CI 使用 |
+| `--strict-network` | 若上游查询失败则返回失败 |
+
+示例：
+
+```bash
+rsk check
+rsk check --repo jxpeng98/research-skills
+rsk check --json
+```
+
+#### `rsk upgrade`
+
+用途：
+- 下载上游 release/branch 压缩包
+- 调用安装器刷新 skills、项目集成文件，以及 shell CLI
+
+常用参数：
+
+| 参数 | 作用 |
+|------|------|
+| `--repo <owner/repo|url>` | 指定上游仓库 |
+| `--ref <tag-or-branch>` | 指定版本或分支 |
+| `--ref-type <tag|branch>` | 指定 ref 类型 |
+| `--target <codex|claude|gemini|all>` | 指定安装目标 |
+| `--project-dir <path>` | 指定项目路径 |
+| `--no-cli` | 升级时不刷新 shell CLI |
+| `--cli-dir <path>` | 指定 shell CLI 目录 |
+| `--overwrite` | 覆盖已有目标 |
+| `--doctor` | 升级后执行 doctor |
+| `--dry-run` | 预演升级动作 |
+
+示例：
+
+```bash
+rsk upgrade --project-dir . --target all --overwrite
+rsk upgrade --repo jxpeng98/research-skills --ref main --ref-type branch --project-dir . --target claude
+rsk upgrade --project-dir . --target codex --dry-run
+```
+
+#### `rsk align`
+
+用途：
+- 打印一个简短说明，告诉你 CLI 装了什么、`upgrade` 会改哪些路径
+
+参数：
+
+| 参数 | 作用 |
+|------|------|
+| `--repo <owner/repo|url>` | 仅用于在示例输出中替换 repo 提示 |
+
+示例：
+
+```bash
+rsk align
+rsk align --repo jxpeng98/research-skills
+```
+
+### 5. 常用环境变量
+
+| 环境变量 | 作用 |
+|----------|------|
+| `RESEARCH_SKILLS_REPO` | 默认上游仓库，省去每次传 `--repo` |
+| `RESEARCH_SKILLS_BIN_DIR` | shell CLI 默认安装目录 |
+| `CODEX_HOME` | Codex skill 安装根目录 |
+| `CLAUDE_CODE_HOME` | Claude Code skill 安装根目录 |
+| `GEMINI_HOME` | Gemini skill 安装根目录 |
+| `GITHUB_TOKEN` / `GH_TOKEN` | 私有仓库或 GitHub API 限流时的认证令牌 |
+
+### 6. 什么时候需要 Python
+
+不需要 Python 的部分：
+- shell bootstrap 安装
+- shell CLI 的 `check` / `upgrade` / `align`
+- 本地安装脚本的 `copy/link` 资产安装
+
+仍然需要 Python 的部分：
+- `--doctor`
+- `python3 -m bridges.orchestrator ...`
+- 仓库内其他 validator / orchestrator / test 命令
 
 ---
 
@@ -153,7 +407,25 @@ python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --to
 
 # MCP环境严格测试：如果没有相关搜素工具环境则强制阻挡
 python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
+
+# 收敛辅助文件，并强化证据深度/修订深度
+python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . \
+  --focus-output manuscript/manuscript.md \
+  --research-depth deep \
+  --draft-profile deep-research \
+  --review-profile strict-review \
+  --triad-profile deep-research \
+  --triad \
+  --max-rounds 4
 ```
+
+`task-run` 的几个关键控制项：
+
+- `--focus-output <path>`：可重复；只激活本次运行需要的 contract output。
+- `--output-budget <n>`：限制本次运行最多处理多少个 contract outputs。
+- `--research-depth deep`：显式要求证据扩展、反例搜索、边界条件检查与更窄结论。
+- `--max-rounds <n>`：提高 review 阻断后的修订轮数。
+- 内置 profiles：`focused-delivery`、`deep-research`、`strict-review`、`rapid-draft`、`default`。
 
 ---
 

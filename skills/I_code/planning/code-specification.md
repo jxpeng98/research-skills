@@ -54,32 +54,76 @@ Generate a strict, testable constraint set before writing research code.
    - unit tests for core functions
    - regression tests for known examples
 
-## Minimal spec format (`code/code_specification.md`)
+## Required spec format (`code/code_specification.md`)
 
 ```markdown
+---
+task_id: I5
+template_type: code_specification
+topic: <topic>
+primary_artifact: code/code_specification.md
+---
+
 # Code Specification
 
+## Spec Contract Block
+```json
+{
+  "task_id": "I5",
+  "topic": "<topic>",
+  "method_or_pipeline": "<name>",
+  "primary_artifact": "code/code_specification.md",
+  "inputs": [
+    {"path": "...", "schema": "..."}
+  ],
+  "outputs": [
+    {"path": "...", "format": "..."}
+  ],
+  "dependencies": {
+    "python": ["package>=version"]
+  },
+  "seeds_policy": {
+    "global_seed": "...",
+    "nondeterminism_notes": "..."
+  },
+  "acceptance_tests": [
+    {"name": "...", "metric": "...", "pass_condition": "..."}
+  ],
+  "blocked_decisions": ["..."]
+}
+```
+
 ## Goal
-
-## Inputs (schema)
 - ...
 
-## Outputs (paths)
+## Non-Goals
 - ...
 
-## Functional requirements
+## Inputs (Schema)
+- ...
+
+## Outputs (Paths)
+- ...
+
+## Functional Requirements
 1. ...
 
-## Non-functional requirements
+## Non-Functional Requirements
 - Performance:
 - Determinism:
 - Logging:
 
-## Edge cases
+## Edge Cases And Failure Modes
 - ...
 
-## Validation plan
-- Unit tests:
-- Synthetic verification:
-- Benchmarks:
+## Validation Matrix
+| Check | Metric / Observable | Pass Condition | Artifact |
+| --- | --- | --- | --- |
+| ... | ... | ... | ... |
+
+## Disallowed Shortcuts
+- ...
+
+## Blocked Decisions / Escalations
+- ...
 ```

@@ -33,9 +33,18 @@ A systematic research workflow system for Codex, Claude Code, and Gemini, coveri
 
 This is the fastest way to understand and run the system. 
 
-### 1. Install CLI (Recommended)
+### 1. Install Skills (Recommended)
 
-Using `pipx` is the recommended way to install the Research Skills Orchestrator:
+For the most portable install path, use the shell bootstrapper. It does not require Python and only needs `bash` plus `curl`/`wget` and `tar`:
+
+```bash
+cd /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+```
+
+This installs both the workflow assets and a shell CLI (`research-skills`, `rsk`, `rsw`) into `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`.
+
+If you want the updater CLI and your machine already has Python, you can still use `pipx`:
 
 ```bash
 pipx install research-skills-installer
@@ -51,7 +60,9 @@ cd /path/to/your/project
 rsk upgrade --target all --project-dir . --doctor
 ```
 
-*Note: You can check for CLI updates at any point using `rsk check`.*
+If you used the shell bootstrap above, this install step is already done. Re-run it with `--overwrite` when you want to refresh the installed assets.
+
+*Note: shell `rsk check|upgrade|align` work without Python; `--doctor` and orchestrator commands still require `python3`.*
 
 ### 3. Run a Workflow
 In your active project directory, Claude Code will now automatically recognize the `RESEARCH/` commands.
@@ -72,13 +83,253 @@ If you are using **Claude Code**, try any of these commands:
 | `/ethics-check` | Ethics / IRB pack | `/ethics-check ai-in-education` |
 | `/submission-prep` | Submission package | `/submission-prep ai-in-education CHI` |
 | `/rebuttal` | Rebuttal / revision response | `/rebuttal ai-in-education` |
-| `/code-build` | CCG-driven Research code execution | `/code-build "Staggered DID" --domain econ` |
+| `/code-build` | Strict Stage-I academic code flow | `/code-build "Staggered DID" --topic policy-effects --domain econ --focus full` |
 | `/proofread` | AI de-fingerprinting & final proofread | `/proofread ai-in-education` |
 
 If you are using the **CLI directly**, orchestrate a specific Task ID:
 ```bash
 python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd . --triad
 ```
+
+---
+
+## CLI Install And Args
+
+This section covers the installer/updater CLI only. It does not document the research execution args of `bridges.orchestrator`.
+
+### 1. Ways to install the CLI
+
+#### Option A: Shell bootstrap CLI install (recommended)
+
+Use this when:
+- the machine does not have Python
+- you want `research-skills` / `rsk` / `rsw` quickly
+- you also want workflow assets installed at the same time
+
+Command:
+
+```bash
+cd /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --project-dir "$PWD" \
+  --target all
+```
+
+What it installs:
+- shell CLI: `research-skills`, `rsk`, `rsw`
+- `research-paper-workflow` skill into client skill directories
+- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
+
+Default CLI directory:
+- `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
+
+If the command is not found after install, add this directory to `PATH`:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+#### Option B: Python CLI via `pipx`
+
+Use this when:
+- Python is already available
+- you want to keep using the PyPI-distributed CLI
+
+Command:
+
+```bash
+pipx install research-skills-installer
+```
+
+What it installs:
+- Python CLI: `research-skills`, `rsk`, `rsw`
+- It does not automatically write workflow assets into your project; you still run `rsk upgrade`
+
+#### Option C: Install shell CLI from a local clone
+
+Use this when:
+- you already cloned this repository
+- you want to control install location or use `link` mode
+
+Command:
+
+```bash
+./scripts/install_research_skill.sh \
+  --target all \
+  --project-dir /path/to/project \
+  --install-cli \
+  --overwrite
+```
+
+### 2. Shell bootstrap args
+
+Entry script:
+- `scripts/bootstrap_research_skill.sh`
+
+Common args:
+
+| Arg | Purpose | Default / Notes |
+|-----|---------|-----------------|
+| `--repo <owner/repo|git-url>` | Choose the upstream GitHub repo | Defaults to `RESEARCH_SKILLS_REPO`, else `jxpeng98/research-skills` |
+| `--ref <tag-or-branch>` | Install a specific release tag or branch | Defaults to latest release |
+| `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` | Default `tag` |
+| `--target <codex|claude|gemini|all>` | Choose which client targets to write | Default `all` |
+| `--project-dir <path>` | Choose where project integration files are written | Default current directory |
+| `--install-cli` | Install shell CLI commands | Enabled by default |
+| `--no-cli` | Skip shell CLI installation and install workflow assets only | Opposite of `--install-cli` |
+| `--cli-dir <path>` | Choose where the shell CLI is installed | Default `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
+| `--overwrite` | Replace existing skill / CLI / project files | Off by default |
+| `--doctor` | Run environment preflight after install | Only runs when `python3` exists |
+| `--dry-run` | Preview the actions only | Does not download or write files |
+
+Examples:
+
+```bash
+# Install a specific tag
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --repo jxpeng98/research-skills \
+  --ref v0.1.0-beta.6 \
+  --ref-type tag \
+  --project-dir "$PWD" \
+  --target all \
+  --overwrite
+
+# Install workflows only, skip CLI
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --project-dir "$PWD" \
+  --target claude \
+  --no-cli
+
+# Preview without writing files
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --project-dir "$PWD" \
+  --target codex \
+  --dry-run
+```
+
+### 3. Local installer args
+
+Entry script:
+- `scripts/install_research_skill.sh`
+
+Common args:
+
+| Arg | Purpose | Default / Notes |
+|-----|---------|-----------------|
+| `--target <codex|claude|gemini|all>` | Choose which client targets to write | Default `all` |
+| `--mode <copy|link>` | Copy files or create symlinks | Default `copy` |
+| `--project-dir <path>` | Choose where project integration files are written | Default current directory |
+| `--install-cli` | Install shell CLI | Off by default |
+| `--no-cli` | Skip shell CLI installation | This is the default behavior |
+| `--cli-dir <path>` | Choose where the shell CLI is installed | Default `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
+| `--overwrite` | Replace existing targets | Off by default |
+| `--doctor` | Run `python3 -m bridges.orchestrator doctor` after install | Only runs when `python3` exists |
+| `--dry-run` | Preview the actions only | Does not write files |
+
+Notes:
+- Use `--mode link` when maintaining a local clone long-term
+- Use `--mode copy` for one-off installs
+- `--mode link` is for local-repo installs, not remote bootstrap installs
+
+### 4. `rsk` / `research-skills` subcommands
+
+Both shell CLI and Python CLI use the same command names:
+- `research-skills`
+- `rsk`
+- `rsw`
+
+#### `rsk check`
+
+Purpose:
+- inspect installed local skill versions
+- inspect latest upstream release
+- decide whether an upgrade is available
+
+Args:
+
+| Arg | Purpose |
+|-----|---------|
+| `--repo <owner/repo|url>` | Override the upstream repo |
+| `--json` | Emit JSON for scripts or CI |
+| `--strict-network` | Fail if upstream lookup fails |
+
+Examples:
+
+```bash
+rsk check
+rsk check --repo jxpeng98/research-skills
+rsk check --json
+```
+
+#### `rsk upgrade`
+
+Purpose:
+- download an upstream release/branch archive
+- refresh skills, project integration files, and shell CLI
+
+Common args:
+
+| Arg | Purpose |
+|-----|---------|
+| `--repo <owner/repo|url>` | Override the upstream repo |
+| `--ref <tag-or-branch>` | Choose a release tag or branch |
+| `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` |
+| `--target <codex|claude|gemini|all>` | Choose install target |
+| `--project-dir <path>` | Choose project path |
+| `--no-cli` | Skip shell CLI refresh |
+| `--cli-dir <path>` | Choose shell CLI directory |
+| `--overwrite` | Replace existing targets |
+| `--doctor` | Run doctor after upgrade |
+| `--dry-run` | Preview upgrade actions |
+
+Examples:
+
+```bash
+rsk upgrade --project-dir . --target all --overwrite
+rsk upgrade --repo jxpeng98/research-skills --ref main --ref-type branch --project-dir . --target claude
+rsk upgrade --project-dir . --target codex --dry-run
+```
+
+#### `rsk align`
+
+Purpose:
+- print a short explanation of what the CLI installed and which paths `upgrade` modifies
+
+Args:
+
+| Arg | Purpose |
+|-----|---------|
+| `--repo <owner/repo|url>` | Only changes the example repo shown in output |
+
+Examples:
+
+```bash
+rsk align
+rsk align --repo jxpeng98/research-skills
+```
+
+### 5. Useful environment variables
+
+| Env Var | Purpose |
+|---------|---------|
+| `RESEARCH_SKILLS_REPO` | Default upstream repo, so you can omit `--repo` |
+| `RESEARCH_SKILLS_BIN_DIR` | Default install directory for the shell CLI |
+| `CODEX_HOME` | Root directory for Codex skill installation |
+| `CLAUDE_CODE_HOME` | Root directory for Claude Code skill installation |
+| `GEMINI_HOME` | Root directory for Gemini skill installation |
+| `GITHUB_TOKEN` / `GH_TOKEN` | Auth token for private repos or GitHub API limits |
+
+### 6. What still needs Python
+
+Does not need Python:
+- shell bootstrap install
+- shell CLI `check` / `upgrade` / `align`
+- local installer `copy/link` asset install
+
+Still needs Python:
+- `--doctor`
+- `python3 -m bridges.orchestrator ...`
+- validators, orchestrator, and test commands in this repo
 
 ---
 
@@ -235,12 +486,42 @@ python -m bridges.orchestrator parallel --prompt "Analyze code safety" --cwd . -
 # Task-run - execute canonical Task ID with capability-map agent routing
 python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
 
+# Team-run - research fanout/fanin parallel execution (MVP: B1, H3)
+python -m bridges.orchestrator team-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd .
+python -m bridges.orchestrator team-run --task-id H3 --paper-type empirical --topic my-topic --cwd .
+
 # Interactive Step-by-Step Mode (pauses for Y/n confirmation before agent execution)
 python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
 
 # Enforce strict capabilities
 python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
+
+# Reduce artifact sprawl and push for deeper evidence/review
+python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . \
+  --focus-output manuscript/manuscript.md \
+  --research-depth deep \
+  --draft-profile deep-research \
+  --review-profile strict-review \
+  --triad-profile deep-research \
+  --triad \
+  --max-rounds 4
 ```
+
+Useful knobs for `task-run`:
+
+- `--focus-output <path>`: repeatable; restrict this run to specific contract output paths.
+- `--output-budget <n>`: cap how many contract outputs are active in this run.
+- `--research-depth deep`: adds explicit evidence-expansion, contradiction-check, and narrow-claim pressure.
+- `--max-rounds <n>`: increases revision depth after review blocks.
+- Built-in profiles: `focused-delivery`, `deep-research`, `strict-review`, `rapid-draft`, `default`.
+
+**Execution Modes**
+
+| Mode | Purpose | Unit of work |
+|------|---------|--------------|
+| `parallel` | Same prompt → multiple agents analyze → synthesis | Open-ended prompt |
+| `task-run` | Single Task ID → serial draft → review → triad | One research task |
+| `team-run` | Single Task ID → fanout workers → merge → review | Multiple work units (MVP: `B1`, `H3`) |
 *(Check out `guides/advanced/cli-reference.md` for a comprehensive list of commands).*
 
 ---

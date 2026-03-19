@@ -8,7 +8,7 @@ from unittest import mock
 from pathlib import Path
 from typing import Any
 
-from bridges.base_bridge import BridgeResponse
+from bridges.base_bridge import BridgeResponse, CollaborationResult
 from bridges import i18n as i18n_module
 from bridges.mcp_connectors import MCPEvidence
 from bridges.orchestrator import CollaborationMode, ModelOrchestrator
@@ -33,6 +33,7 @@ class MockOrchestrator(ModelOrchestrator):
         self.runtime_calls.append(
             {
                 "agent": agent_name,
+                "prompt": prompt,
                 "runtime_options": dict(runtime_options or {}),
                 "profile_directive": profile_directive or "",
                 "cwd": str(cwd),
@@ -301,6 +302,162 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             )
         )
 
+    def test_task_run_focus_outputs_limits_active_outputs(self) -> None:
+        orchestrator = MockOrchestrator()
+        result = orchestrator.task_run(
+            task_id="F3",
+            paper_type="empirical",
+            topic="ai-in-education",
+            cwd=REPO_ROOT,
+            focus_outputs=["manuscript/manuscript.md", "manuscript/results_interpretation.md"],
+            output_budget=1,
+        )
+
+        self.assertIn("\"artifact_policy\": \"focused\"", result.merged_analysis)
+        self.assertIn("\"required_outputs\": [\n    \"manuscript/manuscript.md\"\n  ]", result.merged_analysis)
+        self.assertIn("\"deferred_outputs\": [", result.merged_analysis)
+        self.assertIn("manuscript/results_interpretation.md", result.merged_analysis)
+        self.assertIn("Output control: policy=focused, active_outputs=1/3.", result.merged_analysis)
+
+    def test_build_task_prompts_include_deep_research_constraints(self) -> None:
+        orchestrator = MockOrchestrator()
+        task_packet = {
+            "task_id": "B1",
+            "required_outputs": ["protocol.md"],
+            "deferred_outputs": ["search_results.csv"],
+            "research_depth": "deep",
+            "evidence_expansion_rounds": 2,
+        }
+
+        draft_prompt = orchestrator._build_task_draft_prompt(
+            task_packet=task_packet,
+            mcp_evidence=[],
+            skill_cards=[],
+            extra_context=None,
+        )
+        review_prompt = orchestrator._build_task_review_prompt(
+            task_packet=task_packet,
+            mcp_evidence=[],
+            skill_cards=[],
+            draft_output="draft",
+        )
+
+        self.assertIn("Deep research mode is active", draft_prompt)
+        self.assertIn("Evidence Expansion Log", draft_prompt)
+        self.assertIn("Deferred Outputs", draft_prompt)
+        self.assertIn("4-6 highly specific, critical questions", review_prompt)
+        self.assertIn("Evidence Depth Assessment", review_prompt)
+
+    def test_stage_i_prompt_templates_are_structured(self) -> None:
+        orchestrator = MockOrchestrator()
+
+        i5_prompt = orchestrator._build_task_draft_prompt(
+            task_packet={"task_id": "I5", "required_outputs": ["code/code_specification.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            extra_context=None,
+        )
+        i6_prompt = orchestrator._build_task_draft_prompt(
+            task_packet={"task_id": "I6", "required_outputs": ["code/plan.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            extra_context=None,
+        )
+        i7_prompt = orchestrator._build_task_draft_prompt(
+            task_packet={"task_id": "I7", "required_outputs": ["code/performance_profile.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            extra_context=None,
+        )
+        i4_prompt = orchestrator._build_task_draft_prompt(
+            task_packet={"task_id": "I4", "required_outputs": ["code/reproducibility_audit.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            extra_context=None,
+        )
+        i8_review_prompt = orchestrator._build_task_review_prompt(
+            task_packet={"task_id": "I8", "required_outputs": ["code/code_review.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            draft_output="draft",
+        )
+        i7_review_prompt = orchestrator._build_task_review_prompt(
+            task_packet={"task_id": "I7", "required_outputs": ["code/performance_profile.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            draft_output="draft",
+        )
+        i4_review_prompt = orchestrator._build_task_review_prompt(
+            task_packet={"task_id": "I4", "required_outputs": ["code/reproducibility_audit.md"]},
+            mcp_evidence=[],
+            skill_cards=[],
+            draft_output="draft",
+        )
+
+        self.assertIn("## Spec Contract Block", i5_prompt)
+        self.assertIn("must start with YAML frontmatter", i5_prompt)
+        self.assertIn("fenced `json` block", i5_prompt)
+        self.assertIn("## Validation Matrix", i5_prompt)
+        self.assertIn("## Plan Contract Block", i6_prompt)
+        self.assertIn("must start with YAML frontmatter", i6_prompt)
+        self.assertIn("## Rollback / Recovery", i6_prompt)
+        self.assertIn("## Execution Contract Block", i7_prompt)
+        self.assertIn("fenced `json` execution contract block", i7_review_prompt)
+        self.assertIn("## Artifact Inventory", i7_prompt)
+        self.assertIn("## Audit Contract Block", i4_prompt)
+        self.assertIn("must start with YAML frontmatter", i4_prompt)
+        self.assertIn("## Audit Verdict", i4_prompt)
+        self.assertIn("Structured deliverable review requirements:", i8_review_prompt)
+        self.assertIn("fenced `json` review contract block", i8_review_prompt)
+        self.assertIn("severity-ranked", i8_review_prompt)
+        self.assertIn("validation evidence is only asserted", i7_review_prompt)
+        self.assertIn("seed handling", i4_review_prompt)
+
+    def test_task_run_deep_research_raises_revision_floor(self) -> None:
+        class DeepRevisionOrchestrator(MockOrchestrator):
+            def __init__(self) -> None:
+                super().__init__()
+                self.review_count = 0
+
+            def _execute_runtime_agent(
+                self,
+                agent_name: str,
+                prompt: str,
+                cwd: Path,
+                runtime_options: dict[str, Any] | None = None,
+                profile_directive: str | None = None,
+            ) -> BridgeResponse:
+                if "Review the draft" in prompt:
+                    self.review_count += 1
+                    content = "Verdict: BLOCK\nConfidence: 0.4\nCritical Issues: Need more evidence depth"
+                    if self.review_count >= 4:
+                        content = "Verdict: PASS\nConfidence: 0.9\nCritical Issues: resolved"
+                    self.runtime_calls.append({
+                        "agent": agent_name,
+                        "prompt": prompt,
+                        "runtime_options": dict(runtime_options or {}),
+                        "profile_directive": profile_directive or "",
+                        "cwd": str(cwd),
+                    })
+                    return BridgeResponse(success=True, model=agent_name, content=content)
+                return super()._execute_runtime_agent(
+                    agent_name, prompt, cwd, runtime_options, profile_directive
+                )
+
+        orchestrator = DeepRevisionOrchestrator()
+        result = orchestrator.task_run(
+            task_id="F3",
+            paper_type="empirical",
+            topic="deep-revision",
+            cwd=REPO_ROOT,
+            research_depth="deep",
+            max_revision_rounds=1,
+        )
+
+        self.assertEqual(orchestrator.review_count, 4)
+        self.assertIn("Round 3: PASS", result.merged_analysis)
+        self.assertIn("Research depth: deep (evidence_expansion_rounds=2).", result.merged_analysis)
+
     def test_build_profile_directive_bilingual(self) -> None:
         """Verify that output_language triggers additional constraint injection."""
         orchestrator = MockOrchestrator()
@@ -329,6 +486,398 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         )
         self.assertIn("Output Language Directive: You MUST output the final response in fr-FR", directive_only_lang)
         self.assertIn("Agent Profile: only_lang", directive_only_lang)
+
+    def test_task_run_injects_domain_profile_for_code_tasks(self) -> None:
+        orchestrator = MockOrchestrator()
+        result = orchestrator.task_run(
+            task_id="I1",
+            paper_type="methods",
+            topic="llm-bias",
+            cwd=REPO_ROOT,
+            domain="cs",
+        )
+
+        self.assertIn('"domain": "cs-ai"', result.merged_analysis)
+        self.assertIn("Domain profile: requested=cs, resolved=cs-ai, status=loaded.", result.merged_analysis)
+        draft_prompts = [
+            call["prompt"]
+            for call in orchestrator.runtime_calls
+            if "You are executing one canonical research workflow task." in call["prompt"]
+        ]
+        self.assertTrue(draft_prompts)
+        draft_prompt = draft_prompts[0]
+        self.assertIn("Domain profile guidance:", draft_prompt)
+        self.assertIn("Computer Science & Artificial Intelligence", draft_prompt)
+        self.assertIn("Academic code lane rules:", draft_prompt)
+        self.assertIn("Treat this as academic research code", draft_prompt)
+
+    def test_task_run_extracts_stage_i_structured_output(self) -> None:
+        class StructuredPlanOrchestrator(MockOrchestrator):
+            def _execute_runtime_agent(
+                self,
+                agent_name: str,
+                prompt: str,
+                cwd: Path,
+                runtime_options: dict[str, Any] | None = None,
+                profile_directive: str | None = None,
+            ) -> BridgeResponse:
+                if "You are executing one canonical research workflow task." in prompt and '"task_id": "I6"' in prompt:
+                    content = """---
+task_id: I6
+template_type: code_plan
+topic: llm-bias
+primary_artifact: code/plan.md
+---
+
+# Execution Plan
+
+## Plan Contract Block
+```json
+{
+  "task_id": "I6",
+  "topic": "llm-bias",
+  "spec_source": "code/code_specification.md",
+  "plan_artifact": "code/plan.md",
+  "steps": [
+    {
+      "step_id": "S1",
+      "depends_on": [],
+      "owner": "codex",
+      "command": "python run.py",
+      "outputs": ["analysis/results.csv"],
+      "checkpoint": "results.csv exists",
+      "rollback": "git restore analysis/results.csv"
+    }
+  ]
+}
+```
+
+## Scope Lock
+- locked
+"""
+                    self.runtime_calls.append(
+                        {
+                            "agent": agent_name,
+                            "prompt": prompt,
+                            "runtime_options": dict(runtime_options or {}),
+                            "profile_directive": profile_directive or "",
+                            "cwd": str(cwd),
+                        }
+                    )
+                    return BridgeResponse(success=True, model=agent_name, content=content)
+                if "Review the draft" in prompt:
+                    self.runtime_calls.append(
+                        {
+                            "agent": agent_name,
+                            "prompt": prompt,
+                            "runtime_options": dict(runtime_options or {}),
+                            "profile_directive": profile_directive or "",
+                            "cwd": str(cwd),
+                        }
+                    )
+                    return BridgeResponse(
+                        success=True,
+                        model=agent_name,
+                        content="Verdict: PASS\nConfidence: 0.91\nCritical Issues: resolved",
+                    )
+                return super()._execute_runtime_agent(
+                    agent_name,
+                    prompt,
+                    cwd,
+                    runtime_options,
+                    profile_directive,
+                )
+
+        orchestrator = StructuredPlanOrchestrator()
+        result = orchestrator.task_run(
+            task_id="I6",
+            paper_type="methods",
+            topic="llm-bias",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertIn("## Structured Artifact Summary", result.merged_analysis)
+        self.assertIn("- valid: yes", result.merged_analysis)
+        structured = result.data["structured_output"]
+        self.assertTrue(structured["valid"])
+        self.assertEqual(structured["frontmatter"]["template_type"], "code_plan")
+        self.assertEqual(structured["contract"]["steps"][0]["step_id"], "S1")
+        self.assertEqual(structured["actionable_targets"], ["S1"])
+
+    def test_task_run_targeted_follow_up_reads_existing_stage_artifact(self) -> None:
+        existing_artifact = """---
+task_id: I6
+template_type: code_plan
+topic: llm-bias
+primary_artifact: code/plan.md
+---
+
+# Execution Plan
+
+## Plan Contract Block
+```json
+{
+  "task_id": "I6",
+  "topic": "llm-bias",
+  "spec_source": "code/code_specification.md",
+  "plan_artifact": "code/plan.md",
+  "steps": [
+    {
+      "step_id": "S1",
+      "depends_on": [],
+      "owner": "codex",
+      "command": "python run_stage_one.py",
+      "outputs": ["analysis/results_a.csv"],
+      "checkpoint": "results_a.csv exists",
+      "rollback": "git restore analysis/results_a.csv"
+    },
+    {
+      "step_id": "S2",
+      "depends_on": ["S1"],
+      "owner": "claude",
+      "command": "python run_stage_two.py",
+      "outputs": ["analysis/results_b.csv"],
+      "checkpoint": "results_b.csv exists",
+      "rollback": "git restore analysis/results_b.csv"
+    }
+  ]
+}
+```
+
+## Scope Lock
+- locked
+"""
+
+        revised_artifact = """---
+task_id: I6
+template_type: code_plan
+topic: llm-bias
+primary_artifact: code/plan.md
+---
+
+# Execution Plan
+
+## Plan Contract Block
+```json
+{
+  "task_id": "I6",
+  "topic": "llm-bias",
+  "spec_source": "code/code_specification.md",
+  "plan_artifact": "code/plan.md",
+  "steps": [
+    {
+      "step_id": "S1",
+      "depends_on": [],
+      "owner": "codex",
+      "command": "python run_stage_one.py --rerun",
+      "outputs": ["analysis/results_a.csv"],
+      "checkpoint": "results_a.csv refreshed",
+      "rollback": "git restore analysis/results_a.csv"
+    }
+  ]
+}
+```
+
+## Scope Lock
+- locked
+"""
+
+        class TargetedPlanOrchestrator(MockOrchestrator):
+            def _execute_runtime_agent(
+                self,
+                agent_name: str,
+                prompt: str,
+                cwd: Path,
+                runtime_options: dict[str, Any] | None = None,
+                profile_directive: str | None = None,
+            ) -> BridgeResponse:
+                self.runtime_calls.append(
+                    {
+                        "agent": agent_name,
+                        "prompt": prompt,
+                        "runtime_options": dict(runtime_options or {}),
+                        "profile_directive": profile_directive or "",
+                        "cwd": str(cwd),
+                    }
+                )
+                if "You are executing one canonical research workflow task." in prompt:
+                    return BridgeResponse(success=True, model=agent_name, content=revised_artifact)
+                if "Review the draft" in prompt:
+                    return BridgeResponse(
+                        success=True,
+                        model=agent_name,
+                        content="Verdict: PASS\nConfidence: 0.92\nCritical Issues: none",
+                    )
+                return BridgeResponse(success=True, model=agent_name, content=f"{agent_name} ok")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workdir = Path(tmp_dir)
+            artifact_path = workdir / "RESEARCH" / "llm-bias" / "code" / "plan.md"
+            artifact_path.parent.mkdir(parents=True, exist_ok=True)
+            artifact_path.write_text(existing_artifact, encoding="utf-8")
+
+            orchestrator = TargetedPlanOrchestrator()
+            result = orchestrator.task_run(
+                task_id="I6",
+                paper_type="methods",
+                topic="llm-bias",
+                cwd=workdir,
+                only_targets=["S1"],
+            )
+
+        draft_prompts = [
+            call["prompt"]
+            for call in orchestrator.runtime_calls
+            if "You are executing one canonical research workflow task." in call["prompt"]
+        ]
+        self.assertTrue(draft_prompts)
+        self.assertIn("Targeted follow-up mode is active.", draft_prompts[0])
+        self.assertIn("- selected_actionable_targets: S1", draft_prompts[0])
+        self.assertIn('"step_id": "S1"', draft_prompts[0])
+        targeted = result.data["targeted_follow_up"]
+        self.assertTrue(targeted["enabled"])
+        self.assertEqual(targeted["selected_targets"], ["S1"])
+        self.assertEqual(targeted["source_artifact"], "code/plan.md")
+
+    def test_code_build_focus_maps_to_stage_i_task(self) -> None:
+        class CapturingCodeBuildOrchestrator(MockOrchestrator):
+            def __init__(self) -> None:
+                super().__init__()
+                self.task_run_calls: list[dict[str, Any]] = []
+
+            def task_run(self, **kwargs: Any) -> CollaborationResult:  # type: ignore[override]
+                self.task_run_calls.append(dict(kwargs))
+                return CollaborationResult(
+                    mode="task-run",
+                    task_description="captured",
+                    merged_analysis='{"stage":"ok"}',
+                    confidence=0.88,
+                    data={"task_id": kwargs["task_id"]},
+                )
+
+        orchestrator = CapturingCodeBuildOrchestrator()
+        result = orchestrator.code_build(
+            method="Staggered DID",
+            cwd=REPO_ROOT,
+            domain="econ",
+            topic="policy-effects",
+            focus="code_specification",
+            paper_type="methods",
+        )
+
+        self.assertEqual(len(orchestrator.task_run_calls), 1)
+        call = orchestrator.task_run_calls[0]
+        self.assertEqual(call["task_id"], "I5")
+        self.assertEqual(call["domain"], "econ")
+        self.assertEqual(call["profile"], "focused-delivery")
+        self.assertEqual(call["review_profile"], "strict-review")
+        self.assertEqual(result.mode, "code-build")
+        self.assertIn("- mapped_task_id: I5", result.merged_analysis)
+
+    def test_code_build_full_runs_strict_sequence(self) -> None:
+        class FullSequenceOrchestrator(MockOrchestrator):
+            def __init__(self) -> None:
+                super().__init__()
+                self.task_run_calls: list[dict[str, Any]] = []
+
+            def task_run(self, **kwargs: Any) -> CollaborationResult:  # type: ignore[override]
+                self.task_run_calls.append(dict(kwargs))
+                task_id = kwargs["task_id"]
+                actionable = {
+                    "I5": ["decision-1"],
+                    "I6": ["S1"],
+                    "I7": ["S1"],
+                    "I8": ["P1-01"],
+                }
+                return CollaborationResult(
+                    mode="task-run",
+                    task_description=task_id,
+                    merged_analysis=f"{task_id} ok",
+                    confidence=0.8,
+                    data={
+                        "task_id": task_id,
+                        "structured_output": {
+                            "task_id": task_id,
+                            "valid": True,
+                            "actionable_targets": actionable.get(task_id, []),
+                        },
+                    },
+                )
+
+        orchestrator = FullSequenceOrchestrator()
+        result = orchestrator.code_build(
+            method="Transformer Fine-Tuning",
+            cwd=REPO_ROOT,
+            domain="cs",
+            topic="llm-bias",
+            focus="full",
+            paper_type="methods",
+            triad=True,
+        )
+
+        self.assertEqual(
+            [call["task_id"] for call in orchestrator.task_run_calls],
+            ["I5", "I6", "I7", "I8"],
+        )
+        self.assertEqual(orchestrator.task_run_calls[-1]["triad"], True)
+        self.assertEqual(orchestrator.task_run_calls[0]["triad"], False)
+        self.assertEqual(result.mode, "code-build")
+        self.assertIn("- strict_stage_sequence: I5 -> I6 -> I7 -> I8", result.merged_analysis)
+        self.assertIn("I5", result.data["structured_stage_outputs"])
+        self.assertEqual(result.data["actionable_targets"]["I5"], ["decision-1"])
+
+    def test_code_build_full_only_targets_routes_selected_stages(self) -> None:
+        class TargetedSequenceOrchestrator(MockOrchestrator):
+            def __init__(self) -> None:
+                super().__init__()
+                self.task_run_calls: list[dict[str, Any]] = []
+
+            def task_run(self, **kwargs: Any) -> CollaborationResult:  # type: ignore[override]
+                self.task_run_calls.append(dict(kwargs))
+                task_id = kwargs["task_id"]
+                selected_targets = [
+                    str(item)
+                    for item in kwargs.get("only_targets", []) or []
+                    if str(item).strip()
+                ]
+                return CollaborationResult(
+                    mode="task-run",
+                    task_description=task_id,
+                    merged_analysis=f"{task_id} targeted",
+                    confidence=0.86,
+                    data={
+                        "task_id": task_id,
+                        "structured_output": {
+                            "task_id": task_id,
+                            "valid": True,
+                            "actionable_targets": selected_targets,
+                        },
+                    },
+                )
+
+        orchestrator = TargetedSequenceOrchestrator()
+        result = orchestrator.code_build(
+            method="Transformer Fine-Tuning",
+            cwd=REPO_ROOT,
+            domain="cs",
+            topic="llm-bias",
+            focus="full",
+            paper_type="methods",
+            only_targets=["I5:decision-1", "I8:P1-01"],
+        )
+
+        self.assertEqual(
+            [call["task_id"] for call in orchestrator.task_run_calls],
+            ["I5", "I8"],
+        )
+        self.assertEqual(orchestrator.task_run_calls[0]["only_targets"], ["decision-1"])
+        self.assertEqual(orchestrator.task_run_calls[1]["only_targets"], ["P1-01"])
+        self.assertEqual(
+            result.data["selected_target_map"],
+            {"I5": ["decision-1"], "I8": ["P1-01"]},
+        )
+        self.assertIn("- selected_target_map: I5=decision-1; I8=P1-01", result.merged_analysis)
+
     def test_parse_review_verdict_pass(self) -> None:
         orchestrator = MockOrchestrator()
         verdict, conf = orchestrator._parse_review_verdict("Verdict: PASS\nConfidence: 0.95")
@@ -385,6 +934,7 @@ class OrchestratorWorkflowTests(unittest.TestCase):
                     
                     self.runtime_calls.append({
                         "agent": agent_name,
+                        "prompt": prompt,
                         "runtime_options": dict(runtime_options or {}),
                         "profile_directive": profile_directive or "",
                         "cwd": str(cwd),
@@ -481,6 +1031,168 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("Skipped by user", result.codex_response.error)
         mock_execute.assert_not_called()
         mock_input.assert_called_once()
+
+    # ── Team-Run Tests ───────────────────────────────────────────────────
+
+    def test_team_run_loads_config(self) -> None:
+        """Verify _load_team_run_config parses B1 and H3 from capability map."""
+        orchestrator = MockOrchestrator()
+
+        b1_config = orchestrator._load_team_run_config("B1")
+        self.assertEqual(b1_config["task_id"], "B1")
+        self.assertEqual(b1_config["execution_mode"], "fanout_merge")
+        self.assertEqual(b1_config["partition_strategy"], "by_paper_batch")
+        self.assertEqual(b1_config["max_parallel_units"], 5)
+        self.assertIn("codex", b1_config["worker_pool"])
+        self.assertEqual(b1_config["barrier_rules"]["on_failure"], "degrade")
+        self.assertAlmostEqual(b1_config["barrier_rules"]["min_success_ratio"], 0.6)
+        self.assertTrue(len(b1_config["shard_outputs"]) > 0)
+        self.assertTrue(len(b1_config["canonical_outputs"]) > 0)
+
+        h3_config = orchestrator._load_team_run_config("H3")
+        self.assertEqual(h3_config["task_id"], "H3")
+        self.assertEqual(h3_config["partition_strategy"], "by_reviewer_persona")
+        self.assertEqual(h3_config["max_parallel_units"], 3)
+        self.assertEqual(h3_config["barrier_rules"]["on_failure"], "block")
+        self.assertAlmostEqual(h3_config["barrier_rules"]["min_success_ratio"], 1.0)
+        self.assertTrue(len(h3_config["personas"]) == 3)
+        persona_ids = [p["id"] for p in h3_config["personas"]]
+        self.assertIn("methodologist", persona_ids)
+        self.assertIn("domain_expert", persona_ids)
+        self.assertIn("reviewer_2", persona_ids)
+
+    def test_team_run_b1_mock_e2e(self) -> None:
+        """B1 team-run: planner generates units, workers fan out, merge + review."""
+        orchestrator = MockOrchestrator()
+
+        # Override _execute_runtime_agent to return planner-style JSON for first call
+        call_count = {"n": 0}
+        original_execute = orchestrator._execute_runtime_agent
+
+        def mock_execute(agent_name, prompt, cwd, runtime_options=None, profile_directive=None):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                # Planner call — return JSON work units
+                return BridgeResponse(
+                    success=True,
+                    model=agent_name,
+                    content='[{"unit_id": "batch_1", "description": "AI pedagogy", "scope": "papers on AI teaching"},'
+                            '{"unit_id": "batch_2", "description": "AI assessment", "scope": "papers on AI evaluation"}]',
+                )
+            # All other calls (workers, merge, review)
+            return original_execute(agent_name, prompt, cwd, runtime_options, profile_directive)
+
+        orchestrator._execute_runtime_agent = mock_execute
+
+        result = orchestrator.team_run(
+            task_id="B1",
+            paper_type="systematic-review",
+            topic="ai-in-education",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertEqual(result.mode, "team-run")
+        self.assertGreater(result.confidence, 0.0)
+        self.assertIn("Team-Run: B1", result.merged_analysis)
+        self.assertIn("batch_1", result.merged_analysis)
+        self.assertIn("batch_2", result.merged_analysis)
+        # Planner + 2 workers + 1 merge + 1 review = 5 calls
+        self.assertEqual(call_count["n"], 5)
+
+    def test_team_run_h3_persona_static_units(self) -> None:
+        """H3 uses static persona-based partitioning — no planner agent call."""
+        orchestrator = MockOrchestrator()
+
+        result = orchestrator.team_run(
+            task_id="H3",
+            paper_type="empirical",
+            topic="digital-literacy",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertEqual(result.mode, "team-run")
+        self.assertGreater(result.confidence, 0.0)
+        self.assertIn("Team-Run: H3", result.merged_analysis)
+        self.assertIn("methodologist", result.merged_analysis)
+        self.assertIn("domain_expert", result.merged_analysis)
+        self.assertIn("reviewer_2", result.merged_analysis)
+        # 3 workers + 1 merge + 1 review = 5 calls (no planner)
+        self.assertEqual(len(orchestrator.runtime_calls), 5)
+
+    def test_team_run_single_worker_failure_degrades(self) -> None:
+        """B1 degrade policy: 2/3 workers succeed → merge proceeds."""
+        orchestrator = MockOrchestrator()
+
+        call_count = {"n": 0}
+
+        def mock_execute(agent_name, prompt, cwd, runtime_options=None, profile_directive=None):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                # Planner
+                return BridgeResponse(
+                    success=True, model=agent_name,
+                    content='[{"unit_id": "b1", "description": "a", "scope": "s1"},'
+                            '{"unit_id": "b2", "description": "b", "scope": "s2"},'
+                            '{"unit_id": "b3", "description": "c", "scope": "s3"}]',
+                )
+            if call_count["n"] == 3:
+                # Third call (second worker) fails
+                return BridgeResponse(success=False, model=agent_name, error="timeout")
+            return BridgeResponse(success=True, model=agent_name, content=f"output-{call_count['n']}")
+
+        orchestrator._execute_runtime_agent = mock_execute
+
+        result = orchestrator.team_run(
+            task_id="B1",
+            paper_type="systematic-review",
+            topic="test-degrade",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertIn("degraded", result.merged_analysis.lower())
+        self.assertGreater(result.confidence, 0.0)
+
+    def test_team_run_all_workers_fail_blocks(self) -> None:
+        """When all workers fail, confidence should be 0."""
+        orchestrator = MockOrchestrator()
+
+        call_count = {"n": 0}
+
+        def mock_execute(agent_name, prompt, cwd, runtime_options=None, profile_directive=None):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return BridgeResponse(
+                    success=True, model=agent_name,
+                    content='[{"unit_id": "b1", "description": "a", "scope": "s1"}]',
+                )
+            return BridgeResponse(success=False, model=agent_name, error="all-fail")
+
+        orchestrator._execute_runtime_agent = mock_execute
+
+        result = orchestrator.team_run(
+            task_id="B1",
+            paper_type="systematic-review",
+            topic="test-block",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertEqual(result.confidence, 0.0)
+        self.assertIn("blocked", result.merged_analysis.lower())
+
+    def test_team_run_does_not_affect_task_run(self) -> None:
+        """Existing task-run behavior must remain unchanged after team-run addition."""
+        orchestrator = MockOrchestrator()
+
+        result = orchestrator.task_run(
+            task_id="F3",
+            paper_type="empirical",
+            topic="regression-test",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertEqual(result.mode, "task-run")
+        self.assertGreater(result.confidence, 0.0)
+        self.assertTrue(len(orchestrator.runtime_calls) >= 2)
 
 
 if __name__ == "__main__":

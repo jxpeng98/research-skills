@@ -1,10 +1,12 @@
 .vscode/
 __pycache__/
 *.py[cod]
+node_modules/
 dist/
 build/
 *.egg-info/
 .env
+docs/.vitepress/dist/
 
 # Local agent artifacts generated during `rsk` install tests
 .gemini/

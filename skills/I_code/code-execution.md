@@ -51,24 +51,72 @@ Execute the plan: implement, test, profile, and document research code with repr
    - commands
    - expected outputs
 
-## Performance profile format (`code/performance_profile.md`)
+## Required performance profile format (`code/performance_profile.md`)
 
 ```markdown
+---
+task_id: I7
+template_type: performance_profile
+topic: <topic>
+primary_artifact: code/performance_profile.md
+---
+
 # Performance Profile
 
-## Environment
+## Execution Contract Block
+```json
+{
+  "task_id": "I7",
+  "topic": "<topic>",
+  "plan_source": "code/plan.md",
+  "performance_artifact": "code/performance_profile.md",
+  "analysis_outputs": ["analysis/..."],
+  "documentation_outputs": ["code/documentation/..."],
+  "container_outputs": ["code/container_config/..."],
+  "validation_runs": [
+    {"step_id": "S1", "evidence": "..."}
+  ],
+  "profiling_targets": [
+    {"component": "...", "command": "..."}
+  ]
+}
+```
+
+## Scope Executed
+- ...
+
+## Implementation Ledger
+| Step ID | Planned Output | Observed Output | Status | Notes |
+| --- | --- | --- | --- | --- |
+| S1 | ... | ... | PASS | ... |
+
+## Validation Evidence
+| Check | Evidence | Result | Artifact |
+| --- | --- | --- | --- |
+| ... | ... | ... | ... |
+
+## Artifact Inventory
+- `analysis/...`
+- `code/documentation/...`
+- `code/container_config/...`
+
+## Environment / Containerization
 - OS:
 - Python/R version:
 - Key deps:
 
-## Workload
+## Profiling Results
 - Dataset size:
 - Command:
-
-## Results
 | Component | Time | Notes |
 |---|---:|---|
 
-## Optimization actions taken
+## Optimization Actions Taken
 1. ...
+
+## Reproduction Commands
+1. ...
+
+## Remaining Gaps / Blockers
+- ...
 ```

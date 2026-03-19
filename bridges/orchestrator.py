@@ -129,8 +129,164 @@ class ModelOrchestrator:
                 "gemini": {"sandbox": False, "non_interactive": True},
             },
         },
+        "focused-delivery": {
+            "persona": "Execution assistant optimizing for minimal artifact sprawl and tight scope control.",
+            "draft_style": "Only deliver the active outputs for this run, consolidate support into those files, and defer secondary artifacts explicitly.",
+            "review_style": "Reject unnecessary helper outputs, scope creep, and weakly justified breadth.",
+            "summary_style": "Summarize only the essential outputs, blockers, and deferred items.",
+            "runtime_options": {
+                "codex": {"sandbox": "read-only", "non_interactive": True, "timeout_seconds": 240},
+                "claude": {"permission_mode": "default", "non_interactive": True, "timeout_seconds": 240},
+                "gemini": {"sandbox": False, "non_interactive": True, "timeout_seconds": 240},
+            },
+        },
+        "deep-research": {
+            "persona": "Research analyst optimizing for exhaustive evidence expansion, contradiction hunting, and narrow high-confidence conclusions.",
+            "analysis_style": "Expand the evidence base in rounds, search for counterevidence, and separate evidence from inference aggressively.",
+            "draft_style": "Prefer fewer but strongly supported conclusions, with explicit scope boundaries, counterevidence checks, and decision rationale.",
+            "review_style": "Audit evidence depth, contradiction coverage, and boundary-case reasoning before surface polish.",
+            "summary_style": "Collapse broad findings into the smallest strongly supported claim set and list remaining evidence gaps.",
+            "triad_style": "Adjudicate unresolved evidence conflicts and force a decision-grade rationale.",
+            "runtime_options": {
+                "codex": {"sandbox": "read-only", "non_interactive": True, "timeout_seconds": 480},
+                "claude": {"permission_mode": "default", "non_interactive": True, "timeout_seconds": 540},
+                "gemini": {"sandbox": True, "non_interactive": True, "timeout_seconds": 420},
+            },
+        },
     }
     RUNTIME_AGENTS = {"codex", "claude", "gemini"}
+    DOMAIN_PROFILE_ALIASES = {
+        "finance": "finance",
+        "econ": "economics",
+        "economics": "economics",
+        "econometrics": "economics",
+        "metrics": "economics",
+        "psych": "psychology",
+        "psychology": "psychology",
+        "biomed": "biomedical",
+        "biomedical": "biomedical",
+        "education": "education",
+        "edu": "education",
+        "cs": "cs-ai",
+        "ai": "cs-ai",
+        "ml": "cs-ai",
+        "llm": "cs-ai",
+        "cs-ai": "cs-ai",
+        "political-science": "political-science",
+        "political-science-sociology": "political-science",
+        "politicalscience": "political-science",
+        "polisci": "political-science",
+        "epi": "epidemiology",
+        "epidemiology": "epidemiology",
+        "ecology": "ecology-environmental",
+        "environmental": "ecology-environmental",
+        "ecology-environmental": "ecology-environmental",
+    }
+    CODE_BUILD_FOCUS_TO_TASK = {
+        "implementation": "I1",
+        "method_implementation": "I1",
+        "method": "I1",
+        "reproduction": "I2",
+        "replication": "I2",
+        "data_pipeline": "I3",
+        "pipeline": "I3",
+        "reproducibility_audit": "I4",
+        "audit": "I4",
+        "code_specification": "I5",
+        "spec": "I5",
+        "specification": "I5",
+        "code_planning": "I6",
+        "planning": "I6",
+        "plan": "I6",
+        "execution_performance": "I7",
+        "execution": "I7",
+        "execute": "I7",
+        "performance": "I7",
+        "code_review": "I8",
+        "review": "I8",
+        "full": "FULL",
+    }
+    STAGE_I_TEMPLATE_TYPE_BY_TASK = {
+        "I4": "reproducibility_audit",
+        "I5": "code_specification",
+        "I6": "code_plan",
+        "I7": "performance_profile",
+        "I8": "code_review",
+    }
+    STAGE_I_CONTRACT_HEADING_BY_TASK = {
+        "I4": "Audit Contract Block",
+        "I5": "Spec Contract Block",
+        "I6": "Plan Contract Block",
+        "I7": "Execution Contract Block",
+        "I8": "Review Contract Block",
+    }
+    STAGE_I_CONTRACT_KEYS_BY_TASK = {
+        "I4": [
+            "task_id",
+            "topic",
+            "audit_artifact",
+            "reviewed_artifacts",
+            "environment_files",
+            "seed_policy_status",
+            "rerun_entrypoints",
+            "verdict",
+            "blocking_gaps",
+        ],
+        "I5": [
+            "task_id",
+            "topic",
+            "method_or_pipeline",
+            "primary_artifact",
+            "inputs",
+            "outputs",
+            "dependencies",
+            "seeds_policy",
+            "acceptance_tests",
+            "blocked_decisions",
+        ],
+        "I6": [
+            "task_id",
+            "topic",
+            "spec_source",
+            "plan_artifact",
+            "steps",
+        ],
+        "I7": [
+            "task_id",
+            "topic",
+            "plan_source",
+            "performance_artifact",
+            "analysis_outputs",
+            "documentation_outputs",
+            "container_outputs",
+            "validation_runs",
+            "profiling_targets",
+        ],
+        "I8": [
+            "task_id",
+            "topic",
+            "review_target",
+            "spec_source",
+            "plan_source",
+            "review_artifact",
+            "verdict",
+            "blocking_findings",
+            "review_coverage",
+        ],
+    }
+    STAGE_I_FRONTMATTER_KEYS = [
+        "task_id",
+        "template_type",
+        "topic",
+        "primary_artifact",
+    ]
+    STAGE_I_PRIMARY_ARTIFACT_BY_TASK = {
+        "I4": "code/reproducibility_audit.md",
+        "I5": "code/code_specification.md",
+        "I6": "code/plan.md",
+        "I7": "code/performance_profile.md",
+        "I8": "code/code_review.md",
+    }
     DEFAULT_STANDARDS_DIR = Path(__file__).resolve().parents[1] / "standards"
     
     def __init__(
@@ -1770,6 +1926,842 @@ Provide your verification assessment.
         normalized = re.sub(r"[^a-z0-9]+", "-", topic.strip().lower())
         return normalized.strip("-")
 
+    def _normalize_domain(self, domain: str | None) -> str:
+        raw = str(domain or "").strip().lower()
+        if not raw or raw == "auto":
+            return "auto"
+        key = re.sub(r"[^a-z0-9]+", "-", raw).strip("-")
+        return self.DOMAIN_PROFILE_ALIASES.get(key, key)
+
+    def _load_domain_profile_context(self, domain: str | None) -> dict[str, Any]:
+        requested = str(domain or "").strip()
+        normalized = self._normalize_domain(domain)
+        if normalized == "auto":
+            return {
+                "requested_domain": requested or "auto",
+                "domain": "auto",
+                "status": "auto",
+                "display_name": "Auto-detect",
+                "file": "",
+                "excerpt": "",
+            }
+
+        profile_path = self.standards_dir.parent / "skills" / "domain-profiles" / f"{normalized}.yaml"
+        if not profile_path.exists():
+            return {
+                "requested_domain": requested or normalized,
+                "domain": normalized,
+                "status": "missing",
+                "display_name": normalized,
+                "file": str(profile_path.relative_to(self.standards_dir.parent)),
+                "excerpt": "",
+            }
+
+        try:
+            content = profile_path.read_text(encoding="utf-8")
+        except OSError:
+            content = ""
+
+        display_name = normalized
+        if content:
+            match = re.search(r'^display_name:\s*"?(.*?)"?\s*$', content, re.MULTILINE)
+            if match and match.group(1).strip():
+                display_name = match.group(1).strip()
+
+        excerpt_lines = content.splitlines()[:120] if content else []
+        excerpt = "\n".join(excerpt_lines).strip()
+        return {
+            "requested_domain": requested or normalized,
+            "domain": normalized,
+            "status": "loaded",
+            "display_name": display_name,
+            "file": str(profile_path.relative_to(self.standards_dir.parent)),
+            "excerpt": excerpt,
+        }
+
+    def _build_domain_packet_fields(self, domain_context: dict[str, Any]) -> dict[str, Any]:
+        if not domain_context:
+            return {}
+        return {
+            "requested_domain": str(domain_context.get("requested_domain", "")).strip(),
+            "domain": str(domain_context.get("domain", "")).strip(),
+            "domain_profile_status": str(domain_context.get("status", "")).strip(),
+            "domain_profile_display_name": str(domain_context.get("display_name", "")).strip(),
+            "domain_profile_file": str(domain_context.get("file", "")).strip(),
+            "domain_profile_excerpt": str(domain_context.get("excerpt", "")).strip(),
+        }
+
+    def _format_domain_context(self, task_packet: dict[str, Any]) -> str:
+        domain = str(task_packet.get("domain", "")).strip()
+        if not domain or domain == "auto":
+            return "- No explicit domain profile injected."
+
+        status = str(task_packet.get("domain_profile_status", "")).strip() or "unknown"
+        display_name = str(task_packet.get("domain_profile_display_name", "")).strip() or domain
+        file_rel = str(task_packet.get("domain_profile_file", "")).strip() or "-"
+        lines = [
+            f"- requested_domain: {str(task_packet.get('requested_domain', domain)).strip() or domain}",
+            f"- resolved_domain: {domain}",
+            f"- status: {status}",
+            f"- display_name: {display_name}",
+            f"- profile_file: {file_rel}",
+        ]
+        excerpt = str(task_packet.get("domain_profile_excerpt", "")).strip()
+        if excerpt:
+            lines.extend(
+                [
+                    "```yaml",
+                    excerpt,
+                    "```",
+                ]
+            )
+        return "\n".join(lines)
+
+    def _build_code_lane_rules(
+        self,
+        task_packet: dict[str, Any],
+        stage: str,
+    ) -> str:
+        task_id = str(task_packet.get("task_id", "")).strip().upper()
+        if not task_id.startswith("I"):
+            return ""
+
+        common_rules = [
+            "Treat this as academic research code, not product/application scaffolding.",
+            "Optimize for method fidelity, statistical validity, and reproducibility before generic software architecture polish.",
+            "Keep outputs aligned to the contract paths under RESEARCH/[topic]/ and the code/ documentation artifacts listed in required_outputs.",
+            "Document deterministic settings, dependency versions, validation datasets, and rerun commands explicitly.",
+        ]
+        phase_specific: list[str]
+        if task_id == "I5":
+            phase_specific = [
+                "Produce a machine-parseable constraint set with explicit success criteria and disallowed shortcuts.",
+                "Lock down I/O contracts, seeds, validation targets, and acceptance tests before any implementation freedom is introduced.",
+            ]
+        elif task_id == "I6":
+            phase_specific = [
+                "Transform the specification into a zero-decision execution plan with checkpoints, concrete commands, and rollback points.",
+                "Expose which tasks can run in parallel and which must remain sequential due to statistical or dependency risk.",
+            ]
+        elif task_id == "I7":
+            phase_specific = [
+                "Execute the plan exactly; do not improvise new methodology without flagging it as a blocked decision.",
+                "Implementation output should include runnable scripts/notebooks, validation evidence, profiling notes, and reproducibility instructions.",
+            ]
+        elif task_id == "I8":
+            phase_specific = [
+                "Review against the spec (I5), plan (I6), implementation outputs (I7), and reproducibility expectations.",
+                "Prioritize findings that break statistical validity, method fidelity, or rerunnability over style concerns.",
+            ]
+        elif task_id == "I4":
+            phase_specific = [
+                "Audit seed handling, version pinning, environment capture, rerun commands, and fail-graceful contingencies.",
+            ]
+        else:
+            phase_specific = [
+                "Keep method assumptions, synthetic verification, and statistical diagnostics explicit.",
+            ]
+
+        if stage == "review":
+            phase_specific.append(
+                "Block if the work looks like generic engineering output rather than a method-faithful academic implementation."
+            )
+        if stage == "triad":
+            phase_specific.append(
+                "Resolve disagreements by favoring the narrowest implementation claim set that remains reproducible and statistically defensible."
+            )
+
+        lines = [f"{index}. {rule}" for index, rule in enumerate(common_rules + phase_specific, start=1)]
+        return "\n".join(lines)
+
+    def _build_code_lane_template_requirements(
+        self,
+        task_packet: dict[str, Any],
+    ) -> str:
+        task_id = str(task_packet.get("task_id", "")).strip().upper()
+        if task_id == "I5":
+            return """
+Deliverable template requirements:
+- The primary deliverable `code/code_specification.md` must use this exact heading skeleton:
+  - `# Code Specification`
+  - `## Spec Contract Block`
+  - `## Goal`
+  - `## Non-Goals`
+  - `## Inputs (Schema)`
+  - `## Outputs (Paths)`
+  - `## Functional Requirements`
+  - `## Non-Functional Requirements`
+  - `## Edge Cases And Failure Modes`
+  - `## Validation Matrix`
+  - `## Disallowed Shortcuts`
+  - `## Blocked Decisions / Escalations`
+- The document must start with YAML frontmatter containing at least:
+  - `task_id`, `template_type`, `topic`, `primary_artifact`
+- Under `## Spec Contract Block`, include a fenced `json` block with at least:
+  - `task_id`, `topic`, `method_or_pipeline`, `primary_artifact`, `inputs`, `outputs`, `dependencies`, `seeds_policy`, `acceptance_tests`, `blocked_decisions`
+- `## Validation Matrix` must tie each test/check to a metric or observable pass condition.
+- `## Disallowed Shortcuts` must name the shortcuts that would invalidate the research code or reproduction claim.
+"""
+        if task_id == "I6":
+            return """
+Deliverable template requirements:
+- The primary deliverable `code/plan.md` must use this exact heading skeleton:
+  - `# Execution Plan`
+  - `## Plan Contract Block`
+  - `## Scope Lock`
+  - `## Assumptions From Spec`
+  - `## Step Ledger`
+  - `## Checkpoint Matrix`
+  - `## Exact Run Commands`
+  - `## Parallelization / Dependency Map`
+  - `## Rollback / Recovery`
+  - `## Risks / Blockers`
+- The document must start with YAML frontmatter containing at least:
+  - `task_id`, `template_type`, `topic`, `primary_artifact`
+- Under `## Plan Contract Block`, include a fenced `json` block with at least:
+  - `task_id`, `topic`, `spec_source`, `plan_artifact`, `steps`
+- Each `steps` item must carry:
+  - `step_id`, `depends_on`, `owner`, `command`, `outputs`, `checkpoint`, `rollback`
+- `## Step Ledger` must be zero-decision: no step may rely on an implicit judgment call during execution.
+- `## Exact Run Commands` must provide copy-pastable commands or notebook/script entrypoints.
+"""
+        if task_id == "I7":
+            return """
+Deliverable template requirements:
+- The primary deliverable `code/performance_profile.md` must use this exact heading skeleton:
+  - `# Performance Profile`
+  - `## Execution Contract Block`
+  - `## Scope Executed`
+  - `## Implementation Ledger`
+  - `## Validation Evidence`
+  - `## Artifact Inventory`
+  - `## Environment / Containerization`
+  - `## Profiling Results`
+  - `## Optimization Actions Taken`
+  - `## Reproduction Commands`
+  - `## Remaining Gaps / Blockers`
+- The document must start with YAML frontmatter containing at least:
+  - `task_id`, `template_type`, `topic`, `primary_artifact`
+- Under `## Execution Contract Block`, include a fenced `json` block with at least:
+  - `task_id`, `topic`, `plan_source`, `performance_artifact`, `analysis_outputs`, `documentation_outputs`, `container_outputs`, `validation_runs`, `profiling_targets`
+- `## Implementation Ledger` must map executed steps back to `code/plan.md` step IDs.
+- `## Validation Evidence` must record observable outcomes, not just claims that tests passed.
+- `## Artifact Inventory` must enumerate what was produced under `analysis/`, `code/documentation/`, and `code/container_config/`.
+- `## Reproduction Commands` must be copy-pastable rerun commands for the main pipeline and profiling path.
+"""
+        if task_id == "I4":
+            return """
+Deliverable template requirements:
+- The primary deliverable `code/reproducibility_audit.md` must use this exact heading skeleton:
+  - `# Reproducibility Audit`
+  - `## Audit Contract Block`
+  - `## Audit Scope`
+  - `## Environment Evidence`
+  - `## Data Provenance / Immutability`
+  - `## Determinism / Seed Control`
+  - `## Rerun Recipe`
+  - `## Failure Points / Recovery`
+  - `## Audit Verdict`
+  - `## Required Remediations`
+  - `## Confidence`
+- The document must start with YAML frontmatter containing at least:
+  - `task_id`, `template_type`, `topic`, `primary_artifact`
+- Under `## Audit Contract Block`, include a fenced `json` block with at least:
+  - `task_id`, `topic`, `audit_artifact`, `reviewed_artifacts`, `environment_files`, `seed_policy_status`, `rerun_entrypoints`, `verdict`, `blocking_gaps`
+- `## Rerun Recipe` must provide a short ordered set of copy-pastable commands.
+- `## Audit Verdict` must classify the repo as `PASS`, `WARN`, or `BLOCK` and justify that decision from the evidence.
+"""
+        if task_id == "I8":
+            return """
+Deliverable template requirements:
+- The primary deliverable `code/code_review.md` must use this exact heading skeleton:
+  - `# Code Review`
+  - `## Review Contract Block`
+  - `## Verdict`
+  - `## Scope Reviewed`
+  - `## Findings Table`
+  - `## Blocking Findings`
+  - `## Non-Blocking Findings`
+  - `## Domain Checklist Status`
+  - `## Reproducibility / Statistical Validity`
+  - `## Required Fix Order`
+  - `## Residual Risks`
+  - `## Confidence`
+- The document must start with YAML frontmatter containing at least:
+  - `task_id`, `template_type`, `topic`, `primary_artifact`
+- Under `## Review Contract Block`, include a fenced `json` block with at least:
+  - `task_id`, `topic`, `review_target`, `spec_source`, `plan_source`, `review_artifact`, `verdict`, `blocking_findings`, `review_coverage`
+- `## Findings Table` must classify each issue by `finding_id`, severity (`P0`/`P1`/`P2`/`P3`), area, evidence, and required action.
+- `## Blocking Findings` must contain only items that justify a `BLOCK` verdict.
+- `## Required Fix Order` must be explicitly prioritized.
+"""
+        return ""
+
+    def _build_code_lane_review_requirements(
+        self,
+        task_packet: dict[str, Any],
+    ) -> str:
+        task_id = str(task_packet.get("task_id", "")).strip().upper()
+        if task_id == "I5":
+            return """
+Stage-I structure checks:
+- Block if `code/code_specification.md` is missing the required heading skeleton, YAML frontmatter, or the fenced `json` spec contract block.
+- Block if acceptance tests are vague, non-measurable, or detached from the stated outputs.
+- Block if blocked decisions or disallowed shortcuts are left implicit.
+"""
+        if task_id == "I6":
+            return """
+Stage-I structure checks:
+- Block if `code/plan.md` is missing the required heading skeleton, YAML frontmatter, or the fenced `json` plan contract block.
+- Block if any execution step lacks a concrete command, output path, checkpoint, or rollback path.
+- Block if the plan still requires execution-time judgment calls rather than zero-decision instructions.
+"""
+        if task_id == "I7":
+            return """
+Stage-I structure checks:
+- Block if `code/performance_profile.md` is missing the required heading skeleton, YAML frontmatter, or the fenced `json` execution contract block.
+- Block if executed steps cannot be traced back to `code/plan.md`, or if validation evidence is only asserted rather than observed.
+- Block if artifact inventory, profiling results, or reproduction commands are incomplete for the claimed outputs.
+"""
+        if task_id == "I4":
+            return """
+Stage-I structure checks:
+- Block if `code/reproducibility_audit.md` is missing the required heading skeleton, YAML frontmatter, or the fenced `json` audit contract block.
+- Block if environment evidence, seed handling, or rerun commands are missing or not actionable.
+- Block if the audit verdict is not justified by concrete evidence and blocking gaps.
+"""
+        if task_id == "I8":
+            return """
+Stage-I structure checks:
+- Block if `code/code_review.md` is missing the required heading skeleton, YAML frontmatter, or the fenced `json` review contract block.
+- Block if findings are not severity-ranked or do not cite evidence from the spec, plan, code outputs, or reproducibility artifacts.
+- Block if the verdict and blocking findings are inconsistent.
+"""
+        return ""
+
+    def _normalize_code_build_focus(self, focus: str | None) -> str:
+        raw = str(focus or "").strip().lower()
+        if not raw:
+            return "implementation"
+        key = re.sub(r"[^a-z0-9]+", "_", raw).strip("_")
+        return key or "implementation"
+
+    def _build_code_build_context(
+        self,
+        method: str,
+        tier: str,
+        focus: str,
+        domain_context: dict[str, Any],
+        paper_path: str | None,
+        strict_task_id: str | None = None,
+    ) -> str:
+        lines = [
+            "Academic code workflow request:",
+            f"- method: {method}",
+            f"- tier: {tier}",
+            f"- requested_focus: {focus}",
+        ]
+        if strict_task_id:
+            lines.append(f"- strict_task_id: {strict_task_id}")
+        domain_name = str(domain_context.get("domain", "auto")).strip() or "auto"
+        lines.append(f"- domain: {domain_name}")
+        if str(domain_context.get("display_name", "")).strip():
+            lines.append(f"- domain_display_name: {domain_context['display_name']}")
+        if paper_path:
+            lines.append(f"- reference_paper: {paper_path}")
+        lines.extend(
+            [
+                "- academic_code_requirements:",
+                "  - preserve method fidelity to the stated methodology or paper",
+                "  - prefer reproducibility artifacts over generic app scaffolding",
+                "  - surface seeds, baseline comparisons, effect sizes / uncertainty, and failure cases",
+                "  - align all outputs to RESEARCH/[topic]/ contract paths",
+            ]
+        )
+        return "\n".join(lines)
+
+    def _wrap_code_build_result(
+        self,
+        result: CollaborationResult,
+        method: str,
+        focus: str,
+        task_id: str,
+        topic: str,
+    ) -> CollaborationResult:
+        merged = "\n".join(
+            [
+                "## Code-Build Academic Flow",
+                f"- method: {method}",
+                f"- focus: {focus}",
+                f"- mapped_task_id: {task_id}",
+                f"- topic: {topic}",
+                "",
+                result.merged_analysis,
+            ]
+        )
+        return CollaborationResult(
+            mode="code-build",
+            task_description=f"{method} {focus} {topic}"[:200],
+            codex_response=result.codex_response,
+            claude_response=result.claude_response,
+            gemini_response=result.gemini_response,
+            merged_analysis=merged,
+            confidence=result.confidence,
+            recommendations=list(result.recommendations),
+            data=dict(result.data) if result.data else {},
+        )
+
+    def _resolve_code_build_target_map(
+        self,
+        mapped_task_id: str,
+        only_targets: list[str] | None,
+    ) -> dict[str, list[str]]:
+        normalized_targets: list[str] = []
+        seen_targets: set[str] = set()
+        for raw in only_targets or []:
+            item = str(raw).strip()
+            if not item or item in seen_targets:
+                continue
+            seen_targets.add(item)
+            normalized_targets.append(item)
+        if not normalized_targets:
+            return {}
+
+        if mapped_task_id == "FULL":
+            allowed_stages = {"I5", "I6", "I7", "I8"}
+            stage_map: dict[str, list[str]] = {}
+            stage_seen: dict[str, set[str]] = {}
+            for selector in normalized_targets:
+                stage_raw, separator, target_raw = selector.partition(":")
+                stage_id = stage_raw.strip().upper()
+                target_id = target_raw.strip()
+                if not separator or not stage_id or not target_id:
+                    raise ValueError(
+                        "When --focus full is used, each --only-target must use STAGE_ID:TARGET format "
+                        "(for example I6:S1 or I8:P1-01)."
+                    )
+                if stage_id not in allowed_stages:
+                    raise ValueError(
+                        "--focus full only supports --only-target selectors for I5, I6, I7, or I8."
+                    )
+                stage_map.setdefault(stage_id, [])
+                stage_seen.setdefault(stage_id, set())
+                if target_id in stage_seen[stage_id]:
+                    continue
+                stage_seen[stage_id].add(target_id)
+                stage_map[stage_id].append(target_id)
+            return stage_map
+
+        if mapped_task_id not in self.STAGE_I_PRIMARY_ARTIFACT_BY_TASK:
+            raise ValueError(
+                "--only-target is currently supported only for structured Stage-I tasks I4 through I8."
+            )
+
+        resolved_targets: list[str] = []
+        seen_resolved: set[str] = set()
+        for selector in normalized_targets:
+            stage_raw, separator, target_raw = selector.partition(":")
+            if separator:
+                stage_id = stage_raw.strip().upper()
+                target_id = target_raw.strip()
+                if stage_id != mapped_task_id or not target_id:
+                    raise ValueError(
+                        f"Selector '{selector}' does not match mapped task {mapped_task_id}."
+                    )
+            else:
+                target_id = selector
+            if target_id in seen_resolved:
+                continue
+            seen_resolved.add(target_id)
+            resolved_targets.append(target_id)
+        return {mapped_task_id: resolved_targets}
+
+    def _parse_simple_frontmatter(self, content: str) -> tuple[dict[str, str], str]:
+        match = re.match(r"^---\n(.*?)\n---\n?(.*)$", content, flags=re.DOTALL)
+        if not match:
+            return {}, content
+        block = match.group(1)
+        body = match.group(2)
+        parsed: dict[str, str] = {}
+        for line in block.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            item = re.match(r"^([A-Za-z0-9_-]+):\s*(.+?)\s*$", stripped)
+            if not item:
+                continue
+            key, value = item.group(1), item.group(2)
+            if (value.startswith('"') and value.endswith('"')) or (
+                value.startswith("'") and value.endswith("'")
+            ):
+                value = value[1:-1]
+            parsed[key] = value
+        return parsed, body
+
+    def _extract_fenced_block_after_heading(
+        self,
+        content: str,
+        heading: str,
+        language: str,
+    ) -> str:
+        heading_match = re.search(
+            rf"^##\s+{re.escape(heading)}\s*$",
+            content,
+            flags=re.MULTILINE,
+        )
+        if not heading_match:
+            return ""
+        tail = content[heading_match.end():]
+        block_match = re.search(
+            rf"```{re.escape(language)}\s*\n(.*?)\n```",
+            tail,
+            flags=re.DOTALL,
+        )
+        if not block_match:
+            return ""
+        return block_match.group(1).strip()
+
+    def _build_stage_i_actionable_targets(
+        self,
+        task_id: str,
+        contract: dict[str, Any],
+    ) -> list[str]:
+        if task_id == "I5":
+            return [
+                str(item).strip()
+                for item in contract.get("blocked_decisions", [])
+                if str(item).strip()
+            ]
+        if task_id == "I6":
+            return [
+                str(step.get("step_id", "")).strip()
+                for step in contract.get("steps", [])
+                if isinstance(step, dict) and str(step.get("step_id", "")).strip()
+            ]
+        if task_id == "I7":
+            return [
+                str(run.get("step_id", "")).strip()
+                for run in contract.get("validation_runs", [])
+                if isinstance(run, dict) and str(run.get("step_id", "")).strip()
+            ]
+        if task_id == "I4":
+            return [
+                str(item.get("command", "")).strip()
+                for item in contract.get("rerun_entrypoints", [])
+                if isinstance(item, dict) and str(item.get("command", "")).strip()
+            ]
+        if task_id == "I8":
+            return [
+                str(item.get("finding_id", "")).strip()
+                for item in contract.get("blocking_findings", [])
+                if isinstance(item, dict) and str(item.get("finding_id", "")).strip()
+            ]
+        return []
+
+    def _summarize_stage_i_structured_output(
+        self,
+        task_id: str,
+        frontmatter: dict[str, str],
+        contract: dict[str, Any],
+        valid: bool,
+        missing_frontmatter_keys: list[str],
+        missing_contract_keys: list[str],
+        parse_error: str,
+    ) -> list[str]:
+        lines = [
+            f"task_id: {task_id}",
+            f"template_type: {frontmatter.get('template_type', '<missing>')}",
+            f"valid: {'yes' if valid else 'no'}",
+        ]
+        if parse_error:
+            lines.append(f"parse_error: {parse_error}")
+        if missing_frontmatter_keys:
+            lines.append("missing_frontmatter_keys: " + ", ".join(missing_frontmatter_keys))
+        if missing_contract_keys:
+            lines.append("missing_contract_keys: " + ", ".join(missing_contract_keys))
+
+        if task_id == "I5":
+            lines.append(
+                "acceptance_tests: "
+                + str(len(contract.get("acceptance_tests", [])))
+            )
+            lines.append(
+                "blocked_decisions: "
+                + str(len(contract.get("blocked_decisions", [])))
+            )
+        elif task_id == "I6":
+            step_ids = [
+                str(step.get("step_id", "")).strip()
+                for step in contract.get("steps", [])
+                if isinstance(step, dict) and str(step.get("step_id", "")).strip()
+            ]
+            lines.append("steps: " + str(len(step_ids)))
+            if step_ids:
+                lines.append("step_ids: " + ", ".join(step_ids[:6]))
+        elif task_id == "I7":
+            lines.append(
+                "validation_runs: "
+                + str(len(contract.get("validation_runs", [])))
+            )
+            lines.append(
+                "profiling_targets: "
+                + str(len(contract.get("profiling_targets", [])))
+            )
+            lines.append(
+                "analysis_outputs: "
+                + str(len(contract.get("analysis_outputs", [])))
+            )
+        elif task_id == "I4":
+            lines.append("verdict: " + str(contract.get("verdict", "<missing>")))
+            lines.append(
+                "seed_policy_status: "
+                + str(contract.get("seed_policy_status", "<missing>"))
+            )
+            lines.append(
+                "rerun_entrypoints: "
+                + str(len(contract.get("rerun_entrypoints", [])))
+            )
+        elif task_id == "I8":
+            lines.append("verdict: " + str(contract.get("verdict", "<missing>")))
+            lines.append(
+                "blocking_findings: "
+                + str(len(contract.get("blocking_findings", [])))
+            )
+            lines.append(
+                "review_coverage: "
+                + str(len(contract.get("review_coverage", [])))
+            )
+        return lines
+
+    def _parse_stage_i_structured_output(
+        self,
+        content: str,
+        task_id: str,
+    ) -> dict[str, Any]:
+        normalized_task = task_id.strip().upper()
+        if normalized_task not in self.STAGE_I_TEMPLATE_TYPE_BY_TASK:
+            return {}
+
+        expected_template = self.STAGE_I_TEMPLATE_TYPE_BY_TASK[normalized_task]
+        heading = self.STAGE_I_CONTRACT_HEADING_BY_TASK[normalized_task]
+        expected_contract_keys = self.STAGE_I_CONTRACT_KEYS_BY_TASK[normalized_task]
+        frontmatter, body = self._parse_simple_frontmatter(content)
+        contract_block = self._extract_fenced_block_after_heading(body, heading, "json")
+
+        contract: dict[str, Any] = {}
+        parse_error = ""
+        if contract_block:
+            try:
+                loaded = json.loads(contract_block)
+                if isinstance(loaded, dict):
+                    contract = loaded
+                else:
+                    parse_error = "Contract block JSON root must be an object."
+            except json.JSONDecodeError as exc:
+                parse_error = str(exc)
+        else:
+            parse_error = "Missing JSON contract block."
+
+        missing_frontmatter_keys = [
+            key for key in self.STAGE_I_FRONTMATTER_KEYS if not frontmatter.get(key, "").strip()
+        ]
+        if frontmatter.get("task_id", "").strip() and frontmatter.get("task_id", "").strip() != normalized_task:
+            missing_frontmatter_keys.append("task_id=<mismatch>")
+        if (
+            frontmatter.get("template_type", "").strip()
+            and frontmatter.get("template_type", "").strip() != expected_template
+        ):
+            missing_frontmatter_keys.append("template_type=<mismatch>")
+
+        missing_contract_keys = [
+            key for key in expected_contract_keys if key not in contract
+        ]
+        valid = not parse_error and not missing_frontmatter_keys and not missing_contract_keys
+        actionable_targets = self._build_stage_i_actionable_targets(normalized_task, contract)
+        summary_lines = self._summarize_stage_i_structured_output(
+            normalized_task,
+            frontmatter,
+            contract,
+            valid,
+            missing_frontmatter_keys,
+            missing_contract_keys,
+            parse_error,
+        )
+        return {
+            "task_id": normalized_task,
+            "expected_template_type": expected_template,
+            "heading": heading,
+            "frontmatter": frontmatter,
+            "contract": contract,
+            "missing_frontmatter_keys": missing_frontmatter_keys,
+            "missing_contract_keys": missing_contract_keys,
+            "parse_error": parse_error,
+            "valid": valid,
+            "actionable_targets": actionable_targets,
+            "summary_lines": summary_lines,
+        }
+
+    def _structured_workspace_artifact_path(
+        self,
+        task_id: str,
+        topic: str,
+        cwd: Path,
+    ) -> Path:
+        normalized_task = task_id.strip().upper()
+        if normalized_task not in self.STAGE_I_PRIMARY_ARTIFACT_BY_TASK:
+            raise ValueError(
+                f"Structured artifact lookup is only supported for Stage-I tasks I4-I8, not {task_id}."
+            )
+        artifact_root, _ = self._load_task_outputs(normalized_task)
+        project_root = self._project_root_for_topic(
+            cwd,
+            artifact_root,
+            self._normalize_topic(topic),
+        )
+        return project_root / self.STAGE_I_PRIMARY_ARTIFACT_BY_TASK[normalized_task]
+
+    def _load_stage_i_structured_output_from_workspace(
+        self,
+        task_id: str,
+        topic: str,
+        cwd: Path,
+    ) -> dict[str, Any]:
+        normalized_task = task_id.strip().upper()
+        artifact_path = self._structured_workspace_artifact_path(normalized_task, topic, cwd)
+        try:
+            content = artifact_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise ValueError(
+                f"Unable to load existing Stage-I artifact for {normalized_task}: {artifact_path} ({exc})"
+            ) from exc
+
+        structured_output = self._parse_stage_i_structured_output(content, normalized_task)
+        if not structured_output:
+            raise ValueError(
+                f"Structured parsing returned no data for existing Stage-I artifact: {artifact_path}"
+            )
+        if not structured_output.get("valid", False):
+            summary = "; ".join(
+                str(item).strip()
+                for item in structured_output.get("summary_lines", [])
+                if str(item).strip()
+            )
+            raise ValueError(
+                f"Existing Stage-I artifact is not valid for targeted follow-up: {artifact_path}"
+                + (f" ({summary})" if summary else "")
+            )
+
+        return {
+            "artifact_path": artifact_path,
+            "artifact_relpath": self.STAGE_I_PRIMARY_ARTIFACT_BY_TASK[normalized_task],
+            "content": content,
+            "structured_output": structured_output,
+        }
+
+    def _resolve_targeted_follow_up(
+        self,
+        task_id: str,
+        topic: str,
+        cwd: Path,
+        only_targets: list[str] | None,
+    ) -> dict[str, Any]:
+        normalized_task = task_id.strip().upper()
+        selected_targets: list[str] = []
+        seen_targets: set[str] = set()
+        for raw in only_targets or []:
+            item = str(raw).strip()
+            if not item or item in seen_targets:
+                continue
+            seen_targets.add(item)
+            selected_targets.append(item)
+        if not selected_targets:
+            raise ValueError("--only-target requires at least one non-empty target selector.")
+        if normalized_task not in self.STAGE_I_PRIMARY_ARTIFACT_BY_TASK:
+            raise ValueError("--only-target is only supported for structured Stage-I tasks I4-I8.")
+
+        loaded = self._load_stage_i_structured_output_from_workspace(
+            normalized_task,
+            topic,
+            cwd,
+        )
+        structured_output = dict(loaded["structured_output"])
+        available_targets = [
+            str(item).strip()
+            for item in structured_output.get("actionable_targets", [])
+            if str(item).strip()
+        ]
+        if not available_targets:
+            raise ValueError(
+                f"No actionable targets were parsed from existing Stage-I artifact for {normalized_task}: "
+                f"{loaded['artifact_path']}"
+            )
+        missing_targets = [
+            item for item in selected_targets if item not in set(available_targets)
+        ]
+        if missing_targets:
+            raise ValueError(
+                f"Unknown --only-target values for {normalized_task}: {', '.join(missing_targets)}. "
+                f"Available targets: {', '.join(available_targets)}"
+            )
+
+        return {
+            "targeted_follow_up": True,
+            "selected_actionable_targets": selected_targets,
+            "available_actionable_targets": available_targets,
+            "structured_source_artifact": str(loaded["artifact_relpath"]),
+            "structured_source_path": str(loaded["artifact_path"]),
+            "structured_source_frontmatter": dict(structured_output.get("frontmatter", {})),
+            "structured_source_contract": dict(structured_output.get("contract", {})),
+            "structured_source_summary_lines": list(structured_output.get("summary_lines", [])),
+        }
+
+    def _build_targeted_follow_up_context(
+        self,
+        task_packet: dict[str, Any],
+    ) -> str:
+        if not bool(task_packet.get("targeted_follow_up")):
+            return ""
+
+        selected_targets = [
+            str(item) for item in task_packet.get("selected_actionable_targets", []) if str(item).strip()
+        ]
+        available_targets = [
+            str(item) for item in task_packet.get("available_actionable_targets", []) if str(item).strip()
+        ]
+        summary_lines = [
+            str(item) for item in task_packet.get("structured_source_summary_lines", []) if str(item).strip()
+        ]
+        contract = task_packet.get("structured_source_contract", {})
+        contract_json = (
+            json.dumps(contract, ensure_ascii=False, indent=2)
+            if isinstance(contract, dict) and contract
+            else "{}"
+        )
+        lines = [
+            "Targeted follow-up mode is active.",
+            f"- source_artifact: {str(task_packet.get('structured_source_artifact', '')).strip() or '<missing>'}",
+            f"- source_path: {str(task_packet.get('structured_source_path', '')).strip() or '<missing>'}",
+            "- selected_actionable_targets: " + ", ".join(selected_targets),
+            "- available_actionable_targets: " + ", ".join(available_targets),
+        ]
+        if summary_lines:
+            lines.append("- source_summary_lines:")
+            lines.extend(f"  - {item}" for item in summary_lines)
+        lines.extend(
+            [
+                "- source_contract_json:",
+                "```json",
+                contract_json,
+                "```",
+                "Targeted follow-up rules:",
+                "1. Only reopen the selected_actionable_targets. Preserve all unrelated decisions, steps, and sections.",
+                "2. Do not broaden scope just because the existing artifact contains additional actionable targets.",
+                "3. If a selected target cannot be resolved without touching another section, explain that dependency explicitly before changing it.",
+                "4. Include an explicit Targeted Change Log that maps every change back to the selected target IDs.",
+            ]
+        )
+        return "\n".join(lines)
+
     def _build_task_packet(
         self,
         task_id: str,
@@ -1778,10 +2770,15 @@ Provide your verification assessment.
         venue: str | None,
         artifact_root: str,
         required_outputs: list[str],
+        contract_required_outputs: list[str],
+        deferred_outputs: list[str],
         required_mcp: list[str],
         required_skills: list[str],
         required_skill_cards: list[dict[str, Any]],
         quality_gates: list[str],
+        artifact_policy: str,
+        research_depth: str,
+        evidence_expansion_rounds: int,
     ) -> dict[str, Any]:
         return {
             "task_id": task_id,
@@ -1790,11 +2787,67 @@ Provide your verification assessment.
             "venue": venue or "",
             "artifact_root": artifact_root,
             "required_outputs": required_outputs,
+            "contract_required_outputs": contract_required_outputs,
+            "deferred_outputs": deferred_outputs,
             "required_mcp": required_mcp,
             "required_skills": required_skills,
             "required_skill_cards": required_skill_cards,
             "quality_gates": quality_gates,
+            "artifact_policy": artifact_policy,
+            "research_depth": research_depth,
+            "evidence_expansion_rounds": evidence_expansion_rounds,
         }
+
+    def _select_task_outputs(
+        self,
+        contract_outputs: list[str],
+        focus_outputs: list[str] | None = None,
+        output_budget: int | None = None,
+    ) -> tuple[list[str], list[str], list[str], str]:
+        normalized_contract = [
+            str(item).strip() for item in contract_outputs if str(item).strip()
+        ]
+        if not normalized_contract:
+            raise ValueError("Task has no contract outputs to execute.")
+
+        selected_outputs = list(normalized_contract)
+        artifact_policy = "contract"
+        normalized_focus = [
+            str(item).strip() for item in (focus_outputs or []) if str(item).strip()
+        ]
+
+        if normalized_focus:
+            artifact_policy = "focused"
+            missing_focus = [
+                item for item in normalized_focus if item not in normalized_contract
+            ]
+            if missing_focus:
+                raise ValueError(
+                    "Focused outputs must exist in the task contract. Unknown outputs: "
+                    + ", ".join(missing_focus)
+                )
+            seen_focus: set[str] = set()
+            selected_outputs = []
+            for item in normalized_focus:
+                if item in seen_focus:
+                    continue
+                seen_focus.add(item)
+                selected_outputs.append(item)
+
+        if output_budget is not None:
+            if output_budget <= 0:
+                raise ValueError("--output-budget must be greater than 0.")
+            artifact_policy = "focused"
+            selected_outputs = selected_outputs[:output_budget]
+
+        if not selected_outputs:
+            raise ValueError("No active outputs selected for this run.")
+
+        selected_set = set(selected_outputs)
+        deferred_outputs = [
+            item for item in normalized_contract if item not in selected_set
+        ]
+        return normalized_contract, selected_outputs, deferred_outputs, artifact_policy
 
     def _collect_skill_context(
         self,
@@ -1915,6 +2968,88 @@ Provide your verification assessment.
         skill_cards: list[dict[str, Any]],
         extra_context: str | None,
     ) -> str:
+        deferred_outputs = [
+            str(item) for item in task_packet.get("deferred_outputs", []) if str(item).strip()
+        ]
+        artifact_policy = str(task_packet.get("artifact_policy", "contract")).strip() or "contract"
+        research_depth = str(task_packet.get("research_depth", "standard")).strip() or "standard"
+        evidence_rounds = int(task_packet.get("evidence_expansion_rounds", 1) or 1)
+        output_control_lines = [
+            f"- artifact_policy: {artifact_policy}",
+            "- required_outputs_for_this_run: "
+            + ", ".join(
+                str(item) for item in task_packet.get("required_outputs", []) if str(item).strip()
+            ),
+        ]
+        if deferred_outputs:
+            output_control_lines.append(
+                "- deferred_contract_outputs: " + ", ".join(deferred_outputs)
+            )
+
+        depth_rules = ""
+        return_sections = [
+            "- Execution Plan",
+            "- Draft Outputs (by file path)",
+        ]
+        if research_depth == "deep":
+            depth_rules = f"""
+9. Deep research mode is active. Start by narrowing the problem into explicit subquestions and non-goals.
+10. Perform at least {evidence_rounds} evidence-expansion passes:
+   - pass 1: direct supporting evidence and foundational sources
+   - pass 2+: contradiction search, boundary cases, and citation snowballing when available
+11. Prefer fewer, better-supported conclusions over broad but weak coverage.
+12. Separate direct evidence, inference, and unresolved gaps explicitly.
+"""
+            return_sections.extend(
+                [
+                    "- Scope Boundaries",
+                    "- Evidence Expansion Log",
+                    "- Counterevidence Check",
+                ]
+            )
+        if deferred_outputs:
+            return_sections.append("- Deferred Outputs")
+        targeted_follow_up_section = self._build_targeted_follow_up_context(task_packet)
+        if targeted_follow_up_section:
+            return_sections.append("- Targeted Change Log")
+        return_sections.extend(
+            [
+                "- Quality Gate Check",
+                "- Missing Inputs",
+                "- Next Actions",
+            ]
+        )
+        domain_section = ""
+        if str(task_packet.get("domain", "")).strip() and str(task_packet.get("domain", "")).strip() != "auto":
+            domain_section = f"""
+Domain profile guidance:
+{self._format_domain_context(task_packet)}
+"""
+        code_lane_rules = self._build_code_lane_rules(task_packet, "draft")
+        code_lane_section = ""
+        if code_lane_rules:
+            code_lane_section = f"""
+Academic code lane rules:
+{code_lane_rules}
+"""
+        code_lane_template = self._build_code_lane_template_requirements(task_packet)
+        code_lane_template_section = ""
+        if code_lane_template:
+            code_lane_template_section = f"""
+Structured deliverable template:
+{code_lane_template}
+"""
+        targeted_section = ""
+        targeted_rules = ""
+        if targeted_follow_up_section:
+            targeted_section = f"""
+Targeted follow-up context:
+{targeted_follow_up_section}
+"""
+            targeted_rules = """
+13. Targeted follow-up mode is active. Revise only the selected actionable targets and keep unrelated sections stable.
+14. Reuse the existing structured artifact as the authority for non-selected targets unless you explicitly mark a dependency.
+"""
         return f"""You are executing one canonical research workflow task.
 
 Task packet (JSON):
@@ -1922,30 +3057,34 @@ Task packet (JSON):
 
 Execution rules:
 1. Follow sequence: plan -> mcp-evidence -> draft -> self-check.
-2. Produce deliverables aligned to required_outputs and include those exact paths.
-3. For each deliverable, cite the MCP evidence source used.
-4. Apply every required skill in required_skills as a method constraint in your draft process.
+2. Produce deliverables aligned to required_outputs for this run and include those exact paths.
+3. Do not create extra helper files outside required_outputs unless the task packet explicitly requires them.
+4. If deferred_outputs is non-empty, keep those outputs deferred for this run and explain the defer rationale instead of silently broadening scope.
+5. For each deliverable, cite the MCP evidence source used.
+6. Apply every required skill in required_skills as a method constraint in your draft process.
    - Use required_skill_cards for concrete method focus and default outputs.
    - Respect functional_owner as the accountable research owner for this task.
    - Preserve upstream assumptions recorded in functional_handoff_trace.
-5. Explicitly check quality_gates and mark each as PASS/WARN/FAIL.
-6. If required input is missing, list it under "Missing Inputs" and continue with placeholders.
+7. Explicitly check quality_gates and mark each as PASS/WARN/FAIL.
+8. If required input is missing, list it under "Missing Inputs" and continue with placeholders.
+{depth_rules}
+{targeted_rules}
+
+Output control:
+{chr(10).join(output_control_lines)}
 
 MCP evidence snapshot:
 {self._format_mcp_evidence(mcp_evidence)}
 
 Required skill cards:
 {self._format_skill_context(skill_cards)}
+{domain_section}{code_lane_section}{code_lane_template_section}{targeted_section}
 
 Additional context:
 {extra_context or "No additional context."}
 
 Return sections:
-- Execution Plan
-- Draft Outputs (by file path)
-- Quality Gate Check
-- Missing Inputs
-- Next Actions
+{chr(10).join(return_sections)}
 """
 
     def _build_task_review_prompt(
@@ -1959,6 +3098,10 @@ Return sections:
         """Build review prompt with self-critique question injection."""
         task_id = str(task_packet.get("task_id", "")).strip()
         critique_qs = get_critique_questions(task_id)
+        research_depth = str(task_packet.get("research_depth", "standard")).strip() or "standard"
+        deferred_outputs = [
+            str(item) for item in task_packet.get("deferred_outputs", []) if str(item).strip()
+        ]
 
         critique_section = ""
         if critique_qs:
@@ -1971,6 +3114,58 @@ Stage-specific critique questions (MUST address each):
         round_note = ""
         if revision_round > 0:
             round_note = f"\nThis is review round {revision_round + 1}. Be stricter on issues that were flagged in previous rounds but not adequately addressed.\n"
+
+        depth_review = ""
+        dynamic_question_count = "2-3"
+        return_sections = [
+            "- Verdict (PASS/BLOCK)",
+            "- Critical Issues",
+            "- Suggested Fixes",
+        ]
+        if deferred_outputs:
+            return_sections.append("- Deferred Output Assessment")
+        if research_depth == "deep":
+            dynamic_question_count = "4-6"
+            depth_review = """
+8. In deep research mode, verify that the draft narrows scope before claiming breadth.
+9. Check whether the draft explicitly searched for counterevidence, contradictions, and edge cases.
+10. Block if the output is broad but weakly supported, or if evidence expansion is only superficial.
+"""
+            return_sections.append("- Evidence Depth Assessment")
+        targeted_follow_up_section = self._build_targeted_follow_up_context(task_packet)
+        if targeted_follow_up_section:
+            return_sections.append("- Target Resolution Check")
+        return_sections.append("- Confidence (0-1)")
+        domain_section = ""
+        if str(task_packet.get("domain", "")).strip() and str(task_packet.get("domain", "")).strip() != "auto":
+            domain_section = f"""
+Domain profile guidance:
+{self._format_domain_context(task_packet)}
+"""
+        code_lane_rules = self._build_code_lane_rules(task_packet, "review")
+        code_lane_section = ""
+        if code_lane_rules:
+            code_lane_section = f"""
+Academic code lane rules:
+{code_lane_rules}
+"""
+        code_lane_review = self._build_code_lane_review_requirements(task_packet)
+        code_lane_review_section = ""
+        if code_lane_review:
+            code_lane_review_section = f"""
+Structured deliverable review requirements:
+{code_lane_review}
+"""
+        targeted_section = ""
+        targeted_review_rule = ""
+        if targeted_follow_up_section:
+            targeted_section = f"""
+Targeted follow-up context:
+{targeted_follow_up_section}
+"""
+            targeted_review_rule = """
+11. When targeted follow-up mode is active, assess whether the selected actionable targets were resolved without reopening unrelated scope.
+"""
 
         return f"""Review the draft for this canonical research workflow task.
 {round_note}
@@ -1985,19 +3180,23 @@ MCP evidence snapshot:
 
 Required skill cards:
 {self._format_skill_context(skill_cards)}
+{domain_section}{code_lane_section}{code_lane_review_section}{targeted_section}
 
 Review checklist:
 1. Output path coverage against required_outputs.
-2. Quality gate compliance against quality_gates.
-3. Required_skills usage fidelity and completeness.
-4. Internal consistency (claims/methods/evidence alignment).
-5. Missing citations, assumptions, or unresolved risks.
-6. Functional-owner scope fit and handoff consistency against functional_handoff_trace.
+2. If deferred_outputs exist, confirm the draft stayed within scope and justified the deferral.
+3. Quality gate compliance against quality_gates.
+4. Required_skills usage fidelity and completeness.
+5. Internal consistency (claims/methods/evidence alignment).
+6. Missing citations, assumptions, or unresolved risks.
+7. Functional-owner scope fit and handoff consistency against functional_handoff_trace.
+{depth_review}
+{targeted_review_rule}
 {critique_section}
 
 Dynamic Literature-Based Critique:
 - Before evaluating, analyze the provided MCP evidence (especially literature references and methodology details).
-- Formulate 2-3 highly specific, critical questions based on the gaps, controversies, or limitations identified in those exact papers.
+- Formulate {dynamic_question_count} highly specific, critical questions based on the gaps, controversies, or limitations identified in those exact papers.
 - Explicitly evaluate whether the primary draft successfully addresses these dynamic, literature-specific nuances.
 
 IMPORTANT: You MUST include a clear verdict line in your response:
@@ -2007,10 +3206,7 @@ And a confidence score:
 - Confidence: <float between 0 and 1>
 
 Return sections:
-- Verdict (PASS/BLOCK)
-- Critical Issues
-- Suggested Fixes
-- Confidence (0-1)
+{chr(10).join(return_sections)}
 """
 
     def _build_task_triad_prompt(
@@ -2021,6 +3217,58 @@ Return sections:
         draft_output: str,
         review_output: str,
     ) -> str:
+        research_depth = str(task_packet.get("research_depth", "standard")).strip() or "standard"
+        deferred_outputs = [
+            str(item) for item in task_packet.get("deferred_outputs", []) if str(item).strip()
+        ]
+        extra_checks = ""
+        return_sections = [
+            "- Triad Verdict (PASS/BLOCK)",
+            "- Consensus Status (AGREE/PARTIAL/CONFLICT)",
+            "- Highest-Priority Fixes",
+        ]
+        if deferred_outputs:
+            return_sections.append("- Deferred Output Decision")
+        if research_depth == "deep":
+            extra_checks = """
+6. Verify the draft/review pair did real contradiction hunting instead of only summarizing the most visible evidence.
+7. Force a decision on the narrowest claim set that remains strongly supported.
+"""
+            return_sections.append("- Evidence Conflict Resolution")
+        targeted_follow_up_section = self._build_targeted_follow_up_context(task_packet)
+        if targeted_follow_up_section:
+            return_sections.append("- Target Resolution Decision")
+        return_sections.append("- Confidence (0-1)")
+        domain_section = ""
+        if str(task_packet.get("domain", "")).strip() and str(task_packet.get("domain", "")).strip() != "auto":
+            domain_section = f"""
+Domain profile guidance:
+{self._format_domain_context(task_packet)}
+"""
+        code_lane_rules = self._build_code_lane_rules(task_packet, "triad")
+        code_lane_section = ""
+        if code_lane_rules:
+            code_lane_section = f"""
+Academic code lane rules:
+{code_lane_rules}
+"""
+        code_lane_review = self._build_code_lane_review_requirements(task_packet)
+        code_lane_review_section = ""
+        if code_lane_review:
+            code_lane_review_section = f"""
+Structured deliverable review requirements:
+{code_lane_review}
+"""
+        targeted_section = ""
+        targeted_checks = ""
+        if targeted_follow_up_section:
+            targeted_section = f"""
+Targeted follow-up context:
+{targeted_follow_up_section}
+"""
+            targeted_checks = """
+6. Decide whether the selected actionable targets are now resolved, still blocked, or incorrectly widened into unrelated scope.
+"""
         return f"""Perform a third independent audit for this canonical research task.
 
 Task packet (JSON):
@@ -2037,6 +3285,7 @@ MCP evidence snapshot:
 
 Required skill cards:
 {self._format_skill_context(skill_cards)}
+{domain_section}{code_lane_section}{code_lane_review_section}{targeted_section}
 
 Audit checklist:
 1. Identify unresolved disagreements between draft and review.
@@ -2044,12 +3293,11 @@ Audit checklist:
 3. Check claim-method-evidence integrity.
 4. Prioritize top 3 fixes by impact.
 5. Confirm the draft stays within the functional_owner scope and handoff chain.
+{targeted_checks}
+{extra_checks}
 
 Return sections:
-- Triad Verdict (PASS/BLOCK)
-- Consensus Status (AGREE/PARTIAL/CONFLICT)
-- Highest-Priority Fixes
-- Confidence (0-1)
+{chr(10).join(return_sections)}
 """
 
     def _parse_review_verdict(self, review_content: str) -> tuple[str, float]:
@@ -2113,6 +3361,40 @@ Return sections:
         task_json = json.dumps(task_packet, ensure_ascii=False, indent=2)
         mcp_section = self._format_mcp_evidence(mcp_evidence)
         skill_section = self._format_skill_context(skill_cards)
+        domain_section = ""
+        if str(task_packet.get("domain", "")).strip() and str(task_packet.get("domain", "")).strip() != "auto":
+            domain_section = (
+                "Domain profile guidance:\n"
+                f"{self._format_domain_context(task_packet)}\n\n"
+            )
+        code_lane_rules = self._build_code_lane_rules(task_packet, "draft")
+        code_lane_section = ""
+        if code_lane_rules:
+            code_lane_section = (
+                "Academic code lane rules:\n"
+                f"{code_lane_rules}\n\n"
+            )
+        code_lane_template = self._build_code_lane_template_requirements(task_packet)
+        code_lane_template_section = ""
+        if code_lane_template:
+            code_lane_template_section = (
+                "Structured deliverable template:\n"
+                f"{code_lane_template}\n\n"
+            )
+        targeted_follow_up_section = self._build_targeted_follow_up_context(task_packet)
+        targeted_section = ""
+        targeted_revision_rules = ""
+        targeted_return_sections = ""
+        if targeted_follow_up_section:
+            targeted_section = (
+                "Targeted follow-up context:\n"
+                f"{targeted_follow_up_section}\n\n"
+            )
+            targeted_revision_rules = (
+                "7. Targeted follow-up mode is active. Resolve only the selected actionable targets unless the review proves a dependency.\n"
+                "8. Preserve wording and structure for unrelated sections whenever possible.\n"
+            )
+            targeted_return_sections = "- Targeted Change Log\n"
         return (
             f"You are revising a research workflow task draft based on review feedback.\n"
             f"This is revision round {revision_round}.\n\n"
@@ -2121,19 +3403,676 @@ Return sections:
             f"Review feedback (address ALL issues):\n{review_feedback}\n\n"
             f"MCP evidence snapshot:\n{mcp_section}\n\n"
             f"Required skill cards:\n{skill_section}\n\n"
+            f"{domain_section}"
+            f"{code_lane_section}"
+            f"{code_lane_template_section}"
+            f"{targeted_section}"
             "Revision rules:\n"
             "1. Address every Critical Issue raised in the review.\n"
             "2. Apply every Suggested Fix unless you can justify why it is not applicable.\n"
             "3. Do NOT regenerate from scratch — revise the existing draft.\n"
             "4. Clearly mark what changed with inline comments like [REVISED: reason].\n"
             "5. Re-check all quality_gates and mark each as PASS/WARN/FAIL.\n"
-            "6. If any issue cannot be resolved, explain why under 'Unresolved Issues'.\n\n"
+            "6. If any issue cannot be resolved, explain why under 'Unresolved Issues'.\n"
+            f"{targeted_revision_rules}\n"
             "Return sections:\n"
             "- Revision Summary (what changed and why)\n"
+            f"{targeted_return_sections}"
             "- Revised Draft Outputs (by file path)\n"
             "- Quality Gate Check\n"
             "- Unresolved Issues\n"
             "- Next Actions\n"
+        )
+
+    # ── Team-Run (Research Fanout/Fanin) ──────────────────────────────
+
+    def _load_team_run_config(self, task_id: str) -> dict[str, Any]:
+        """Load team_run_config for a specific task from capability map."""
+        capability_map = self._read_standard("mcp-agent-capability-map.yaml")
+        section = self._extract_top_level_section(capability_map, "team_run_config")
+        if not section:
+            raise ConfigError(
+                ERR_CFG_INVALID_TASK,
+                detail=f"team_run_config section missing in capability map",
+            )
+        task_match = re.search(
+            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
+            section,
+            flags=re.MULTILINE,
+        )
+        if not task_match:
+            raise ConfigError(
+                ERR_CFG_INVALID_TASK,
+                detail=f"Task {task_id} not found in team_run_config. MVP supports: B1, H3",
+            )
+        block = task_match.group(1)
+        config: dict[str, Any] = {
+            "task_id": task_id,
+            "execution_mode": self._parse_yaml_scalar(block, "execution_mode", indent=4),
+            "partition_strategy": self._parse_yaml_scalar(block, "partition_strategy", indent=4),
+            "max_parallel_units": int(
+                self._parse_yaml_scalar(block, "max_parallel_units", indent=4) or "3"
+            ),
+            "planner_agent": self._parse_yaml_scalar(block, "planner_agent", indent=4) or "claude",
+            "merge_agent": self._parse_yaml_scalar(block, "merge_agent", indent=4) or "claude",
+            "consensus_policy": self._parse_yaml_scalar(block, "consensus_policy", indent=4),
+        }
+        # Barrier rules
+        barrier_section = self._extract_nested_section(block, "barrier_rules", indent=4)
+        raw_min = self._parse_yaml_scalar(barrier_section, "min_success_ratio", indent=6) or "0.6"
+        raw_failure = self._parse_yaml_scalar(barrier_section, "on_failure", indent=6) or "degrade"
+        # Strip inline YAML comments (e.g. "degrade  # degrade | block | retry")
+        raw_min = raw_min.split("#")[0].strip()
+        raw_failure = raw_failure.split("#")[0].strip()
+        config["barrier_rules"] = {
+            "min_success_ratio": float(raw_min),
+            "on_failure": raw_failure,
+        }
+        # Worker pool
+        worker_pool_section = self._extract_nested_section(block, "worker_pool", indent=4)
+        config["worker_pool"] = self._parse_yaml_list(worker_pool_section, item_indent=6) or [
+            "codex", "claude", "gemini"
+        ]
+        # Review pool
+        review_pool_section = self._extract_nested_section(block, "review_pool", indent=4)
+        config["review_pool"] = self._parse_yaml_list(review_pool_section, item_indent=6) or [
+            "codex", "gemini"
+        ]
+        # Shard / canonical outputs
+        shard_section = self._extract_nested_section(block, "shard_outputs", indent=4)
+        config["shard_outputs"] = self._parse_yaml_list(shard_section, item_indent=6)
+        canonical_section = self._extract_nested_section(block, "canonical_outputs", indent=4)
+        config["canonical_outputs"] = self._parse_yaml_list(canonical_section, item_indent=6)
+        # Personas (H3)
+        personas: list[dict[str, str]] = []
+        persona_section = self._extract_nested_section(block, "personas", indent=4)
+        if persona_section:
+            # Handle flat YAML: "      - id: X\n        focus: Y"
+            for pm in re.finditer(
+                r"^\s*-\s+id:\s*(.+?)\s*$",
+                persona_section,
+                flags=re.MULTILINE,
+            ):
+                p_id = pm.group(1).strip().strip('"').strip("'")
+                # Find the focus line following this id line
+                rest = persona_section[pm.end():]
+                focus_match = re.match(r"\s*\n\s*focus:\s*(.+?)\s*$", rest, flags=re.MULTILINE)
+                p_focus = ""
+                if focus_match:
+                    p_focus = focus_match.group(1).strip().strip('"').strip("'")
+                if p_id:
+                    personas.append({"id": p_id, "focus": p_focus})
+        config["personas"] = personas
+        return config
+
+    def _generate_work_units(
+        self,
+        team_config: dict[str, Any],
+        task_packet: dict[str, Any],
+        mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
+        cwd: Path,
+        run_id: str,
+    ) -> list[dict[str, Any]]:
+        """Generate work units: persona-based (static) or planner-based (dynamic)."""
+        partition = team_config.get("partition_strategy", "")
+        topic = task_packet.get("topic", "unknown")
+        artifact_root = task_packet.get("artifact_root", "RESEARCH/[topic]/")
+        shard_base = f"{artifact_root.replace('[topic]', topic)}runs/{run_id}/shards"
+
+        if partition == "by_reviewer_persona" and team_config.get("personas"):
+            units = []
+            for persona in team_config["personas"]:
+                unit_id = persona["id"]
+                units.append({
+                    "unit_id": unit_id,
+                    "persona": persona,
+                    "shard_root": f"{shard_base}/{unit_id}/",
+                    "partition_strategy": partition,
+                })
+            return units
+
+        # Dynamic planner-based partitioning (e.g. B1 by_paper_batch)
+        max_units = team_config.get("max_parallel_units", 3)
+        planner_prompt = self._build_planner_prompt(
+            team_config, task_packet, mcp_evidence, skill_cards, max_units,
+        )
+        planner_agent = team_config.get("planner_agent", "claude")
+        planner_runtime, _ = self._resolve_runtime_agent(planner_agent, ["claude", "gemini", "codex"])
+        planner_resp = self._execute_runtime_agent(planner_runtime, planner_prompt, cwd)
+
+        if planner_resp.success:
+            units = self._parse_planner_output(planner_resp.content, shard_base, partition)
+            if units:
+                return units[:max_units]
+
+        # Fallback: single unit (degrade gracefully)
+        return [{
+            "unit_id": "batch_1",
+            "description": "Single-unit fallback (planner did not produce structured output)",
+            "shard_root": f"{shard_base}/batch_1/",
+            "partition_strategy": partition,
+        }]
+
+    def _build_planner_prompt(
+        self,
+        team_config: dict[str, Any],
+        task_packet: dict[str, Any],
+        mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
+        max_units: int,
+    ) -> str:
+        return f"""You are a research task planner. Split the following task into parallel work units.
+
+Task packet (JSON):
+{json.dumps(task_packet, ensure_ascii=False, indent=2)}
+
+Partition strategy: {team_config.get("partition_strategy", "by_paper_batch")}
+Maximum work units: {max_units}
+
+MCP evidence:
+{self._format_mcp_evidence(mcp_evidence)}
+
+Required skill cards:
+{self._format_skill_context(skill_cards)}
+
+IMPORTANT: Return ONLY a JSON array of work unit objects. Each object must have:
+- "unit_id": string identifier (e.g. "batch_1", "batch_2")
+- "description": brief description of what this unit covers
+- "scope": specific scope of the sub-task (queries, paper IDs, or topic facets)
+
+Example output:
+[
+  {{"unit_id": "batch_1", "description": "AI teaching methods", "scope": "papers on AI-based pedagogy"}},
+  {{"unit_id": "batch_2", "description": "AI assessment tools", "scope": "papers on AI-driven evaluation"}}
+]
+"""
+
+    def _parse_planner_output(
+        self, content: str, shard_base: str, partition: str,
+    ) -> list[dict[str, Any]]:
+        """Extract JSON array of work units from planner output."""
+        json_match = re.search(r"\[[\s\S]*?\]", content)
+        if not json_match:
+            return []
+        try:
+            raw_units = json.loads(json_match.group())
+        except json.JSONDecodeError:
+            return []
+        if not isinstance(raw_units, list):
+            return []
+        units = []
+        for item in raw_units:
+            if not isinstance(item, dict):
+                continue
+            uid = str(item.get("unit_id", f"unit_{len(units)+1}")).strip()
+            units.append({
+                "unit_id": uid,
+                "description": str(item.get("description", "")).strip(),
+                "scope": str(item.get("scope", "")).strip(),
+                "shard_root": f"{shard_base}/{uid}/",
+                "partition_strategy": partition,
+            })
+        return units
+
+    def _build_worker_prompt(
+        self,
+        work_unit: dict[str, Any],
+        task_packet: dict[str, Any],
+        mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
+        team_config: dict[str, Any],
+    ) -> str:
+        """Build isolated prompt for a single worker."""
+        persona_block = ""
+        if work_unit.get("persona"):
+            p = work_unit["persona"]
+            persona_block = f"""
+Reviewer Persona:
+- ID: {p.get("id", "unknown")}
+- Focus: {p.get("focus", "")}
+You MUST adopt this specific reviewer perspective throughout your review.
+"""
+
+        scope_block = ""
+        if work_unit.get("scope"):
+            scope_block = f"\nAssigned scope: {work_unit['scope']}\n"
+        if work_unit.get("description"):
+            scope_block += f"Description: {work_unit['description']}\n"
+
+        shard_outputs = team_config.get("shard_outputs", [])
+        shard_root = work_unit.get("shard_root", "shard/")
+        output_paths = [f"  - {shard_root}{f}" for f in shard_outputs]
+
+        return f"""You are one of several parallel workers executing a research task.
+You MUST write your outputs ONLY to your assigned shard directory.
+
+Work Unit ID: {work_unit["unit_id"]}
+Shard Root: {shard_root}
+{persona_block}{scope_block}
+Task packet (JSON):
+{json.dumps(task_packet, ensure_ascii=False, indent=2)}
+
+Your shard output files:
+{chr(10).join(output_paths)}
+
+MCP evidence:
+{self._format_mcp_evidence(mcp_evidence)}
+
+Required skill cards:
+{self._format_skill_context(skill_cards)}
+
+Rules:
+1. Stay within your assigned scope/persona ONLY.
+2. Write outputs ONLY under your shard root: {shard_root}
+3. Do NOT write to any canonical output path directly.
+4. Cite evidence sources for every finding.
+5. Apply all required_skills constraints.
+
+Return your shard deliverables as structured output.
+"""
+
+    def _fanout_execute(
+        self,
+        work_units: list[dict[str, Any]],
+        task_packet: dict[str, Any],
+        mcp_evidence: list[MCPEvidence],
+        skill_cards: list[dict[str, Any]],
+        team_config: dict[str, Any],
+        cwd: Path,
+        profile_cfg: dict[str, Any],
+        profile_name: str,
+    ) -> list[dict[str, Any]]:
+        """Execute work units in parallel using ThreadPoolExecutor."""
+        worker_pool = team_config.get("worker_pool", ["codex", "claude", "gemini"])
+        results: list[dict[str, Any]] = []
+
+        def execute_worker(idx: int, unit: dict[str, Any]) -> dict[str, Any]:
+            agent_name = worker_pool[idx % len(worker_pool)]
+            runtime, _ = self._resolve_runtime_agent(agent_name, worker_pool)
+            prompt = self._build_worker_prompt(
+                unit, task_packet, mcp_evidence, skill_cards, team_config,
+            )
+            resp = self._execute_runtime_agent(
+                runtime,
+                prompt,
+                cwd,
+                self._profile_runtime_options(profile_cfg, runtime),
+                self._build_profile_directive(profile_name, profile_cfg, stage="draft"),
+            )
+            return {
+                "unit_id": unit["unit_id"],
+                "shard_root": unit.get("shard_root", ""),
+                "agent": runtime,
+                "success": resp.success,
+                "content": resp.content if resp.success else "",
+                "error": resp.error if not resp.success else None,
+            }
+
+        with ThreadPoolExecutor(max_workers=len(work_units)) as executor:
+            futures = {
+                executor.submit(execute_worker, i, unit): unit["unit_id"]
+                for i, unit in enumerate(work_units)
+            }
+            for future in as_completed(futures):
+                try:
+                    results.append(future.result())
+                except Exception as exc:
+                    unit_id = futures[future]
+                    results.append({
+                        "unit_id": unit_id,
+                        "shard_root": "",
+                        "agent": "unknown",
+                        "success": False,
+                        "content": "",
+                        "error": str(exc),
+                    })
+        return results
+
+    def _apply_failure_policy(
+        self,
+        shard_results: list[dict[str, Any]],
+        barrier_rules: dict[str, Any],
+    ) -> tuple[list[dict[str, Any]], str, list[str]]:
+        """Apply barrier rules. Returns (successful_shards, status, notes)."""
+        total = len(shard_results)
+        successes = [s for s in shard_results if s.get("success")]
+        failures = [s for s in shard_results if not s.get("success")]
+        notes: list[str] = []
+
+        if not total:
+            return [], "blocked", ["No work units were dispatched."]
+
+        success_ratio = len(successes) / total
+        min_ratio = barrier_rules.get("min_success_ratio", 0.6)
+        policy = barrier_rules.get("on_failure", "degrade")
+
+        for f in failures:
+            notes.append(
+                f"Worker {f['unit_id']} failed ({f.get('agent', '?')}): {f.get('error', 'unknown')}"
+            )
+
+        if not failures:
+            return successes, "ok", notes
+
+        if policy == "block":
+            notes.append("Barrier policy=block: halting because not all workers succeeded.")
+            return [], "blocked", notes
+
+        if policy == "degrade":
+            if success_ratio >= min_ratio:
+                notes.append(
+                    f"Barrier policy=degrade: {len(successes)}/{total} succeeded "
+                    f"(ratio={success_ratio:.2f} >= {min_ratio}). Proceeding with available shards."
+                )
+                return successes, "degraded", notes
+            else:
+                notes.append(
+                    f"Barrier policy=degrade: {len(successes)}/{total} succeeded "
+                    f"(ratio={success_ratio:.2f} < {min_ratio}). Blocked."
+                )
+                return [], "blocked", notes
+
+        # retry policy — in MVP we treat retry as degrade after noting intent
+        notes.append(f"Barrier policy=retry: retry not fully implemented in MVP; treating as degrade.")
+        if success_ratio >= min_ratio:
+            return successes, "degraded", notes
+        return [], "blocked", notes
+
+    def _build_merge_prompt(
+        self,
+        successful_shards: list[dict[str, Any]],
+        task_packet: dict[str, Any],
+        team_config: dict[str, Any],
+    ) -> str:
+        """Build merge prompt combining all shard outputs."""
+        shard_blocks = []
+        for shard in successful_shards:
+            shard_blocks.append(
+                f"### Shard: {shard['unit_id']} (agent: {shard.get('agent', '?')})\n"
+                f"{shard.get('content', '[empty]')}"
+            )
+        joined_shards = "\n\n---\n\n".join(shard_blocks)
+        canonical_outputs = team_config.get("canonical_outputs", [])
+        consensus_policy = team_config.get("consensus_policy", "majority_rules")
+
+        return f"""You are the merge agent for a team-run research task.
+Multiple parallel workers have each produced shard outputs. Your job is to
+merge them into a single canonical output.
+
+Task packet (JSON):
+{json.dumps(task_packet, ensure_ascii=False, indent=2)}
+
+Consensus policy: {consensus_policy}
+Total shards received: {len(successful_shards)}
+
+Worker shard outputs:
+{joined_shards}
+
+Canonical output files to produce:
+{chr(10).join(f"  - {f}" for f in canonical_outputs)}
+
+Merge rules:
+1. Do NOT simply concatenate — synthesize, deduplicate, and reconcile.
+2. Include a CONFLICT SUMMARY section documenting inter-shard disagreements.
+3. Include a CONSENSUS SUMMARY section documenting converging findings.
+4. Include a GAP SUMMARY section identifying areas no shard covered.
+5. The final output must be a coherent, unified deliverable — not fragments.
+6. Mark the provenance of each major finding (which shard contributed it).
+
+Return sections:
+- Merged Output (by canonical file)
+- Conflict Summary
+- Consensus Summary
+- Gap Summary
+"""
+
+    def team_run(
+        self,
+        task_id: str,
+        paper_type: str,
+        topic: str,
+        cwd: Path,
+        venue: str | None = None,
+        context: str | None = None,
+        max_parallel_units: int | None = None,
+        mcp_strict: bool = False,
+        skills_strict: bool = False,
+        profile_file: Path | None = None,
+        profile: str = "default",
+    ) -> CollaborationResult:
+        """Run team-based fanout/fanin parallel execution for a research task.
+
+        MVP supports Task IDs: B1 (systematic review) and H3 (peer-review simulation).
+        """
+        import uuid
+
+        normalized_task = task_id.strip().upper()
+        normalized_topic = self._normalize_topic(topic)
+        routing_notes: list[str] = []
+        run_id = str(uuid.uuid4())[:8]
+
+        # 1. Load team-run config
+        team_config = self._load_team_run_config(normalized_task)
+        if max_parallel_units is not None:
+            team_config["max_parallel_units"] = max_parallel_units
+        routing_notes.append(
+            f"Team-run config loaded for {normalized_task}: "
+            f"partition={team_config['partition_strategy']}, "
+            f"max_units={team_config['max_parallel_units']}, "
+            f"consensus={team_config['consensus_policy']}."
+        )
+
+        # 2. Load standard task metadata (reuses task-run infrastructure)
+        try:
+            agent_plan = self._load_task_agent_plan(normalized_task)
+            artifact_root, required_outputs = self._load_task_outputs(normalized_task)
+        except (FileNotFoundError, ValueError) as exc:
+            raise ConfigError(ERR_CFG_INVALID_TASK, detail=str(exc)) from exc
+
+        try:
+            profile_registry, _ = self._load_profile_bundle(profile_file)
+            profile_cfg = self._resolve_profile_config(profile, profile_registry)
+        except ValueError as exc:
+            raise ConfigError(ERR_CFG_INVALID_PROFILE, detail=str(exc)) from exc
+
+        packet = self._build_task_packet(
+            task_id=normalized_task,
+            paper_type=paper_type,
+            topic=normalized_topic,
+            venue=venue,
+            artifact_root=artifact_root,
+            required_outputs=required_outputs,
+            contract_required_outputs=required_outputs,
+            deferred_outputs=[],
+            required_mcp=agent_plan["required_mcp"],
+            required_skills=agent_plan["required_skills"],
+            required_skill_cards=agent_plan["required_skill_cards"],
+            quality_gates=agent_plan["quality_gates"],
+            artifact_policy="contract",
+            research_depth="standard",
+            evidence_expansion_rounds=1,
+        )
+        packet["team_run_config"] = {
+            "run_id": run_id,
+            "partition_strategy": team_config["partition_strategy"],
+            "max_parallel_units": team_config["max_parallel_units"],
+        }
+
+        # 3. Collect skill cards and MCP evidence
+        try:
+            skill_cards, skill_notes = self._collect_skill_context(packet, strict=skills_strict)
+            packet["required_skill_cards"] = skill_cards
+            routing_notes.extend(skill_notes)
+        except ValueError as exc:
+            return CollaborationResult(
+                mode="team-run",
+                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+                merged_analysis=str(exc),
+                confidence=0.0,
+                recommendations=[],
+            )
+
+        try:
+            mcp_evidence, mcp_notes = self._collect_mcp_evidence(packet, cwd, strict=mcp_strict)
+            routing_notes.extend(mcp_notes)
+        except ValueError as exc:
+            return CollaborationResult(
+                mode="team-run",
+                task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+                merged_analysis=str(exc),
+                confidence=0.0,
+                recommendations=[],
+            )
+
+        # 4. Generate work units
+        work_units = self._generate_work_units(
+            team_config, packet, mcp_evidence, skill_cards, cwd, run_id,
+        )
+        routing_notes.append(f"Generated {len(work_units)} work units for run_id={run_id}.")
+        for unit in work_units:
+            routing_notes.append(f"  - {unit['unit_id']}: shard={unit.get('shard_root', '?')}")
+
+        # 5. Fanout execute
+        shard_results = self._fanout_execute(
+            work_units, packet, mcp_evidence, skill_cards,
+            team_config, cwd, profile_cfg, profile,
+        )
+
+        # 6. Apply failure policy
+        barrier_rules = team_config.get("barrier_rules", {})
+        successful_shards, barrier_status, barrier_notes = self._apply_failure_policy(
+            shard_results, barrier_rules,
+        )
+        routing_notes.extend(barrier_notes)
+
+        # 7. Merge shards
+        merge_resp: BridgeResponse | None = None
+        merge_runtime: str | None = None
+        if barrier_status != "blocked" and successful_shards:
+            merge_prompt = self._build_merge_prompt(successful_shards, packet, team_config)
+            merge_agent = team_config.get("merge_agent", "claude")
+            merge_runtime, merge_notes = self._resolve_runtime_agent(merge_agent, ["claude", "gemini", "codex"])
+            routing_notes.extend(merge_notes)
+            merge_resp = self._execute_runtime_agent(
+                merge_runtime,
+                merge_prompt,
+                cwd,
+                self._profile_runtime_options(profile_cfg, merge_runtime),
+                self._build_profile_directive(profile, profile_cfg, stage="summary"),
+            )
+            routing_notes.append(
+                f"Merge completed by {merge_runtime}: "
+                f"{'success' if merge_resp.success else 'failed'}."
+            )
+
+        # 8. Review merge result
+        review_resp: BridgeResponse | None = None
+        review_runtime: str | None = None
+        if merge_resp and merge_resp.success:
+            review_pool = team_config.get("review_pool", ["codex", "gemini"])
+            preferred_reviewer = review_pool[0] if review_pool else "codex"
+            review_runtime, review_notes = self._resolve_runtime_agent(
+                preferred_reviewer, review_pool, exclude_agent=merge_runtime,
+            )
+            routing_notes.extend(review_notes)
+            review_prompt = self._build_task_review_prompt(
+                packet, mcp_evidence, skill_cards, merge_resp.content,
+            )
+            review_resp = self._execute_runtime_agent(
+                review_runtime,
+                review_prompt,
+                cwd,
+                self._profile_runtime_options(profile_cfg, review_runtime),
+                self._build_profile_directive(profile, profile_cfg, stage="review"),
+            )
+
+        # 9. Assemble result
+        codex_resp = None
+        claude_resp = None
+        gemini_resp = None
+        for runtime_agent, response in (
+            (merge_runtime, merge_resp),
+            (review_runtime, review_resp),
+        ):
+            if not response:
+                continue
+            if runtime_agent == "codex" and codex_resp is None:
+                codex_resp = response
+            if runtime_agent == "claude" and claude_resp is None:
+                claude_resp = response
+            if runtime_agent == "gemini" and gemini_resp is None:
+                gemini_resp = response
+
+        merged_parts = [
+            f"## Team-Run: {normalized_task} (run_id={run_id})",
+            "",
+            f"- Partition strategy: {team_config['partition_strategy']}",
+            f"- Work units dispatched: {len(work_units)}",
+            f"- Successful shards: {len(successful_shards)}/{len(shard_results)}",
+            f"- Barrier status: {barrier_status}",
+            f"- Consensus policy: {team_config['consensus_policy']}",
+            f"- Profile: {profile}",
+            "",
+            "## Routing Notes",
+            "\n".join(f"- {n}" for n in routing_notes),
+            "",
+            "## Worker Shard Results",
+        ]
+        for sr in shard_results:
+            status = "✓" if sr["success"] else "✗"
+            merged_parts.append(
+                f"### [{status}] {sr['unit_id']} (agent: {sr.get('agent', '?')})"
+            )
+            if sr["success"]:
+                merged_parts.append(sr.get("content", "")[:2000])
+            else:
+                merged_parts.append(f"[FAILED] {sr.get('error', 'unknown')}")
+            merged_parts.append("")
+
+        if merge_resp:
+            merged_parts.extend([
+                "## Merge Output" + (f" ({merge_runtime})" if merge_runtime else ""),
+                merge_resp.content if merge_resp.success else f"[FAILED] {merge_resp.error}",
+                "",
+            ])
+        elif barrier_status == "blocked":
+            merged_parts.extend([
+                "## Merge Output",
+                "[BLOCKED] Merge was not attempted because barrier rules were not met.",
+                "",
+            ])
+
+        if review_resp:
+            merged_parts.extend([
+                f"## Post-Merge Review ({review_runtime})",
+                review_resp.content if review_resp.success else f"[FAILED] {review_resp.error}",
+                "",
+            ])
+
+        merged = "\n".join(merged_parts)
+
+        # Confidence calculation
+        if barrier_status == "blocked":
+            confidence = 0.0
+        elif merge_resp and merge_resp.success and review_resp and review_resp.success:
+            confidence = 0.92
+        elif merge_resp and merge_resp.success:
+            confidence = 0.78
+        elif barrier_status == "degraded":
+            confidence = 0.45
+        else:
+            confidence = 0.3
+
+        return CollaborationResult(
+            mode="team-run",
+            task_description=f"{normalized_task} {paper_type} {normalized_topic}"[:200],
+            codex_response=codex_resp,
+            claude_response=claude_resp,
+            gemini_response=gemini_resp,
+            merged_analysis=merged,
+            confidence=confidence,
+            recommendations=self._extract_recommendations(merged),
         )
 
     def task_run(
@@ -2142,6 +4081,7 @@ Return sections:
         paper_type: str,
         topic: str,
         cwd: Path,
+        domain: str = "auto",
         venue: str | None = None,
         context: str | None = None,
         mcp_strict: bool = False,
@@ -2153,18 +4093,33 @@ Return sections:
         review_profile: str | None = None,
         triad_profile: str | None = None,
         max_revision_rounds: int = 2,
+        focus_outputs: list[str] | None = None,
+        output_budget: int | None = None,
+        research_depth: str = "standard",
+        only_targets: list[str] | None = None,
     ) -> CollaborationResult:
         """Run task-level orchestration using capability map and contract."""
         normalized_task = task_id.strip().upper()
         normalized_topic = self._normalize_topic(topic)
         routing_notes: list[str] = []
+        depth_mode = research_depth.strip().lower()
+        if depth_mode not in {"standard", "deep"}:
+            raise ValueError("research_depth must be 'standard' or 'deep'.")
+        domain_context = self._load_domain_profile_context(domain)
 
         try:
             agent_plan = self._load_task_agent_plan(normalized_task)
-            artifact_root, required_outputs = self._load_task_outputs(normalized_task)
+            artifact_root, contract_outputs = self._load_task_outputs(normalized_task)
         except (FileNotFoundError, ValueError) as exc:
             msg = f"Task '{normalized_task}' is invalid or missing in workflow contract."
             raise ConfigError(ERR_CFG_INVALID_TASK, detail=msg) from exc
+
+        contract_outputs, required_outputs, deferred_outputs, artifact_policy = self._select_task_outputs(
+            contract_outputs,
+            focus_outputs=focus_outputs,
+            output_budget=output_budget,
+        )
+        evidence_expansion_rounds = 2 if depth_mode == "deep" else 1
 
         try:
             profile_registry, task_profile_overrides = self._load_profile_bundle(profile_file)
@@ -2209,11 +4164,17 @@ Return sections:
             venue=venue,
             artifact_root=artifact_root,
             required_outputs=required_outputs,
+            contract_required_outputs=contract_outputs,
+            deferred_outputs=deferred_outputs,
             required_mcp=agent_plan["required_mcp"],
             required_skills=agent_plan["required_skills"],
             required_skill_cards=agent_plan["required_skill_cards"],
             quality_gates=agent_plan["quality_gates"],
+            artifact_policy=artifact_policy,
+            research_depth=depth_mode,
+            evidence_expansion_rounds=evidence_expansion_rounds,
         )
+        packet.update(self._build_domain_packet_fields(domain_context))
         if plan_result.data:
             packet["task_plan"] = dict(plan_result.data)
         else:
@@ -2263,6 +4224,50 @@ Return sections:
             f"review={agent_plan['review_agent']}, "
             f"fallback={agent_plan['fallback_agent']}."
         )
+        routing_notes.append(
+            "Output control: "
+            f"policy={artifact_policy}, active_outputs={len(required_outputs)}/{len(contract_outputs)}."
+        )
+        if str(packet.get("domain", "")).strip() and str(packet.get("domain", "")).strip() != "auto":
+            routing_notes.append(
+                "Domain profile: "
+                f"requested={packet.get('requested_domain', packet.get('domain', 'auto'))}, "
+                f"resolved={packet.get('domain', 'auto')}, "
+                f"status={packet.get('domain_profile_status', 'unknown')}."
+            )
+            if packet.get("domain_profile_file"):
+                routing_notes.append(
+                    f"Domain profile file: {packet['domain_profile_file']}."
+                )
+        if required_outputs:
+            routing_notes.append("Active outputs: " + ", ".join(required_outputs) + ".")
+        if deferred_outputs:
+            routing_notes.append("Deferred outputs: " + ", ".join(deferred_outputs) + ".")
+        routing_notes.append(
+            f"Research depth: {depth_mode} (evidence_expansion_rounds={evidence_expansion_rounds})."
+        )
+        targeted_follow_up_data: dict[str, Any] = {}
+        if only_targets:
+            try:
+                targeted_follow_up_data = self._resolve_targeted_follow_up(
+                    normalized_task,
+                    normalized_topic,
+                    cwd,
+                    only_targets,
+                )
+            except ValueError as exc:
+                raise ConfigError(ERR_CFG_INVALID_TASK, detail=str(exc)) from exc
+            packet.update(targeted_follow_up_data)
+            routing_notes.append(
+                "Targeted follow-up: selected_targets="
+                + ", ".join(packet.get("selected_actionable_targets", []))
+                + "."
+            )
+            routing_notes.append(
+                "Targeted source artifact: "
+                + str(packet.get("structured_source_artifact", "<missing>"))
+                + "."
+            )
         try:
             skill_cards, skill_notes = self._collect_skill_context(
                 packet,
@@ -2369,6 +4374,8 @@ Return sections:
             # --- Revision loop ---
             current_draft_content = draft_resp.content
             effective_max_rounds = max(0, max_revision_rounds)
+            if depth_mode == "deep":
+                effective_max_rounds = max(effective_max_rounds, 3)
             for revision_round in range(effective_max_rounds + 1):
                 review_prompt = self._build_task_review_prompt(
                     packet,
@@ -2504,6 +4511,23 @@ Return sections:
             if runtime_agent == "gemini" and gemini_resp is None:
                 gemini_resp = response
 
+        structured_output: dict[str, Any] = {}
+        if draft_resp.success and normalized_task in self.STAGE_I_TEMPLATE_TYPE_BY_TASK:
+            structured_output = self._parse_stage_i_structured_output(
+                draft_resp.content,
+                normalized_task,
+            )
+            routing_notes.append(
+                "Structured artifact parse: "
+                f"valid={structured_output.get('valid', False)} for {normalized_task}."
+            )
+            if structured_output.get("actionable_targets"):
+                routing_notes.append(
+                    "Structured actionable targets: "
+                    + ", ".join(str(item) for item in structured_output["actionable_targets"][:8])
+                    + "."
+                )
+
         merged_parts = [
             plan_result.merged_analysis,
             "",
@@ -2529,9 +4553,23 @@ Return sections:
             get_text("routing"),
             "\n".join(f"- {item}" for item in routing_notes) if routing_notes else "- Direct mapping used.",
             "",
+        ]
+        if structured_output:
+            merged_parts.extend(
+                [
+                    "## Structured Artifact Summary",
+                    "\n".join(
+                        f"- {line}" for line in structured_output.get("summary_lines", [])
+                    ),
+                    "",
+                ]
+            )
+        merged_parts.extend(
+            [
             get_text("draft", agent=draft_runtime),
             draft_resp.content if draft_resp.success else f"[FAILED] {draft_resp.error}",
-        ]
+            ]
+        )
         if revision_history:
             merged_parts.extend([
                 "",
@@ -2591,6 +4629,19 @@ Return sections:
             merged_analysis=merged,
             confidence=confidence,
             recommendations=self._extract_recommendations(merged),
+            data={
+                "task_packet": packet,
+                "routing_notes": list(routing_notes),
+                "revision_history": list(revision_history),
+                "structured_output": dict(structured_output) if structured_output else {},
+                "targeted_follow_up": {
+                    "enabled": bool(targeted_follow_up_data),
+                    "selected_targets": list(packet.get("selected_actionable_targets", [])),
+                    "available_targets": list(packet.get("available_actionable_targets", [])),
+                    "source_artifact": str(packet.get("structured_source_artifact", "")).strip(),
+                    "source_path": str(packet.get("structured_source_path", "")).strip(),
+                },
+            },
         )
 
 
@@ -2602,32 +4653,197 @@ Return sections:
         domain: str = "auto",
         tier: str = "standard",
         paper_path: str | None = None,
+        topic: str | None = None,
+        focus: str | None = None,
+        paper_type: str = "methods",
+        triad: bool = False,
+        only_targets: list[str] | None = None,
     ) -> CollaborationResult:
         """
         Build academic research code.
-        
+
         Args:
             method: Methodology name (e.g. "DID", "GARCH")
             cwd: Working directory
             domain: finance, econ, metrics, cs, or auto
             tier: standard (template) or advanced (decomposition)
             paper_path: Optional path to paper for context
+            topic: Research topic slug/name. When provided, route into strict Stage-I task flow.
+            focus: Requested code lane focus, mapped to Stage-I Task IDs.
+            paper_type: Workflow paper type used for strict task routing.
+            triad: Enable independent third-agent audit for strict task routing.
         """
-        # 1. Prompt engineering based on tier
+        normalized_focus = self._normalize_code_build_focus(focus)
+        mapped_task_id = self.CODE_BUILD_FOCUS_TO_TASK.get(normalized_focus, "I1")
+        domain_context = self._load_domain_profile_context(domain)
+
+        if topic:
+            normalized_topic = self._normalize_topic(topic)
+            try:
+                selected_target_map = self._resolve_code_build_target_map(mapped_task_id, only_targets)
+            except ValueError as exc:
+                raise ConfigError(ERR_CFG_INVALID_TASK, detail=str(exc)) from exc
+            default_stage_sequence = ["I5", "I6", "I7", "I8"] if mapped_task_id == "FULL" else [mapped_task_id]
+            if mapped_task_id == "FULL" and selected_target_map:
+                stage_sequence = [
+                    task_id for task_id in default_stage_sequence if task_id in selected_target_map
+                ]
+            else:
+                stage_sequence = list(default_stage_sequence)
+            stage_results: list[tuple[str, CollaborationResult]] = []
+            combined_codex: BridgeResponse | None = None
+            combined_claude: BridgeResponse | None = None
+            combined_gemini: BridgeResponse | None = None
+            structured_stage_outputs: dict[str, Any] = {}
+            aggregated_actionable_targets: dict[str, list[str]] = {}
+
+            for stage_task_id in stage_sequence:
+                stage_context = self._build_code_build_context(
+                    method=method,
+                    tier=tier,
+                    focus=normalized_focus,
+                    domain_context=domain_context,
+                    paper_path=paper_path,
+                    strict_task_id=stage_task_id,
+                )
+                if stage_results:
+                    completed = ", ".join(task for task, _ in stage_results)
+                    stage_context += (
+                        "\n- upstream_stage_contract:\n"
+                        f"  - previously_completed: {completed}\n"
+                        "  - treat earlier stage outputs as authoritative unless you identify a concrete blocker\n"
+                        "  - do not reopen settled decisions without explicit evidence"
+                    )
+                stage_depth = "deep" if tier == "advanced" or stage_task_id in {"I4", "I5", "I6", "I8"} else "standard"
+                stage_result = self.task_run(
+                    task_id=stage_task_id,
+                    paper_type=paper_type,
+                    topic=normalized_topic,
+                    cwd=cwd,
+                    domain=domain,
+                    context=stage_context,
+                    triad=triad if stage_task_id == "I8" else False,
+                    profile="focused-delivery",
+                    draft_profile="deep-research" if stage_depth == "deep" else "focused-delivery",
+                    review_profile="strict-review",
+                    triad_profile="deep-research",
+                    max_revision_rounds=3 if stage_depth == "deep" else 2,
+                    research_depth=stage_depth,
+                    only_targets=selected_target_map.get(stage_task_id),
+                )
+                stage_results.append((stage_task_id, stage_result))
+                structured_output = {}
+                if stage_result.data and isinstance(stage_result.data, dict):
+                    structured_output = dict(stage_result.data.get("structured_output", {}) or {})
+                if structured_output:
+                    structured_stage_outputs[stage_task_id] = structured_output
+                    actionable = [
+                        str(item)
+                        for item in structured_output.get("actionable_targets", [])
+                        if str(item).strip()
+                    ]
+                    if actionable:
+                        aggregated_actionable_targets[stage_task_id] = actionable
+                if combined_codex is None and stage_result.codex_response:
+                    combined_codex = stage_result.codex_response
+                if combined_claude is None and stage_result.claude_response:
+                    combined_claude = stage_result.claude_response
+                if combined_gemini is None and stage_result.gemini_response:
+                    combined_gemini = stage_result.gemini_response
+
+                if stage_result.confidence <= 0.0:
+                    break
+
+            if mapped_task_id != "FULL" and stage_results:
+                wrapped = self._wrap_code_build_result(
+                    stage_results[0][1],
+                    method=method,
+                    focus=normalized_focus,
+                    task_id=stage_results[0][0],
+                    topic=normalized_topic,
+                )
+                if selected_target_map:
+                    wrapped.data = dict(wrapped.data or {})
+                    wrapped.data["selected_target_map"] = dict(selected_target_map)
+                return wrapped
+
+            merged_sections = [
+                "## Code-Build Academic Flow",
+                f"- method: {method}",
+                f"- focus: {normalized_focus}",
+                f"- topic: {normalized_topic}",
+                f"- domain: {domain_context.get('domain', 'auto') or 'auto'}",
+                "- strict_stage_sequence: " + " -> ".join(task for task, _ in stage_results),
+                "",
+            ]
+            if selected_target_map:
+                merged_sections.extend(
+                    [
+                        "- selected_target_map: "
+                        + "; ".join(
+                            f"{stage_id}={', '.join(targets)}"
+                            for stage_id, targets in selected_target_map.items()
+                        ),
+                        "",
+                    ]
+                )
+            for stage_task_id, stage_result in stage_results:
+                merged_sections.extend(
+                    [
+                        f"### {stage_task_id}",
+                        stage_result.merged_analysis,
+                        "",
+                    ]
+                )
+            confidence = min((item.confidence for _, item in stage_results), default=0.0)
+            return CollaborationResult(
+                mode="code-build",
+                task_description=f"{method} {normalized_focus} {normalized_topic}"[:200],
+                codex_response=combined_codex,
+                claude_response=combined_claude,
+                gemini_response=combined_gemini,
+                merged_analysis="\n".join(merged_sections).strip(),
+                confidence=confidence,
+                recommendations=self._extract_recommendations("\n".join(merged_sections)),
+                data={
+                    "topic": normalized_topic,
+                    "focus": normalized_focus,
+                    "mapped_task_id": mapped_task_id,
+                    "stage_sequence": [task for task, _ in stage_results],
+                    "domain": domain_context.get("domain", "auto"),
+                    "structured_stage_outputs": structured_stage_outputs,
+                    "actionable_targets": aggregated_actionable_targets,
+                    "selected_target_map": dict(selected_target_map),
+                },
+            )
+
+        domain_packet = self._build_domain_packet_fields(domain_context)
+        domain_section = self._format_domain_context(domain_packet)
+        request_context = self._build_code_build_context(
+            method=method,
+            tier=tier,
+            focus=normalized_focus,
+            domain_context=domain_context,
+            paper_path=paper_path,
+        )
+
+        # Backward-compatible non-topic prompt path
         if tier == "advanced":
             prompt = f"""
 You are an expert Research Software Engineer.
 Task: Implement the methodology '{method}' from first principles (Tier 2 Advanced Mode).
-Domain: {domain}
+Domain guidance:
+{domain_section}
 
 REQUIREMENTS:
 1. Do NOT use high-level library wrappers.
 2. If this is an optimization problem, define the Objective Function (Likelihood/Loss) explicitly.
 3. Use JAX or PyTorch if gradients are needed.
 4. If this is a structural model, ensure all equations are translated to code.
+5. Treat this as academic research code, not generic application scaffolding.
 
 CONTEXT:
-{f'Reference Paper: {paper_path}' if paper_path else 'No specific paper provided.'}
+{request_context}
 
 OUTPUT:
 - Single Python file
@@ -2645,15 +4861,17 @@ OUTPUT:
             prompt = f"""
 You are an expert Research Software Engineer.
 Task: Implement the methodology '{method}' using standard libraries (Tier 1 Standard Mode).
-Domain: {domain}
+Domain guidance:
+{domain_section}
 
 REQUIREMENTS:
 1. Use standard, robust libraries (e.g. statsmodels, arch, linearmodels, pyfixest).
 2. Follow best practices for the domain.
 3. Include data loading and validation steps.
+4. Treat this as academic research code, not generic product scaffolding.
 
 CONTEXT:
-{f'Reference Paper: {paper_path}' if paper_path else 'No specific paper provided.'}
+{request_context}
 """
             # Use role-based for standard: Codex builds, Gemini explains usage
             return self.execute(
@@ -2742,6 +4960,29 @@ def main():
     code_build.add_argument("--domain", default="auto", help="finance, econ, metrics, cs")
     code_build.add_argument("--tier", choices=["standard", "advanced"], default="standard")
     code_build.add_argument("--paper", help="Path to paper PDF/URL")
+    code_build.add_argument("--topic", help="Research topic slug/name for strict Stage-I routing")
+    code_build.add_argument(
+        "--focus",
+        default="implementation",
+        help="Code-lane focus: implementation, reproduction, data_pipeline, code_specification, code_planning, execution_performance, code_review, reproducibility_audit, or full",
+    )
+    code_build.add_argument(
+        "--paper-type",
+        choices=["empirical", "systematic-review", "methods", "theory"],
+        default="methods",
+        help="Paper type used when code-build routes into strict Stage-I task flow",
+    )
+    code_build.add_argument(
+        "--triad",
+        action="store_true",
+        help="Enable third independent audit for the final strict Stage-I review when --topic is set",
+    )
+    code_build.add_argument(
+        "--only-target",
+        action="append",
+        dest="only_targets",
+        help="Target a specific actionable item. Repeat for multiple items. Use STAGE_ID:TARGET when --focus full.",
+    )
 
     task_run = subparsers.add_parser(
         "task-run",
@@ -2756,6 +4997,11 @@ def main():
     )
     task_run.add_argument("--topic", required=True, help="Research topic slug/name")
     task_run.add_argument("--cwd", required=True, type=Path, help="Working directory")
+    task_run.add_argument(
+        "--domain",
+        default="auto",
+        help="Optional domain profile to inject at runtime (for example econ, cs, psychology)",
+    )
     task_run.add_argument("--venue", help="Target venue (optional)")
     task_run.add_argument("--context", help="Additional execution context (optional)")
     task_run.add_argument(
@@ -2806,6 +5052,68 @@ def main():
         default=2,
         help="Maximum revision rounds when review returns BLOCK (default: 2, 0 = single-pass)",
     )
+    task_run.add_argument(
+        "--focus-output",
+        action="append",
+        dest="focus_outputs",
+        help="Restrict this run to one contract output path. Repeat to focus multiple outputs.",
+    )
+    task_run.add_argument(
+        "--output-budget",
+        type=int,
+        help="Maximum number of active contract outputs to execute in this run.",
+    )
+    task_run.add_argument(
+        "--research-depth",
+        choices=["standard", "deep"],
+        default="standard",
+        help="Execution depth for evidence expansion and review scrutiny (default: standard).",
+    )
+    task_run.add_argument(
+        "--only-target",
+        action="append",
+        dest="only_targets",
+        help="Target a specific actionable item from an existing Stage-I artifact. Repeat to focus multiple items.",
+    )
+
+    team_run_parser = subparsers.add_parser(
+        "team-run",
+        help="Fanout/fanin parallel execution for research tasks (MVP: B1, H3)",
+    )
+    team_run_parser.add_argument(
+        "--task-id", required=True,
+        help="Canonical Task ID (MVP: B1, H3)",
+    )
+    team_run_parser.add_argument(
+        "--paper-type", required=True,
+        choices=["empirical", "systematic-review", "methods", "theory"],
+        help="Paper type from workflow contract",
+    )
+    team_run_parser.add_argument("--topic", required=True, help="Research topic slug/name")
+    team_run_parser.add_argument("--cwd", required=True, type=Path, help="Working directory")
+    team_run_parser.add_argument("--venue", help="Target venue (optional)")
+    team_run_parser.add_argument("--context", help="Additional execution context (optional)")
+    team_run_parser.add_argument(
+        "--max-units", type=int,
+        help="Override max_parallel_units from team_run_config",
+    )
+    team_run_parser.add_argument(
+        "--mcp-strict", action="store_true",
+        help="Fail if required MCP providers are unavailable",
+    )
+    team_run_parser.add_argument(
+        "--skills-strict", action="store_true",
+        help="Fail if required skill specs are missing",
+    )
+    team_run_parser.add_argument(
+        "--profile-file", type=Path,
+        help="JSON file defining user agent profiles",
+    )
+    team_run_parser.add_argument(
+        "--profile", default="default",
+        help="Base profile name (default: default)",
+    )
+
     task_plan = subparsers.add_parser(
         "task-plan",
         help="Render dependency-based task plan from workflow contract",
@@ -2840,7 +5148,12 @@ def main():
             cwd=args.cwd,
             domain=args.domain,
             tier=args.tier,
-            paper_path=args.paper
+            paper_path=args.paper,
+            topic=getattr(args, "topic", None),
+            focus=getattr(args, "focus", None),
+            paper_type=getattr(args, "paper_type", "methods"),
+            triad=getattr(args, "triad", False),
+            only_targets=getattr(args, "only_targets", None),
         )
     elif args.mode == "doctor":
         result = orchestrator.doctor(cwd=args.cwd)
@@ -2850,6 +5163,7 @@ def main():
             paper_type=args.paper_type,
             topic=args.topic,
             cwd=args.cwd,
+            domain=getattr(args, "domain", "auto"),
             venue=args.venue,
             context=args.context,
             mcp_strict=args.mcp_strict,
@@ -2861,6 +5175,24 @@ def main():
             review_profile=getattr(args, "review_profile", None),
             triad_profile=getattr(args, "triad_profile", None),
             max_revision_rounds=getattr(args, "max_rounds", 2),
+            focus_outputs=getattr(args, "focus_outputs", None),
+            output_budget=getattr(args, "output_budget", None),
+            research_depth=getattr(args, "research_depth", "standard"),
+            only_targets=getattr(args, "only_targets", None),
+        )
+    elif args.mode == "team-run":
+        result = orchestrator.team_run(
+            task_id=args.task_id,
+            paper_type=args.paper_type,
+            topic=args.topic,
+            cwd=args.cwd,
+            venue=getattr(args, "venue", None),
+            context=getattr(args, "context", None),
+            max_parallel_units=getattr(args, "max_units", None),
+            mcp_strict=args.mcp_strict,
+            skills_strict=args.skills_strict,
+            profile_file=getattr(args, "profile_file", None),
+            profile=getattr(args, "profile", "default"),
         )
     elif args.mode == "task-plan":
         result = orchestrator.task_plan(

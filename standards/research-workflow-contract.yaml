@@ -1046,3 +1046,29 @@ quality_gates:
   - id: "Q4"
     name: "reproducibility baseline"
     rule: "Analysis decisions and artifact paths are documented"
+
+# ── Shard Directory Convention (team-run) ───────────────────────────
+# Used by team-run mode to isolate parallel worker outputs.
+shard_directory_convention:
+  pattern: "RESEARCH/[topic]/runs/[run_id]/shards/[unit_id]/"
+  rules:
+    - "Workers MUST write only to their own shard directory"
+    - "Only merge/finalize stage may write to canonical output paths"
+    - "Each shard directory receives run_id and unit_id from orchestrator"
+    - "Shard directories are ephemeral; canonical outputs are the deliverable"
+  merge_output_requirements:
+    - "conflict_summary: must document inter-shard disagreements"
+    - "consensus_summary: must document converging findings"
+    - "gap_summary: must identify areas no shard covered"
+
+worker_failure_semantics:
+  degrade:
+    description: "Continue with remaining shards if min_success_ratio is met"
+    merge_behavior: "Merge available shards; note missing units in gap_summary"
+  block:
+    description: "Halt entire team-run if any worker fails"
+    merge_behavior: "No merge attempted; return error"
+  retry:
+    description: "Re-dispatch failed work_unit up to max_retries times"
+    max_retries: 2
+    merge_behavior: "Merge after retries; block if still failing"

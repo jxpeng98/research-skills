@@ -1420,3 +1420,71 @@ task_execution:
     quality_gates:
       - "Q2"
       - "Q4"
+
+# ── Team-Run (Research Fanout/Fanin) Configuration ──────────────────
+# MVP scope: only B1 and H3 are supported.
+# team-run splits a single Task ID into parallel work_units, each
+# executed by an independent worker agent, then merged into canonical
+# output by a dedicated merge agent.
+#
+# Terminology:
+#   work_unit  – the smallest parallelizable sub-task within a Task ID
+#   shard      – the output directory owned by one work_unit
+#   canonical  – the final merged output written to RESEARCH/[topic]/
+#   merge      – the convergence step that combines shards into canonical
+team_run_config:
+  B1:
+    execution_mode: fanout_merge
+    partition_strategy: by_paper_batch
+    max_parallel_units: 5
+    planner_agent: claude
+    worker_pool:
+      - codex
+      - claude
+      - gemini
+    merge_agent: claude
+    review_pool:
+      - codex
+      - gemini
+    consensus_policy: majority_rules
+    barrier_rules:
+      min_success_ratio: 0.6
+      on_failure: degrade       # degrade | block | retry
+    shard_outputs:
+      - "search_results_shard.csv"
+      - "extraction_shard.md"
+      - "quality_shard.md"
+    canonical_outputs:
+      - "search_results.csv"
+      - "extraction_table.md"
+      - "quality_table.md"
+      - "synthesis_matrix.md"
+
+  H3:
+    execution_mode: fanout_merge
+    partition_strategy: by_reviewer_persona
+    max_parallel_units: 3
+    planner_agent: claude
+    worker_pool:
+      - codex
+      - claude
+      - gemini
+    merge_agent: claude
+    review_pool:
+      - codex
+      - gemini
+    consensus_policy: union_with_priority
+    barrier_rules:
+      min_success_ratio: 1.0
+      on_failure: block         # all reviewers must succeed
+    personas:
+      - id: methodologist
+        focus: "Statistical validity, identification strategy, robustness"
+      - id: domain_expert
+        focus: "Theoretical grounding, literature coverage, contribution"
+      - id: reviewer_2
+        focus: "Presentation, reproducibility, formatting"
+    shard_outputs:
+      - "review_shard.md"
+    canonical_outputs:
+      - "revision/peer_review_simulation.md"

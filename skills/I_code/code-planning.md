@@ -45,23 +45,62 @@ Transform a specification into a zero-decision execution plan that can be parall
 4. **Plan artifacts**: where code, data, plots, and reports will be written.
 5. **Plan commands**: exact commands to run for each checkpoint.
 
-## Minimal plan format (`code/plan.md`)
+## Required plan format (`code/plan.md`)
 
 ```markdown
+---
+task_id: I6
+template_type: code_plan
+topic: <topic>
+primary_artifact: code/plan.md
+---
+
 # Execution Plan
 
-## Scope
+## Plan Contract Block
+```json
+{
+  "task_id": "I6",
+  "topic": "<topic>",
+  "spec_source": "code/code_specification.md",
+  "plan_artifact": "code/plan.md",
+  "steps": [
+    {
+      "step_id": "S1",
+      "depends_on": [],
+      "owner": "<agent-or-role>",
+      "command": "<exact command>",
+      "outputs": ["..."],
+      "checkpoint": "<observable pass/fail rule>",
+      "rollback": "<recovery action>"
+    }
+  ]
+}
+```
 
-## Task list
-1. [ ] Task (owner/agent) — output — checkpoint
-
-## Checkpoints
-- CP1: ...
-- CP2: ...
-
-## Run commands
+## Scope Lock
 - ...
 
-## Risks & mitigations
+## Assumptions From Spec
+- ...
+
+## Step Ledger
+1. [ ] `S1` — owner — output — checkpoint — rollback
+
+## Checkpoint Matrix
+| Step | Inputs | Output | Pass Condition | Failure Trigger |
+| --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... |
+
+## Exact Run Commands
+- ...
+
+## Parallelization / Dependency Map
+- ...
+
+## Rollback / Recovery
+- ...
+
+## Risks / Blockers
 - ...
 ```

@@ -61,6 +61,70 @@ User intent (自然语言)
 
 > 经验法则：**先改 contract（如果产物/路径会变化）→ 再改 capability-map（谁来做）→ 再补细 stage playbooks / skills / templates（怎么做）→ 最后修 workflows（交互层）**。
 
+### 2.1 “我要把某个方向做专精” 时，应该从哪里改？
+
+这里的“方向专精”默认指：
+- **不改** Task ID、阶段顺序、核心产物契约
+- **只增强** 某个学科/方法方向的知识、检查清单、推荐库、数据库、写作规范、投稿偏好
+
+这种情况下，**不要一上来就改 `standards/`**。当前架构把“核心工作流”和“领域知识”拆开了，推荐默认从 `skills/domain-profiles/` 进入。
+
+| 你的目标 | 首改文件 | 什么时候再往上层改 |
+|---|---|---|
+| 调整推荐库、方法模板、诊断项、常见坑、数据库、期刊规范 | `skills/domain-profiles/<domain>.yaml` | 只有新增字段时才改 `schemas/domain-profile.schema.json` |
+| 新增一个全新的方向 | 复制 `skills/domain-profiles/custom-template.yaml` 为新文件 | 如需在帮助文案/示例中显式展示，再补文档或 CLI 帮助 |
+| 让更多 skill 也能感知该方向 | `skills/registry.yaml` + 对应 `skills/*/*.md` | 如 task 路由或 required_skills 变化，再改 `standards/mcp-agent-capability-map.yaml` |
+| 修改代码 lane 如何使用方向配置 | `skills/I_code/code-builder.md`、`skills/I_code/stats-engine.md`、`skills/I_code/code-review.md` | 只有运行时注入逻辑变化时才需要看 `bridges/*.py` |
+| 改某个方向的输出路径、Task 产物、质量门 | `standards/research-workflow-contract.yaml` | 这已经不是“轻量专精”，而是标准层变更 |
+
+推荐修改顺序：
+1. 先判断你是“改已有方向”，还是“新增一个方向”。
+2. 先把方向知识沉到 `skills/domain-profiles/<domain>.yaml`，优先维护这些字段：
+   - `libraries`
+   - `method_templates`
+   - `stats_diagnostics`
+   - `reporting_guidelines` / `reporting_standards`
+   - `common_pitfalls`
+   - `visualization_templates`
+   - `default_databases`
+   - `methodology_priors`
+   - `venue_norms`
+3. 再判断这个方向是否只影响 **代码支持 I 阶段**。
+   - 如果只影响代码构建、统计诊断、代码 review，通常改 domain profile 就够了。
+   - 如果还要影响选题、检索、设计、写作、投稿，继续更新对应的 `domain_aware` skill。
+4. 如果你新增了 domain profile 里的字段，再同步更新 `schemas/domain-profile.schema.json`。
+5. 只有在新增了 skill、改变了 task 路由、或者改变了产物契约时，才升级到 `standards/` 层。
+
+常见会一起受方向影响的 skill：
+- `skills/A_framing/venue-analyzer.md`
+- `skills/B_literature/concept-extractor.md`
+- `skills/C_design/study-designer.md`
+- `skills/C_design/robustness-planner.md`
+- `skills/C_design/dataset-finder.md`
+- `skills/C_design/variable-constructor.md`
+- `skills/F_writing/manuscript-architect.md`
+- `skills/G_compliance/reporting-checker.md`
+- `skills/H_submission/submission-packager.md`
+- `skills/I_code/code-builder.md`
+- `skills/I_code/stats-engine.md`
+- `skills/I_code/code-review.md`
+
+不要这样改：
+- 只是想补某个学科的方法 checklist，却直接改 `standards/research-workflow-contract.yaml`
+- 只是想补某个方向的注意事项，却在多个 skill 文件里重复拷贝同一份 checklist，而不沉到 `domain-profiles/`
+- 新增了 domain profile 字段，但没有同步更新 schema 或相关 skill 的消费逻辑
+- 还没确认是否真的需要独立 artifact，就先新增顶层 skill 文件
+
+方向专精后的验证建议：
+```bash
+python3 scripts/validate_research_standard.py --strict
+python3 -m unittest tests.test_orchestrator_workflows -v
+```
+
+如本次修改影响了具体方向的运行行为，建议再做一次最小手工验证，例如：
+- 用目标方向跑一遍 `code-build` / `task-run`
+- 检查生成内容是否真的引用了新的方法 checklist、诊断项与 reporting 规范
+
 ---
 
 ## 3) 常见修改场景（操作清单）
@@ -151,4 +215,3 @@ python3 -m bridges.orchestrator doctor --cwd .
 - **第二步**：补 `references/stage-*.md`（DoD）、`skills/*/`（执行规范）、`templates/`（结构化模板）
 - **第三步**：修 `.agent/workflows/`（交互层路由/菜单）
 - **第四步**：跑全量校验并更新 release notes（如要发 beta）
-

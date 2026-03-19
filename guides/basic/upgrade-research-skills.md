@@ -5,11 +5,31 @@ This guide explains how to:
 2) Automate the upgrade process.
 3) Complete the upgrade without needing to fork or `git clone` the repository.
 
-## 0) Standardize as a pip package (Recommended)
+## 0) Choose an Upgrade Entry Point
 
-This repository provides a `pyproject.toml` file, allowing it to be published and installed as a standard pip package (using `pipx` to install the CLI is highly recommended).
+### Option A: Shell bootstrap (No Python required)
 
-After publishing to PyPI (or an internal registry), the standard usage on your machine is:
+This path only needs `bash` plus `curl`/`wget` and `tar`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --repo <owner>/<repo> \
+  --project-dir /path/to/project \
+  --target all \
+  --overwrite
+```
+
+Notes:
+- The bootstrapper downloads the selected release archive and runs `scripts/install_research_skill.sh` from inside it.
+- By default it also installs the shell CLI: `research-skills`, `rsk`, `rsw`.
+- Default shell CLI location: `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`.
+- Use `--no-cli` to skip shell CLI installation, or `--cli-dir <path>` to change the install location.
+- `--doctor` is optional and only runs when `python3` exists.
+- Remote bootstrap supports `--mode copy` only. Use a local clone for `--mode link`.
+
+### Option B: Python CLI (optional)
+
+This repository also provides a `pyproject.toml` package for people who want a reusable updater CLI:
 
 ```bash
 pipx install research-skills-installer
@@ -80,6 +100,16 @@ rsk upgrade --project-dir . --target all --doctor
 This directly downloads the GitHub release archive and executes the installation script inside it:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --repo <owner>/<repo> \
+  --project-dir /path/to/your/project \
+  --target all \
+  --overwrite
+```
+
+Or, if Python is available:
+
+```bash
 # If RESEARCH_SKILLS_REPO is set, --repo can be omitted
 rsk upgrade \
   --repo <owner>/<repo> \
@@ -99,8 +129,10 @@ python3 scripts/research_skill_update.py upgrade \
 
 Key points:
 - This method **does not rely on git** and does not require you to clone the repository locally.
+- The shell bootstrap path **does not rely on Python**.
+- The shell CLI itself can run `check`, `upgrade`, and `align` without Python.
 - For private repositories or if you hit API rate limits, it is recommended to set: `GITHUB_TOKEN` or `GH_TOKEN`.
-- It defaults to using the "latest release tag", but you can specify a version:
+- It defaults to using the "latest release tag", but both shell bootstrap and `rsk upgrade` accept explicit refs:
   - `--ref v0.1.0-beta.6 --ref-type tag`
   - `--ref main --ref-type branch`
 

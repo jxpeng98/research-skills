@@ -3,11 +3,31 @@
 本指南说明如何在使用 `research-skills` 时：
 1) 检测是否有新版本；2) 自动化升级；3) 在不 fork、不 git clone 的情况下完成升级。
 
-## 0) 标准化成 pip 包（推荐）
+## 0) 选择升级入口
 
-本仓库已提供 `pyproject.toml`，可以作为 pip 包发布/安装（推荐用 `pipx` 安装 CLI）。
+### 方案 A：Shell bootstrap（不依赖 Python）
 
-发布到 PyPI 后（或用内部源），用户侧的标准用法就是：
+这个路径只需要 `bash` 和 `curl`/`wget`、`tar`：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --repo <owner>/<repo> \
+  --project-dir /path/to/project \
+  --target all \
+  --overwrite
+```
+
+说明：
+- bootstrap 会下载所选 release 压缩包，并执行其中自带的 `scripts/install_research_skill.sh`。
+- 默认也会安装 shell CLI：`research-skills`、`rsk`、`rsw`。
+- 默认 shell CLI 目录：`${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`。
+- 如果只想更新 workflow 资产，可加 `--no-cli`；如果要改安装位置，可加 `--cli-dir <path>`。
+- `--doctor` 是可选项，只有系统存在 `python3` 时才会执行。
+- 远程 bootstrap 只支持 `--mode copy`；如果你需要 `--mode link`，请保留本地 clone。
+
+### 方案 B：Python CLI（可选）
+
+本仓库也提供 `pyproject.toml` 包，适合需要可复用升级器 CLI 的场景：
 
 ```bash
 pipx install research-skills-installer
@@ -78,6 +98,16 @@ rsk upgrade --project-dir . --target all --doctor
 直接下载 GitHub release 压缩包并执行其中的安装脚本：
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --repo <owner>/<repo> \
+  --project-dir /path/to/your/project \
+  --target all \
+  --overwrite
+```
+
+如果机器上有 Python，也可以继续使用 CLI：
+
+```bash
 # 如果已设置 RESEARCH_SKILLS_REPO，可省略 --repo
 rsk upgrade \
   --repo <owner>/<repo> \
@@ -97,8 +127,10 @@ python3 scripts/research_skill_update.py upgrade \
 
 要点：
 - 这个方式**不依赖 git**，也不要求你把仓库 clone 到本地。
+- shell bootstrap 路径**不依赖 Python**。
+- shell CLI 本身也可以在无 Python 环境下执行 `check`、`upgrade`、`align`。
 - 私有仓库或遇到 API 限流时，建议设置：`GITHUB_TOKEN` 或 `GH_TOKEN`。
-- 默认使用“最新 release tag”；也可指定版本：
+- 默认使用“最新 release tag”；shell bootstrap 和 `rsk upgrade` 也都支持显式指定版本：
   - `--ref v0.1.0-beta.6 --ref-type tag`
   - `--ref main --ref-type branch`
 

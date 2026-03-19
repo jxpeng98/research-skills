@@ -4,7 +4,7 @@
 
 ## 0) 命令名约定
 
-- `research-skills`：主 CLI（pipx/venv 安装后提供）
+- `research-skills`：主 CLI（pipx/venv 安装后可用，或通过 shell bootstrap 安装）
 - `rsk` / `rsw`：短别名（与 `research-skills` 完全等价）
 
 下文统一用 `rsk` 作为示例。
@@ -40,6 +40,10 @@ repo = "owner/repo"   # 或 url = "https://github.com/owner/repo.git"
 ---
 
 ## 2) `rsk`（安装/升级器 CLI）
+
+这个 CLI 现在有两种分发方式：
+- Python CLI：通过 `pip`/`pipx` 安装
+- Shell CLI：由 `bootstrap_research_skill.sh` 默认安装到 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
 
 ### 2.1 `rsk check`（检查版本/是否有更新）
 
@@ -83,7 +87,8 @@ rsk upgrade \
 说明：
 - `--project-dir` 用于写入项目内集成文件（例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`）。
 - `--mode link` 适合“长期维护一个本地 clone”的场景（软链接安装）；`--mode copy` 更适合一次性安装/CI。
-- 退出码为安装脚本返回码（若安装失败，沿用其错误码）。
+- Shell CLI 会通过随附的 bootstrap helper 执行升级，不依赖 Python。
+- 退出码为底层安装器返回码（若安装失败，沿用其错误码）。
 
 ### 2.3 `rsk align`（快速参考）
 
@@ -128,16 +133,84 @@ mode 列表：
     --triad
   ```
   常用可选参数：
+  - `--domain <name>`：把运行时领域 profile（例如 `econ`、`cs`、`psychology`）注入 task packet 和 prompts
   - `--venue <name>` / `--context <text>`
   - `--mcp-strict` / `--skills-strict`
   - `--profile-file <path>` + `--profile <name>`（以及 `--draft-profile` / `--review-profile` / `--triad-profile`）
+  - `--focus-output <path>`（可重复）+ `--output-budget <n>`：把本次运行收敛到更小的 active outputs，其余 contract outputs 明确标记为 deferred，而不是继续扩写
+  - `--research-depth standard|deep` + `--max-rounds <n>`：提高证据扩展强度，并把 review/revision loop 拉深
+  - `--only-target <id>`（可重复）：针对结构化 Stage-I 任务 `I4`-`I8`，回读 `RESEARCH/[topic]/code/` 下的现有 artifact，并且只重跑指定 actionable target
+  - 内置 profile 新增 `focused-delivery`、`deep-research`；原有 `default`、`rapid-draft`、`strict-review` 仍可用
+
+  示例：减少辅助文件，但保持更强的深度审查
+  ```bash
+  python3 -m bridges.orchestrator task-run \
+    --task-id F3 \
+    --paper-type empirical \
+    --topic your-topic \
+    --cwd . \
+    --focus-output manuscript/manuscript.md \
+    --research-depth deep \
+    --draft-profile deep-research \
+    --review-profile strict-review \
+    --triad-profile deep-research \
+    --triad \
+    --max-rounds 4
+  ```
+  示例：只重跑某个 Stage-I planning step
+  ```bash
+  python3 -m bridges.orchestrator task-run \
+    --task-id I6 \
+    --paper-type methods \
+    --topic llm-bias \
+    --cwd . \
+    --only-target S1
+  ```
 - `task-plan`：从合同渲染依赖任务顺序（用于“从哪一步开始做”）
   ```bash
   python3 -m bridges.orchestrator task-plan --task-id F3 --paper-type empirical --topic your-topic --cwd .
   ```
-- `code-build`：研究代码构建入口（与 Task ID 的 code stage 协同）
+- `code-build`：学术代码工作流入口
   ```bash
-  python3 -m bridges.orchestrator code-build --method "Staggered DID" --cwd . --domain econ
+  python3 -m bridges.orchestrator code-build \
+    --method "Staggered DID" \
+    --topic policy-effects \
+    --domain econ \
+    --focus full \
+    --cwd .
+  ```
+  关键参数：
+  - `--topic <slug>`：提供后会进入严格 Stage I 工作流；不提供时才回落到 legacy prompt-only 模式
+  - `--focus <name>`：映射到 `I1`/`I2`/`I3`/`I4`/`I5`/`I6`/`I7`/`I8`，或用 `full` 跑 `I5 -> I6 -> I7 -> I8`
+  - `--domain <name>`：注入对应的 `skills/domain-profiles/*.yaml`
+  - `--paper-type <type>`：严格 Stage-I 路由使用的论文类型
+  - `--triad`：在最终严格 review 阶段追加第三个独立审计
+  - `--paper <path-or-url>`：可选论文引用，会带入任务上下文
+  - `--only-target <selector>`（可重复）：定向 follow-up 模式
+    - 单阶段 focus：直接用 `S1`、`P1-01` 这类 target ID
+    - `--focus full`：必须写成 `STAGE_ID:TARGET`，例如 `I5:decision-1`、`I8:P1-01`
+
+  示例：只跑高级 CS 方法的 spec 阶段
+  ```bash
+  python3 -m bridges.orchestrator code-build \
+    --method "Transformer Fine-Tuning" \
+    --topic llm-bias \
+    --domain cs \
+    --tier advanced \
+    --focus code_specification \
+    --paper-type methods \
+    --cwd .
+  ```
+  示例：在 full 流程里只重跑特定 target
+  ```bash
+  python3 -m bridges.orchestrator code-build \
+    --method "Transformer Fine-Tuning" \
+    --topic llm-bias \
+    --domain cs \
+    --focus full \
+    --only-target I5:decision-1 \
+    --only-target I8:P1-01 \
+    --cwd .
   ```
 - `single`：单模型执行（调试/快速跑）
   ```bash
@@ -156,18 +229,47 @@ mode 列表：
 
 ## 4) Bash 脚本入口（不依赖 pipx）
 
-### 4.1 安装脚本：`./scripts/install_research_skill.sh`
+### 4.1 远程 bootstrap 安装器：`./scripts/bootstrap_research_skill.sh`
+
+用途：
+- 在没有 Python 的机器上完成安装或刷新。
+- 下载 GitHub release/branch 压缩包，解压后转调其中的 `scripts/install_research_skill.sh`。
+
+```bash
+./scripts/bootstrap_research_skill.sh \
+  --repo owner/repo \
+  --target all \
+  --project-dir /path/to/project \
+  --overwrite
+```
+
+说明：
+- 依赖 `bash` 和 `curl` 或 `wget`，以及 `tar`。
+- 支持 `--ref <tag-or-branch>` 配合 `--ref-type tag|branch`。
+- 默认会安装 shell CLI 命令：`research-skills`、`rsk`、`rsw`。
+- 如果你不想安装 shell CLI，可加 `--no-cli`；如需改目录，可用 `--cli-dir <path>`。
+- 远程 bootstrap 只支持 `--mode copy`。
+- `--doctor` 在没有 `python3` 时会自动跳过。
+
+### 4.2 安装脚本：`./scripts/install_research_skill.sh`
 
 ```bash
 ./scripts/install_research_skill.sh \
   --target all \
   --mode copy \
   --project-dir /path/to/project \
+  --install-cli \
   --overwrite \
   --doctor
 ```
 
-### 4.2 Release 自动化：`./scripts/release_automation.sh`
+说明：
+- 这是本地仓库安装器。
+- `copy/link` 安装路径本身不再依赖 Python。
+- 如果需要同时安装 shell CLI，可加 `--install-cli`；默认目录为 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`，也可用 `--cli-dir <path>` 覆盖。
+- `--doctor` 仅在系统存在 `python3` 时运行 `python3 -m bridges.orchestrator doctor --cwd <project>`。
+
+### 4.3 Release 自动化：`./scripts/release_automation.sh`
 
 ```bash
 ./scripts/release_automation.sh pre  --tag v0.1.0-beta.X
@@ -182,13 +284,13 @@ mode 列表：
 ./scripts/release_postflight.sh --tag v0.1.0-beta.X [--skip-remote] [--skip-ci-status]
 ```
 
-### 4.3 Beta smoke：`./scripts/run_beta_smoke.sh`
+### 4.4 Beta smoke：`./scripts/run_beta_smoke.sh`
 
 ```bash
 ./scripts/run_beta_smoke.sh
 ```
 
-### 4.4 CI 注入打包默认上游：`./scripts/inject_project_toml.sh`
+### 4.5 CI 注入打包默认上游：`./scripts/inject_project_toml.sh`
 
 GitHub Actions 构建时会运行它，把当前仓库 slug 写入 `research_skills/project.toml`，让 pipx 安装后的 CLI 默认指向正确上游。
 

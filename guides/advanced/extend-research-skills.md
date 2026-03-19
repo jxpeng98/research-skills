@@ -138,6 +138,71 @@ Categorizing your changes will directly determine which file layer you should ed
 | Claude slash-command menu or UX | `.agent/workflows/*.md` | `pipelines/`, README/quickstart |
 | Cross-client portable skill behavior | `research-paper-workflow/` | workflow references, README |
 
+## 2.3) Domain Specialization: How to Customize a Direction
+
+In this repo, "specializing a direction" usually means:
+- keeping the core task IDs, stage order, and artifact contract unchanged
+- making one discipline or methodology more opinionated about libraries, diagnostics, pitfalls, databases, venue norms, and review expectations
+
+In other words, do **not** start from `standards/` unless the contract itself changes. The default entrypoint for specialization is `skills/domain-profiles/`.
+
+| You want to change... | Start here | Escalate only when... |
+|---|---|---|
+| Recommended libraries, method checklists, diagnostics, pitfalls, databases, venue norms | `skills/domain-profiles/<domain>.yaml` | You add new fields and must update `schemas/domain-profile.schema.json` |
+| A brand-new domain | Copy `skills/domain-profiles/custom-template.yaml` into a new profile | You also want it surfaced in help text, examples, or docs |
+| More skills should react to the domain | `skills/registry.yaml` + the affected `skills/*/*.md` files | Task routing or required skills change in `standards/mcp-agent-capability-map.yaml` |
+| The code lane should consume domain data differently | `skills/I_code/code-builder.md`, `skills/I_code/stats-engine.md`, `skills/I_code/code-review.md` | Runtime injection logic changes in `bridges/*.py` |
+| Output paths, task outputs, or quality gates for that domain | `standards/research-workflow-contract.yaml` | This is no longer lightweight specialization; it is a contract change |
+
+Recommended order:
+1. Decide whether you are editing an existing domain or introducing a new one.
+2. Put domain knowledge into `skills/domain-profiles/<domain>.yaml` first. The most important sections are:
+   - `libraries`
+   - `method_templates`
+   - `stats_diagnostics`
+   - `reporting_guidelines` / `reporting_standards`
+   - `common_pitfalls`
+   - `visualization_templates`
+   - `default_databases`
+   - `methodology_priors`
+   - `venue_norms`
+3. Decide whether the change should affect only the **I-stage code lane**.
+   - If yes, the domain profile alone is often enough.
+   - If no, update the relevant `domain_aware` skill specs as well.
+4. If you introduce new profile fields, update `schemas/domain-profile.schema.json`.
+5. Only move up to `standards/` when you are adding a skill, changing task routing, or changing contract artifacts.
+
+Skill files commonly touched during broader domain specialization:
+- `skills/A_framing/venue-analyzer.md`
+- `skills/B_literature/concept-extractor.md`
+- `skills/C_design/study-designer.md`
+- `skills/C_design/robustness-planner.md`
+- `skills/C_design/dataset-finder.md`
+- `skills/C_design/variable-constructor.md`
+- `skills/F_writing/manuscript-architect.md`
+- `skills/G_compliance/reporting-checker.md`
+- `skills/H_submission/submission-packager.md`
+- `skills/I_code/code-builder.md`
+- `skills/I_code/stats-engine.md`
+- `skills/I_code/code-review.md`
+
+Avoid these mistakes:
+- Editing `standards/research-workflow-contract.yaml` when you only needed better domain knowledge
+- Copy-pasting the same checklist into multiple skill files instead of centralizing it in `domain-profiles/`
+- Adding new profile fields without updating the schema or the consuming skills
+- Creating a new top-level skill before confirming that it owns a distinct artifact and routing value
+
+Validation after specialization:
+
+```bash
+python3 scripts/validate_research_standard.py --strict
+python3 -m unittest tests.test_orchestrator_workflows -v
+```
+
+If the specialization affects runtime behavior, also do one small manual spot check:
+- run `code-build` or `task-run` with the target domain
+- verify that the generated output actually reflects the new checklist, diagnostics, and reporting norms
+
 ## 2.1) Should This Become a New Top-Level Skill?
 
 Before adding a new file under `skills/`, run this filter:

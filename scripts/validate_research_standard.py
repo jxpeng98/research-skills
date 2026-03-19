@@ -78,6 +78,68 @@ WORKFLOW_TASK_EXPECTATIONS = {
     ".agent/workflows/synthesize.md": {"E1", "E2", "E3", "E4", "E5"},
     ".agent/workflows/proofread.md": {"J1", "J2", "J3", "J4"},
 }
+STAGE_I_TEMPLATE_EXPECTATIONS = {
+    "skills/I_code/code-specification.md": [
+        "template_type: code_specification",
+        '"task_id": "I5"',
+        '"primary_artifact": "code/code_specification.md"',
+        "```json",
+    ],
+    "skills/I_code/planning/code-specification.md": [
+        "template_type: code_specification",
+        '"task_id": "I5"',
+        '"primary_artifact": "code/code_specification.md"',
+        "```json",
+    ],
+    "skills/I_code/code-planning.md": [
+        "template_type: code_plan",
+        '"task_id": "I6"',
+        '"plan_artifact": "code/plan.md"',
+        "```json",
+    ],
+    "skills/I_code/planning/code-planning.md": [
+        "template_type: code_plan",
+        '"task_id": "I6"',
+        '"plan_artifact": "code/plan.md"',
+        "```json",
+    ],
+    "skills/I_code/code-execution.md": [
+        "template_type: performance_profile",
+        '"task_id": "I7"',
+        '"performance_artifact": "code/performance_profile.md"',
+        "```json",
+    ],
+    "skills/I_code/run/code-execution.md": [
+        "template_type: performance_profile",
+        '"task_id": "I7"',
+        '"performance_artifact": "code/performance_profile.md"',
+        "```json",
+    ],
+    "skills/I_code/reproducibility-auditor.md": [
+        "template_type: reproducibility_audit",
+        '"task_id": "I4"',
+        '"audit_artifact": "code/reproducibility_audit.md"',
+        "```json",
+    ],
+    "skills/I_code/qa/reproducibility-auditor.md": [
+        "template_type: reproducibility_audit",
+        '"task_id": "I4"',
+        '"audit_artifact": "code/reproducibility_audit.md"',
+        "```json",
+    ],
+    "skills/I_code/code-review.md": [
+        "template_type: code_review",
+        '"task_id": "I8"',
+        '"review_artifact": "code/code_review.md"',
+        "```json",
+    ],
+    "skills/I_code/qa/code-review.md": [
+        "template_type: code_review",
+        '"task_id": "I8"',
+        '"review_artifact": "code/code_review.md"',
+        "```json",
+    ],
+}
 RELEASE_NOTE_FILE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
 
 
@@ -2041,6 +2103,19 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             )
 
 
+def validate_stage_i_templates(root: Path, report: ValidationReport) -> None:
+    for relative_path, snippets in STAGE_I_TEMPLATE_EXPECTATIONS.items():
+        content = read_text(root, relative_path, report)
+        if not content:
+            continue
+        for snippet in snippets:
+            report.check(
+                snippet in content,
+                f"{relative_path} includes {snippet}",
+                f"{relative_path} is missing Stage-I template snippet: {snippet}",
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate cross-model research workflow standardization consistency."
@@ -2078,6 +2153,7 @@ def main() -> int:
     validate_ci_workflow(root, report)
     validate_release_artifacts(root, report)
     validate_guides(root, report)
+    validate_stage_i_templates(root, report)
     validate_docs(root, report)
 
     total_failed = len(report.errors)

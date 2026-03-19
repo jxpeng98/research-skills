@@ -8,6 +8,8 @@ PROJECT_DIR="$(pwd)"
 OVERWRITE=0
 DRY_RUN=0
 RUN_DOCTOR=0
+INSTALL_CLI=0
+CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
 
 # ── ANSI colors (respects NO_COLOR) ──────────────────────────────────────────
 if [[ -z "${NO_COLOR:-}" ]] && [[ -t 1 ]]; then
@@ -56,6 +58,9 @@ Options:
   --target <codex|claude|gemini|all>   Install target (default: all)
   --mode <copy|link>                   Install mode (default: copy)
   --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
+  --install-cli                        Install shell CLI commands (`research-skills`, `rsk`, `rsw`)
+  --no-cli                             Skip shell CLI installation
+  --cli-dir <path>                     Directory for shell CLI binaries (default: RESEARCH_SKILLS_BIN_DIR or ~/.local/bin)
   --overwrite                           Overwrite existing installed files
   --doctor                              Run orchestrator doctor after install
   --dry-run                             Print actions without writing files
@@ -65,6 +70,7 @@ Environment overrides:
   CODEX_HOME        Default: $HOME/.codex
   CLAUDE_CODE_HOME  Default: $HOME/.claude
   GEMINI_HOME       Default: $HOME/.gemini
+  RESEARCH_SKILLS_BIN_DIR Default: $HOME/.local/bin
 EOF
 }
 
@@ -87,7 +93,73 @@ ensure_dir() {
 }
 
 resolve_abs() {
-  python3 -c 'import os,sys; print(os.path.abspath(os.path.expanduser(sys.argv[1])))' "$1"
+  local raw="${1:-}"
+  local path="$raw"
+  local IFS='/'
+  local -a parts stack
+  local part
+
+  if [[ -z "$path" ]]; then
+    return 1
+  fi
+
+  case "$path" in
+    "~") path="$HOME" ;;
+    "~/"*) path="$HOME/${path#~/}" ;;
+  esac
+
+  if [[ "$path" != /* ]]; then
+    path="$PWD/$path"
+  fi
+
+  read -r -a parts <<< "$path"
+  stack=()
+  for part in "${parts[@]}"; do
+    case "$part" in
+      ""|".")
+        continue
+        ;;
+      "..")
+        if [[ ${#stack[@]} -gt 0 ]]; then
+          unset 'stack[${#stack[@]}-1]'
+        fi
+        ;;
+      *)
+        stack+=("$part")
+        ;;
+    esac
+  done
+
+  if [[ ${#stack[@]} -eq 0 ]]; then
+    printf '/\n'
+    return 0
+  fi
+
+  printf '/%s' "${stack[0]}"
+  for part in "${stack[@]:1}"; do
+    printf '/%s' "$part"
+  done
+  printf '\n'
+}
+
+has_python3() {
+  command -v python3 >/dev/null 2>&1
+}
+
+path_contains_dir() {
+  local target="$1"
+  local entry
+  local expanded
+
+  IFS=':' read -r -a path_entries <<< "${PATH:-}"
+  expanded="$(resolve_abs "$target")"
+  for entry in "${path_entries[@]}"; do
+    [[ -n "$entry" ]] || continue
+    if [[ "$(resolve_abs "$entry")" == "$expanded" ]]; then
+      return 0
+    fi
+  done
+  return 1
 }
 
 # ── Core copy logic (silent – callers handle display) ────────────────────────
@@ -131,6 +203,60 @@ copy_item_display() {
     2) skip "$label" "$dest (use --overwrite)" ;;
   esac
   return 0
+}
+
+set_executable_if_present() {
+  local path="$1"
+  if [[ -e "$path" && ! -L "$path" ]]; then
+    run_cmd chmod +x "$path"
+  fi
+}
+
+install_alias_link() {
+  local target_path="$1"
+  local dest="$2"
+
+  if [[ -e "$dest" || -L "$dest" ]]; then
+    if [[ "$OVERWRITE" -ne 1 ]]; then
+      skip "Alias" "$dest (use --overwrite)"
+      return 0
+    fi
+    run_cmd rm -rf "$dest"
+  fi
+
+  ensure_dir "$(dirname "$dest")"
+  run_cmd ln -s "$target_path" "$dest"
+  ok "Alias" "$dest"
+}
+
+install_cli_assets() {
+  local cli_src="$ROOT_DIR/scripts/research_skills_cli.sh"
+  local bootstrap_src="$ROOT_DIR/scripts/bootstrap_research_skill.sh"
+  local cli_dest="$CLI_DIR/research-skills"
+  local bootstrap_dest="$CLI_DIR/research-skills-bootstrap"
+
+  if [[ ! -f "$cli_src" ]]; then
+    err "Missing shell CLI source: $cli_src"
+    return 1
+  fi
+  if [[ ! -f "$bootstrap_src" ]]; then
+    err "Missing bootstrap source: $bootstrap_src"
+    return 1
+  fi
+
+  section "Shell CLI"
+  copy_item_display "$cli_src" "$cli_dest" "CLI"
+  set_executable_if_present "$cli_dest"
+  copy_item_display "$bootstrap_src" "$bootstrap_dest" "Bootstrap"
+  set_executable_if_present "$bootstrap_dest"
+  install_alias_link "$cli_dest" "$CLI_DIR/rsk"
+  install_alias_link "$cli_dest" "$CLI_DIR/rsw"
+
+  if path_contains_dir "$CLI_DIR"; then
+    info "cli dir on PATH: $CLI_DIR"
+  else
+    warn "CLI installed to $CLI_DIR but this directory is not on PATH."
+  fi
 }
 
 copy_workflows_for_claude() {
@@ -201,6 +327,19 @@ while [[ $# -gt 0 ]]; do
       PROJECT_DIR="$2"
       shift 2
       ;;
+    --install-cli)
+      INSTALL_CLI=1
+      shift
+      ;;
+    --no-cli)
+      INSTALL_CLI=0
+      shift
+      ;;
+    --cli-dir)
+      [[ $# -ge 2 ]] || { echo "Missing value for --cli-dir" >&2; exit 2; }
+      CLI_DIR="$2"
+      shift 2
+      ;;
     --overwrite)
       OVERWRITE=1
       shift
@@ -244,6 +383,7 @@ case "$MODE" in
 esac
 
 PROJECT_DIR="$(resolve_abs "$PROJECT_DIR")"
+CLI_DIR="$(resolve_abs "$CLI_DIR")"
 SKILL_SRC="$ROOT_DIR/research-paper-workflow"
 if [[ ! -f "$SKILL_SRC/SKILL.md" ]]; then
   echo "Missing skill source: $SKILL_SRC/SKILL.md" >&2
@@ -259,6 +399,9 @@ printf "\n${C_BOLD}Research Skills Installer${C_RESET}\n"
 info "source:  $SKILL_SRC"
 info "project: $PROJECT_DIR"
 info "target:  $TARGET  |  mode: $MODE"
+if [[ "$INSTALL_CLI" -eq 1 ]]; then
+  info "cli:     install -> $CLI_DIR"
+fi
 
 # ── Install targets ──────────────────────────────────────────────────────────
 if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
@@ -283,13 +426,19 @@ if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
   write_gemini_quickstart
 fi
 
+if [[ "$INSTALL_CLI" -eq 1 ]]; then
+  install_cli_assets
+fi
+
 # ── Doctor ───────────────────────────────────────────────────────────────────
 if [[ "$RUN_DOCTOR" -eq 1 ]]; then
   section "Doctor"
-  DOCTOR_OUTPUT=$(run_cmd python3 -m bridges.orchestrator doctor --cwd "$PROJECT_DIR" 2>&1) || true
-  
-  # Parse JSON output and render human-friendly summary
-  if command -v python3 &>/dev/null; then
+  if ! has_python3; then
+    warn "Skipping doctor: python3 not found. Install/update still completed."
+  else
+    DOCTOR_OUTPUT=$(run_cmd python3 -m bridges.orchestrator doctor --cwd "$PROJECT_DIR" 2>&1) || true
+
+    # Parse JSON output and render human-friendly summary
     python3 -c "
 import sys, json
 
@@ -360,8 +509,6 @@ if recs:
     for r in recs:
         print(f'  {DIM}•  {r}{RESET}')
 " <<< "$DOCTOR_OUTPUT"
-  else
-    echo "$DOCTOR_OUTPUT"
   fi
 fi
 
@@ -372,4 +519,7 @@ case "$TARGET" in
   *)    printf " ${C_DIM}($TARGET)${C_RESET}" ;;
 esac
 printf "\n"
+if [[ "$INSTALL_CLI" -eq 1 ]] && ! path_contains_dir "$CLI_DIR"; then
+  printf "  ${C_YELLOW}Add %s to PATH to use research-skills / rsk / rsw.${C_RESET}\n" "$CLI_DIR"
+fi
 printf "  ${C_DIM}Restart Codex / Claude Code / Gemini CLI to activate.${C_RESET}\n\n"

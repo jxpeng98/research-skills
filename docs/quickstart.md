@@ -75,6 +75,8 @@ Common options:
 - `--skills-strict`: block if required internal skill specs are missing
 - `--triad`: request a third independent audit when available
 - `--profile`, `--draft-profile`, `--review-profile`, `--triad-profile`: select execution profiles
+- `--focus-output` and `--output-budget`: reduce auxiliary artifact spread for this run by keeping only a smaller active output set
+- `--research-depth deep` plus `--max-rounds`: force a narrower, more adversarial evidence-expansion and revision process
 
 ## 6. Use Claude Code Commands When You Want UX
 
@@ -97,6 +99,6 @@ These commands are entry UX only. The canonical task and artifact truth still li
 Use this guide for operation.
 Switch to maintainer docs only when you are changing the system itself:
 
-- Architecture and layer model: `README.md`
-- Edit rules and decision boundaries: `docs/conventions.md`
-- Where to modify specific behavior: `guides/advanced/extend-research-skills.md`
+- Architecture and layer model: [Architecture](/architecture)
+- Edit rules and decision boundaries: [Conventions](/conventions)
+- Where to modify specific behavior: [Extend Research Skills](/advanced/extend-research-skills)

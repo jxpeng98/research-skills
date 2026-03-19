@@ -83,6 +83,17 @@ Common modes:
 - `task-run`: one canonical task with contract-driven review flow
 - `team-run`: one task, multiple work units, then merge/review
 
+## Design Lineage And Related Projects
+
+Two external projects are especially relevant to how this repository evolved:
+
+- [fengshao1227/ccg-workflow](https://github.com/fengshao1227/ccg-workflow)
+  - Important influence: strict separation between spec, planning, execution, and review.
+  - Important difference: CCG is a general software-engineering collaboration system, while `research-skills` localizes that discipline into academic research workflows and Stage-I tasks `I5 -> I6 -> I7 -> I8`.
+- [GuDaStudio/skills](https://github.com/GuDaStudio/skills)
+  - Important influence: packaging cross-model collaboration capabilities as installable Claude-oriented skills.
+  - Important difference: `GuDaStudio/skills` is a general-purpose skill collection, while `research-skills` is organized around one canonical contract, one task catalog, and one `RESEARCH/[topic]/` artifact tree.
+
 ## Where To Go Next
 
 - Need edit rules and placement guidance: [Conventions](/conventions)

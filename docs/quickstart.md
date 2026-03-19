@@ -2,6 +2,18 @@
 
 This guide focuses on stable user-facing entrypoints. You do not need to understand `skills/`, `roles/`, or `pipelines/` to start using the system.
 
+::: warning Full Functionality Requirement
+If you want the full system, install and configure all of the following:
+
+- `python3`
+- `codex`
+- `claude`
+- `gemini`
+- `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`
+
+Without them, you can still install workflow assets and use shell `rsk check|upgrade|align`, but `doctor`, validators, tests, and full orchestrator execution will be limited.
+:::
+
 ## 1. Pick an Entry Mode
 
 Use one of these stable entrypoints:

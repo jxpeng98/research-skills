@@ -1,12 +1,13 @@
 # Academic Deep Research Skills
 
-一套专为 Claude Code 设计的深化学术研究技能系统。提供从系统性文献综述、数据提取、理论框架构建到论文起草与评审的全套流水线。
+一套面向 Codex、Claude Code 与 Gemini 的契约驱动学术工作流系统，把安装、任务规划、文献工作、论文写作与严格 Stage-I 研究代码执行统一到同一套标准合同之下。
 
 <div align="center">
   <a href="#-快速开始-0--1">🚀 快速开始</a> | 
-  <a href="guides/advanced/cli-reference_CN.md">💻 CLI 命令大全</a> | 
-  <a href="guides/advanced/agent-skill-collaboration_CN.md">🤝 代理人协同指南</a> | 
-  <a href="guides/advanced/extend-research-skills_CN.md">🛠️ 如何二次开发/贡献</a> | 
+  <a href="docs/zh/reference/cli.md">💻 CLI 命令大全</a> | 
+  <a href="docs/zh/architecture.md">🏗 系统架构</a> | 
+  <a href="docs/zh/advanced/agent-skill-collaboration.md">🤝 代理人协同指南</a> | 
+  <a href="docs/zh/advanced/extend-research-skills.md">🛠️ 如何二次开发/贡献</a> | 
   <a href="TODO_ROADMAP.md">🗺️ Roadmap 蓝图</a>
 </div>
 
@@ -22,53 +23,176 @@
 - ✍️ **学术写作辅助** - 严格对齐各领域的学术语言规范
 - 🧑‍⚖️ **多角色专家互审** - 平行独立审稿模拟（Methodologist, Domain Expert, "Reviewer 2"）
 - 🔎 **AI 去痕与终审校对** - 多 AI 协作去 AI 化改写、降重检测、终审校对
-- 🚀 **CCG 强约束代码引擎** - 需求/规划/执行/Review 四步严格拆分的可靠研究代码实施
+- 🚀 **严格 Stage-I 学术代码流** - `I5 -> I6 -> I7 -> I8` 结构化 spec/plan/execute/review 产物，以及定向 follow-up 重跑
 - 🤖 **多模型（Multi-Model）协同** - 混合调度 Codex、Claude、Gemini 跨阶段作业
 - ⚡ **Token 深度优化** - 采用分层结构，指令 Token 开销降低 ~90%
+
+> [!WARNING]
+> 如果你要使用“完整功能集”，需要真实安装并配置：
+> `python3`、`codex`、`claude`、`gemini` 四个运行时入口，以及对应的 `OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`GOOGLE_API_KEY`。
+> 如果缺少这些依赖，你仍然可以完成 shell 安装和 `rsk check|upgrade|align`，但 `doctor`、validator、tests 和完整 orchestrator 多模型执行链会受限或不可用。
+
+## 设计借鉴与相关项目
+
+这个仓库不是凭空长出来的，两个外部项目对它的设计方向尤其重要：
+
+- [fengshao1227/ccg-workflow](https://github.com/fengshao1227/ccg-workflow)
+  - 本项目借鉴了它“强阶段隔离”的流程思想：spec -> plan -> execute -> review。
+  - 也借鉴了“通过流程约束减少模型即兴发挥”的思路，而不是把整个任务塞进一个大 prompt。
+  - 但两者目标不同：CCG 更偏工程开发协作；本仓库把这些思想本地化成学术场景里的 `I5 -> I6 -> I7 -> I8` Stage-I 任务，以及 `RESEARCH/[topic]/` 下的合同化产物。
+- [GuDaStudio/skills](https://github.com/GuDaStudio/skills)
+  - 这个项目对 Claude-oriented skill 打包方式，以及 Codex / Gemini 协作能力的可安装化，提供了很好的参考。
+  - 但本仓库的重点不同：`GuDaStudio/skills` 更像通用协作 skill 集合，而 `research-skills` 更强调“单一研究合同 + 单一任务目录 + 单一产物树”的学术工作流。
 
 ---
 
 ## 🚀 快速开始 (0 → 1)
 
-这是熟悉并在你的项目中运行该系统最快的方式。
+这是从“还没装”到“开始跑 canonical task”的最短稳定路径。
 
-### 1. 安装 Skills（推荐方式）
+需要细节时，优先看已经整理好的文档入口：
 
-更通用的安装方式是直接使用 shell bootstrap，不依赖 Python，只需要 `bash` 和 `curl`/`wget`、`tar`：
+- [快速开始](docs/zh/quickstart.md)
+- [安装指南](docs/zh/guide/install.md)
+- [CLI 参考](docs/zh/reference/cli.md)
+- [系统架构](docs/zh/architecture.md)
+
+### 1. 先选入口
+
+稳定入口现在有三类：
+
+- `.agent/workflows/*.md` 里的 workflow 命令，例如 `/paper`、`/lit-review`、`/paper-write`、`/code-build`
+- 安装 / 升级 CLI：`research-skills`、`rsk`、`rsw`
+- Orchestrator CLI：`python3 -m bridges.orchestrator ...`
+
+### 2. 安装或刷新系统
+
+最通用的安装方式是 shell bootstrap，不依赖 Python，只需要 `bash`、`curl`/`wget`、`tar`：
 
 ```bash
 cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
-它会同时安装 workflow 资产，以及 shell CLI：`research-skills`、`rsk`、`rsw`，默认落到 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`。
+它会安装：
 
-如果你的机器已经有 Python，仍然可以用 `pipx` 安装升级器 CLI：
+- Codex / Claude Code / Gemini 的 workflow 资产
+- 项目集成文件，例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`
+- shell CLI：`research-skills`、`rsk`、`rsw`，默认落到 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
+
+如果机器已经有 Python，且你只想继续使用 Python 分发的升级器 CLI，也可以：
 
 ```bash
 pipx install research-skills-installer
 ```
 
-安装完成后，你可以使用 `research-skills` 命令，或短别名 `rsk` 和 `rsw`。
-
-### 2. 初始化你的项目环境
-运行 upgrade 指令，会将最新的技能包、工作流文件安全地拷贝到当前项目以及本地代理工具（如 `~/.claude/`）的组件目录中。
+从项目目录刷新已有安装时：
 
 ```bash
-cd /path/to/your/project
 rsk upgrade --target all --project-dir . --doctor
 ```
 
-*提示：你可以随时使用 `rsk check` 来检测上游是否有新版本更新。*
+如果你已经跑过上面的 shell bootstrap，后续刷新时重新执行 bootstrap 或 `rsk upgrade --overwrite` 即可。
 
-如果你已经使用了上面的 shell bootstrap，那么这一步已经完成；后续需要刷新安装内容时，重新执行并加上 `--overwrite` 即可。
+*Python 边界：shell 版 `rsk check|upgrade|align` 不需要 Python；`--doctor`、`python3 -m bridges.orchestrator ...`、validator 和 tests 仍然需要 `python3`。*
 
-*注意：shell 版 `rsk check|upgrade|align` 不需要 Python；`--doctor` 和 orchestrator 相关命令仍然需要 `python3`。*
+### 3. 先做环境检查
 
-### 3. 开始跑工作流
-在项目目录打开终端，Claude Code 会自动读取挂载的 `RESEARCH/` 相关命令集。
+如果机器有 Python，建议在跑大任务前先做稳定预检：
 
-如果你正在使用 **Claude Code**，请直接输入以下快捷指令：
+```bash
+python3 -m bridges.orchestrator doctor --cwd .
+python3 scripts/validate_research_standard.py --strict
+```
+
+其中：
+
+- `doctor` 负责检查运行时 CLI、API key、MCP wiring
+- validator 负责检查仓库级 contract / schema 一致性
+
+### 4. 先 plan 再 run
+
+先看任务依赖、产物路径和路由：
+
+```bash
+python3 -m bridges.orchestrator task-plan \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd .
+```
+
+`task-plan` 会展示：
+
+- contract outputs
+- 前置任务
+- functional owner 与 handoff trace
+- runtime plan（`draft` / `review` / `fallback`）
+
+### 5. 运行 canonical research task
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd . \
+  --triad
+```
+
+常用控制项：
+
+- `--focus-output` 与 `--output-budget`：缩小 active outputs，减少辅助文件扩散
+- `--research-depth deep` 配合 `--max-rounds`：强制更窄、更有对抗性的证据扩展与修订流程
+- `--only-target <id>`：对结构化 Stage-I 任务 `I4`-`I8`，回读现有 artifact，并且只重跑指定 actionable target
+
+示例：只重跑一个 planning step
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id I6 \
+  --paper-type methods \
+  --topic llm-bias \
+  --cwd . \
+  --only-target S1
+```
+
+### 6. 运行严格学术代码流
+
+当代码本身是研究产物，而不是泛工程实现时，用 `code-build`：
+
+```bash
+python3 -m bridges.orchestrator code-build \
+  --method "Staggered DID" \
+  --topic policy-effects \
+  --domain econ \
+  --focus full \
+  --cwd .
+```
+
+带上 `--topic` 后，`code-build` 会进入严格 Stage-I 路径：
+
+- `I5` code specification
+- `I6` zero-decision planning
+- `I7` execution + performance packaging
+- `I8` review
+
+并且支持 targeted follow-up：
+
+```bash
+python3 -m bridges.orchestrator code-build \
+  --method "Transformer Fine-Tuning" \
+  --topic llm-bias \
+  --domain cs \
+  --focus full \
+  --only-target I5:decision-1 \
+  --only-target I8:P1-01 \
+  --cwd .
+```
+
+### 7. 需要 slash-command UX 时再用 workflow 命令
+
+如果你的客户端已经挂载了 workflow 入口 markdown，可以直接用这些命令：
 
 | 命令 | 用途 | 示例 |
 |------|------|------|
@@ -86,11 +210,6 @@ rsk upgrade --target all --project-dir . --doctor
 | `/rebuttal` | 审稿意见回复与矩阵生成 | `/rebuttal ai-in-education` |
 | `/code-build` | 严格 Stage-I 学术代码流 | `/code-build "Staggered DID" --topic policy-effects --domain econ --focus full` |
 | `/proofread` | AI 去痕与终审校对 | `/proofread ai-in-education` |
-
-如果你**通过纯命令行调度编排**（执行指定的 Task ID）：
-```bash
-python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd . --triad
-```
 
 ---
 
@@ -343,7 +462,7 @@ rsk align --repo jxpeng98/research-skills
 当你执行在客户端执行安装时，获取的仅仅是纯“骨架”能力（比如如何做系统性综述，如何规划提纲）。 
 
 实际执行时，特定的检查清单（如经济学的平行趋势检验、生物的 IRB 安全条例）均通过 `--domain` 以 **动态按需挂载 (Runtime Injection)** 方式实现。
-例如，使用 `/code-build --domain economics` 时，系统在运行时只读取 `skills/domain-profiles/economics.yaml`，完全屏蔽不相关的领域代码库与Prompt。这种设计保持了底层的极致精简并杜绝了 Prompt 污染。
+例如，使用 `/code-build --domain econ` 时，系统会在运行时加载 `skills/domain-profiles/economics.yaml`，应用经济学专属诊断，并屏蔽不相关领域 profile。这种设计保持底层安装轻量，同时避免 Prompt 污染。
 
 ---
 
@@ -386,7 +505,7 @@ MCP 证据采集                  Agent 运行时路由
            质量门 + 产物落盘输出
               -> RESEARCH/[topic]/...
 ```
-*(详情请参考 [guides/advanced/agent-skill-collaboration.md](guides/advanced/agent-skill-collaboration.md))*
+*(详情请参考 [docs/zh/advanced/agent-skill-collaboration.md](docs/zh/advanced/agent-skill-collaboration.md))*
 
 ---
 
@@ -396,20 +515,26 @@ MCP 证据采集                  Agent 运行时路由
 *(需预先在环境变量配置了 `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`)*
 
 ```bash
+# 先看任务前置、产物和路由
+python3 -m bridges.orchestrator task-plan --task-id F3 --paper-type empirical --topic my-topic --cwd .
+
 # 并发分析：三端平行背靠背审查，并由 Claude 做 Summary
-python -m bridges.orchestrator parallel --prompt "分析数据的可靠性约束" --cwd . --summarizer claude
+python3 -m bridges.orchestrator parallel --prompt "分析数据的可靠性约束" --cwd . --summarizer claude
 
 # 契约执行：强制按照 F3 的要求调度
-python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
+
+# 严格 Stage-I 学术代码流
+python3 -m bridges.orchestrator code-build --method "Staggered DID" --topic my-topic --domain econ --focus full --cwd .
 
 # 步进交互模式 (Interactive Mode)：在调用任何 Agent 前暂停并提示输入 Y/n 确认
-python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
 
 # MCP环境严格测试：如果没有相关搜素工具环境则强制阻挡
-python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
+python3 -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
 
 # 收敛辅助文件，并强化证据深度/修订深度
-python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . \
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . \
   --focus-output manuscript/manuscript.md \
   --research-depth deep \
   --draft-profile deep-research \
@@ -417,6 +542,12 @@ python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --to
   --triad-profile deep-research \
   --triad \
   --max-rounds 4
+
+# 只重开指定 Stage-I target
+python3 -m bridges.orchestrator code-build --method "Transformer Fine-Tuning" --topic llm-bias --domain cs --focus full \
+  --only-target I5:decision-1 \
+  --only-target I8:P1-01 \
+  --cwd .
 ```
 
 `task-run` 的几个关键控制项：
@@ -425,6 +556,7 @@ python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --to
 - `--output-budget <n>`：限制本次运行最多处理多少个 contract outputs。
 - `--research-depth deep`：显式要求证据扩展、反例搜索、边界条件检查与更窄结论。
 - `--max-rounds <n>`：提高 review 阻断后的修订轮数。
+- `--only-target <id>`：对 Stage-I 结构化产物，回读已有 artifact，并且只重跑指定 actionable target。
 - 内置 profiles：`focused-delivery`、`deep-research`、`strict-review`、`rapid-draft`、`default`。
 
 ---
@@ -475,7 +607,7 @@ python3 scripts/validate_project_artifacts.py --cwd ./project  --topic <topic> -
 research-skills/
 ├── standards/                # 核心合同真源：workflow/capability map
 ├── research-paper-workflow/  # 各大平台无缝挂载的便携 Skill 技能包
-├── .agent/workflows/         # Claude Code 挂载的斜杠 / 指令文件
+├── .agent/workflows/         # 安装后的 workflow 入口 markdown / slash-command surface
 ├── bridges/                  # Python Orchestrator 多端路由通信网桥
 ├── skills/                   # 系统全系学术卡片
 │   ├── [...]                 # 对应阶段 A 到 J

@@ -2,6 +2,18 @@
 
 这一页是 `docs/quickstart.md` 的中文整理版，面向“先跑起来，再决定是否看维护者文档”的使用者。
 
+::: warning 完整功能依赖
+如果你要使用完整功能集，请确保已经安装并配置：
+
+- `python3`
+- `codex`
+- `claude`
+- `gemini`
+- `OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`GOOGLE_API_KEY`
+
+如果缺少这些依赖，你仍然可以安装 workflow 资产并使用 shell `rsk check|upgrade|align`，但 `doctor`、validator、tests 与完整 orchestrator 执行链会受限。
+:::
+
 ## 1. 先选入口
 
 你通常只需要在下面三种入口里选一种：

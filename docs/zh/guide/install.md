@@ -1,5 +1,19 @@
 # 多端客户端安装指南 (Codex / Claude Code / Gemini)
 
+::: warning 完整功能依赖
+通用安装本身不依赖 Python，但完整功能依赖。
+
+如果你要启用完整系统，请安装并配置：
+
+- `python3`
+- `codex`
+- `claude`
+- `gemini`
+- `OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`GOOGLE_API_KEY`
+
+如果缺少这些依赖，安装流程和 shell `rsk` 维护命令仍可使用，但 orchestrator 执行、`doctor`、validator 和完整多模型流程会不完整。
+:::
+
 ## 1. 通用安装方式（不依赖 Python）
 
 最通用的安装方式是 shell bootstrap。它会下载指定 release 的压缩包，并执行其中自带的安装脚本：

@@ -1,5 +1,19 @@
 # Multi-Client Install Guide (Codex / Claude Code / Gemini)
 
+::: warning Full Functionality Requirement
+Portable install does not require Python, but full functionality does.
+
+For the complete system, install and configure:
+
+- `python3`
+- `codex`
+- `claude`
+- `gemini`
+- `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`
+
+Without them, installation and shell `rsk` maintenance commands still work, but orchestrator execution, `doctor`, validators, and full multi-model flows will be incomplete.
+:::
+
 ## 1. Portable Install (No Python Required)
 
 The most portable install path is the shell bootstrapper. It downloads the selected release archive and runs the bundled installer:

@@ -1,12 +1,13 @@
 # Academic Deep Research Skills
 
-A systematic research workflow system for Codex, Claude Code, and Gemini, covering literature review, paper analysis, gap identification, empirical design, writing, and submission packaging.
+A contract-driven academic workflow system for Codex, Claude Code, and Gemini, covering installation, task planning, literature work, manuscript production, and strict Stage-I research code execution under one canonical workflow contract.
 
 <div align="center">
   <a href="#-quick-start-0--1-navigation">🚀 Quick Start</a> | 
-  <a href="guides/advanced/cli-reference.md">💻 CLI Commands</a> | 
-  <a href="guides/advanced/agent-skill-collaboration.md">🤝 Agent Collaboration</a> | 
-  <a href="guides/advanced/extend-research-skills.md">🛠️ How to Extend / Contribute</a> | 
+  <a href="docs/reference/cli.md">💻 CLI Reference</a> | 
+  <a href="docs/architecture.md">🏗 Architecture</a> | 
+  <a href="docs/advanced/agent-skill-collaboration.md">🤝 Agent Collaboration</a> | 
+  <a href="docs/advanced/extend-research-skills.md">🛠️ How to Extend / Contribute</a> | 
   <a href="TODO_ROADMAP.md">🗺️ Roadmap</a>
 </div>
 
@@ -22,52 +23,176 @@ A systematic research workflow system for Codex, Claude Code, and Gemini, coveri
 - ✍️ **Academic Writing Assistance** - Standard-compliant formatting
 - 🧑‍⚖️ **Multi-Persona Peer Review** - Parallel, independent cross-reviews (Methodologist, Domain Expert, "Reviewer 2")
 - 🔎 **AI De-fingerprinting & Proofread** - Multi-AI collaborative de-AI rewriting, similarity reduction, and final proofread
-- 🚀 **CCG Code Execution** - Strict Spec -> Plan -> Execute -> Review isolation for code reliability
+- 🚀 **Strict Stage-I Academic Code Flow** - `I5 -> I6 -> I7 -> I8` with structured spec/plan/execute/review artifacts and targeted follow-up
 - 🛡️ **Iterative Critique Loop (Red Teaming)** - AI self-review and Socratic questioning to continuously narrow down and refine outputs
 - 🤖 **Multi-Model Collaboration** - Codex + Claude + Gemini coordination across research stages
 - ⚡ **Token Optimized** - Layered skills architecture (~90% reduction)
+
+> [!WARNING]
+> Full functionality requires a real Python runtime plus all three model CLIs in `PATH`:
+> `python3`, `codex`, `claude`, and `gemini`.
+> You also need the matching API credentials (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`) for orchestrator-driven multi-model execution.
+> Without them, you can still install assets and use shell `rsk check|upgrade|align`, but `doctor`, validators, tests, and the full orchestrator flow will be partial or unavailable.
+
+## Design Lineage And Related Projects
+
+This repository is not built in isolation. Two external projects are especially relevant to its design direction:
+
+- [fengshao1227/ccg-workflow](https://github.com/fengshao1227/ccg-workflow)
+  - We borrow the workflow idea of strict phase separation: spec -> plan -> execute -> review.
+  - We also borrow the habit of constraining execution instead of letting a single prompt improvise end to end.
+  - The difference is scope: CCG is primarily a software-engineering collaboration system, while this repository localizes those ideas into an academic workflow and turns them into canonical Stage-I tasks `I5 -> I6 -> I7 -> I8` plus contract-bound outputs under `RESEARCH/[topic]/`.
+- [GuDaStudio/skills](https://github.com/GuDaStudio/skills)
+  - This project is a useful reference for packaging Claude-oriented collaboration skills and for making Codex / Gemini cooperation installable as reusable skill assets.
+  - The difference is packaging model and target domain: `GuDaStudio/skills` is a general collaboration skill collection, while `research-skills` uses one research contract, one artifact tree, and one task catalog for academic work.
 
 ---
 
 ## Quick Start (0 → 1 Navigation)
 
-This is the fastest way to understand and run the system. 
+This is the shortest stable path from “nothing installed” to “running a canonical task.”
 
-### 1. Install Skills (Recommended)
+Start with the consolidated docs when you need detail:
 
-For the most portable install path, use the shell bootstrapper. It does not require Python and only needs `bash` plus `curl`/`wget` and `tar`:
+- [Quick Start](docs/quickstart.md)
+- [Install Guide](docs/guide/install.md)
+- [CLI Reference](docs/reference/cli.md)
+- [Architecture](docs/architecture.md)
+
+### 1. Pick an Entry Mode
+
+Use one of these stable entrypoints:
+
+- Workflow commands in `.agent/workflows/*.md` such as `/paper`, `/lit-review`, `/paper-write`, `/code-build`
+- Installer / updater CLI: `research-skills`, `rsk`, `rsw`
+- Orchestrator CLI: `python3 -m bridges.orchestrator ...`
+
+### 2. Install or Refresh the System
+
+For the most portable install path, use the shell bootstrapper. It does not require Python and only needs `bash`, `curl`/`wget`, and `tar`:
 
 ```bash
 cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
-This installs both the workflow assets and a shell CLI (`research-skills`, `rsk`, `rsw`) into `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`.
+This installs:
 
-If you want the updater CLI and your machine already has Python, you can still use `pipx`:
+- workflow assets for Codex / Claude Code / Gemini
+- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
+- shell CLI commands `research-skills`, `rsk`, `rsw` into `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
+
+If Python is already available and you specifically want the Python-distributed updater CLI:
 
 ```bash
 pipx install research-skills-installer
 ```
 
-This installs the CLI tool (`research-skills`, alias `rsk` or `rsw`).
-
-### 2. Initialize your Project Environment
-Run the upgrade command to copy the latest skills and project workflows into your `~/.claude` (or codex/gemini) directories and into your local project:
+To refresh an existing install from inside a project:
 
 ```bash
-cd /path/to/your/project
 rsk upgrade --target all --project-dir . --doctor
 ```
 
-If you used the shell bootstrap above, this install step is already done. Re-run it with `--overwrite` when you want to refresh the installed assets.
+If you already used the shell bootstrap above, re-run it or `rsk upgrade` with `--overwrite` whenever you want to refresh installed assets.
 
-*Note: shell `rsk check|upgrade|align` work without Python; `--doctor` and orchestrator commands still require `python3`.*
+*Python boundary: shell `rsk check|upgrade|align` do not require Python; `--doctor`, `python3 -m bridges.orchestrator ...`, validators, and tests still require `python3`.*
 
-### 3. Run a Workflow
-In your active project directory, Claude Code will now automatically recognize the `RESEARCH/` commands.
+### 3. Validate Local Readiness
 
-If you are using **Claude Code**, try any of these commands:
+If Python is available, run the stable preflight checks before a larger workflow:
+
+```bash
+python3 -m bridges.orchestrator doctor --cwd .
+python3 scripts/validate_research_standard.py --strict
+```
+
+Use `doctor` for runtime CLIs, API keys, and MCP wiring.
+Use the validator for repo-level contract and schema consistency.
+
+### 4. Plan Before You Run
+
+Inspect prerequisites, output paths, and routing before execution:
+
+```bash
+python3 -m bridges.orchestrator task-plan \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd .
+```
+
+`task-plan` shows:
+
+- contract outputs
+- prerequisite tasks
+- functional owner and handoff trace
+- runtime plan (`draft` / `review` / `fallback`)
+
+### 5. Run a Canonical Research Task
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id F3 \
+  --paper-type empirical \
+  --topic ai-in-education \
+  --cwd . \
+  --triad
+```
+
+Common controls:
+
+- `--focus-output` and `--output-budget`: reduce auxiliary artifact spread by shrinking the active output set
+- `--research-depth deep` plus `--max-rounds`: enforce a narrower, more adversarial evidence-expansion and revision loop
+- `--only-target <id>`: for structured Stage-I tasks `I4`-`I8`, reload the existing artifact and rerun only the selected actionable target
+
+Example: rerun one planning step only
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id I6 \
+  --paper-type methods \
+  --topic llm-bias \
+  --cwd . \
+  --only-target S1
+```
+
+### 6. Run the Strict Academic Code Flow
+
+Use `code-build` when code is a first-class research artifact rather than a generic engineering task:
+
+```bash
+python3 -m bridges.orchestrator code-build \
+  --method "Staggered DID" \
+  --topic policy-effects \
+  --domain econ \
+  --focus full \
+  --cwd .
+```
+
+With `--topic`, `code-build` enters the strict Stage-I path:
+
+- `I5` code specification
+- `I6` zero-decision planning
+- `I7` execution + performance packaging
+- `I8` review
+
+It also supports targeted follow-up:
+
+```bash
+python3 -m bridges.orchestrator code-build \
+  --method "Transformer Fine-Tuning" \
+  --topic llm-bias \
+  --domain cs \
+  --focus full \
+  --only-target I5:decision-1 \
+  --only-target I8:P1-01 \
+  --cwd .
+```
+
+### 7. Use Workflow Commands When You Want Slash-Command UX
+
+If your client is using the installed workflow entry markdowns, try these commands:
 
 | Command | Purpose | Example |
 |---------|---------|---------|
@@ -85,11 +210,6 @@ If you are using **Claude Code**, try any of these commands:
 | `/rebuttal` | Rebuttal / revision response | `/rebuttal ai-in-education` |
 | `/code-build` | Strict Stage-I academic code flow | `/code-build "Staggered DID" --topic policy-effects --domain econ --focus full` |
 | `/proofread` | AI de-fingerprinting & final proofread | `/proofread ai-in-education` |
-
-If you are using the **CLI directly**, orchestrate a specific Task ID:
-```bash
-python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic <topic> --cwd . --triad
-```
 
 ---
 
@@ -341,7 +461,7 @@ By design, this framework strictly separates the "generic research workflow pipe
 When you install `rsk`, you only install the generic workflow skeleton (e.g., how to run a Literature Review or write an Outline).
 
 Discipline-specific knowledge (like Economics libraries, DID methodology checks, or Biology IRB templates) is loaded dynamically at **Runtime** via the `--domain` parameter. 
-For example, using `/code-build --domain economics` tells the system to only read from `skills/domain-profiles/economics.yaml`, applying Economics-specific diagnostics and entirely bypassing unrelated profiles. This keeps the base installation incredibly lightweight and prevents prompt pollution.
+For example, using `/code-build --domain econ` tells the system to load `skills/domain-profiles/economics.yaml` at runtime, apply Economics-specific diagnostics, and bypass unrelated profiles. This keeps the base installation lightweight and avoids prompt pollution.
 
 ---
 
@@ -470,7 +590,7 @@ Functional Routing                 Runtime Routing
             -> RESEARCH/[topic]/...
 ```
 
-See [guides/advanced/agent-skill-collaboration.md](guides/advanced/agent-skill-collaboration.md) for more details.
+See [docs/advanced/agent-skill-collaboration.md](docs/advanced/agent-skill-collaboration.md) for more details.
 
 ---
 
@@ -480,24 +600,30 @@ You can coordinate Codex, Claude, and Gemini concurrently for cross-stage resear
 *(Requires API Keys exposed: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`)*
 
 ```bash
+# Inspect task prerequisites and routing before execution
+python3 -m bridges.orchestrator task-plan --task-id F3 --paper-type empirical --topic my-topic --cwd .
+
 # Parallel analysis - triad concurrent analysis + synthesis
-python -m bridges.orchestrator parallel --prompt "Analyze code safety" --cwd . --summarizer claude
+python3 -m bridges.orchestrator parallel --prompt "Analyze code safety" --cwd . --summarizer claude
 
 # Task-run - execute canonical Task ID with capability-map agent routing
-python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd .
 
 # Team-run - research fanout/fanin parallel execution (MVP: B1, H3)
-python -m bridges.orchestrator team-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd .
-python -m bridges.orchestrator team-run --task-id H3 --paper-type empirical --topic my-topic --cwd .
+python3 -m bridges.orchestrator team-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd .
+python3 -m bridges.orchestrator team-run --task-id H3 --paper-type empirical --topic my-topic --cwd .
+
+# Strict Stage-I academic code flow
+python3 -m bridges.orchestrator code-build --method "Staggered DID" --topic my-topic --domain econ --focus full --cwd .
 
 # Interactive Step-by-Step Mode (pauses for Y/n confirmation before agent execution)
-python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . -i
 
 # Enforce strict capabilities
-python -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
+python3 -m bridges.orchestrator task-run --task-id B1 --paper-type systematic-review --topic my-topic --cwd . --mcp-strict
 
 # Reduce artifact sprawl and push for deeper evidence/review
-python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . \
+python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic my-topic --cwd . \
   --focus-output manuscript/manuscript.md \
   --research-depth deep \
   --draft-profile deep-research \
@@ -505,6 +631,12 @@ python -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --to
   --triad-profile deep-research \
   --triad \
   --max-rounds 4
+
+# Reopen only selected Stage-I targets
+python3 -m bridges.orchestrator code-build --method "Transformer Fine-Tuning" --topic llm-bias --domain cs --focus full \
+  --only-target I5:decision-1 \
+  --only-target I8:P1-01 \
+  --cwd .
 ```
 
 Useful knobs for `task-run`:
@@ -513,6 +645,7 @@ Useful knobs for `task-run`:
 - `--output-budget <n>`: cap how many contract outputs are active in this run.
 - `--research-depth deep`: adds explicit evidence-expansion, contradiction-check, and narrow-claim pressure.
 - `--max-rounds <n>`: increases revision depth after review blocks.
+- `--only-target <id>`: for Stage-I structured artifacts, reload the existing artifact and rerun only the selected actionable target(s).
 - Built-in profiles: `focused-delivery`, `deep-research`, `strict-review`, `rapid-draft`, `default`.
 
 **Execution Modes**
@@ -522,7 +655,7 @@ Useful knobs for `task-run`:
 | `parallel` | Same prompt → multiple agents analyze → synthesis | Open-ended prompt |
 | `task-run` | Single Task ID → serial draft → review → triad | One research task |
 | `team-run` | Single Task ID → fanout workers → merge → review | Multiple work units (MVP: `B1`, `H3`) |
-*(Check out `guides/advanced/cli-reference.md` for a comprehensive list of commands).*
+*(See [docs/reference/cli.md](docs/reference/cli.md) for the full command reference.)*
 
 ---
 
@@ -581,7 +714,7 @@ If you wish to test the legacy installation method, the script is located at: `s
 research-skills/
 ├── standards/                # Canonical workflow contract + capability map
 ├── research-paper-workflow/  # Portable cross-client skill package (distribution surface)
-├── .agent/workflows/         # Claude Code slash-commands
+├── .agent/workflows/         # Installed workflow entry markdowns / slash-command surface
 ├── pipelines/                # Abstract DAGs for paper-type workflows and handoffs
 ├── roles/                    # Functional-agent role configs (research responsibility layer)
 ├── bridges/                  # Runtime orchestration and model adapters

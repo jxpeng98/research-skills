@@ -82,6 +82,17 @@ flowchart TD
 - `task-run`：围绕单个 canonical task 的契约执行链
 - `team-run`：单 task 拆多工作单元，再汇总与审查
 
+## 设计借鉴与相关项目
+
+有两个外部项目对这个仓库的演化尤其重要：
+
+- [fengshao1227/ccg-workflow](https://github.com/fengshao1227/ccg-workflow)
+  - 主要借鉴：把 spec、planning、execution、review 严格拆开。
+  - 主要差异：CCG 偏通用软件工程协作；`research-skills` 把这套纪律本地化到学术研究场景，形成 `I5 -> I6 -> I7 -> I8` 的 Stage-I 代码任务。
+- [GuDaStudio/skills](https://github.com/GuDaStudio/skills)
+  - 主要借鉴：把跨模型协作能力打包成可安装的 Claude-oriented skill。
+  - 主要差异：`GuDaStudio/skills` 更像通用 skill 集合；`research-skills` 则围绕单一合同、单一任务目录和 `RESEARCH/[topic]/` 产物树组织。
+
 ## 下一步去哪里
 
 - 要看修改规则和落点判断：去 [规范约定](/zh/conventions)

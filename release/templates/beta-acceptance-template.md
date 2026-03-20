@@ -1,4 +1,4 @@
-# Beta Acceptance Receipt — {{TAG}}
+# Release Acceptance Receipt — {{TAG}}
 
 - Date: {{DATE}}
 - Release Tag: {{TAG}}
@@ -13,7 +13,7 @@
 
 ## Publish Actions
 
-- [ ] `git tag -a {{TAG}} -m "research-skills beta release"`
+- [ ] `git tag -a {{TAG}} -m "research-skills release"`
 - [ ] `git push origin {{TAG}}`
 
 ## Post-Release Verification

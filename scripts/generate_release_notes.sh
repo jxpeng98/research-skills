@@ -6,7 +6,7 @@ TAG=""
 FROM_TAG=""
 OUTPUT=""
 RELEASE_DATE="$(date +%F)"
-STAGE="Beta"
+STAGE=""
 OVERWRITE=0
 MAX_COMMITS=12
 UPDATE_EXISTING=0
@@ -23,11 +23,11 @@ Description:
   Generate a draft release notes file at release/<tag>.md.
 
 Options:
-  --tag <tag>           Required release tag (for example v0.1.0-beta.3)
+  --tag <tag>           Required release tag (for example v0.1.0 or v0.1.1-beta.1)
   --from-tag <tag>      Optional baseline tag for commit highlights
   --output <path>       Output file path (default: release/<tag>.md)
   --date <YYYY-MM-DD>   Release date (default: today)
-  --stage <name>        Stage label (default: Beta)
+  --stage <name>        Optional stage label (default: inferred from tag)
   --max-commits <n>     Max commits to include in highlights (default: 12)
   --validator-result <s>  Value for validator evidence line
   --unittest-result <s>   Value for unittest evidence line
@@ -38,8 +38,8 @@ Options:
 EOF
 }
 
-latest_beta_tag() {
-  git tag -l 'v*-beta.*' --sort=-v:refname | while read -r item; do
+latest_prior_tag() {
+  git tag -l 'v*' --sort=-v:refname | while read -r item; do
     [[ "$item" == "$TAG" ]] && continue
     [[ -z "$item" ]] && continue
     echo "$item"
@@ -122,6 +122,14 @@ if [[ -z "$OUTPUT" ]]; then
   OUTPUT="release/${TAG}.md"
 fi
 
+if [[ -z "$STAGE" ]]; then
+  if [[ "$TAG" == *beta* || "$TAG" =~ b[0-9]+ ]]; then
+    STAGE="Beta"
+  else
+    STAGE="Stable"
+  fi
+fi
+
 if [[ "$UPDATE_EXISTING" -eq 1 && -e "$OUTPUT" ]]; then
   python3 - "$OUTPUT" "$VALIDATOR_RESULT" "$UNITTEST_RESULT" "$SMOKE_RESULT" <<'PY'
 import re
@@ -162,7 +170,7 @@ if [[ -e "$OUTPUT" && "$OVERWRITE" -ne 1 ]]; then
 fi
 
 if [[ -z "$FROM_TAG" ]]; then
-  FROM_TAG="$(latest_beta_tag || true)"
+  FROM_TAG="$(latest_prior_tag || true)"
 fi
 
 if [[ -n "$FROM_TAG" ]] && ! git rev-parse -q --verify "refs/tags/$FROM_TAG" >/dev/null; then
@@ -218,7 +226,7 @@ EOF
   cat <<EOF
 \`\`\`bash
 ./scripts/release_automation.sh pre --tag ${TAG}
-git tag -a ${TAG} -m "research-skills beta release"
+git tag -a ${TAG} -m "research-skills release"
 git push origin ${TAG}
 ./scripts/release_automation.sh post --tag ${TAG}
 \`\`\`

@@ -309,7 +309,7 @@ pipx install research-skills-installer
 # 安装指定 tag
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
   --repo jxpeng98/research-skills \
-  --ref v0.1.0-beta.6 \
+  --ref v0.1.0 \
   --ref-type tag \
   --project-dir "$PWD" \
   --target all \
@@ -505,7 +505,7 @@ MCP 证据采集                  Agent 运行时路由
            质量门 + 产物落盘输出
               -> RESEARCH/[topic]/...
 ```
-*(详情请参考 [docs/zh/advanced/agent-skill-collaboration.md](docs/zh/advanced/agent-skill-collaboration.md))*
+*(详情请参考 [docs/zh/advanced/agent-skill-collaboration.md](docs/zh/advanced/agent-skill-collaboration.md)；旧版镜像路径仍保留在 [guides/advanced/agent-skill-collaboration.md](guides/advanced/agent-skill-collaboration.md))*
 
 ---
 
@@ -595,8 +595,8 @@ python3 scripts/validate_project_artifacts.py --cwd ./project  --topic <topic> -
 ### 发版自动化 (Release Automation)
 由 CI 接管或手动拉草稿：
 ```bash
-./scripts/release_automation.sh pre --tag v0.1.0-beta.2
-./scripts/release_automation.sh post --tag v0.1.0-beta.2
+./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
+./scripts/release_automation.sh post --tag v0.1.0 --create-release
 ```
 
 ---

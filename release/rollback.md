@@ -1,6 +1,6 @@
-# Beta Rollback Plan
+# Release Rollback Plan
 
-This rollback plan applies to `v0.1.0-beta.2`.
+This rollback plan applies to `v0.1.0` and can be reused for later release tags.
 
 ## Trigger Conditions
 
@@ -11,7 +11,7 @@ This rollback plan applies to `v0.1.0-beta.2`.
 ## Immediate Mitigation
 
 1. Pause external adoption announcement.
-2. Stop creating new beta tags until root cause is isolated.
+2. Stop creating new release tags until root cause is isolated.
 3. Keep issue log with failing command and reproduction input.
 
 ## Git Tag Rollback
@@ -19,8 +19,8 @@ This rollback plan applies to `v0.1.0-beta.2`.
 If tag was pushed but should be withdrawn:
 
 ```bash
-git tag -d v0.1.0-beta.2
-git push origin :refs/tags/v0.1.0-beta.2
+git tag -d v0.1.0
+git push origin :refs/tags/v0.1.0
 ```
 
 ## Commit-Level Rollback

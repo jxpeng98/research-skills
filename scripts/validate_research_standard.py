@@ -140,7 +140,7 @@ STAGE_I_TEMPLATE_EXPECTATIONS = {
         "```json",
     ],
 }
-RELEASE_NOTE_FILE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
+RELEASE_NOTE_FILE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?\.md$")
 
 
 @dataclass
@@ -173,6 +173,30 @@ class SkillRegistryEntry:
     file: str
     inputs: list[str]
     outputs: list[str]
+
+
+def parse_release_note_version(name: str) -> tuple[int, int, int, int, int] | None:
+    match = RELEASE_NOTE_FILE_PATTERN.match(name)
+    if not match:
+        return None
+    major = int(match.group(1))
+    minor = int(match.group(2))
+    patch = int(match.group(3))
+    beta_number = match.group(4)
+    is_stable = 1 if beta_number is None else 0
+    beta_rank = -1 if beta_number is None else int(beta_number)
+    return (major, minor, patch, is_stable, beta_rank)
+
+
+def references_collaboration_guide(content: str) -> bool:
+    return any(
+        token in content
+        for token in (
+            "guides/advanced/agent-skill-collaboration.md",
+            "docs/advanced/agent-skill-collaboration.md",
+            "docs/zh/advanced/agent-skill-collaboration.md",
+        )
+    )
 
 
 def read_text(root: Path, relative_path: str, report: ValidationReport) -> str:
@@ -377,14 +401,13 @@ def select_latest_release_note(root: Path) -> Path | None:
     release_dir = root / "release"
     if not release_dir.exists():
         return None
-    candidates: list[tuple[tuple[int, int, int, int], Path]] = []
+    candidates: list[tuple[tuple[int, int, int, int, int], Path]] = []
     for path in release_dir.iterdir():
         if not path.is_file():
             continue
-        match = RELEASE_NOTE_FILE_PATTERN.match(path.name)
-        if not match:
+        version = parse_release_note_version(path.name)
+        if version is None:
             continue
-        version = tuple(int(match.group(index)) for index in range(1, 5))
         candidates.append((version, path))
     if not candidates:
         return None
@@ -1579,9 +1602,9 @@ def validate_docs(root: Path, report: ValidationReport) -> None:
             f"{relative_path} should mention task-run for capability-map orchestration",
         )
         report.warn(
-            "guides/advanced/agent-skill-collaboration.md" in content,
+            references_collaboration_guide(content),
             f"{relative_path} references collaboration guide",
-            f"{relative_path} should reference guides/advanced/agent-skill-collaboration.md",
+            f"{relative_path} should reference the agent-skill collaboration guide",
         )
         report.warn(
             "scripts/install_research_skill.sh" in content,
@@ -2070,8 +2093,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
     latest_note = select_latest_release_note(root)
     report.check(
         latest_note is not None,
-        "release includes at least one beta release note",
-        "release/ missing beta release note files (expected vX.Y.Z-beta.N.md)",
+        "release includes at least one release note",
+        "release/ missing release note files (expected vX.Y.Z.md or vX.Y.Z-beta.N.md)",
     )
     if latest_note is not None:
         relative_note_path = str(latest_note.relative_to(root))

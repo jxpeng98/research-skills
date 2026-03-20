@@ -7,6 +7,6 @@
     "docs:preview": "vitepress preview docs --host"
   },
   "devDependencies": {
-    "vitepress": "^1.6.3"
+    "vitepress": "^1.6.4"
   }
 }

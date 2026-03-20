@@ -308,7 +308,7 @@ Examples:
 # Install a specific tag
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
   --repo jxpeng98/research-skills \
-  --ref v0.1.0-beta.6 \
+  --ref v0.1.0 \
   --ref-type tag \
   --project-dir "$PWD" \
   --target all \
@@ -590,7 +590,7 @@ Functional Routing                 Runtime Routing
             -> RESEARCH/[topic]/...
 ```
 
-See [docs/advanced/agent-skill-collaboration.md](docs/advanced/agent-skill-collaboration.md) for more details.
+See [docs/advanced/agent-skill-collaboration.md](docs/advanced/agent-skill-collaboration.md) for the current guide. The legacy mirror remains at [guides/advanced/agent-skill-collaboration.md](guides/advanced/agent-skill-collaboration.md).
 
 ---
 
@@ -702,8 +702,8 @@ If you wish to test the legacy installation method, the script is located at: `s
 ### Release Automation
 ```bash
 # Auto-generate release docs and append validation smoke checks
-./scripts/release_automation.sh pre --tag v0.1.0-beta.2
-./scripts/release_automation.sh post --tag v0.1.0-beta.2
+./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
+./scripts/release_automation.sh post --tag v0.1.0 --create-release
 ```
 
 ---

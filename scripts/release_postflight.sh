@@ -20,10 +20,10 @@ Description:
     1) verify local/remote tag consistency
     2) verify release notes + rollback docs
     3) optionally check CI status on GitHub Actions
-    4) generate beta acceptance receipt from template
+    4) generate release acceptance receipt from template
 
 Options:
-  --tag <tag>           Required release tag (for example v0.1.0-beta.1).
+  --tag <tag>           Required release tag (for example v0.1.0 or v0.1.1-beta.1).
   --repo <owner/repo>   Optional GitHub repo slug. Auto-derived from origin if omitted.
   --skip-remote         Skip remote ref checks.
   --skip-ci-status      Skip GitHub Actions status check.

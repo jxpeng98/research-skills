@@ -11,10 +11,10 @@ Usage:
   ./scripts/release_automation.sh <pre|post|full> [options]
 
 Examples:
-  ./scripts/release_automation.sh pre --tag v0.1.0-beta.2
-  ./scripts/release_automation.sh pre --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2
-  ./scripts/release_automation.sh post --tag v0.1.0-beta.1
-  ./scripts/release_automation.sh full --tag v0.1.0-beta.2
+  ./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
+  ./scripts/release_automation.sh pre --tag v0.1.1-beta.1 --from-tag v0.1.0
+  ./scripts/release_automation.sh post --tag v0.1.0
+  ./scripts/release_automation.sh full --tag v0.1.0
 
 Notes:
   - pre  -> runs scripts/release_preflight.sh

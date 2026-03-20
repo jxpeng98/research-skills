@@ -19,7 +19,7 @@ Description:
     0) auto-generate release note draft (when --tag is provided)
     1) strict standard validator
     2) orchestrator workflow unit tests
-    3) beta smoke script (doctor + parallel + task-run)
+    3) release smoke script (doctor + parallel + task-run)
 
 Options:
   --tag <tag>     Optional release tag to pre-check. If provided, script verifies
@@ -164,6 +164,6 @@ fi
 echo "[preflight] all checks passed"
 if [[ -n "$TAG" ]]; then
   echo "[preflight] next publish commands:"
-  echo "  git tag -a $TAG -m \"research-skills beta release\""
+  echo "  git tag -a $TAG -m \"research-skills release\""
   echo "  git push origin $TAG"
 fi

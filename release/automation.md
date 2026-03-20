@@ -13,34 +13,36 @@ Draft release note generator:
 ## 1) Pre-release gates
 
 ```bash
-./scripts/release_automation.sh pre --tag v0.1.0-beta.2
+./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
 ```
 
-Runs validator + workflow unit tests + beta smoke checks, verifies the tag is not already used, and auto-generates `release/<tag>.md` draft if missing.
+Runs validator + workflow unit tests + release smoke checks, verifies the tag is not already used, and auto-generates `release/<tag>.md` draft if missing.
 After checks pass, preflight auto-fills validation evidence lines in the release note.
 
 Manual draft generation (optional):
 
 ```bash
-./scripts/generate_release_notes.sh --tag v0.1.0-beta.3 --from-tag v0.1.0-beta.2
+./scripts/generate_release_notes.sh --tag v0.1.0 --from-tag v0.1.0-beta.6
 ```
+
+The draft generator supports both stable tags such as `v0.1.0` and prerelease tags such as `v0.1.1-beta.1`. Stage label is inferred from the tag unless you pass `--stage`.
 
 ## 2) Publish tag
 
 ```bash
-git tag -a v0.1.0-beta.2 -m "research-skills beta release"
-git push origin v0.1.0-beta.2
+git tag -a v0.1.0 -m "research-skills release"
+git push origin v0.1.0
 ```
 
 ## 3) Post-release checks
 
 ```bash
-./scripts/release_automation.sh post --tag v0.1.0-beta.2
+./scripts/release_automation.sh post --tag v0.1.0 --create-release
 ```
 
 Runs local/remote consistency checks, attempts CI status verification, checks release notes + rollback docs, and generates:
 
-- `release/acceptance/v0.1.0-beta.2-receipt.md`
+- `release/acceptance/v0.1.0-receipt.md`
 
 ## Optional flags
 

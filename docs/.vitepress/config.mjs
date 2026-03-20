@@ -1,5 +1,6 @@
 const enNav = [
   { text: 'Guide', link: '/guide/' },
+  { text: 'Examples', link: '/examples/' },
   { text: 'CLI', link: '/reference/cli' },
   { text: 'Architecture', link: '/architecture' },
   { text: 'Advanced', link: '/advanced/' },
@@ -8,6 +9,7 @@ const enNav = [
 
 const zhNav = [
   { text: '入门', link: '/zh/guide/' },
+  { text: '示例', link: '/zh/examples/' },
   { text: 'CLI', link: '/zh/reference/cli' },
   { text: '架构', link: '/zh/architecture' },
   { text: '高级', link: '/zh/advanced/' },
@@ -21,6 +23,7 @@ const enSidebar = {
       items: [
         { text: 'Overview', link: '/guide/' },
         { text: 'Quickstart', link: '/quickstart' },
+        { text: 'Task Recipes', link: '/guide/task-recipes' },
         { text: 'Install', link: '/guide/install' },
         { text: 'Upgrade', link: '/guide/upgrade' },
         { text: 'Troubleshooting', link: '/guide/troubleshooting' }
@@ -33,7 +36,17 @@ const enSidebar = {
       items: [
         { text: 'Overview', link: '/reference/' },
         { text: 'CLI Reference', link: '/reference/cli' },
+        { text: 'Skills Guide', link: '/reference/skills' },
         { text: 'Conventions', link: '/conventions' }
+      ]
+    }
+  ],
+  '/examples/': [
+    {
+      text: 'Examples',
+      items: [
+        { text: 'Overview', link: '/examples/' },
+        { text: 'Paper Type Playbooks', link: '/examples/paper-type-playbooks' }
       ]
     }
   ],
@@ -71,6 +84,7 @@ const zhSidebar = {
       items: [
         { text: '总览', link: '/zh/guide/' },
         { text: '快速开始', link: '/zh/quickstart' },
+        { text: '任务场景', link: '/zh/guide/task-recipes' },
         { text: '安装', link: '/zh/guide/install' },
         { text: '升级', link: '/zh/guide/upgrade' },
         { text: '故障排除', link: '/zh/guide/troubleshooting' }
@@ -83,7 +97,17 @@ const zhSidebar = {
       items: [
         { text: '总览', link: '/zh/reference/' },
         { text: 'CLI 参考', link: '/zh/reference/cli' },
+        { text: 'Skills 指南', link: '/zh/reference/skills' },
         { text: '规范约定', link: '/zh/conventions' }
+      ]
+    }
+  ],
+  '/zh/examples/': [
+    {
+      text: '示例',
+      items: [
+        { text: '总览', link: '/zh/examples/' },
+        { text: 'Paper Type 路线图', link: '/zh/examples/paper-type-playbooks' }
       ]
     }
   ],

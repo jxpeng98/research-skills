@@ -5,11 +5,13 @@
 ## 参考页面
 
 - [CLI 参考](/zh/reference/cli)
+- [Skills 指南](/zh/reference/skills)
 - [规范约定](/zh/conventions)
 
 ## 适用内容
 
 - 稳定 CLI 参数与入口
+- 面向使用者的 `skills/` 分层与能力地图
 - 仓库级术语与依赖方向
 - 维护者修改时的落点与编辑顺序
 

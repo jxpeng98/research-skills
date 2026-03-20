@@ -5,11 +5,13 @@ Use this section when you already know what you want to do and need exact comman
 ## Reference Pages
 
 - [CLI Reference](/reference/cli)
+- [Skills Guide](/reference/skills)
 - [Conventions](/conventions)
 
 ## Scope
 
 - stable CLI arguments and entrypoints
+- user-facing map of the internal `skills/` layer
 - repo-level terminology and dependency direction
 - edit order and placement rules for maintainers
 

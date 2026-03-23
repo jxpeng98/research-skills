@@ -4,11 +4,11 @@
 # Applied by eval runner to assess skill output quality
 
 rubric_id: skill-output-quality
-version: "1.0.0"
+version: "1.1.0"
 
 dimensions:
   - name: completeness
-    weight: 0.25
+    weight: 0.20
     description: "All required sections and fields are present"
     levels:
       - score: 1
@@ -25,7 +25,7 @@ dimensions:
         criteria: "All required sections present and populated"
 
   - name: accuracy
-    weight: 0.25
+    weight: 0.20
     description: "Content is factually correct and methodologically sound"
     levels:
       - score: 1
@@ -42,7 +42,7 @@ dimensions:
         criteria: "Factually and methodologically sound throughout"
 
   - name: domain_appropriateness
-    weight: 0.20
+    weight: 0.15
     description: "Output follows domain conventions and uses appropriate methods/tools"
     levels:
       - score: 1
@@ -57,6 +57,23 @@ dimensions:
       - score: 4
         label: "Expert-level"
         criteria: "Demonstrates deep domain expertise in choices"
+
+  - name: analytical_depth
+    weight: 0.20
+    description: "Output moves beyond surface description into mechanism, contrast, boundaries, and defensible implications"
+    levels:
+      - score: 1
+        label: "Surface-only"
+        criteria: "Mostly paraphrases facts, themes, or results without interpretation"
+      - score: 2
+        label: "Shallow interpretation"
+        criteria: "Adds some interpretation, but remains generic or unsupported"
+      - score: 3
+        label: "Analytical"
+        criteria: "Explains mechanisms, tensions, or boundary conditions with mostly defensible reasoning"
+      - score: 4
+        label: "Deeply analytical"
+        criteria: "Integrates mechanism, rival explanations, limits, and implications without overclaiming"
 
   - name: actionability
     weight: 0.15
@@ -76,7 +93,7 @@ dimensions:
         criteria: "Ready for direct use by next pipeline step"
 
   - name: formatting
-    weight: 0.15
+    weight: 0.10
     description: "Follows the skill's output contract format"
     levels:
       - score: 1

@@ -1,8 +1,8 @@
 ---
 id: manuscript-architect
 stage: F_writing
-version: "1.0.0"
-description: "Build coherent paper structure from outline to section-level drafts with claim-evidence integrity checking."
+version: "1.1.0"
+description: "Build coherent paper structure from outline to section-level drafts with claim-evidence integrity and analysis-depth checking."
 inputs:
   - type: RQSet
     description: "Research questions"
@@ -52,6 +52,19 @@ Keep these as embedded writing subflows inside `manuscript-architect` unless the
 
 If the need is only "write a better intro / abstract / discussion paragraph", update this skill or its templates before introducing another top-level writing skill.
 
+## Analytical Depth Contract
+
+These depth rules apply across empirical, qualitative, mixed-methods, theory, and methods papers. Do not collapse the discussion into generic business-style implications when the domain is elsewhere.
+
+- Every substantive paragraph must do more than describe; it should advance at least two of:
+  - mechanism or process
+  - tension, comparison, or contradiction
+  - alternative explanation
+  - boundary condition
+  - implication
+- Qualitative writing must interpret themes into analytic claims about mechanism, meaning, or scope. Do not stop at theme labels or illustrative quotes.
+- If the evidence cannot support a deeper inference, narrow the claim instead of simulating depth with abstract wording.
+
 ## Inputs (Ask / Collect)
 
 1. Paper type: **empirical** / **systematic review** / **theory** / **methods** (default: empirical)
@@ -86,6 +99,7 @@ Produce:
 - 1–2 sentence **core contribution**
 - 3–5 bullet **novelty/importance** points
 - Main **thesis** (what the reader should believe after reading)
+- 1 short note on **why the gap persisted until now**
 
 ### Step 2: Build Outline (Paper-first, not section-first)
 
@@ -97,22 +111,29 @@ Use `templates/manuscript-outline.md` to:
 ### Step 3: Draft Sections Iteratively
 
 Draft in order:
-1. Introduction (problem → gap → contribution → roadmap)
-2. Related work / literature positioning (theme-based)
+1. Introduction (problem → gap → why the gap persisted → contribution → roadmap)
+2. Related work / literature positioning (theme-, tension-, or mechanism-based; not serial paper summary)
 3. Methods (design, data, measures, analysis plan; ethics statement if needed)
-4. Results (tables/figures + uncertainty; avoid interpretation creep)
-5. Discussion (mechanisms, comparison to prior work, implications)
+4. Results (tables/figures + uncertainty + heterogeneity + null findings; avoid interpretation creep)
+5. Discussion (mechanisms, alternative explanations, boundary conditions, comparison to prior work, implications)
 6. Limitations / threats to validity (explicit, not hidden)
 7. Conclusion
 8. Title/Abstract/Keywords (last)
 
 Use **citation-formatter** to keep citations consistent.
 
+For each drafted section, ask:
+- What is the analytic job of this section?
+- What does the reader learn beyond the surface description?
+- Which alternative explanation or counter-pattern needs to be confronted here?
+- Where should the claim be narrowed?
+
 ### Step 4: Claim–Evidence Integrity Pass
 
 Use `templates/claim-evidence-map.md`:
 - Every non-trivial claim must have: evidence + location + citation (or be marked as speculation)
 - Remove or hedge claims that out-run evidence
+- Tag mechanism statements that are evidenced vs. hypothesized
 - Ensure RQs ↔ Methods ↔ Results alignment
 
 ### Step 5: Figures/Tables Pass

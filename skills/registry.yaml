@@ -338,9 +338,9 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: manuscript-architect
     stage: F_writing
-    version: "1.0.0"
+    version: "1.1.0"
     file: skills/F_writing/manuscript-architect.md
-    summary: "Own story spine, section drafting, and visual planning as one manuscript package."
+    summary: "Own story spine, section drafting, and deep analytical framing as one manuscript package."
     inputs: [RQSet, EvidenceTable, DesignSpec]
     outputs: [ManuscriptOutline, Manuscript, ClaimGraph, FiguresTablesPlan]
     tags: [writing, manuscript, outline, drafting, claim-evidence]
@@ -351,9 +351,9 @@ skills:
 
   - id: analysis-interpreter
     stage: F_writing
-    version: "1.0.0"
+    version: "1.1.0"
     file: skills/F_writing/analysis-interpreter.md
-    summary: "Translate model output into bounded narrative interpretation for manuscript results."
+    summary: "Translate findings into analytical prose with uncertainty, mechanisms, rivals, and boundary conditions."
     inputs: [StatsReport, AnalysisPlan, RobustnessPlan]
     outputs: [ResultInterpretation]
     tags: [writing, results, interpretation, robustness, uncertainty]
@@ -675,9 +675,9 @@ skills:
 
   - id: self-critique
     stage: Z_cross_cutting
-    version: "1.0.0"
+    version: "1.1.0"
     file: skills/Z_cross_cutting/self-critique.md
-    summary: "Iterative red teaming and Socratic questioning for output quality assurance."
+    summary: "Iterative red teaming against superficial reasoning, contradictions, and overclaiming."
     inputs: [AnyArtifact]
     outputs: [CritiqueLog]
     tags: [cross-cutting, critique, red-team, quality-assurance, Socratic]

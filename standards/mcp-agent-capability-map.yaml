@@ -88,6 +88,7 @@ functional_agent_registry:
   - "methodology-agent"
   - "data-agent"
   - "analysis-agent"
+  - "code-review-agent"
   - "writing-agent"
   - "publication-agent"
 
@@ -139,10 +140,16 @@ functional_agents:
     owns_stages:
       - "E"
       - "I"
+  code-review-agent:
+    file: "roles/academic-code-reviewer.yaml"
+    mapped_role: "academic-code-reviewer"
+    focus: "Independent academic code review for method fidelity, inferential validity, leakage, and reproducibility evidence."
+    owns_stages:
+      - "I"
   writing-agent:
     file: "roles/science-writer.yaml"
     mapped_role: "science-writer"
-    focus: "Drafting, restructuring, tone control, and claim presentation."
+    focus: "Drafting, restructuring, deep interpretation, and claim presentation."
     owns_stages:
       - "F"
   publication-agent:
@@ -635,7 +642,7 @@ task_functional_routing:
     I4: "methodology-agent"
     I5: "methodology-agent"
     I6: "methodology-agent"
-    I8: "methodology-agent"
+    I8: "code-review-agent"
 
 task_skill_mapping:
   A1:

@@ -16,6 +16,13 @@ This stage turns artifacts into a publishable narrative: outline → draft → c
 - `Q1` (question-to-method alignment): intro/method/results must answer the same RQ(s).
 - `Q2` (claim-evidence traceability): enforced via `F4` and `G3`.
 
+## Cross-task depth rules
+
+- Every substantive paragraph must move beyond description into at least two of: mechanism, comparison/tension, alternative explanation, boundary condition, implication.
+- Qualitative findings should be interpreted as process, mechanism, or meaning claims, not left as theme labels plus quotes.
+- If evidence only supports a narrow descriptive claim, write the narrow claim plainly; do not fake depth with abstract language.
+- Related work and discussion should be organized around arguments, tensions, or explanatory structures rather than paper-by-paper listing.
+
 ---
 
 ## F1 — Manuscript Outline
@@ -35,6 +42,7 @@ Use when you want to draft one component precisely (e.g., “intro gap paragraph
 
 **Definition of done**
 - The component has a clear rhetorical role (setup / gap / contribution / method / evidence / limitation)
+- The component makes at least one analytical move beyond summary (mechanism, contrast, boundary, or implication)
 - Citations are present where claims of prior work are made
 - No new claims that contradict earlier artifacts
 
@@ -48,7 +56,9 @@ Write into: `manuscript/manuscript.md` (or a section placeholder within it).
 - All required sections exist (title/abstract/intro/related work/method/results/discussion/limitations/conclusion)
 - Methods contain enough detail for replication (given the artifact set)
 - Results are consistent with analysis plan and reported with uncertainty
+- Related work and discussion interpret tensions, mechanisms, and alternative explanations instead of paraphrasing sources or results
 - Limitations discuss validity threats (not only “small sample”)
+- The narrative states where claims stop: boundary conditions, contradictory cases, and inferential limits are explicit
 - Result narration is externalized enough to support reuse in `manuscript/results_interpretation.md`
 - Effect magnitude is translated into practical terms in `manuscript/effect_interpretation.md` when applicable
 

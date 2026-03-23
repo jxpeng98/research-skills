@@ -29,6 +29,14 @@ Use a low-freedom sequence for reliability:
 4. **Independent review (`I8`)**: separate model reviews logic + stats validity + failure cases
 5. **Audit (`I4`)**: seeds, versions, determinism, data provenance, rerun instructions
 
+## I8 — Academic Code Review
+
+**Definition of done**
+- Review covers method fidelity, inferential validity, leakage risks, and reproducibility evidence
+- Findings are severity-ranked and tied to concrete code or artifact evidence
+- Blocking academic risks are separated from non-blocking cleanup
+- Prefer a dedicated academic code reviewer role when available, rather than folding I8 into implementation ownership
+
 ---
 
 ## What “done” looks like for code artifacts
@@ -54,8 +62,8 @@ Use the orchestrator to split roles:
 - Codex: implementation + execution
 - Claude: narrative documentation + reasoning checks
 - Gemini: independent review and edge-case probing
+- Academic code reviewer role (I8): severity-ranked audit of method fidelity and reproducibility claims
 
 When triad is unavailable, fall back to:
 - dual-chain (generate → verify), or
 - single-agent with explicit self-critique log.
-

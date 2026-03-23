@@ -1,7 +1,7 @@
 ---
 id: self-critique
 stage: Z_cross_cutting
-version: "1.0.0"
+version: "1.1.0"
 description: "Iterative red teaming and Socratic questioning to continuously critique and refine AI-generated outputs."
 inputs:
   - type: AnyArtifact
@@ -81,10 +81,11 @@ Prevent superficial research by forcing the AI to act as "Reviewer 2" or a "Socr
 ### Stage F: Manuscript Writing
 - **Focus:** Claim-evidence causal integrity.
 - *Q1:* "Do the claims in the Discussion section drastically exceed the mathematical data support provided in the Results section?"
-- *Q2:* "Do the numbers in the abstract specifically match the tables in the main text with 100% accuracy?"
-- *Q3:* "Comparing the promises made in the Introduction with the Conclusion, did we actually fulfill those promises without moving the goalposts?"
-- *Q4:* "Is the limitations section honest and self-critical, or just boilerplate text apologizing for basic boundaries?"
-- *Q5:* "Could an independent team replicate this study using ONLY the methods text provided, without emailing the authors?"
+- *Q2:* "Does each major analytical paragraph move beyond description to explain at least one of: mechanism, tension, alternative explanation, boundary condition, or implication?"
+- *Q3:* "Where are we merely restating results, themes, or citations instead of interpreting why the pattern matters?"
+- *Q4:* "Are alternative explanations, contradictory evidence, and null cases confronted explicitly rather than buried in vague caveats?"
+- *Q5:* "Comparing the promises made in the Introduction with the Conclusion, did we actually fulfill those promises without moving the goalposts?"
+- *Q6:* "Is the limitations section honest and specific about boundary conditions, or just boilerplate text apologizing for basic boundaries?"
 
 ### Stage G: Polish & Compliance
 - **Focus:** Harsh copy-editing and logical flow.

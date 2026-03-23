@@ -55,10 +55,11 @@ CRITIQUE_QUESTIONS: dict[str, list[str]] = {
     ],
     "manuscript": [
         "Do the claims in the Discussion section drastically exceed the mathematical data support provided in the Results section?",
-        "Do the numbers in the abstract specifically match the tables in the main text with 100% accuracy?",
+        "Does each major analytical paragraph move beyond description to explain at least one of: mechanism, tension, alternative explanation, boundary condition, or implication?",
+        "Where are we merely restating results, themes, or citations instead of interpreting why the pattern matters?",
+        "Are alternative explanations, contradictory evidence, and null cases confronted explicitly rather than buried in vague caveats?",
         "Comparing the promises made in the Introduction with the Conclusion, did we actually fulfill those promises without moving the goalposts?",
-        "Is the limitations section honest and self-critical, or just boilerplate text apologizing for basic boundaries?",
-        "Could an independent team replicate this study using ONLY the methods text provided, without emailing the authors?",
+        "Is the limitations section honest and specific about boundary conditions, or just boilerplate text apologizing for basic boundaries?",
     ],
     "polishing": [
         "Remove all unnecessary emphatic words (e.g., 'definitely', 'proves') and replace them with objective academic terms (e.g., 'suggests', 'indicates').",

@@ -203,6 +203,19 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertEqual(result.data["runtime_plan"]["primary_agent"], "claude")
         self.assertTrue(result.data["functional_owner_chain"])
 
+    def test_task_plan_routes_i8_to_academic_code_reviewer(self) -> None:
+        orchestrator = MockOrchestrator()
+        result = orchestrator.task_plan(
+            task_id="I8",
+            paper_type="methods",
+            topic="policy-effects",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertEqual(result.data["functional_owner"], "code-review-agent")
+        self.assertEqual(result.data["functional_role_id"], "academic-code-reviewer")
+        self.assertIn("Academic Code Reviewer", result.merged_analysis)
+
     def test_task_run_executes_with_draft_and_review(self) -> None:
         orchestrator = MockOrchestrator()
         result = orchestrator.task_run(

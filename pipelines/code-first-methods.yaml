@@ -45,7 +45,7 @@ steps:
   - id: review
     skill: code-review
     task_id: I8
-    owner_functional_agent: methodology-agent
+    owner_functional_agent: code-review-agent
     depends_on: [build]
     outputs: [CodeReview]
 

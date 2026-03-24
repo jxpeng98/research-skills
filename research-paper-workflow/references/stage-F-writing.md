@@ -30,7 +30,7 @@ This stage turns artifacts into a publishable narrative: outline → draft → c
 **Definition of done**
 - Section headings match venue norms
 - Each section has bullet “promises” (what it will deliver)
-- Results section mirrors analysis plan outputs
+- Results section mirrors analysis plan outputs or the planned qualitative findings architecture
 
 Write into: `manuscript/outline.md`.
 
@@ -54,11 +54,13 @@ Write into: `manuscript/manuscript.md` (or a section placeholder within it).
 
 **Definition of done (minimum)**
 - All required sections exist (title/abstract/intro/related work/method/results/discussion/limitations/conclusion)
-- Methods contain enough detail for replication (given the artifact set)
-- Results are consistent with analysis plan and reported with uncertainty
+- Methods contain enough detail for replication or audit (given the artifact set), including sampling, access, data sources, analytic procedure, and reflexivity for qualitative work
+- Results are consistent with analysis plan and reported with uncertainty or transparent evidence structure
+- Findings in qualitative papers are analytic claims; quotes, vignettes, and episodes are evidence anchors rather than the finding itself
 - Related work and discussion interpret tensions, mechanisms, and alternative explanations instead of paraphrasing sources or results
 - Limitations discuss validity threats (not only “small sample”)
 - The narrative states where claims stop: boundary conditions, contradictory cases, and inferential limits are explicit
+- Discussion distinguishes participant attributions, author interpretation, and speculative implication
 - Result narration is externalized enough to support reuse in `manuscript/results_interpretation.md`
 - Effect magnitude is translated into practical terms in `manuscript/effect_interpretation.md` when applicable
 
@@ -103,6 +105,12 @@ Write into: `manuscript/figures_tables_plan.md`.
 Recommended pairing:
 - `table-generator` for `manuscript/tables/`
 - `figure-specifier` for `manuscript/figures/`
+
+For qualitative papers, common `F5` outputs include:
+- data structure diagrams
+- process models
+- case comparison matrices
+- evidence tables linking cases/quotes to claims
 
 ---
 

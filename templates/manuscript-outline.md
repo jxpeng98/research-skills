@@ -8,7 +8,7 @@ Save to: RESEARCH/[topic]/manuscript/outline.md
 # Manuscript Outline: [Working Title]
 
 ## 0) Metadata
-- Paper type: empirical / systematic review / theory / methods
+- Paper type: empirical / qualitative / systematic review / theory / methods
 - Target venue:
 - Word/page limit:
 - Double-blind: Y/N
@@ -55,17 +55,18 @@ Theme C: why your angle is needed (citations)
 
 ### 3. Methods
 - Design summary:
-- Data / participants:
-- Measures / constructs:
+- Site / case access:
+- Data / participants / cases:
+- Measures / constructs / protocols:
 - Procedure:
-- Analysis plan:
-- Ethics / consent (if applicable):
+- Analysis / coding plan:
+- Reflexivity / ethics / consent (if applicable):
 
-### 4. Results
-- Primary outcomes:
-- Secondary outcomes:
-- Robustness checks:
-- Subgroups/heterogeneity:
+### 4. Results / Findings
+- Primary outcomes / themes / dimensions / process stages:
+- Secondary outcomes / rival cases:
+- Robustness checks / disconfirming cases:
+- Subgroups / heterogeneity / case contrasts:
 - Companion interpretation note: `manuscript/results_interpretation.md`
 - Companion magnitude note: `manuscript/effect_interpretation.md`
 - Table anchors:
@@ -76,12 +77,14 @@ Theme C: why your angle is needed (citations)
 - Comparison to prior work:
 - Implications (theory/practice):
 - Mechanisms / boundary conditions:
+- What the setting sharpens or limits:
 
 ### 6. Limitations / Threats to Validity
 - Internal validity:
 - Construct validity:
 - External validity:
 - Statistical conclusion validity:
+- Credibility / transferability / dependability / confirmability:
 
 ### 7. Conclusion
 - Summary:
@@ -98,5 +101,5 @@ Theme C: why your angle is needed (citations)
 | Methods detail | `study_design.md` / `analysis_plan.md` | TODO | |
 | Results tables/figures | analysis outputs | TODO | |
 | Results interpretation | `manuscript/results_interpretation.md` | TODO | |
-| Effect interpretation | `manuscript/effect_interpretation.md` | TODO | |
+| Effect interpretation (if applicable) | `manuscript/effect_interpretation.md` | TODO | |
 | Ethics statement | `ethics_irb.md` | TODO | |

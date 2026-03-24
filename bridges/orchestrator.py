@@ -156,10 +156,16 @@ class ModelOrchestrator:
     }
     RUNTIME_AGENTS = {"codex", "claude", "gemini"}
     DOMAIN_PROFILE_ALIASES = {
+        "business": "business-management",
+        "business-management": "business-management",
         "finance": "finance",
         "econ": "economics",
         "economics": "economics",
         "econometrics": "economics",
+        "management": "business-management",
+        "management-studies": "business-management",
+        "organizational-behavior": "business-management",
+        "organization-studies": "business-management",
         "metrics": "economics",
         "psych": "psychology",
         "psychology": "psychology",
@@ -4968,7 +4974,7 @@ def main():
     )
     code_build.add_argument(
         "--paper-type",
-        choices=["empirical", "systematic-review", "methods", "theory"],
+        choices=["empirical", "qualitative", "systematic-review", "methods", "theory"],
         default="methods",
         help="Paper type used when code-build routes into strict Stage-I task flow",
     )
@@ -4992,7 +4998,7 @@ def main():
     task_run.add_argument(
         "--paper-type",
         required=True,
-        choices=["empirical", "systematic-review", "methods", "theory"],
+        choices=["empirical", "qualitative", "systematic-review", "methods", "theory"],
         help="Paper type from workflow contract",
     )
     task_run.add_argument("--topic", required=True, help="Research topic slug/name")
@@ -5086,7 +5092,7 @@ def main():
     )
     team_run_parser.add_argument(
         "--paper-type", required=True,
-        choices=["empirical", "systematic-review", "methods", "theory"],
+        choices=["empirical", "qualitative", "systematic-review", "methods", "theory"],
         help="Paper type from workflow contract",
     )
     team_run_parser.add_argument("--topic", required=True, help="Research topic slug/name")
@@ -5122,7 +5128,7 @@ def main():
     task_plan.add_argument(
         "--paper-type",
         required=True,
-        choices=["empirical", "systematic-review", "methods", "theory"],
+        choices=["empirical", "qualitative", "systematic-review", "methods", "theory"],
         help="Paper type from workflow contract",
     )
     task_plan.add_argument("--topic", required=True, help="Research topic slug/name")

@@ -67,6 +67,8 @@ artifacts:
 paper_types:
   - id: "empirical"
     focus: "design, data, methods, results, validity"
+  - id: "qualitative"
+    focus: "qualitative design, sampling, coding, interpretation, trustworthiness"
   - id: "systematic-review"
     focus: "PRISMA search-screen-extract-synthesize-report"
   - id: "methods"

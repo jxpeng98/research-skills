@@ -1,0 +1,162 @@
+# ─────────────────────────────────────────────
+# Qualitative Study Pipeline
+# ─────────────────────────────────────────────
+
+id: qualitative-study
+name: "Qualitative Research Paper"
+paper_type: qualitative
+description: "RQ → theoretical framing → qualitative design → coding/interpretation protocol → writing for interview, case, process, or ethnographic studies."
+
+steps:
+  - id: frame
+    skill: question-refiner
+    task_id: A1
+    owner_functional_agent: research-orchestrator
+    outputs: [RQSet]
+    stop_condition: "User confirms qualitative research question, setting, and unit of analysis"
+
+  - id: propositions
+    skill: hypothesis-generator
+    task_id: A1_5
+    owner_functional_agent: theory-agent
+    depends_on: [frame]
+    outputs: [HypothesisSet]
+    optional: true
+
+  - id: lit-read
+    skill: paper-extractor
+    task_id: B2
+    owner_functional_agent: literature-agent
+    depends_on: [frame]
+    outputs: [PaperNotes]
+
+  - id: lit-map
+    skill: literature-mapper
+    task_id: B6
+    owner_functional_agent: literature-agent
+    depends_on: [lit-read]
+    outputs: [LiteratureMap]
+
+  - id: theory
+    skill: theory-mapper
+    task_id: A3
+    owner_functional_agent: theory-agent
+    depends_on: [frame, lit-map]
+    outputs: [TheoreticalFramework]
+    optional: true
+
+  - id: gap
+    skill: gap-analyzer
+    task_id: A4
+    owner_functional_agent: theory-agent
+    depends_on: [lit-map]
+    outputs: [GapAnalysis]
+
+  - id: venue
+    skill: venue-analyzer
+    task_id: A5
+    owner_functional_agent: publication-agent
+    depends_on: [frame]
+    outputs: [VenueAnalysis]
+    optional: true
+
+  - id: design
+    skill: study-designer
+    task_id: C1
+    owner_functional_agent: methodology-agent
+    depends_on: [propositions, gap, theory]
+    outputs: [DesignSpec]
+
+  - id: instruments
+    skill: study-designer
+    task_id: C2
+    owner_functional_agent: methodology-agent
+    depends_on: [design]
+    outputs: [Instruments]
+
+  - id: analysis-plan
+    skill: study-designer
+    task_id: C3
+    owner_functional_agent: methodology-agent
+    depends_on: [design, instruments]
+    outputs: [AnalysisPlan]
+
+  - id: rivals
+    skill: rival-hypothesis-designer
+    task_id: C1_5
+    owner_functional_agent: methodology-agent
+    depends_on: [design, analysis-plan]
+    outputs: [RivalHypotheses]
+
+  - id: governance
+    skill: study-designer
+    task_id: C4
+    owner_functional_agent: data-agent
+    depends_on: [design, analysis-plan]
+    outputs: [DataManagementPlan]
+
+  - id: ethics
+    skill: ethics-irb-helper
+    task_id: D1
+    owner_functional_agent: publication-agent
+    depends_on: [governance]
+    outputs: [EthicsPackage]
+    optional: true
+
+  - id: interpret
+    skill: analysis-interpreter
+    task_id: F3
+    owner_functional_agent: writing-agent
+    depends_on: [analysis-plan]
+    outputs: [ResultInterpretation]
+
+  - id: tables
+    skill: table-generator
+    task_id: F5
+    owner_functional_agent: writing-agent
+    depends_on: [analysis-plan]
+    outputs: [FormattedTables]
+    optional: true
+
+  - id: figures
+    skill: figure-specifier
+    task_id: F5
+    owner_functional_agent: writing-agent
+    depends_on: [analysis-plan]
+    outputs: [FigureSpecs]
+    optional: true
+
+  - id: write
+    skill: manuscript-architect
+    task_id: F3
+    owner_functional_agent: writing-agent
+    depends_on: [lit-map, design, analysis-plan, interpret, tables, figures]
+    outputs: [ManuscriptOutline, Manuscript, ClaimGraph, FiguresTablesPlan]
+
+  - id: report-check
+    skill: reporting-checker
+    task_id: G1
+    owner_functional_agent: publication-agent
+    depends_on: [write]
+    outputs: [ReportingChecklist]
+
+  - id: tone
+    skill: tone-normalizer
+    task_id: G4
+    owner_functional_agent: writing-agent
+    depends_on: [write]
+    outputs: [ToneNormalization]
+
+  - id: flaw-check
+    skill: fatal-flaw-detector
+    task_id: H4
+    owner_functional_agent: publication-agent
+    depends_on: [write]
+    outputs: [FatalFlawAnalysis]
+
+  - id: submit
+    skill: submission-packager
+    task_id: H1
+    owner_functional_agent: publication-agent
+    depends_on: [report-check, tone, flaw-check]
+    outputs: [SubmissionPackage]

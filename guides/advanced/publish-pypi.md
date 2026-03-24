@@ -43,30 +43,41 @@ This repository includes a dedicated TestPyPI workflow: `.github/workflows/publi
 
 ### 1.1 Update the Version Number
 
-Use the `bump-version.sh` script to simultaneously update `pyproject.toml` and `research_skills/__init__.py`:
+Use the `bump-version.sh` script to sync release versions across:
+
+- `pyproject.toml`
+- `research_skills/__init__.py`
+- `research-paper-workflow/VERSION`
+- `skills/registry.yaml`
+- all `skills/**/*.md` frontmatter `version` fields
 
 ```bash
 ./scripts/bump-version.sh 0.2.0
 ```
 
-Version string format strictly follows [PEP 440](https://peps.python.org/pep-0440/):
+Pass either a stable version such as `0.2.0` or a beta version such as `0.2.0b1`.
+The script will normalize it into three synchronized forms:
 
-| Stage | Format | Example |
+| Layer | Stable | Beta |
 |------|------|------|
-| Beta | `X.Y.ZbN` | `0.1.0b7` |
-| RC | `X.Y.ZrcN` | `0.1.0rc1` |
-| Release | `X.Y.Z` | `0.1.0`, `1.0.0` |
+| PyPI package | `0.2.0` | `0.2.0b1` |
+| Skill metadata / registry | `0.2.0` | `0.2.0-beta.1` |
+| Portable skill `VERSION` / git tag | `v0.2.0` | `v0.2.0-beta.1` |
+
+Package version format follows [PEP 440](https://peps.python.org/pep-0440/), while skill metadata uses SemVer-compatible prerelease syntax.
+
+Currently the release tooling supports `stable` and `beta` only.
 
 ### 1.2 Commit + Tag + Push
 
 ```bash
-git add pyproject.toml research_skills/__init__.py
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills
 git commit -m "chore: bump version to 0.2.0"
 git tag v0.2.0
 git push origin main --tags
 ```
 
-> **Note**: The tag format MUST start with `v*` (e.g., `v0.2.0`, `v0.1.0b7`) for the GitHub Actions `publish-pypi.yml` workflow to trigger.
+> **Note**: The tag format MUST start with `v*` and use repo release syntax (for example `v0.2.0` or `v0.2.0-beta.1`) for the GitHub Actions `publish-pypi.yml` workflow to trigger.
 
 ### 1.3 Automatic Build & Publish
 
@@ -168,7 +179,7 @@ When cutting a release, follow these steps:
 
 ### Q: I pushed a tag but Actions did not trigger?
 
-Ensure the tag format starts with `v` (e.g., `v0.1.0b7`) and that the `.github/workflows/publish-pypi.yml` workflow file is present on the `main` branch.
+Ensure the tag format starts with `v` (e.g., `v0.1.0-beta.7`) and that the `.github/workflows/publish-pypi.yml` workflow file is present on the `main` branch.
 
 ### Q: PyPI publishing failed with "403 Forbidden"?
 

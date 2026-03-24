@@ -5,7 +5,7 @@ This stage turns a topic into a *defensible* research plan: what you will claim,
 ## Inputs (minimum)
 
 - `topic` (1 sentence)
-- `paper_type` (`empirical` / `systematic-review` / `methods` / `theory`)
+- `paper_type` (`empirical` / `qualitative` / `systematic-review` / `methods` / `theory`)
 - Constraints: time, data access, population/context, methods you can actually run
 - Optional: target `venue` (or 2–3 candidate venues)
 
@@ -34,6 +34,7 @@ This stage turns a topic into a *defensible* research plan: what you will claim,
 - Defined **constructs** (what you mean by each key term) and plausible **operationalizations**
 - Scope boundaries (what is *out of scope*, and why)
 - For `systematic-review`: inclusion/exclusion criteria + keyword seed set
+- For `qualitative`: expected evidence form (interviews / cases / fieldnotes / documents / observations) + setting boundary
 - A short feasibility note (FINER-style) with the biggest risks
 
 **Recommended structure: `framing/research_question.md`**
@@ -54,6 +55,7 @@ This stage turns a topic into a *defensible* research plan: what you will claim,
 ## Framing (choose one)
 - PICO (intervention/exposure effect) OR PEO (non-intervention)
 - If methods/theory paper: state the target capability or construct network
+- If qualitative paper: state the focal process, practice, experience, or meaning to be understood
 
 ## Core constructs & definitions
 | Construct | Working definition | Observable proxy (candidate) |
@@ -82,23 +84,25 @@ This stage turns a topic into a *defensible* research plan: what you will claim,
 
 ## A1_5 — Hypothesis / Proposition Generation
 
-Use when the paper needs *testable* or *arguable* statements (empirical/theory/methods).
+Use when the paper needs *testable* or *arguable* statements (empirical / qualitative / theory / methods).
 
 **Definition of done**
 
-- Map each RQ to 1–3 hypotheses/propositions
-- Each hypothesis has **direction**, **mechanism intuition**, and **boundary conditions**
+- Map each RQ to 1–3 hypotheses, propositions, or sensitizing concepts
+- Each item has **mechanism intuition** and **boundary conditions**
+- If confirmatory, include **direction**
+- If qualitative and exploratory, articulate the focal process, meaning, or contrast to investigate
 - Include at least 2 types of alternatives:
   - measurement/construct alternative (operationalization could flip result)
-  - theory-based rival explanation (addressed in `C1_5`)
+  - theory-based rival explanation or rival interpretation (addressed in `C1_5`)
 
 **Recommended structure: `framing/hypothesis.md`**
 
 ```markdown
-# Hypotheses / Propositions
+# Hypotheses / Propositions / Sensitizing Concepts
 
 ## Mapping to RQs
-| RQ | Hypothesis/Proposition IDs |
+| RQ | Hypothesis/Proposition/Concept IDs |
 |---|---|
 
 ## Hypotheses (empirical / methods validation)
@@ -113,6 +117,13 @@ Use when the paper needs *testable* or *arguable* statements (empirical/theory/m
 - Statement:
 - Intuition:
 - Scope conditions:
+
+## Sensitizing concepts / working propositions (qualitative)
+### QP1
+- Focal process / meaning:
+- Why it may matter:
+- Boundary conditions / contrast cases:
+- Evidence form (cases / interviews / observations / documents):
 
 ## Rival explanations (seed list)
 1. ...
@@ -257,4 +268,3 @@ Venue choice determines *what reviewers reward* (novelty vs rigor vs artifact qu
 - Why:
 - Must-not-fail items:
 ```
-

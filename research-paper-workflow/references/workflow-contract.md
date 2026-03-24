@@ -9,6 +9,7 @@ Use this contract as the single source of truth for:
 ## Paper Types
 
 - `empirical`
+- `qualitative`
 - `systematic-review`
 - `methods`
 - `theory`

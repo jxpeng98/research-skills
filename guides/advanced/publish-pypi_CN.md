@@ -43,30 +43,41 @@
 
 ### 1.1 更新版本号
 
-使用 `bump-version.sh` 脚本同时更新 `pyproject.toml` 和 `research_skills/__init__.py`：
+使用 `bump-version.sh` 脚本统一同步以下版本位点：
+
+- `pyproject.toml`
+- `research_skills/__init__.py`
+- `research-paper-workflow/VERSION`
+- `skills/registry.yaml`
+- 所有 `skills/**/*.md` frontmatter 中的 `version`
 
 ```bash
 ./scripts/bump-version.sh 0.2.0
 ```
 
-版本号格式遵循 [PEP 440](https://peps.python.org/pep-0440/)：
+你可以传入稳定版 `0.2.0`，也可以传入 beta 版 `0.2.0b1`。
+脚本会自动规范成三种同步表示：
 
-| 阶段 | 格式 | 示例 |
+| 层 | 稳定版 | Beta |
 |------|------|------|
-| Beta | `X.Y.ZbN` | `0.1.0b7` |
-| RC | `X.Y.ZrcN` | `0.1.0rc1` |
-| 正式版 | `X.Y.Z` | `0.1.0`、`1.0.0` |
+| PyPI package | `0.2.0` | `0.2.0b1` |
+| Skill metadata / registry | `0.2.0` | `0.2.0-beta.1` |
+| Portable skill `VERSION` / git tag | `v0.2.0` | `v0.2.0-beta.1` |
+
+其中 package 版本遵循 [PEP 440](https://peps.python.org/pep-0440/)，skill metadata 使用 SemVer 兼容的 prerelease 语法。
+
+当前 release tooling 只支持 `stable` 和 `beta`。
 
 ### 1.2 Commit + Tag + Push
 
 ```bash
-git add pyproject.toml research_skills/__init__.py
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills
 git commit -m "chore: bump version to 0.2.0"
 git tag v0.2.0
 git push origin main --tags
 ```
 
-> **注意**：tag 格式必须是 `v*`（如 `v0.2.0`、`v0.1.0b7`），GitHub Actions 的 `publish-pypi.yml` 才会触发。
+> **注意**：tag 必须以 `v*` 开头，并使用 repo release 语法，例如 `v0.2.0` 或 `v0.2.0-beta.1`，GitHub Actions 的 `publish-pypi.yml` 才会触发。
 
 ### 1.3 自动构建 & 发布
 
@@ -168,7 +179,7 @@ pip install --index-url https://test.pypi.org/simple/ research-skills-installer
 
 ### Q: tag 推送后 Actions 没有触发？
 
-确认 tag 格式是 `v` 开头（如 `v0.1.0b7`），且 `.github/workflows/publish-pypi.yml` 文件已在 `main` 分支上。
+确认 tag 格式是 `v` 开头（如 `v0.1.0-beta.7`），且 `.github/workflows/publish-pypi.yml` 文件已在 `main` 分支上。
 
 ### Q: PyPI 发布失败 "403 Forbidden"？
 

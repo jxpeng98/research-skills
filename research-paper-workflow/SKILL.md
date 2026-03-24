@@ -1,6 +1,6 @@
 ---
 name: research-paper-workflow
-description: Standardized end-to-end workflow for academic paper production across Codex, Claude Code, and Gemini. Use when a user needs to choose a paper type (empirical, systematic review, methods, theory), select a workflow stage, and produce consistent artifacts under RESEARCH/[topic]/ with explicit task IDs, quality gates, and submission-ready outputs.
+description: Standardized end-to-end workflow for academic paper production across Codex, Claude Code, and Gemini. Use when a user needs to choose a paper type (empirical, qualitative, systematic review, methods, theory), select a workflow stage, and produce consistent artifacts under RESEARCH/[topic]/ with explicit task IDs, quality gates, and submission-ready outputs.
 ---
 
 # Research Paper Workflow
@@ -11,7 +11,7 @@ Treat this package as the portable entry skill for clients. Do not treat it as t
 
 ## Quick Start
 
-1. Ask for `paper_type`: `empirical`, `systematic-review`, `methods`, or `theory`.
+1. Ask for `paper_type`: `empirical`, `qualitative`, `systematic-review`, `methods`, or `theory`.
 2. Ask for `task_id` from the contract (for example `F3` or `G1`).
 3. Execute the task and write outputs to `RESEARCH/[topic]/` using the exact file paths.
 4. Apply quality gates before submission tasks (`H1`, `H2`).

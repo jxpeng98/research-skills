@@ -4,21 +4,21 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 
 ## Capability Matrix (at-a-glance)
 
-| Capability | Empirical | Systematic Review | Methods | Theory |
-|---|---|---|---|---|
-| Framing (RQ + contribution) | Required | Required | Required | Required |
-| Theoretical framing / gap | Optional | Optional | Optional | Required |
-| Search + screening artifacts | Optional | Required | Optional | Optional |
-| Extraction + quality appraisal | Optional | Required | Optional | Optional |
-| Study design + analysis plan | Required | Optional | Required | Optional |
-| Data readiness (dataset + variables + pipeline plan) | Required | Optional | Recommended | Optional |
-| Ethics + governance | Required | Optional | Optional | Optional |
-| Synthesis / meta-analysis | Optional | Required | Optional | Optional |
-| Manuscript drafting | Required | Required | Required | Required |
-| Compliance checks | Required | Required | Required | Required |
-| Submission + revision kit | Required | Required | Required | Required |
-| Proofread & de-AI | Required | Required | Required | Required |
-| Code/repro support | Recommended | Optional | Required | Optional |
+| Capability | Empirical | Qualitative | Systematic Review | Methods | Theory |
+|---|---|---|---|---|---|
+| Framing (RQ + contribution) | Required | Required | Required | Required | Required |
+| Theoretical framing / gap | Optional | Required | Optional | Optional | Required |
+| Search + screening artifacts | Optional | Optional | Required | Optional | Optional |
+| Extraction + quality appraisal | Optional | Optional | Required | Optional | Optional |
+| Study design + analysis plan | Required | Required | Optional | Required | Optional |
+| Data readiness (sampling + instruments + evidence plan) | Required | Required | Optional | Recommended | Optional |
+| Ethics + governance | Required | Required | Optional | Optional | Optional |
+| Synthesis / meta-analysis | Optional | Optional | Required | Optional | Optional |
+| Manuscript drafting | Required | Required | Required | Required | Required |
+| Compliance checks | Required | Required | Required | Required | Required |
+| Submission + revision kit | Required | Required | Required | Required | Required |
+| Proofread & de-AI | Required | Required | Required | Required | Required |
+| Code/repro support | Recommended | Optional | Optional | Required | Optional |
 
 ## Recommended Minimum Task Coverage
 
@@ -34,6 +34,18 @@ Defines recommended **minimum Task ID coverage** by `paper_type` for a submissio
 - Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)
 - Submission/revision: `H1` (and `H3/H4` strongly recommended pre-submission)
 - Code support: `I4` (recommended) + `I5–I8` (if code is a core contribution)
+
+### `qualitative`
+
+- Framing: `A1`, `A1_5` (hypotheses, propositions, or sensitizing concepts), `A2`, `A3`, `A4`, `A5`
+- Literature: `B2`, `B6`, `B4` (related work)
+- Design: `C1`, `C2`, `C3`, `C1_5`, `C4`
+- Ethics: `D1` and/or `D2` + `D3` (as applicable for human/sensitive data)
+- Writing: `F1`, `F3`, `F4`, `F5`, `F6`
+- Compliance: `G1` (SRQR / COREQ), `G3`, `G4`
+- Proofread: `J1`, `J2` (required if AI-assisted); `J3`, `J4` (recommended)
+- Submission/revision: `H1` (and `H3/H4` strongly recommended pre-submission)
+- Code support: `I4` optional when qualitative analysis relies on reproducible transcript processing or coding exports
 
 ### `systematic-review`
 
@@ -74,7 +86,8 @@ Select the right guideline in `G1/G2` (venue may require one explicitly):
 - Systematic review: **PRISMA 2020** (`G2`)
 - RCT: **CONSORT**
 - Observational: **STROBE**
-- Qualitative: **COREQ** / **SRQR**
+- Qualitative interviews/focus groups: **COREQ**
+- Broader qualitative studies: **SRQR**
 - Prediction/diagnostic: **TRIPOD**
 
 ## Out of Scope by Default

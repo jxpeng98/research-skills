@@ -24,8 +24,13 @@ Save to: RESEARCH/[topic]/analysis_plan.md
 | O1 | | | | Y/N |
 | O2 | | | | Y/N |
 
+### Qualitative analytic targets (if applicable)
+- Focal process / practice / meaning:
+- Primary evidence forms (cases / interviews / fieldnotes / documents):
+- Comparison logic (within-case / cross-case / temporal / actor-level):
+
 ## 4) Estimands / Claims
-For each primary outcome:
+For each primary outcome or qualitative target:
 - What is the estimand / target quantity?
 - What constitutes practical significance?
 - Direction convention (what is “better”)?
@@ -55,20 +60,28 @@ For each primary outcome:
 
 ## 6) Qualitative Analysis (If Applicable)
 
-- Approach: thematic analysis / framework / grounded theory / content analysis
+- Approach: thematic analysis / framework / grounded theory / Gioia / process research / content analysis
+- Unit of coding / case boundary:
 - Coding strategy: inductive / deductive / hybrid
 - Codebook development:
+- Memoing and reflexivity plan:
+- Within-case and cross-case comparison logic:
+- Negative / disconfirming case handling:
+- Saturation or theoretical sufficiency rule:
 - Inter-coder reliability (if used):
 - Trustworthiness: triangulation, member checking, audit trail, reflexivity
 
-## 7) Data Quality Checks
+## 7) Data Quality / Evidence Quality Checks
 - Valid range checks:
 - Duplicate detection:
 - Attention checks (surveys):
 - Outliers:
+- Transcript / note quality checks:
+- Case evidence completeness:
 
 ## 8) Reporting Plan
 - Tables/figures to produce:
+- Qualitative transparency artifacts to produce:
 - What will be in appendix:
 - How uncertainty will be reported:
 
@@ -76,4 +89,3 @@ For each primary outcome:
 | Date | Deviation | Rationale | Impact |
 |------|-----------|-----------|--------|
 | | | | |
-

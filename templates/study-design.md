@@ -8,9 +8,9 @@ Save to: RESEARCH/[topic]/study_design.md
 # Study Design: [Working Title]
 
 ## 1) Overview
-- **Research goal**: causal / descriptive / predictive
+- **Research goal**: causal / descriptive / predictive / explanatory / interpretive
 - **Primary RQ(s)**:
-- **Hypotheses (if any)**:
+- **Hypotheses / working propositions (if any)**:
 - **Contribution**:
 
 ## 2) Background (Brief)
@@ -39,11 +39,11 @@ Save to: RESEARCH/[topic]/study_design.md
 - **Compensation**:
 - **Sample size plan**:
   - Quant: power/MDE rationale (or feasibility-based)
-  - Qual: saturation plan + sampling logic
+  - Qual: saturation / theoretical sufficiency plan + sampling logic
 
 ## 5) Measures / Instruments
 ### Key constructs and operationalization
-| Construct | Role (IV/DV/etc) | Operationalization / Instrument | Notes |
+| Construct / sensitizing concept | Role (IV/DV/theme/code/etc) | Operationalization / Instrument / Evidence source | Notes |
 |----------|-------------------|----------------------------------|------|
 | | | | |
 
@@ -54,21 +54,23 @@ Save to: RESEARCH/[topic]/study_design.md
 ## 6) Procedures / Data Collection
 - Timeline (waves/timepoints):
 - Data collection steps:
+- Access / site-entry plan:
 - Randomization / assignment (if applicable):
+- Recording / transcription / fieldnote rules:
 - Pilot plan:
 
 ## 7) Analysis Summary (Pointer)
-- Primary outcome(s):
-- Core model(s)/approach:
+- Primary outcome(s) or analytic targets:
+- Core model(s) / coding approach:
 - Key covariates:
-- Heterogeneity/subgroups (pre-specified):
+- Heterogeneity / subgroups / case contrasts (pre-specified):
 
 Full details: `RESEARCH/[topic]/analysis_plan.md`
 
 ## 8) Validity / Rigor
-- Threats to validity:
+- Threats to validity / trustworthiness:
 - Mitigations:
-- Reliability checks:
+- Reliability / credibility checks:
 
 ## 9) Ethics / IRB
 - Consent approach:

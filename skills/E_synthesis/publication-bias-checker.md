@@ -1,7 +1,7 @@
 ---
 id: publication-bias-checker
 stage: E_synthesis
-version: "0.2.1"
+version: "0.2.2"
 description: "Evaluate publication bias using funnel plots, fail-safe N, Egger's test, and trim-and-fill correction models."
 inputs:
   - type: EvidenceTable

@@ -1,7 +1,7 @@
 ---
 id: release-packager
 stage: I_code
-version: "0.2.1"
+version: "0.2.2"
 description: "Package code, data, environment, and documentation for reproducible release (Zenodo, GitHub, Dataverse)."
 inputs:
   - type: AnalysisCode

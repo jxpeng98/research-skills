@@ -29,13 +29,7 @@ jobs:
         run: bash scripts/inject_project_toml.sh
 
       - name: Compile critical modules
-        run: |
-          python -m py_compile \
-            bridges/base_bridge.py \
-            bridges/orchestrator.py \
-            scripts/validate_research_standard.py \
-            tests/test_orchestrator_workflows.py \
-            tests/test_install_research_skill.py
+        run: python -m py_compile bridges/base_bridge.py bridges/orchestrator.py scripts/validate_research_standard.py tests/test_orchestrator_workflows.py tests/test_install_research_skill.py
 
       - name: Validate research standard
         run: python scripts/validate_research_standard.py --strict
@@ -60,12 +54,7 @@ jobs:
         run: bash scripts/inject_project_toml.sh
 
       - name: Compile critical modules
-        run: |
-          python -m py_compile \
-            bridges/base_bridge.py \
-            bridges/orchestrator.py \
-            scripts/validate_research_standard.py \
-            tests/test_orchestrator_workflows.py
+        run: python -m py_compile bridges/base_bridge.py bridges/orchestrator.py scripts/validate_research_standard.py tests/test_orchestrator_workflows.py
 
       - name: Validate shell scripts syntax
         run: |

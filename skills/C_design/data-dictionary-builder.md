@@ -1,7 +1,7 @@
 ---
 id: data-dictionary-builder
 stage: C_design
-version: "0.2.1"
+version: "0.2.2"
 description: "Create structured data dictionaries defining every variable's name, type, range, coding, and source."
 inputs:
   - type: DesignSpec

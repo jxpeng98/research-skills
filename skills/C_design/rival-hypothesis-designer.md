@@ -1,7 +1,7 @@
 ---
 id: rival-hypothesis-designer
 stage: C_design
-version: "0.2.1"
+version: "0.2.2"
 description: "Proactively construct and address competitive theories and rival explanations to strengthen study design."
 inputs:
   - type: DesignSpec

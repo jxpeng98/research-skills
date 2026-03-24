@@ -1,7 +1,7 @@
 ---
 id: gap-analyzer
 stage: A_framing
-version: "0.2.1"
+version: "0.2.2"
 description: "Systematically identify and categorize research gaps from literature analysis using 5-type taxonomy and FINER prioritization."
 inputs:
   - type: LiteratureCorpus

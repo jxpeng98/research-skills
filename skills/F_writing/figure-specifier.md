@@ -1,7 +1,7 @@
 ---
 id: figure-specifier
 stage: F_writing
-version: "0.2.1"
+version: "0.2.2"
 description: "Specify publication-quality figures with exact data mapping, visual encoding, and accessibility compliance."
 inputs:
   - type: StatsReport

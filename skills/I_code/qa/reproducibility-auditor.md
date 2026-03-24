@@ -1,7 +1,7 @@
 ---
 id: reproducibility-auditor
 stage: I_code
-version: "0.2.1"
+version: "0.2.2"
 description: "Verify magic numbers, random seeds, containerization instructions, and fail-graceful contingencies for reproducibility."
 inputs:
   - type: AnalysisCode

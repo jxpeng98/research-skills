@@ -1,7 +1,7 @@
 ---
 id: tone-normalizer
 stage: G_compliance
-version: "0.2.1"
+version: "0.2.2"
 description: "Ruthlessly cut fluff, transition words, hedging, and absolute claims to produce concise, objective academic tone."
 inputs:
   - type: Manuscript

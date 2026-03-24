@@ -1,7 +1,7 @@
 ---
 id: ethics-irb-helper
 stage: D_ethics
-version: "0.2.1"
+version: "0.2.2"
 description: "Prepare IRB-ready materials including risk assessment, informed consent, recruitment scripts, and data governance."
 inputs:
   - type: DesignSpec

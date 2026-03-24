@@ -1,0 +1,132 @@
+domain: business-management
+display_name: "Business Management & Organization Studies"
+
+libraries:
+  python:
+    - pandas        # interview/case metadata tables and evidence inventories
+    - networkx      # process maps and actor-relation visual scaffolds
+  r:
+    - QCA           # set-theoretic comparison when a qualitative design uses configurational logic
+    - DiagrammeR    # process models and conceptual visuals
+  other:
+    qualitative_software:
+      - NVivo
+      - ATLAS.ti
+      - MAXQDA
+
+method_templates:
+  - name: "Gioia Methodology (Inductive Theory Building)"
+    tier: standard
+    library: NVivo / ATLAS.ti / MAXQDA
+    checklist:
+      - "State the research question as process, meaning, or mechanism seeking"
+      - "Separate first-order informant terms from second-order researcher concepts"
+      - "Show aggregate dimensions only after the coding ladder is explicit"
+      - "Document memoing, iteration, and category consolidation decisions"
+      - "Use negative cases to test whether the emergent model still holds"
+
+  - name: "Multiple Case Study (Eisenhardt/Yin style)"
+    tier: standard
+    library: case database + matrix coding
+    checklist:
+      - "Justify case selection with theoretical relevance, not convenience alone"
+      - "Define case boundaries, observation window, and embedded units clearly"
+      - "Run within-case analysis before cross-case pattern search"
+      - "Maintain a case evidence chain from raw material to analytic claim"
+      - "Report why each additional case changes, refines, or saturates the theory"
+
+  - name: "Process Research"
+    tier: advanced
+    library: event timeline + memo database
+    checklist:
+      - "Define the focal process and temporal bracketing logic"
+      - "Show how events, turning points, and mechanisms connect over time"
+      - "Distinguish actor attributions from the author's process explanation"
+      - "Test alternative process narratives with discrepant episodes"
+      - "Use a visual process model or timeline anchored to evidence"
+
+  - name: "Qualitative Interview Study"
+    tier: standard
+    library: interview guide + coding software
+    checklist:
+      - "Specify purposive/theoretical/maximum-variation sampling logic"
+      - "Document access, interview protocol, recording, and transcription rules"
+      - "Explain saturation with no-new-dimension logic, not a magic sample number"
+      - "Include reflexive notes on interviewer position and interaction effects"
+      - "Pair representative quotes with analytic interpretation, not quote dumping"
+
+  - name: "Ethnography / Fieldwork"
+    tier: advanced
+    library: fieldnotes + memo system
+    checklist:
+      - "Clarify researcher role, site access, and immersion duration"
+      - "Separate fieldnote description from analytic memo interpretation"
+      - "Track shifts in access, role, and reactivity over time"
+      - "Explain how observations, artifacts, and interviews are triangulated"
+      - "Describe ethical handling of highly identifiable field contexts"
+
+stats_diagnostics:
+  - "Theoretical sampling logic is tied to emergent categories or case contrasts"
+  - "Saturation is evidenced by diminishing new properties, not by a fixed N rule"
+  - "Negative case analysis or rival interpretation checks are documented"
+  - "Reflexive memoing and researcher-position notes are explicit"
+  - "Claims can be traced from quotes/episodes/documents to aggregate concepts"
+  - "Informant language and author-level theoretical claims are not conflated"
+
+reporting_guidelines:
+  primary: "Academy of Management / Organization Studies style"
+  checklists:
+    - "SRQR"
+    - "COREQ (for interview or focus-group heavy designs)"
+    - "Venue-specific qualitative transparency appendix"
+
+common_pitfalls:
+  - "Presenting themes as labels without explaining the underlying process or mechanism"
+  - "Treating quotes as self-evident proof instead of interpreting the analytic move"
+  - "Claiming saturation without showing what stopped changing in the analysis"
+  - "Selecting firms/teams/cases by access convenience with no theoretical rationale"
+  - "Jumping to managerial implications before clarifying the theoretical contribution"
+  - "Reporting respondent attributions as if they directly establish causality"
+  - "Ignoring negative cases, contested meanings, or temporal contradictions"
+  - "Using a Gioia-style figure without showing the evidence logic behind each dimension"
+
+visualization_templates:
+  - "Gioia data structure (first-order concepts -> second-order themes -> aggregate dimensions)"
+  - "Process model with mechanisms, turning points, and temporal brackets"
+  - "Case comparison matrix (case x construct/process stage)"
+  - "Fieldwork timeline with key episodes and access shifts"
+  - "Evidence table linking representative quotes/episodes to analytic claims"
+
+reporting_standards:
+  primary: "AMJ / Organization Science / JMS qualitative style"
+  checklists: [SRQR, COREQ]
+  required_tables:
+    - "Participant or case overview table"
+    - "Data source table (interviews, observations, documents, timeline)"
+    - "Coding progression or data structure figure"
+
+default_databases:
+  primary: [ABI/INFORM, Business Source Complete, Scopus, Web of Science]
+  secondary: [Google Scholar, SSRN]
+  preprints: [SSRN]
+  query_syntax_notes: "Management journals often require chaining construct terms with context, level of analysis, and method labels such as interview, case study, or ethnography."
+
+methodology_priors:
+  identification: "Qualitative business-management work is judged more on analytical generalization, mechanism clarity, and theoretical contribution than on statistical representativeness."
+  robustness: "Reviewers expect negative cases, triangulation, reflexivity, and a transparent chain of evidence."
+  standard_hierarchy: [Ethnography, Process_Research, Multiple_Case_Study, Interview_Study, Configurational_Comparison]
+  estimation_norms: "Show theoretical sampling, evidence transparency, and why the chosen setting sharpens the contribution."
+
+venue_norms:
+  amj:
+    sections: [Introduction, Theory, Methods, Findings, Discussion]
+    word_limit: 12000
+    code_release: "Not required; transparency appendix and evidence tables expected"
+  organization-science:
+    sections: [Introduction, Theory, Methods, Findings, Discussion]
+    word_limit: 11000
+    code_release: "Not required; process model and methodological transparency expected"
+  jms:
+    sections: [Introduction, Literature_Review, Methods, Findings, Discussion]
+    word_limit: 12000
+    code_release: "Not required; case sampling and reflexivity must be explicit"

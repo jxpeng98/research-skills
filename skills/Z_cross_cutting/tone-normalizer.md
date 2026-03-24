@@ -1,7 +1,7 @@
 ---
 id: tone-normalizer
 stage: Z_cross_cutting
-version: "1.0.0"
+version: "0.1.0"
 description: "Cross-cutting tone normalization for any text output — rebuttals, emails, IRB documents, informal drafts. Canonical skill at G_compliance/tone-normalizer.md."
 inputs:
   - type: AnyArtifact

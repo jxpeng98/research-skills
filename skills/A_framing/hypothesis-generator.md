@@ -1,8 +1,8 @@
 ---
 id: hypothesis-generator
 stage: A_framing
-version: "1.0.0"
-description: "Translate research questions into testable hypotheses or theory propositions with mechanisms and boundary conditions."
+version: "0.1.0"
+description: "Translate research questions into hypotheses, propositions, or sensitizing concepts with mechanisms, rival explanations, and boundary conditions."
 inputs:
   - type: RQSet
     description: "Refined research questions from question-refiner"
@@ -13,10 +13,10 @@ outputs:
   - type: HypothesisSet
     artifact: "framing/hypothesis.md"
 constraints:
-  - "Each hypothesis must specify direction and expected sign"
-  - "Must include at least one rival explanation per key claim"
+  - "Each confirmatory hypothesis must specify direction and expected sign when applicable"
+  - "Must include at least one rival explanation or alternative interpretation per key claim"
 failure_modes:
-  - "Research questions too exploratory for formal hypotheses"
+  - "Research questions are exploratory but no propositions or sensitizing concepts are produced"
 tools: [filesystem]
 tags: [framing, hypothesis, propositions, mechanisms]
 domain_aware: false
@@ -24,7 +24,7 @@ domain_aware: false
 
 # Hypothesis Generator Skill
 
-Translate research questions into testable hypotheses (or theory propositions) with mechanisms and boundary conditions.
+Translate research questions into testable hypotheses, qualitative working propositions, or sensitizing concepts with mechanisms and boundary conditions.
 
 ## Related Task IDs
 
@@ -41,10 +41,11 @@ Translate research questions into testable hypotheses (or theory propositions) w
 
 ## Procedure
 
-1. Map each RQ to 1–3 hypotheses/propositions.
+1. Map each RQ to 1–3 hypotheses, propositions, or sensitizing concepts.
 2. For each hypothesis:
    - specify direction and expected sign (if quantitative)
+   - or specify the focal process, meaning, or mechanism to investigate (if qualitative)
    - articulate mechanism (why)
    - list boundary conditions (when it may not hold)
-   - propose operationalizations (IV/DV)
-3. Add at least one rival explanation per key claim (feeds `C1_5`).
+   - propose operationalizations (IV/DV) or evidence forms (cases/episodes/quotes/documents)
+3. Add at least one rival explanation or rival interpretation per key claim (feeds `C1_5`).

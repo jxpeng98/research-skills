@@ -1,7 +1,7 @@
 ---
 id: concept-extractor
 stage: B_literature
-version: "1.0.0"
+version: "0.1.0"
 description: "Expand and structure search concepts/keywords to build reproducible search strategy and avoid confirmation bias."
 inputs:
   - type: RQSet

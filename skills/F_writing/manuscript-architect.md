@@ -1,7 +1,7 @@
 ---
 id: manuscript-architect
 stage: F_writing
-version: "1.1.0"
+version: "0.1.0"
 description: "Build coherent paper structure from outline to section-level drafts with claim-evidence integrity and analysis-depth checking."
 inputs:
   - type: RQSet
@@ -9,7 +9,7 @@ inputs:
   - type: EvidenceTable
     description: "Synthesized evidence"
   - type: DesignSpec
-    description: "Study design (for empirical papers)"
+    description: "Study design (for empirical or qualitative papers)"
     required: false
 outputs:
   - type: ManuscriptOutline
@@ -38,6 +38,7 @@ Build and revise a full research paper manuscript across stages: outline → sec
 ## When to Use
 
 - You want to draft a paper from an existing `RESEARCH/[topic]/` project folder (empirical study or systematic review).
+- You want to draft a fully qualitative paper from interview, case, ethnographic, or document-based materials without defaulting back to a quantitative structure.
 - You have partial materials (notes, tables, analysis plan, results) and want a coherent manuscript.
 
 ## Granularity Boundary
@@ -67,10 +68,11 @@ These depth rules apply across empirical, qualitative, mixed-methods, theory, an
 
 ## Inputs (Ask / Collect)
 
-1. Paper type: **empirical** / **systematic review** / **theory** / **methods** (default: empirical)
+1. Paper type: **empirical** / **qualitative** / **systematic review** / **theory** / **methods** (default: empirical)
 2. Target venue (optional): scope + formatting + double-blind requirements
 3. Current artifacts available in `RESEARCH/[topic]/`:
    - Empirical: `study_design.md`, `analysis_plan.md`, results tables/figures, code outputs
+   - Qualitative: `study_design.md`, `analysis_plan.md`, interview/case notes, coding memos, evidence tables, process diagrams, transparency appendix notes
    - SR: `synthesis.md`, `meta_analysis_results.md`, `prisma_checklist.md`
 4. Citation style (APA/IEEE/BibTeX) and reference source (`bibliography.bib` preferred)
 
@@ -113,9 +115,9 @@ Use `templates/manuscript-outline.md` to:
 Draft in order:
 1. Introduction (problem → gap → why the gap persisted → contribution → roadmap)
 2. Related work / literature positioning (theme-, tension-, or mechanism-based; not serial paper summary)
-3. Methods (design, data, measures, analysis plan; ethics statement if needed)
-4. Results (tables/figures + uncertainty + heterogeneity + null findings; avoid interpretation creep)
-5. Discussion (mechanisms, alternative explanations, boundary conditions, comparison to prior work, implications)
+3. Methods (design, site/case access, sampling, data sources, measures/protocols, analytic procedure, reflexivity, ethics)
+4. Results / Findings (tables/figures, themes, dimensions, process model, heterogeneity, null findings, negative cases; avoid interpretation creep and quote dumping)
+5. Discussion (mechanisms, rival interpretations, boundary conditions, comparison to prior work, theoretical contribution, practical implications)
 6. Limitations / threats to validity (explicit, not hidden)
 7. Conclusion
 8. Title/Abstract/Keywords (last)
@@ -146,6 +148,7 @@ Use `templates/figures-tables-plan.md`:
 
 Run the right checker:
 - Empirical: **reporting-checker** (CONSORT/STROBE/COREQ/etc.)
+- Qualitative: **reporting-checker** (SRQR / COREQ / venue-specific transparency)
 - Systematic review: **prisma-checker**
 
 Optionally draft:

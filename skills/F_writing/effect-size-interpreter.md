@@ -1,7 +1,7 @@
 ---
 id: effect-size-interpreter
 stage: F_writing
-version: "1.0.0"
+version: "0.1.0"
 description: "Translate coefficients and effect sizes into substantive magnitude statements that readers can understand quickly."
 inputs:
   - type: StatsReport

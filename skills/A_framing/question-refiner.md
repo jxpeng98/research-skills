@@ -1,8 +1,8 @@
 ---
 id: question-refiner
 stage: A_framing
-version: "1.0.0"
-description: "Transform vague research topics into structured, answerable research questions using PICO/PEO frameworks and FINER evaluation."
+version: "0.1.0"
+description: "Transform vague research topics into structured, answerable research questions using PICO, PEO, or SPIDER framing plus FINER evaluation."
 inputs:
   - type: UserQuery
     description: "Raw research topic or area of interest"
@@ -10,14 +10,14 @@ outputs:
   - type: RQSet
     artifact: "framing/research_question.md"
 constraints:
-  - "Must apply PICO or PEO framework"
+  - "Must apply PICO, PEO, or SPIDER as fit to the study design"
   - "Must evaluate with FINER criteria"
   - "Must generate inclusion/exclusion criteria"
 failure_modes:
   - "Topic too broad to produce actionable RQ"
   - "Missing domain context for framework selection"
 tools: [filesystem]
-tags: [framing, research-question, PICO, PEO, FINER]
+tags: [framing, research-question, PICO, PEO, SPIDER, FINER]
 domain_aware: false
 ---
 
@@ -30,7 +30,7 @@ Transform vague research topics into structured, answerable research questions u
 Convert raw research ideas into well-structured research questions that are:
 - Specific and focused
 - Answerable within scope
-- Grounded in appropriate frameworks (PICO/PEO)
+- Grounded in appropriate frameworks (PICO/PEO/SPIDER)
 - Evaluated by FINER criteria
 
 ## Process
@@ -51,7 +51,7 @@ Ask clarifying questions:
    - What population/context is relevant?
 
 3. **Output Requirements**
-   - What type of output do you need? (Review, empirical study, theoretical paper)
+   - What type of output do you need? (Review, empirical study, qualitative study, methods paper, theoretical paper)
    - What is the target venue/audience?
    - What is the expected depth of analysis?
 
@@ -85,6 +85,23 @@ Example:
 
 → RQ: "How does remote work adoption affect productivity and well-being among software developers?"
 
+#### For Qualitative / Experience / Process Studies - Use SPIDER
+
+- **S**ample: Who or what will be studied?
+- **PI** Phenomenon of Interest: What process, experience, practice, or meaning is focal?
+- **D**esign: Interviews, ethnography, case study, observation, document analysis, or mixed qualitative design?
+- **E**valuation: What kind of understanding is sought (meanings, mechanisms, process explanations, practices)?
+- **R**esearch type: Qualitative / mixed-methods
+
+Example:
+- S: Platform managers and complementors
+- PI: Governance tensions during AI policy rollout
+- D: Multi-case interview study
+- E: How governance practices are interpreted and negotiated
+- R: Qualitative
+
+→ RQ: "How do platform managers and complementors negotiate governance tensions during AI policy rollout?"
+
 ### Step 3: Question Refinement
 
 Transform into specific question types:
@@ -96,6 +113,8 @@ Transform into specific question types:
 | Relational | "What is the relationship between...?" | Examining associations |
 | Causal | "Does X cause Y...?" | Testing causation |
 | Exploratory | "How do participants experience...?" | Understanding perspectives |
+| Process / Mechanism | "How does X unfold...?" | Explaining sequences, turning points, and mechanisms |
+| Interpretive | "How do actors make sense of...?" | Understanding meanings, framings, or identity work |
 
 ### Step 4: FINER Evaluation
 

@@ -1,7 +1,7 @@
 ---
 id: code-specification
 stage: I_code
-version: "1.0.0"
+version: "0.1.0"
 description: "Generate strict constraint sets and requirement specifications before coding, following OPSX-style methodology."
 inputs:
   - type: UserQuery

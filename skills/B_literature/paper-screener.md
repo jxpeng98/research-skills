@@ -1,7 +1,7 @@
 ---
 id: paper-screener
 stage: B_literature
-version: "1.0.0"
+version: "0.1.0"
 description: "Apply two-stage systematic screening (title/abstract then full-text) with PRISMA-compliant decision logging."
 inputs:
   - type: SearchResults

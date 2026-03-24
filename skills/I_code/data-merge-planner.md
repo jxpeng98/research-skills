@@ -1,7 +1,7 @@
 ---
 id: data-merge-planner
 stage: I_code
-version: "1.0.0"
+version: "0.1.0"
 description: "Define dataset join strategy, key validation, and provenance controls for multi-source empirical workflows."
 inputs:
   - type: DatasetPlan

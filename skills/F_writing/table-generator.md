@@ -1,7 +1,7 @@
 ---
 id: table-generator
 stage: F_writing
-version: "1.0.0"
+version: "0.1.0"
 description: "Generate publication-ready tables (descriptive stats, regression, ANOVA) with APA/journal formatting."
 inputs:
   - type: StatsReport

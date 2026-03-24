@@ -11,7 +11,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: question-refiner
     stage: A_framing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/A_framing/question-refiner.md
     summary: "Transform vague topics into structured RQs via PICO/PEO + FINER evaluation."
     inputs: [UserQuery]
@@ -24,7 +24,7 @@ skills:
 
   - id: hypothesis-generator
     stage: A_framing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/A_framing/hypothesis-generator.md
     summary: "Translate RQs into testable hypotheses with mechanisms and boundary conditions."
     inputs: [RQSet, TheoreticalFramework]
@@ -37,7 +37,7 @@ skills:
 
   - id: theory-mapper
     stage: A_framing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/A_framing/theory-mapper.md
     summary: "Map theoretical concepts, relationships, and frameworks with Mermaid diagrams."
     inputs: [RQSet, LiteratureCorpus]
@@ -50,7 +50,7 @@ skills:
 
   - id: gap-analyzer
     stage: A_framing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/A_framing/gap-analyzer.md
     summary: "Identify and categorize research gaps using 5-type taxonomy with FINER prioritization."
     inputs: [LiteratureCorpus, SearchResults]
@@ -63,7 +63,7 @@ skills:
 
   - id: venue-analyzer
     stage: A_framing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/A_framing/venue-analyzer.md
     summary: "Analyze venue fit, formatting constraints, and reviewer expectations."
     inputs: [UserQuery, RQSet]
@@ -79,7 +79,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: academic-searcher
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/academic-searcher.md
     summary: "Own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill."
     inputs: [RQSet, SearchQueryPlan]
@@ -92,7 +92,7 @@ skills:
 
   - id: paper-screener
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/paper-screener.md
     summary: "Two-stage PRISMA-compliant systematic screening with decision logging."
     inputs: [SearchResults, RQSet]
@@ -105,7 +105,7 @@ skills:
 
   - id: paper-extractor
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/paper-extractor.md
     summary: "Extract structured theory, method, data, findings, and limitation slots into notes and rollups."
     inputs: [ScreeningDecisionLog]
@@ -118,7 +118,7 @@ skills:
 
   - id: citation-snowballer
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/citation-snowballer.md
     summary: "Forward/backward citation tracing to expand corpus and find seminal works."
     inputs: [SearchResults]
@@ -131,7 +131,7 @@ skills:
 
   - id: fulltext-fetcher
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/fulltext-fetcher.md
     summary: "Retrieve full-text PDFs via OA channels with PRISMA-compliant status tracking."
     inputs: [ScreeningDecisionLog]
@@ -144,7 +144,7 @@ skills:
 
   - id: citation-formatter
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/citation-formatter.md
     summary: "Format citations in APA/MLA/Chicago/IEEE/BibTeX with consistent citekeys."
     inputs: [PaperNotes]
@@ -157,7 +157,7 @@ skills:
 
   - id: concept-extractor
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/concept-extractor.md
     summary: "Expand search concepts with controlled vocabulary and Boolean query drafting."
     inputs: [RQSet, PaperNotes]
@@ -170,7 +170,7 @@ skills:
 
   - id: literature-mapper
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/literature-mapper.md
     summary: "Build literature taxonomy with mechanism-based cluster labels and open problems."
     inputs: [ExtractionTable]
@@ -183,7 +183,7 @@ skills:
 
   - id: reference-manager-bridge
     stage: B_literature
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/B_literature/reference-manager-bridge.md
     summary: "Export/import references between research system and Zotero/Mendeley/EndNote."
     inputs: [Bibliography, PaperNotes]
@@ -199,7 +199,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: study-designer
     stage: C_design
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/C_design/study-designer.md
     summary: "Own study design rationale, measures, analysis summary, and design handoff artifacts in one package."
     inputs: [RQSet, TheoreticalFramework]
@@ -212,7 +212,7 @@ skills:
 
   - id: rival-hypothesis-designer
     stage: C_design
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/C_design/rival-hypothesis-designer.md
     summary: "Construct competing theories and rival explanations to strengthen design."
     inputs: [DesignSpec, HypothesisSet]
@@ -225,7 +225,7 @@ skills:
 
   - id: robustness-planner
     stage: C_design
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/C_design/robustness-planner.md
     summary: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
     inputs: [DesignSpec, AnalysisPlan]
@@ -238,7 +238,7 @@ skills:
 
   - id: dataset-finder
     stage: C_design
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/C_design/dataset-finder.md
     summary: "Identify feasible datasets, access routes, and coverage risks before implementation."
     inputs: [RQSet, DesignSpec, AnalysisPlan]
@@ -251,7 +251,7 @@ skills:
 
   - id: variable-constructor
     stage: C_design
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/C_design/variable-constructor.md
     summary: "Operationalize constructs into auditable variables, coding rules, and transformations."
     inputs: [DesignSpec, AnalysisPlan, HypothesisSet, DatasetPlan]
@@ -267,7 +267,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: ethics-irb-helper
     stage: D_ethics
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/D_ethics/ethics-irb-helper.md
     summary: "Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance."
     inputs: [DesignSpec]
@@ -280,7 +280,7 @@ skills:
 
   - id: deidentification-planner
     stage: D_ethics
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/D_ethics/deidentification-planner.md
     summary: "Design technical privacy measures via k-anonymity or differential privacy."
     inputs: [DesignSpec, EthicsPackage]
@@ -296,7 +296,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: evidence-synthesizer
     stage: E_synthesis
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/E_synthesis/evidence-synthesizer.md
     summary: "Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting."
     inputs: [ExtractionTable, QualityTable]
@@ -309,7 +309,7 @@ skills:
 
   - id: quality-assessor
     stage: E_synthesis
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/E_synthesis/quality-assessor.md
     summary: "Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE."
     inputs: [ExtractionTable]
@@ -322,7 +322,7 @@ skills:
 
   - id: publication-bias-checker
     stage: E_synthesis
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/E_synthesis/publication-bias-checker.md
     summary: "Evaluate publication bias via funnel plots, Egger's test, trim-and-fill."
     inputs: [EvidenceTable]
@@ -338,7 +338,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: manuscript-architect
     stage: F_writing
-    version: "1.1.0"
+    version: "0.1.0"
     file: skills/F_writing/manuscript-architect.md
     summary: "Own story spine, section drafting, and deep analytical framing as one manuscript package."
     inputs: [RQSet, EvidenceTable, DesignSpec]
@@ -351,7 +351,7 @@ skills:
 
   - id: analysis-interpreter
     stage: F_writing
-    version: "1.1.0"
+    version: "0.1.0"
     file: skills/F_writing/analysis-interpreter.md
     summary: "Translate findings into analytical prose with uncertainty, mechanisms, rivals, and boundary conditions."
     inputs: [StatsReport, AnalysisPlan, RobustnessPlan]
@@ -364,7 +364,7 @@ skills:
 
   - id: effect-size-interpreter
     stage: F_writing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/F_writing/effect-size-interpreter.md
     summary: "Explain the substantive magnitude of estimates in interpretable units."
     inputs: [StatsReport, DesignSpec, VenueAnalysis]
@@ -377,7 +377,7 @@ skills:
 
   - id: table-generator
     stage: F_writing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/F_writing/table-generator.md
     summary: "Generate publication-ready tables from statistical output with venue-aware formatting."
     inputs: [StatsReport, VenueAnalysis]
@@ -390,7 +390,7 @@ skills:
 
   - id: figure-specifier
     stage: F_writing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/F_writing/figure-specifier.md
     summary: "Specify publication-quality figures with reproducible code and accessibility guidance."
     inputs: [StatsReport, VenueAnalysis]
@@ -403,7 +403,7 @@ skills:
 
   - id: meta-optimizer
     stage: F_writing
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/F_writing/meta-optimizer.md
     summary: "Optimize abstract, title, keywords for indexing and discoverability."
     inputs: [Manuscript]
@@ -419,7 +419,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: prisma-checker
     stage: G_compliance
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/G_compliance/prisma-checker.md
     summary: "Verify PRISMA 2020 flow diagram and all 27 checklist items."
     inputs: [Manuscript, PRISMAFlowData]
@@ -432,7 +432,7 @@ skills:
 
   - id: reporting-checker
     stage: G_compliance
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/G_compliance/reporting-checker.md
     summary: "Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness."
     inputs: [Manuscript, DesignSpec]
@@ -445,7 +445,7 @@ skills:
 
   - id: tone-normalizer
     stage: G_compliance
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/G_compliance/tone-normalizer.md
     summary: "Cut fluff, hedge words, and absolute claims for concise academic tone."
     inputs: [Manuscript]
@@ -461,7 +461,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: submission-packager
     stage: H_submission
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/H_submission/submission-packager.md
     summary: "Assemble submission package: cover letter, disclosures, supplementary materials."
     inputs: [Manuscript, VenueAnalysis]
@@ -474,7 +474,7 @@ skills:
 
   - id: rebuttal-assistant
     stage: H_submission
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/H_submission/rebuttal-assistant.md
     summary: "Generate point-by-point response matrix from reviewer comments."
     inputs: [ReviewComments, Manuscript]
@@ -487,7 +487,7 @@ skills:
 
   - id: peer-review-simulation
     stage: H_submission
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/H_submission/peer-review-simulation.md
     summary: "Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2)."
     inputs: [Manuscript]
@@ -500,7 +500,7 @@ skills:
 
   - id: fatal-flaw-detector
     stage: H_submission
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/H_submission/fatal-flaw-detector.md
     summary: "Desk-reject analysis identifying critical flaws blocking publication."
     inputs: [Manuscript]
@@ -513,7 +513,7 @@ skills:
 
   - id: reviewer-empathy-checker
     stage: H_submission
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/H_submission/reviewer-empathy-checker.md
     summary: "Neutralize defensiveness in reviewer responses and verify exact addressing."
     inputs: [ResponseToReviewers]
@@ -529,7 +529,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: code-builder
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/code-builder.md
     summary: "Convert academic methods into executable code with domain-profile library selection."
     inputs: [AnalysisPlan, DomainProfile]
@@ -542,7 +542,7 @@ skills:
 
   - id: data-cleaning-planner
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/data-cleaning-planner.md
     summary: "Define reproducible cleaning rules for validation, missingness, and harmonization."
     inputs: [DatasetPlan, VariableSpec, AnalysisPlan]
@@ -555,7 +555,7 @@ skills:
 
   - id: data-merge-planner
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/data-merge-planner.md
     summary: "Define join logic, key validation, and provenance controls for multi-source data."
     inputs: [DatasetPlan, VariableSpec, CleaningPlan]
@@ -568,7 +568,7 @@ skills:
 
   - id: code-specification
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/code-specification.md
     summary: "Generate strict OPSX-style constraint sets before coding."
     inputs: [UserQuery]
@@ -581,7 +581,7 @@ skills:
 
   - id: code-planning
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/code-planning.md
     summary: "Transform specs into parallelizable, zero-decision execution plans."
     inputs: [CodeSpec]
@@ -594,7 +594,7 @@ skills:
 
   - id: code-execution
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/code-execution.md
     summary: "Execute code plans with cProfile performance profiling and optimization."
     inputs: [CodePlan]
@@ -607,7 +607,7 @@ skills:
 
   - id: code-review
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/code-review.md
     summary: "Secondary model reviews code logic, security, and statistical validity."
     inputs: [AnalysisCode, DomainProfile]
@@ -620,7 +620,7 @@ skills:
 
   - id: reproducibility-auditor
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/reproducibility-auditor.md
     summary: "Verify seeds, containerization, and fail-graceful contingencies."
     inputs: [AnalysisCode]
@@ -633,7 +633,7 @@ skills:
 
   - id: stats-engine
     stage: I_code
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/I_code/stats-engine.md
     summary: "Statistical modeling and hypothesis testing with domain-driven diagnostics."
     inputs: [AnalysisPlan, DomainProfile]
@@ -649,7 +649,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: metadata-enricher
     stage: Z_cross_cutting
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/Z_cross_cutting/metadata-enricher.md
     summary: "Normalize and enrich DOI, venue, year, author metadata across artifacts."
     inputs: [PaperNotes]
@@ -662,7 +662,7 @@ skills:
 
   - id: model-collaborator
     stage: Z_cross_cutting
-    version: "1.0.0"
+    version: "0.1.0"
     file: skills/Z_cross_cutting/model-collaborator.md
     summary: "Coordinate multi-agent execution and cross-review across model runtimes."
     inputs: [TaskPacket]
@@ -675,7 +675,7 @@ skills:
 
   - id: self-critique
     stage: Z_cross_cutting
-    version: "1.1.0"
+    version: "0.1.0"
     file: skills/Z_cross_cutting/self-critique.md
     summary: "Iterative red teaming against superficial reasoning, contradictions, and overclaiming."
     inputs: [AnyArtifact]

@@ -1,7 +1,7 @@
 ---
 id: code-planning
 stage: I_code
-version: "1.0.0"
+version: "0.1.0"
 description: "Transform code specifications into parallelizable, zero-decision execution plans."
 inputs:
   - type: CodeSpec

@@ -1,7 +1,7 @@
 ---
 id: reviewer-empathy-checker
 stage: H_submission
-version: "1.0.0"
+version: "0.1.0"
 description: "Neutralize defensiveness in reviewer responses and ensure each concern is addressed with exact precision."
 inputs:
   - type: ResponseToReviewers

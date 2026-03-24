@@ -1,7 +1,7 @@
 ---
 id: metadata-enricher
 stage: Z_cross_cutting
-version: "1.0.0"
+version: "0.1.0"
 description: "Normalize and enrich DOI, venue, year, author, and identifier metadata across all artifacts."
 inputs:
   - type: PaperNotes

@@ -1,7 +1,7 @@
 ---
 id: fatal-flaw-detector
 stage: H_submission
-version: "1.0.0"
+version: "0.1.0"
 description: "Constructive desk-reject analysis identifying critical flaws that would prevent publication."
 inputs:
   - type: Manuscript

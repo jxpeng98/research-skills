@@ -1,11 +1,15 @@
 ---
 id: analysis-interpreter
 stage: F_writing
-version: "1.1.0"
-description: "Translate empirical or synthesized findings into analytical narratives that preserve uncertainty, surface mechanisms, and narrow claims to defensible scope conditions."
+version: "0.1.0"
+description: "Translate quantitative, qualitative, or synthesized findings into analytical narratives that preserve uncertainty, surface mechanisms, and narrow claims to defensible scope conditions."
 inputs:
   - type: StatsReport
     description: "Model results, diagnostics, and robustness checks"
+    required: false
+  - type: EvidenceTable
+    description: "Coded qualitative evidence, case summaries, fieldnotes, or synthesis matrices"
+    required: false
   - type: AnalysisPlan
     description: "Pre-specified estimands and decision rules"
     required: false
@@ -20,10 +24,12 @@ constraints:
   - "Must note uncertainty, assumptions, and failed robustness checks"
   - "Must separate observation, interpretation, and implication"
   - "Must surface mechanism candidates, rival explanations, and boundary conditions when evidence permits"
+  - "Must keep first-order evidence separate from researcher interpretation"
   - "Must avoid re-litigating the entire methods section"
 failure_modes:
   - "Narrative overclaims beyond the estimator and identification strategy"
   - "Null or imprecise findings are reframed as support without justification"
+  - "Themes, cases, or quotes are restated without analytic interpretation"
 tools: [filesystem]
 tags: [writing, results, interpretation, robustness, uncertainty]
 domain_aware: true
@@ -48,6 +54,7 @@ Turn model output into manuscript-ready result interpretation.
    - Precision and uncertainty
    - Null, contradictory, or heterogeneous findings
    - Diagnostics and robustness
+   - Or, for qualitative work: focal episodes, recurring codes/themes, deviant cases, and evidence strength by case/source
 2. **Climb the interpretive depth ladder**:
    - What happened?
    - Why might it have happened?
@@ -59,6 +66,7 @@ Turn model output into manuscript-ready result interpretation.
    - For whom / when
    - Under which assumptions
    - Compared with which baseline, prior stream, or expectation
+   - Which evidence instances illustrate the claim without exhausting the evidence base
 4. **Flag limitations**:
    - Sensitivity to specification
    - Identification caveats
@@ -74,6 +82,9 @@ Translate them into analytic claims about process, mechanism, meaning, or bounda
 
 ## Main Findings
 - ...
+
+## Evidence Grounding
+- Key cases, quotes, episodes, or statistics:
 
 ## Mechanisms and Rival Explanations
 - ...

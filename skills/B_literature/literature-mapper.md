@@ -1,7 +1,7 @@
 ---
 id: literature-mapper
 stage: B_literature
-version: "1.0.0"
+version: "0.1.0"
 description: "Build a taxonomy or map of the literature to support defensible positioning and non-chronological related work writing."
 inputs:
   - type: ExtractionTable

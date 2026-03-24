@@ -1,7 +1,7 @@
 ---
 id: reporting-checker
 stage: G_compliance
-version: "1.0.0"
+version: "0.1.0"
 description: "Validate reporting guideline completeness for target study type (CONSORT, STROBE, COREQ, SRQR, TRIPOD, etc.)."
 inputs:
   - type: Manuscript
@@ -24,7 +24,7 @@ domain_aware: true
 
 # Reporting Checker Skill
 
-Check whether an empirical manuscript or report is complete and aligned with an appropriate reporting guideline, producing a structured “what’s missing” action list.
+Check whether an empirical or qualitative manuscript/report is complete and aligned with an appropriate reporting guideline, producing a structured “what’s missing” action list.
 
 ## When to Use
 
@@ -38,7 +38,8 @@ Pick the closest match (confirm with the target venue):
 - Systematic review → PRISMA (use **prisma-checker**)
 - Randomized trial → CONSORT
 - Observational (cohort/case-control/cross-sectional) → STROBE
-- Qualitative interview/focus group studies → COREQ or SRQR
+- Qualitative interview/focus group studies → COREQ
+- Broader qualitative studies (case study, ethnography, process research, document-heavy qualitative designs) → SRQR, with venue-specific transparency addenda when required
 - Prediction model development/validation → TRIPOD
 
 If the design is mixed, apply the dominant design’s checklist and add a “design-specific addendum”.
@@ -58,4 +59,3 @@ If the design is mixed, apply the dominant design’s checklist and add a “des
 ## Notes
 
 - Keep this checklist **lightweight** in-repo; confirm final items against the official guideline required by the venue.
-

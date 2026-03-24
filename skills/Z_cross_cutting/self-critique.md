@@ -1,7 +1,7 @@
 ---
 id: self-critique
 stage: Z_cross_cutting
-version: "1.1.0"
+version: "0.1.0"
 description: "Iterative red teaming and Socratic questioning to continuously critique and refine AI-generated outputs."
 inputs:
   - type: AnyArtifact

@@ -1,7 +1,7 @@
 ---
 id: stats-engine
 stage: I_code
-version: "1.0.0"
+version: "0.1.0"
 description: "Statistical modeling, hypothesis testing, and analytics execution with domain-profile-driven diagnostics."
 inputs:
   - type: AnalysisPlan

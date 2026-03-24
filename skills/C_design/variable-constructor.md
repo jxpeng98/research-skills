@@ -1,7 +1,7 @@
 ---
 id: variable-constructor
 stage: C_design
-version: "1.0.0"
+version: "0.1.0"
 description: "Translate constructs and hypotheses into an operational variable specification with coding, units, and derivation rules."
 inputs:
   - type: DesignSpec

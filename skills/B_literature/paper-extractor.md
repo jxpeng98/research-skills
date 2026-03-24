@@ -1,7 +1,7 @@
 ---
 id: paper-extractor
 stage: B_literature
-version: "0.2.0"
+version: "0.2.1"
 description: "Extract structured information from papers including bibliographic metadata, methodology, findings, and contributions."
 inputs:
   - type: ScreeningDecisionLog

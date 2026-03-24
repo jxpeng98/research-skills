@@ -1,7 +1,7 @@
 ---
 id: fulltext-fetcher
 stage: B_literature
-version: "0.2.0"
+version: "0.2.1"
 description: "Retrieve full-text PDFs through open access channels (Unpaywall, S2, CORE, arXiv) with PRISMA-compliant status tracking."
 inputs:
   - type: ScreeningDecisionLog

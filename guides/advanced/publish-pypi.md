@@ -128,7 +128,7 @@ Local dry-run installation:
 ```bash
 pip install dist/research_skills_installer-*.whl
 research-skills --help
-rs check --repo <owner>/<repo>
+rsk check --repo <owner>/<repo>
 ```
 
 ---
@@ -171,7 +171,7 @@ When cutting a release, follow these steps:
 - [ ] Push: `git push origin main --tags`
 - [ ] Confirm the `Publish to PyPI` workflow succeeded on GitHub Actions.
 - [ ] Run release postflight: `./scripts/release_automation.sh post --tag v<version>`
-- [ ] Verify installation: `pipx install research-skills-installer && rs --help`
+- [ ] Verify installation: `pipx install research-skills-installer && rsk --help`
 
 ---
 

@@ -95,9 +95,8 @@ ensure_dir() {
 resolve_abs() {
   local raw="${1:-}"
   local path="$raw"
-  local IFS='/'
-  local -a parts stack
   local part
+  local normalized=""
 
   if [[ -z "$path" ]]; then
     return 1
@@ -112,34 +111,51 @@ resolve_abs() {
     path="$PWD/$path"
   fi
 
-  read -r -a parts <<< "$path"
-  stack=()
-  for part in "${parts[@]}"; do
+  while [[ "$path" == *"//"* ]]; do
+    path="${path//\/\//\/}"
+  done
+
+  while [[ -n "$path" ]]; do
+    if [[ "$path" == /* ]]; then
+      path="${path#/}"
+      if [[ -z "$path" ]]; then
+        break
+      fi
+    fi
+
+    if [[ "$path" == */* ]]; then
+      part="${path%%/*}"
+      path="${path#*/}"
+    else
+      part="$path"
+      path=""
+    fi
+
     case "$part" in
       ""|".")
         continue
         ;;
       "..")
-        if [[ ${#stack[@]} -gt 0 ]]; then
-          unset 'stack[${#stack[@]}-1]'
+        if [[ -n "$normalized" ]]; then
+          normalized="${normalized%/*}"
         fi
         ;;
       *)
-        stack+=("$part")
+        if [[ -n "$normalized" ]]; then
+          normalized="$normalized/$part"
+        else
+          normalized="$part"
+        fi
         ;;
     esac
   done
 
-  if [[ ${#stack[@]} -eq 0 ]]; then
+  if [[ -z "$normalized" ]]; then
     printf '/\n'
     return 0
   fi
 
-  printf '/%s' "${stack[0]}"
-  for part in "${stack[@]:1}"; do
-    printf '/%s' "$part"
-  done
-  printf '\n'
+  printf '/%s\n' "$normalized"
 }
 
 has_python3() {

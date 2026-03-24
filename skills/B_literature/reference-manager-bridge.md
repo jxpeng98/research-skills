@@ -1,7 +1,7 @@
 ---
 id: reference-manager-bridge
 stage: B_literature
-version: "0.2.0"
+version: "0.2.1"
 description: "Export and import references between the research system and Zotero, Mendeley, or EndNote in BibTeX, RIS, or CSL-JSON formats."
 inputs:
   - type: Bibliography

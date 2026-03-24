@@ -1,7 +1,7 @@
 ---
 id: hypothesis-generator
 stage: A_framing
-version: "0.2.0"
+version: "0.2.1"
 description: "Translate research questions into hypotheses, propositions, or sensitizing concepts with mechanisms, rival explanations, and boundary conditions."
 inputs:
   - type: RQSet

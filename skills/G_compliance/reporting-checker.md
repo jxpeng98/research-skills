@@ -1,7 +1,7 @@
 ---
 id: reporting-checker
 stage: G_compliance
-version: "0.2.0"
+version: "0.2.1"
 description: "Validate reporting guideline completeness for target study type (CONSORT, STROBE, COREQ, SRQR, TRIPOD, etc.)."
 inputs:
   - type: Manuscript

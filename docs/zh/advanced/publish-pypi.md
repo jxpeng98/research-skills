@@ -148,7 +148,7 @@ twine check dist/*
 ```bash
 pip install dist/research_skills_installer-*.whl
 research-skills --help
-rs check --repo jxpeng98/research-skills
+rsk check --repo jxpeng98/research-skills
 ```
 
 ---
@@ -189,7 +189,7 @@ pip install --index-url https://test.pypi.org/simple/ research-skills-installer
 - [ ] Push：`git push origin main --tags`
 - [ ] 在 GitHub Actions 确认 `Publish to PyPI` workflow 成功
 - [ ] 运行 release postflight：`./scripts/release_automation.sh post --tag v<version>`
-- [ ] 验证安装：`pipx install research-skills-installer && rs --help`
+- [ ] 验证安装：`pipx install research-skills-installer && rsk --help`
 
 ---
 

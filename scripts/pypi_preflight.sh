@@ -19,7 +19,7 @@ Checks:
   2) Build sdist + wheel
   3) twine metadata validation
   4) Install latest wheel in a temporary virtualenv
-  5) CLI smoke checks (research-skills / rs / rsw)
+  5) CLI smoke checks (research-skills / rsk / rsw)
 
 Options:
   --no-build         Skip build step (expects artifacts in dist/)
@@ -87,7 +87,7 @@ if [[ "$RUN_INSTALL_SMOKE" -eq 1 ]]; then
   python3 -m venv "$tmp_dir/venv"
   venv_python="$tmp_dir/venv/bin/python"
   venv_research_skills="$tmp_dir/venv/bin/research-skills"
-  venv_rs="$tmp_dir/venv/bin/rs"
+  venv_rsk="$tmp_dir/venv/bin/rsk"
   venv_rsw="$tmp_dir/venv/bin/rsw"
 
   "$venv_python" -m pip install --upgrade pip >/dev/null
@@ -96,15 +96,15 @@ if [[ "$RUN_INSTALL_SMOKE" -eq 1 ]]; then
   echo "[pypi-preflight] smoke: research-skills --help"
   "$venv_research_skills" --help >/dev/null
 
-  echo "[pypi-preflight] smoke: rs --help"
-  "$venv_rs" --help >/dev/null
+  echo "[pypi-preflight] smoke: rsk --help"
+  "$venv_rsk" --help >/dev/null
 
   echo "[pypi-preflight] smoke: rsw --help"
   "$venv_rsw" --help >/dev/null
 
   echo "[pypi-preflight] smoke: subcommand help"
-  "$venv_rs" check --help >/dev/null
-  "$venv_rs" upgrade --help >/dev/null
+  "$venv_rsk" check --help >/dev/null
+  "$venv_rsk" upgrade --help >/dev/null
 fi
 
 echo "[pypi-preflight] all checks passed"

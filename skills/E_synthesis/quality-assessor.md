@@ -1,7 +1,7 @@
 ---
 id: quality-assessor
 stage: E_synthesis
-version: "0.2.0"
+version: "0.2.1"
 description: "Assess risk of bias, certainty of evidence, and study quality using appropriate tools (RoB 2, ROBINS-I, GRADE, etc.)."
 inputs:
   - type: ExtractionTable

@@ -1,7 +1,7 @@
 ---
 id: deidentification-planner
 stage: D_ethics
-version: "0.2.0"
+version: "0.2.1"
 description: "Design technical privacy measures via k-anonymity, differential privacy, or secure data pipelines for sensitive data."
 inputs:
   - type: DesignSpec

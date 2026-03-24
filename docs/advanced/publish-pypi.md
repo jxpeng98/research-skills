@@ -41,9 +41,18 @@ This repository includes a dedicated TestPyPI workflow: `.github/workflows/publi
 
 ## 1) Routine Publishing Workflow
 
-### 1.1 Update the Version Number
+### 1.1 Prepare a Publish-Ready Release
 
-Use the `bump-version.sh` script to sync release versions across:
+Recommended one-command local flow:
+
+```bash
+./scripts/release_ready.sh --version 0.2.0
+./scripts/release_ready.sh --version 0.2.0b1 --from-tag v0.2.0
+```
+
+`release_ready.sh` chains these steps:
+
+- `bump-version.sh` to sync release versions across:
 
 - `pyproject.toml`
 - `research_skills/__init__.py`
@@ -51,12 +60,11 @@ Use the `bump-version.sh` script to sync release versions across:
 - `skills/registry.yaml`
 - all `skills/**/*.md` frontmatter `version` fields
 
-```bash
-./scripts/bump-version.sh 0.2.0
-```
+- `release_automation.sh pre` to run strict validator, repository unit tests, release smoke, and release note draft generation
+- `pypi_preflight.sh` to build the package, run `twine check`, and install-smoke the generated wheel
 
 Pass either a stable version such as `0.2.0` or a beta version such as `0.2.0b1`.
-The script will normalize it into three synchronized forms:
+The version sync step normalizes it into three synchronized forms:
 
 | Layer | Stable | Beta |
 |------|------|------|
@@ -68,18 +76,35 @@ Package version format follows [PEP 440](https://peps.python.org/pep-0440/), whi
 
 Currently the release tooling supports `stable` and `beta` only.
 
-### 1.2 Commit + Tag + Push
+If you need the old manual entrypoints, they still exist:
 
 ```bash
-git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills
-git commit -m "chore: bump version to 0.2.0"
+./scripts/bump-version.sh 0.2.0
+./scripts/release_automation.sh pre --tag v0.2.0
+bash scripts/pypi_preflight.sh
+```
+
+### 1.2 Commit + TestPyPI Validation
+
+```bash
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/v0.2.0.md
+git commit -m "chore: prepare release 0.2.0"
+```
+
+Then run the GitHub Actions `Publish to TestPyPI` workflow and verify install / CLI behavior from TestPyPI before creating the production tag.
+
+---
+
+## 2) Tag + Publish to PyPI
+
+After TestPyPI validation passes:
+
+```bash
 git tag v0.2.0
 git push origin main --tags
 ```
 
 > **Note**: The tag format MUST start with `v*` and use repo release syntax (for example `v0.2.0` or `v0.2.0-beta.1`) for the GitHub Actions `publish-pypi.yml` workflow to trigger.
-
-### 1.3 Automatic Build & Publish
 
 After pushing the tag, GitHub Actions will automatically:
 
@@ -93,21 +118,16 @@ You can monitor the progress on the **Actions** page of your GitHub repository.
 
 ---
 
-## 2) Local Verification (Optional Before Publishing)
+## 3) Local Verification (Manual / Optional)
 
-Recommended one-command preflight:
+If you want to run package checks outside `release_ready.sh`, use:
 
 ```bash
 bash scripts/pypi_preflight.sh
-```
-
-If you want to run checks without rebuilding artifacts:
-
-```bash
 bash scripts/pypi_preflight.sh --no-build
 ```
 
-Equivalent manual steps:
+Equivalent manual build steps:
 
 ```bash
 # Install build tools
@@ -133,7 +153,7 @@ rs check --repo <owner>/<repo>
 
 ---
 
-## 3) Publishing to TestPyPI (Recommended Before Production)
+## 4) Publishing to TestPyPI (Recommended Before Production)
 
 Use the GitHub Actions workflow (manual trigger, no tag required):
 
@@ -156,16 +176,14 @@ Recommended order:
 
 ---
 
-## 4) Complete Release Checklist
+## 5) Complete Release Checklist
 
 When cutting a release, follow these steps:
 
 - [ ] Confirm all features are merged into `main`.
 - [ ] Ensure CI is passing (Green `ci.yml`).
-- [ ] Run release preflight: `./scripts/release_automation.sh pre --tag v<version>`
-- [ ] Run package preflight: `bash scripts/pypi_preflight.sh`
-- [ ] Update version number: `./scripts/bump-version.sh <version>`
-- [ ] Commit version changes.
+- [ ] Run `./scripts/release_ready.sh --version <version>`.
+- [ ] Commit release-prep changes.
 - [ ] Run GitHub Actions `Publish to TestPyPI` and validate package installation from TestPyPI.
 - [ ] Create a tag: `git tag v<version>`
 - [ ] Push: `git push origin main --tags`
@@ -175,7 +193,7 @@ When cutting a release, follow these steps:
 
 ---
 
-## 5) Frequently Asked Questions (FAQ)
+## 6) Frequently Asked Questions (FAQ)
 
 ### Q: I pushed a tag but Actions did not trigger?
 

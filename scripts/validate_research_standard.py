@@ -1987,6 +1987,7 @@ def validate_ci_workflow(root: Path, report: ValidationReport) -> None:
         "actions/setup-python",
         "python -m py_compile",
         "bash -n scripts/generate_release_notes.sh",
+        "bash -n scripts/release_ready.sh",
         "bash -n scripts/release_preflight.sh",
         "bash -n scripts/release_postflight.sh",
         "bash -n scripts/release_automation.sh",
@@ -2037,7 +2038,7 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
     if preflight_content:
         for token in (
             "validate_research_standard.py",
-            "tests.test_orchestrator_workflows",
+            "unittest discover -s tests -v",
             "./scripts/run_beta_smoke.sh",
             "generate_release_notes.sh",
             "--skip-note-gen",
@@ -2056,6 +2057,23 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
                 f"scripts/release_preflight.sh missing token: {token}",
             )
 
+    ready_content = read_text(root, "scripts/release_ready.sh", report)
+    if ready_content:
+        for token in (
+            "--version <version>",
+            "bump-version.sh",
+            "release_automation.sh pre",
+            "pypi_preflight.sh",
+            "--skip-bump",
+            "--allow-dirty",
+            "--from-tag",
+        ):
+            report.check(
+                token in ready_content,
+                f"release_ready.sh includes {token}",
+                f"scripts/release_ready.sh missing token: {token}",
+            )
+
     note_gen_content = read_text(root, "scripts/generate_release_notes.sh", report)
     if note_gen_content:
         for token in (
@@ -2070,6 +2088,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "--unittest-result",
             "--smoke-result",
             "updated evidence lines",
+            "release_ready.sh --version",
+            "unittest discover -s tests -v",
         ):
             report.check(
                 token in note_gen_content,
@@ -2137,9 +2157,11 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
     automation_doc = read_text(root, "release/automation.md", report)
     if automation_doc:
         for token in (
+            "release_ready.sh",
             "release_preflight.sh",
             "release_postflight.sh",
             "release_automation.sh",
+            "Prepare a publish-ready local state",
             "pre --tag",
             "post --tag",
         ):

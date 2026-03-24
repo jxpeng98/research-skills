@@ -13,6 +13,7 @@ UPDATE_EXISTING=0
 VALIDATOR_RESULT="TODO"
 UNITTEST_RESULT="TODO"
 SMOKE_RESULT="TODO"
+VERSION_HINT=""
 
 usage() {
   cat <<'EOF'
@@ -130,6 +131,9 @@ if [[ -z "$STAGE" ]]; then
   fi
 fi
 
+VERSION_HINT="${TAG#v}"
+VERSION_HINT="${VERSION_HINT/-beta./b}"
+
 if [[ "$UPDATE_EXISTING" -eq 1 && -e "$OUTPUT" ]]; then
   python3 - "$OUTPUT" "$VALIDATOR_RESULT" "$UNITTEST_RESULT" "$SMOKE_RESULT" <<'PY'
 import re
@@ -208,7 +212,7 @@ mkdir -p "$(dirname "$OUTPUT")"
   cat <<'EOF'
 ```bash
 python3 scripts/validate_research_standard.py --strict
-python3 -m unittest tests.test_orchestrator_workflows -v
+python3 -m unittest discover -s tests -v
 ./scripts/run_beta_smoke.sh
 ```
 EOF
@@ -225,9 +229,11 @@ EOF
   echo
   cat <<EOF
 \`\`\`bash
-./scripts/release_automation.sh pre --tag ${TAG}
+./scripts/release_ready.sh --version ${VERSION_HINT}
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/${TAG}.md
+git commit -m "chore: prepare release ${VERSION_HINT}"
 git tag -a ${TAG} -m "research-skills release"
-git push origin ${TAG}
+git push origin main --tags
 ./scripts/release_automation.sh post --tag ${TAG}
 \`\`\`
 EOF

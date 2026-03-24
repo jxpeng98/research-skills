@@ -18,7 +18,7 @@ Description:
   Run standardized pre-release gates:
     0) auto-generate release note draft (when --tag is provided)
     1) strict standard validator
-    2) orchestrator workflow unit tests
+    2) repository unit tests
     3) release smoke script (doctor + parallel + task-run)
 
 Options:
@@ -120,7 +120,7 @@ if [[ -z "$validator_summary" ]]; then
 fi
 
 echo "[preflight] unit tests"
-python3 -m unittest tests.test_orchestrator_workflows -v 2>&1 | tee "$unit_log"
+python3 -m unittest discover -s tests -v 2>&1 | tee "$unit_log"
 unit_ran_line="$(grep -E '^Ran [0-9]+ tests? in ' "$unit_log" | tail -n1 || true)"
 if grep -q '^OK$' "$unit_log"; then
   if [[ -n "$unit_ran_line" ]]; then

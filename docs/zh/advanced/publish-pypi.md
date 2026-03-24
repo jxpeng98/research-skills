@@ -41,9 +41,18 @@
 
 ## 1) 日常发布流程
 
-### 1.1 更新版本号
+### 1.1 一条命令准备到可发布状态
 
-使用 `bump-version.sh` 脚本统一同步以下版本位点：
+推荐直接执行：
+
+```bash
+./scripts/release_ready.sh --version 0.2.0
+./scripts/release_ready.sh --version 0.2.0b1 --from-tag v0.2.0
+```
+
+`release_ready.sh` 会串起三段：
+
+- `bump-version.sh`：统一同步以下版本位点：
 
 - `pyproject.toml`
 - `research_skills/__init__.py`
@@ -51,12 +60,11 @@
 - `skills/registry.yaml`
 - 所有 `skills/**/*.md` frontmatter 中的 `version`
 
-```bash
-./scripts/bump-version.sh 0.2.0
-```
+- `release_automation.sh pre`：运行 strict validator、仓库单元测试、release smoke，并自动生成 / 更新 release note draft
+- `pypi_preflight.sh`：构建包、执行 `twine check`，并对生成 wheel 做安装 smoke
 
 你可以传入稳定版 `0.2.0`，也可以传入 beta 版 `0.2.0b1`。
-脚本会自动规范成三种同步表示：
+版本同步阶段会自动规范成三种表示：
 
 | 层 | 稳定版 | Beta |
 |------|------|------|
@@ -68,18 +76,35 @@
 
 当前 release tooling 只支持 `stable` 和 `beta`。
 
-### 1.2 Commit + Tag + Push
+如果你想手动拆开执行，旧入口仍然可用：
 
 ```bash
-git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills
-git commit -m "chore: bump version to 0.2.0"
+./scripts/bump-version.sh 0.2.0
+./scripts/release_automation.sh pre --tag v0.2.0
+bash scripts/pypi_preflight.sh
+```
+
+### 1.2 Commit + TestPyPI 验证
+
+```bash
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/v0.2.0.md
+git commit -m "chore: prepare release 0.2.0"
+```
+
+然后运行 GitHub Actions 的 `Publish to TestPyPI` workflow，先完成 TestPyPI 安装和 CLI 行为验证，再创建正式发布 tag。
+
+---
+
+## 2) 打 Tag 并发布到 PyPI
+
+TestPyPI 验证通过后：
+
+```bash
 git tag v0.2.0
 git push origin main --tags
 ```
 
 > **注意**：tag 必须以 `v*` 开头，并使用 repo release 语法，例如 `v0.2.0` 或 `v0.2.0-beta.1`，GitHub Actions 的 `publish-pypi.yml` 才会触发。
-
-### 1.3 自动构建 & 发布
 
 Push tag 后，GitHub Actions 会自动：
 
@@ -93,17 +118,12 @@ Push tag 后，GitHub Actions 会自动：
 
 ---
 
-## 2) 本地验证（发布前可选）
+## 3) 本地验证（手动 / 可选）
 
-推荐先执行一条命令完成预检：
+如果你想绕开 `release_ready.sh` 单独跑包预检，可以执行：
 
 ```bash
 bash scripts/pypi_preflight.sh
-```
-
-如果只想复用 `dist/` 产物做快速检查（不重新构建）：
-
-```bash
 bash scripts/pypi_preflight.sh --no-build
 ```
 
@@ -133,7 +153,7 @@ rs check --repo jxpeng98/research-skills
 
 ---
 
-## 3) 发布到 TestPyPI（建议先做）
+## 4) 发布到 TestPyPI（建议先做）
 
 使用 GitHub Actions workflow（手动触发，无需打 tag）：
 
@@ -156,16 +176,14 @@ pip install --index-url https://test.pypi.org/simple/ research-skills-installer
 
 ---
 
-## 4) 完整发布 Checklist
+## 5) 完整发布 Checklist
 
 发版时按以下步骤执行：
 
 - [ ] 确认所有功能已合入 `main`
 - [ ] CI 通过（`ci.yml` 绿色）
-- [ ] 运行 release preflight：`./scripts/release_automation.sh pre --tag v<version>`
-- [ ] 运行包发布预检：`bash scripts/pypi_preflight.sh`
-- [ ] 更新版本号：`./scripts/bump-version.sh <version>`
-- [ ] Commit 版本号变更
+- [ ] 运行 `./scripts/release_ready.sh --version <version>`
+- [ ] Commit release prep 变更
 - [ ] 运行 GitHub Actions `Publish to TestPyPI`，并完成 TestPyPI 安装验证
 - [ ] 创建 tag：`git tag v<version>`
 - [ ] Push：`git push origin main --tags`
@@ -175,7 +193,7 @@ pip install --index-url https://test.pypi.org/simple/ research-skills-installer
 
 ---
 
-## 5) 常见问题
+## 6) 常见问题
 
 ### Q: tag 推送后 Actions 没有触发？
 

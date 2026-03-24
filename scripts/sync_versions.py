@@ -10,6 +10,7 @@ from pathlib import Path
 VERSION_PATTERN = re.compile(
     r"^(?:v)?(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:(?:-beta\.|b)(?P<beta>\d+))?$"
 )
+PRINTABLE_FIELDS = ("package_version", "skill_version", "repo_version")
 
 
 def parse_version(raw: str) -> tuple[str, str, str]:
@@ -94,6 +95,11 @@ def main(argv: list[str]) -> int:
     )
     parser.add_argument("version", help="Stable or beta version, e.g. 0.2.0 or 0.2.0b1")
     parser.add_argument(
+        "--print-field",
+        choices=PRINTABLE_FIELDS,
+        help="Print one normalized version field and exit without writing files.",
+    )
+    parser.add_argument(
         "--root",
         default=Path(__file__).resolve().parents[1],
         type=Path,
@@ -101,9 +107,19 @@ def main(argv: list[str]) -> int:
     )
     args = parser.parse_args(argv)
 
+    package_version, skill_version, repo_version = parse_version(args.version)
+    if args.print_field:
+        print(
+            {
+                "package_version": package_version,
+                "skill_version": skill_version,
+                "repo_version": repo_version,
+            }[args.print_field]
+        )
+        return 0
+
     root = args.root.resolve()
     changed = sync_versions(root, args.version)
-    package_version, skill_version, repo_version = parse_version(args.version)
 
     print("[sync-versions] normalized versions")
     print(f"  - package_version: {package_version}")

@@ -1,7 +1,7 @@
 ---
 id: rebuttal-assistant
 stage: H_submission
-version: "0.1.0"
+version: "0.2.0"
 description: "Generate point-by-point response matrix and tracked revision plan from reviewer comments."
 inputs:
   - type: ReviewComments

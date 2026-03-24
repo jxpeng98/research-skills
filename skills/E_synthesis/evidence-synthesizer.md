@@ -1,7 +1,7 @@
 ---
 id: evidence-synthesizer
 stage: E_synthesis
-version: "0.1.0"
+version: "0.2.0"
 description: "Synthesize evidence narratively, qualitatively, or quantitatively (meta-analysis) with PRISMA-aligned reporting."
 inputs:
   - type: ExtractionTable

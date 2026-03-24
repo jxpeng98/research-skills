@@ -1,7 +1,7 @@
 ---
 id: manuscript-architect
 stage: F_writing
-version: "0.1.0"
+version: "0.2.0"
 description: "Build coherent paper structure from outline to section-level drafts with claim-evidence integrity and analysis-depth checking."
 inputs:
   - type: RQSet

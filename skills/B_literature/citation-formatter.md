@@ -1,7 +1,7 @@
 ---
 id: citation-formatter
 stage: B_literature
-version: "0.1.0"
+version: "0.2.0"
 description: "Format citations and references in APA, MLA, Chicago, IEEE, Harvard, Vancouver, or BibTeX with consistent citekey generation."
 inputs:
   - type: PaperNotes

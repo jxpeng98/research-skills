@@ -1,7 +1,7 @@
 ---
 id: robustness-planner
 stage: C_design
-version: "0.1.0"
+version: "0.2.0"
 description: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling for empirical studies."
 inputs:
   - type: DesignSpec

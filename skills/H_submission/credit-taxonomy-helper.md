@@ -1,7 +1,7 @@
 ---
 id: credit-taxonomy-helper
 stage: H_submission
-version: "0.1.0"
+version: "0.2.0"
 description: "Generate CRediT (Contributor Roles Taxonomy) author contribution statements from project roles."
 inputs:
   - type: Manuscript

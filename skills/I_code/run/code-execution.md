@@ -1,7 +1,7 @@
 ---
 id: code-execution
 stage: I_code
-version: "0.1.0"
+version: "0.2.0"
 description: "Execute code plans with performance profiling (cProfile/vectorization) and optimization."
 inputs:
   - type: CodePlan

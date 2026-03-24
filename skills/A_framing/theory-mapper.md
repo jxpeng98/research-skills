@@ -1,7 +1,7 @@
 ---
 id: theory-mapper
 stage: A_framing
-version: "0.1.0"
+version: "0.2.0"
 description: "Map theoretical concepts, relationships, and frameworks to build visual and structured research foundations with Mermaid diagrams."
 inputs:
   - type: RQSet

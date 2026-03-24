@@ -1,7 +1,7 @@
 ---
 id: data-management-plan
 stage: C_design
-version: "0.1.0"
+version: "0.2.0"
 description: "Generate FAIR-compliant data management plans specifying storage, backup, retention, sharing, and archival strategy."
 inputs:
   - type: DesignSpec

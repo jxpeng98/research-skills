@@ -1,7 +1,7 @@
 ---
 id: question-refiner
 stage: A_framing
-version: "0.1.0"
+version: "0.2.0"
 description: "Transform vague research topics into structured, answerable research questions using PICO, PEO, or SPIDER framing plus FINER evaluation."
 inputs:
   - type: UserQuery

@@ -10,6 +10,9 @@
         "version",
         "file",
         "summary",
+        "summary_zh",
+        "display_name_zh",
+        "when_to_use_zh",
         "inputs",
         "outputs"
     ],
@@ -49,6 +52,21 @@
             "type": "string",
             "maxLength": 200,
             "description": "One-line summary of skill purpose"
+        },
+        "summary_zh": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line Simplified Chinese summary used by localized user-facing surfaces"
+        },
+        "display_name_zh": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Short Simplified Chinese display name for localized skill cards"
+        },
+        "when_to_use_zh": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line Simplified Chinese usage guidance for localized skill cards"
         },
         "inputs": {
             "type": "array",

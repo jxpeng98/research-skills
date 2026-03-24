@@ -197,6 +197,8 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         )
 
         self.assertIn("### Functional routing", result.merged_analysis)
+        self.assertIn("任务规划", result.merged_analysis)
+        self.assertIn("功能路由", result.merged_analysis)
         self.assertIn("`writing-agent` [stage-default]", result.merged_analysis)
         self.assertIn("### Runtime routing plan", result.merged_analysis)
         self.assertEqual(result.data["functional_owner"], "writing-agent")
@@ -212,7 +214,8 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             cwd=REPO_ROOT,
         )
 
-        self.assertIn("- paper_type: `qualitative`", result.merged_analysis)
+        self.assertIn("`qualitative`", result.merged_analysis)
+        self.assertIn("论文类型", result.merged_analysis)
         self.assertEqual(result.data["paper_type"], "qualitative")
         self.assertEqual(result.data["functional_owner"], "methodology-agent")
 
@@ -270,6 +273,52 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("Functional handoff chain:", result.merged_analysis)
         self.assertIn("\"functional_owner\": \"writing-agent\"", result.merged_analysis)
         self.assertIn("\"runtime_plan\": {", result.merged_analysis)
+
+    def test_task_plan_skill_cards_include_registry_localized_summary(self) -> None:
+        orchestrator = MockOrchestrator()
+        agent_plan = orchestrator._load_task_agent_plan("F3")
+
+        skill_cards = {
+            card["skill"]: card
+            for card in agent_plan["required_skill_cards"]
+        }
+        self.assertIn("manuscript-architect", skill_cards)
+        self.assertEqual(
+            skill_cards["manuscript-architect"]["summary_zh"],
+            "统一负责论文叙事主线、章节起草和深度分析框架。",
+        )
+        self.assertEqual(
+            skill_cards["manuscript-architect"]["display_name_zh"],
+            "论文架构师",
+        )
+        self.assertEqual(
+            skill_cards["manuscript-architect"]["when_to_use_zh"],
+            "当你需要搭建论文整体结构、章节推进和核心论证主线时使用。",
+        )
+
+    def test_format_skill_context_prefers_chinese_registry_summary(self) -> None:
+        orchestrator = MockOrchestrator()
+        rendered = orchestrator._format_skill_context(
+            [
+                {
+                    "skill": "manuscript-architect",
+                    "category": "writing",
+                    "summary": "Own story spine, section drafting, and deep analytical framing as one manuscript package.",
+                    "summary_zh": "统一负责论文叙事主线、章节起草和深度分析框架。",
+                    "display_name_zh": "论文架构师",
+                    "when_to_use_zh": "当你需要搭建论文整体结构、章节推进和核心论证主线时使用。",
+                    "focus": "Drafting, section structure, and claim presentation.",
+                    "file": "skills/F_writing/manuscript-architect.md",
+                    "default_outputs": ["manuscript/manuscript.md"],
+                    "status": "ok",
+                }
+            ]
+        )
+
+        self.assertIn("论文架构师 (`manuscript-architect`) [ok / 可用] (writing)", rendered)
+        self.assertIn("摘要/summary: 统一负责论文叙事主线、章节起草和深度分析框架。", rendered)
+        self.assertIn("适用场景/when_to_use: 当你需要搭建论文整体结构、章节推进和核心论证主线时使用。", rendered)
+        self.assertIn("方法焦点/focus: Drafting, section structure, and claim presentation.", rendered)
 
     def test_task_run_unknown_profile_returns_structured_error(self) -> None:
         from bridges.errors import ConfigError

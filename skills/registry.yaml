@@ -14,6 +14,9 @@ skills:
     version: "0.1.0"
     file: skills/A_framing/question-refiner.md
     summary: "Transform vague topics into structured RQs via PICO/PEO + FINER evaluation."
+    summary_zh: "将模糊选题转成经过 PICO/PEO + FINER 评估的结构化研究问题。"
+    display_name_zh: "研究问题精炼"
+    when_to_use_zh: "当选题还模糊、范围过大或研究问题不可执行时使用。"
     inputs: [UserQuery]
     outputs: [RQSet]
     tags: [framing, research-question, PICO, PEO, FINER]
@@ -27,6 +30,9 @@ skills:
     version: "0.1.0"
     file: skills/A_framing/hypothesis-generator.md
     summary: "Translate RQs into testable hypotheses with mechanisms and boundary conditions."
+    summary_zh: "把研究问题转成带机制和边界条件的可检验假设。"
+    display_name_zh: "假设生成"
+    when_to_use_zh: "当你需要把研究问题转成可检验假设或 propositions 时使用。"
     inputs: [RQSet, TheoreticalFramework]
     outputs: [HypothesisSet]
     tags: [framing, hypothesis, propositions, mechanisms]
@@ -40,6 +46,9 @@ skills:
     version: "0.1.0"
     file: skills/A_framing/theory-mapper.md
     summary: "Map theoretical concepts, relationships, and frameworks with Mermaid diagrams."
+    summary_zh: "用 Mermaid 梳理理论概念、关系和框架。"
+    display_name_zh: "理论映射"
+    when_to_use_zh: "当你需要概念图、理论框架或机制关系图时使用。"
     inputs: [RQSet, LiteratureCorpus]
     outputs: [TheoreticalFramework]
     tags: [framing, theory, constructs, conceptual-model, mermaid]
@@ -53,6 +62,9 @@ skills:
     version: "0.1.0"
     file: skills/A_framing/gap-analyzer.md
     summary: "Identify and categorize research gaps using 5-type taxonomy with FINER prioritization."
+    summary_zh: "用五类 gap taxonomy 与 FINER 优先级识别并分类研究空白。"
+    display_name_zh: "研究空白分析"
+    when_to_use_zh: "当你需要从已有文献中证明 novelty 和贡献空间时使用。"
     inputs: [LiteratureCorpus, SearchResults]
     outputs: [GapAnalysis]
     tags: [framing, gap-analysis, positioning, FINER]
@@ -66,6 +78,9 @@ skills:
     version: "0.1.0"
     file: skills/A_framing/venue-analyzer.md
     summary: "Analyze venue fit, formatting constraints, and reviewer expectations."
+    summary_zh: "分析目标期刊或会议的匹配度、格式约束和审稿预期。"
+    display_name_zh: "期刊匹配分析"
+    when_to_use_zh: "当研究方向已较清楚，需要判断目标期刊或会议匹配度时使用。"
     inputs: [UserQuery, RQSet]
     outputs: [VenueAnalysis]
     tags: [framing, venue, journal-selection, formatting]
@@ -82,6 +97,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/academic-searcher.md
     summary: "Own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill."
+    summary_zh: "统一负责检索式设计、数据库检索和去重后的搜索产物。"
+    display_name_zh: "学术检索"
+    when_to_use_zh: "当你需要可复现的检索式、数据库搜索和 search log 时使用。"
     inputs: [RQSet, SearchQueryPlan]
     outputs: [SearchQueryPlan, SearchResults, SearchLog]
     tags: [literature, search, databases, API, reproducibility]
@@ -95,6 +113,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/paper-screener.md
     summary: "Two-stage PRISMA-compliant systematic screening with decision logging."
+    summary_zh: "按 PRISMA 做两阶段系统筛选，并记录每一步决策依据。"
+    display_name_zh: "文献筛选"
+    when_to_use_zh: "当你需要按纳入排除标准筛选文献并留下决策记录时使用。"
     inputs: [SearchResults, RQSet]
     outputs: [ScreeningDecisionLog, PRISMAFlowData]
     tags: [literature, screening, PRISMA, inclusion-exclusion]
@@ -108,6 +129,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/paper-extractor.md
     summary: "Extract structured theory, method, data, findings, and limitation slots into notes and rollups."
+    summary_zh: "将论文中的理论、方法、数据、发现和局限提取为结构化笔记与汇总。"
+    display_name_zh: "论文提取"
+    when_to_use_zh: "当你需要把入选论文转成结构化笔记和 extraction table 时使用。"
     inputs: [ScreeningDecisionLog]
     outputs: [ExtractionTable, PaperNotes]
     tags: [literature, extraction, data-collection, structured-notes]
@@ -121,6 +145,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/citation-snowballer.md
     summary: "Forward/backward citation tracing to expand corpus and find seminal works."
+    summary_zh: "通过前向与后向引文追踪扩展语料，并发现奠基性文献。"
+    display_name_zh: "引文滚雪球"
+    when_to_use_zh: "当已有种子文献但覆盖还不够时使用。"
     inputs: [SearchResults]
     outputs: [SnowballLog]
     tags: [literature, citations, snowballing, forward-backward]
@@ -134,6 +161,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/fulltext-fetcher.md
     summary: "Retrieve full-text PDFs via OA channels with PRISMA-compliant status tracking."
+    summary_zh: "通过开放获取渠道获取全文 PDF，并记录符合 PRISMA 的状态轨迹。"
+    display_name_zh: "全文获取"
+    when_to_use_zh: "当你已找到候选论文但缺少全文时使用。"
     inputs: [ScreeningDecisionLog]
     outputs: [FullTextStatus]
     tags: [literature, fulltext, open-access, retrieval, PRISMA]
@@ -147,6 +177,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/citation-formatter.md
     summary: "Format citations in APA/MLA/Chicago/IEEE/BibTeX with consistent citekeys."
+    summary_zh: "用统一 citekey 生成 APA、MLA、Chicago、IEEE 与 BibTeX 引文。"
+    display_name_zh: "引文格式化"
+    when_to_use_zh: "当写作前需要统一 bibliography、citekey 和引文格式时使用。"
     inputs: [PaperNotes]
     outputs: [Bibliography]
     tags: [literature, citations, BibTeX, APA, formatting]
@@ -160,6 +193,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/concept-extractor.md
     summary: "Expand search concepts with controlled vocabulary and Boolean query drafting."
+    summary_zh: "借助 controlled vocabulary 扩展检索概念，并起草 Boolean 检索式。"
+    display_name_zh: "检索概念提取"
+    when_to_use_zh: "当检索概念不稳定，需要补 controlled vocabulary 和 Boolean 术语时使用。"
     inputs: [RQSet, PaperNotes]
     outputs: [ConceptMap]
     tags: [literature, keywords, concepts, boolean-query, controlled-vocabulary]
@@ -173,6 +209,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/literature-mapper.md
     summary: "Build literature taxonomy with mechanism-based cluster labels and open problems."
+    summary_zh: "用机制导向的簇标签和开放问题构建文献地图。"
+    display_name_zh: "文献地图"
+    when_to_use_zh: "当你需要重组文献流派、机制簇和开放问题时使用。"
     inputs: [ExtractionTable]
     outputs: [LiteratureMap]
     tags: [literature, taxonomy, mapping, related-work, clustering]
@@ -186,6 +225,9 @@ skills:
     version: "0.1.0"
     file: skills/B_literature/reference-manager-bridge.md
     summary: "Export/import references between research system and Zotero/Mendeley/EndNote."
+    summary_zh: "在研究系统与 Zotero、Mendeley、EndNote 之间导入导出文献。"
+    display_name_zh: "文献管理器桥接"
+    when_to_use_zh: "当你需要与 Zotero、Mendeley 或 EndNote 双向交换文献时使用。"
     inputs: [Bibliography, PaperNotes]
     outputs: [Bibliography, RISExport, CSLJSONExport]
     tags: [literature, references, Zotero, Mendeley, EndNote, BibTeX, RIS]
@@ -202,6 +244,9 @@ skills:
     version: "0.1.0"
     file: skills/C_design/study-designer.md
     summary: "Own study design rationale, measures, analysis summary, and design handoff artifacts in one package."
+    summary_zh: "将研究设计依据、测量、分析概要和设计交接产物整合成一个设计包。"
+    display_name_zh: "研究设计"
+    when_to_use_zh: "当研究问题已清楚，需要搭建设计、测量和分析方案时使用。"
     inputs: [RQSet, TheoreticalFramework]
     outputs: [DesignSpec, AnalysisPlan, DataManagementPlan, Instruments, Preregistration]
     tags: [design, sampling, measures, analysis-plan, preregistration]
@@ -215,6 +260,9 @@ skills:
     version: "0.1.0"
     file: skills/C_design/rival-hypothesis-designer.md
     summary: "Construct competing theories and rival explanations to strengthen design."
+    summary_zh: "构造竞争性理论和替代解释，强化研究设计。"
+    display_name_zh: "竞争解释设计"
+    when_to_use_zh: "当你需要主动处理替代解释和 competing theories 时使用。"
     inputs: [DesignSpec, HypothesisSet]
     outputs: [RivalHypotheses]
     tags: [design, rival-hypotheses, threats-to-validity, competing-theories]
@@ -228,6 +276,9 @@ skills:
     version: "0.1.0"
     file: skills/C_design/robustness-planner.md
     summary: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
+    summary_zh: "预先规定稳健性检验、敏感性分析和 bounds scaling。"
+    display_name_zh: "稳健性规划"
+    when_to_use_zh: "当经验设计需要预先规定稳健性和敏感性分析时使用。"
     inputs: [DesignSpec, AnalysisPlan]
     outputs: [RobustnessPlan]
     tags: [design, robustness, sensitivity-analysis, endogeneity]
@@ -241,6 +292,9 @@ skills:
     version: "0.1.0"
     file: skills/C_design/dataset-finder.md
     summary: "Identify feasible datasets, access routes, and coverage risks before implementation."
+    summary_zh: "在实施前识别可行数据集、获取路径和覆盖风险。"
+    display_name_zh: "数据集搜寻"
+    when_to_use_zh: "当你不确定有哪些可行数据源和获取路径时使用。"
     inputs: [RQSet, DesignSpec, AnalysisPlan]
     outputs: [DatasetPlan]
     tags: [design, data, datasets, provenance, feasibility]
@@ -254,6 +308,9 @@ skills:
     version: "0.1.0"
     file: skills/C_design/variable-constructor.md
     summary: "Operationalize constructs into auditable variables, coding rules, and transformations."
+    summary_zh: "将构念 operationalize 为可审计变量、编码规则和变换。"
+    display_name_zh: "变量构造"
+    when_to_use_zh: "当你需要把抽象构念落成可审计变量和编码规则时使用。"
     inputs: [DesignSpec, AnalysisPlan, HypothesisSet, DatasetPlan]
     outputs: [VariableSpec]
     tags: [design, variables, operationalization, coding, measures]
@@ -270,6 +327,9 @@ skills:
     version: "0.1.0"
     file: skills/D_ethics/ethics-irb-helper.md
     summary: "Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance."
+    summary_zh: "准备可直接用于 IRB 的风险评估、知情同意、招募和数据治理材料。"
+    display_name_zh: "伦理与IRB助手"
+    when_to_use_zh: "当研究涉及 IRB、人类受试者或敏感数据时使用。"
     inputs: [DesignSpec]
     outputs: [EthicsPackage]
     tags: [ethics, IRB, consent, privacy, GDPR, compliance]
@@ -283,6 +343,9 @@ skills:
     version: "0.1.0"
     file: skills/D_ethics/deidentification-planner.md
     summary: "Design technical privacy measures via k-anonymity or differential privacy."
+    summary_zh: "用 k-匿名或差分隐私设计技术性的隐私保护方案。"
+    display_name_zh: "去标识化规划"
+    when_to_use_zh: "当你需要技术层面的隐私保护和去标识化方案时使用。"
     inputs: [DesignSpec, EthicsPackage]
     outputs: [DeidentificationPlan]
     tags: [ethics, privacy, deidentification, k-anonymity, differential-privacy]
@@ -299,6 +362,9 @@ skills:
     version: "0.1.0"
     file: skills/E_synthesis/evidence-synthesizer.md
     summary: "Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting."
+    summary_zh: "以符合 PRISMA 的方式进行叙事性或定量证据综合。"
+    display_name_zh: "证据综合"
+    when_to_use_zh: "当你已有证据材料，需要做叙事综合或 meta-analysis 时使用。"
     inputs: [ExtractionTable, QualityTable]
     outputs: [EvidenceTable, SynthesisMatrix]
     tags: [synthesis, meta-analysis, narrative, evidence-table, PRISMA]
@@ -312,6 +378,9 @@ skills:
     version: "0.1.0"
     file: skills/E_synthesis/quality-assessor.md
     summary: "Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE."
+    summary_zh: "使用 RoB 2、ROBINS-I、GRADE 评估偏倚风险和证据确定性。"
+    display_name_zh: "质量评估"
+    when_to_use_zh: "当你需要评估 risk of bias 和证据确定性时使用。"
     inputs: [ExtractionTable]
     outputs: [QualityTable, GRADESummary]
     tags: [synthesis, quality, risk-of-bias, GRADE, RoB2, ROBINS-I]
@@ -325,6 +394,9 @@ skills:
     version: "0.1.0"
     file: skills/E_synthesis/publication-bias-checker.md
     summary: "Evaluate publication bias via funnel plots, Egger's test, trim-and-fill."
+    summary_zh: "用漏斗图、Egger 检验和 trim-and-fill 评估发表偏倚。"
+    display_name_zh: "发表偏倚检查"
+    when_to_use_zh: "当你需要判断结果是否受发表偏倚影响时使用。"
     inputs: [EvidenceTable]
     outputs: [PublicationBiasReport]
     tags: [synthesis, publication-bias, funnel-plot, fail-safe-N, trim-and-fill]
@@ -341,6 +413,9 @@ skills:
     version: "0.1.0"
     file: skills/F_writing/manuscript-architect.md
     summary: "Own story spine, section drafting, and deep analytical framing as one manuscript package."
+    summary_zh: "统一负责论文叙事主线、章节起草和深度分析框架。"
+    display_name_zh: "论文架构师"
+    when_to_use_zh: "当你需要搭建论文整体结构、章节推进和核心论证主线时使用。"
     inputs: [RQSet, EvidenceTable, DesignSpec]
     outputs: [ManuscriptOutline, Manuscript, ClaimGraph, FiguresTablesPlan]
     tags: [writing, manuscript, outline, drafting, claim-evidence]
@@ -354,6 +429,9 @@ skills:
     version: "0.1.0"
     file: skills/F_writing/analysis-interpreter.md
     summary: "Translate findings into analytical prose with uncertainty, mechanisms, rivals, and boundary conditions."
+    summary_zh: "将结果写成包含不确定性、机制、竞争解释和边界条件的分析性文本。"
+    display_name_zh: "结果分析解释"
+    when_to_use_zh: "当你需要把 quant 或 qualitative findings 写成有分析深度的结果叙述时使用。"
     inputs: [StatsReport, AnalysisPlan, RobustnessPlan]
     outputs: [ResultInterpretation]
     tags: [writing, results, interpretation, robustness, uncertainty]
@@ -367,6 +445,9 @@ skills:
     version: "0.1.0"
     file: skills/F_writing/effect-size-interpreter.md
     summary: "Explain the substantive magnitude of estimates in interpretable units."
+    summary_zh: "用可解释单位说明估计量的实质性大小。"
+    display_name_zh: "效应量解释"
+    when_to_use_zh: "当你需要把统计系数翻译成读者能理解的实际意义时使用。"
     inputs: [StatsReport, DesignSpec, VenueAnalysis]
     outputs: [EffectInterpretation]
     tags: [writing, results, effect-size, magnitude, interpretation]
@@ -380,6 +461,9 @@ skills:
     version: "0.1.0"
     file: skills/F_writing/table-generator.md
     summary: "Generate publication-ready tables from statistical output with venue-aware formatting."
+    summary_zh: "按期刊规范把统计输出整理成可投稿表格。"
+    display_name_zh: "论文表格生成"
+    when_to_use_zh: "当你需要把统计结果整理成论文级表格时使用。"
     inputs: [StatsReport, VenueAnalysis]
     outputs: [FormattedTables]
     tags: [writing, tables, formatting, APA, publication-ready]
@@ -393,6 +477,9 @@ skills:
     version: "0.1.0"
     file: skills/F_writing/figure-specifier.md
     summary: "Specify publication-quality figures with reproducible code and accessibility guidance."
+    summary_zh: "定义带复现代码和可及性说明的论文级图形。"
+    display_name_zh: "图形规范定义"
+    when_to_use_zh: "当你需要先定义图的逻辑、编码和可及性要求时使用。"
     inputs: [StatsReport, VenueAnalysis]
     outputs: [FigureSpecs]
     tags: [writing, figures, visualization, accessibility, publication-ready]
@@ -406,6 +493,9 @@ skills:
     version: "0.1.0"
     file: skills/F_writing/meta-optimizer.md
     summary: "Optimize abstract, title, keywords for indexing and discoverability."
+    summary_zh: "优化标题、摘要和关键词的索引表现与可发现性。"
+    display_name_zh: "题摘关键词优化"
+    when_to_use_zh: "当你需要优化标题、摘要和关键词的可发现性时使用。"
     inputs: [Manuscript]
     outputs: [MetaOptimization]
     tags: [writing, abstract, title, SEO, indexing, keywords]
@@ -422,6 +512,9 @@ skills:
     version: "0.1.0"
     file: skills/G_compliance/prisma-checker.md
     summary: "Verify PRISMA 2020 flow diagram and all 27 checklist items."
+    summary_zh: "核验 PRISMA 2020 流程图和 27 项清单。"
+    display_name_zh: "PRISMA检查"
+    when_to_use_zh: "当系统综述或证据综合需要核对 PRISMA 完整性时使用。"
     inputs: [Manuscript, PRISMAFlowData]
     outputs: [PRISMAChecklist]
     tags: [compliance, PRISMA, systematic-review, checklist, reporting]
@@ -435,6 +528,9 @@ skills:
     version: "0.1.0"
     file: skills/G_compliance/reporting-checker.md
     summary: "Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness."
+    summary_zh: "检查 CONSORT、STROBE、COREQ、SRQR、TRIPOD 等报告规范的完整性。"
+    display_name_zh: "报告规范检查"
+    when_to_use_zh: "当你需要核查 CONSORT、STROBE、COREQ、SRQR 或 TRIPOD 时使用。"
     inputs: [Manuscript, DesignSpec]
     outputs: [ReportingChecklist]
     tags: [compliance, reporting, CONSORT, STROBE, COREQ, guidelines]
@@ -448,6 +544,9 @@ skills:
     version: "0.1.0"
     file: skills/G_compliance/tone-normalizer.md
     summary: "Cut fluff, hedge words, and absolute claims for concise academic tone."
+    summary_zh: "删除废话、模糊 hedge 和绝对化表述，收敛为简洁学术语气。"
+    display_name_zh: "学术语气归一"
+    when_to_use_zh: "当文本太松、太满、太绝对或废话过多时使用。"
     inputs: [Manuscript]
     outputs: [ToneNormalization]
     tags: [compliance, tone, academic-writing, editing, conciseness]
@@ -464,6 +563,9 @@ skills:
     version: "0.1.0"
     file: skills/H_submission/submission-packager.md
     summary: "Assemble submission package: cover letter, disclosures, supplementary materials."
+    summary_zh: "组装 cover letter、披露声明和补充材料等投稿包。"
+    display_name_zh: "投稿包组装"
+    when_to_use_zh: "当稿件接近投稿，需要准备 cover letter、声明和补充材料时使用。"
     inputs: [Manuscript, VenueAnalysis]
     outputs: [SubmissionPackage]
     tags: [submission, cover-letter, checklist, disclosures, supplementary]
@@ -477,6 +579,9 @@ skills:
     version: "0.1.0"
     file: skills/H_submission/rebuttal-assistant.md
     summary: "Generate point-by-point response matrix from reviewer comments."
+    summary_zh: "根据审稿意见生成逐点回复矩阵。"
+    display_name_zh: "审稿回复助手"
+    when_to_use_zh: "当你需要把审稿意见转成逐点回复矩阵时使用。"
     inputs: [ReviewComments, Manuscript]
     outputs: [ResponseToReviewers, ResponseLetter]
     tags: [submission, rebuttal, revision, reviewer-response, point-by-point]
@@ -490,6 +595,9 @@ skills:
     version: "0.1.0"
     file: skills/H_submission/peer-review-simulation.md
     summary: "Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2)."
+    summary_zh: "模拟多 persona 并行交叉评审，如方法学者、领域专家和 Reviewer 2。"
+    display_name_zh: "同行评审模拟"
+    when_to_use_zh: "当你想在投稿前做多 persona 压力测试时使用。"
     inputs: [Manuscript]
     outputs: [PeerReviewSimulation]
     tags: [submission, peer-review, simulation, multi-persona, red-team]
@@ -503,6 +611,9 @@ skills:
     version: "0.1.0"
     file: skills/H_submission/fatal-flaw-detector.md
     summary: "Desk-reject analysis identifying critical flaws blocking publication."
+    summary_zh: "做 desk-reject 风险分析，识别阻断发表的致命缺陷。"
+    display_name_zh: "致命缺陷检测"
+    when_to_use_zh: "当你想先做一轮 desk-reject 风险扫描时使用。"
     inputs: [Manuscript]
     outputs: [FatalFlawAnalysis]
     tags: [submission, fatal-flaw, desk-reject, quality-gate, pre-submission]
@@ -516,6 +627,9 @@ skills:
     version: "0.1.0"
     file: skills/H_submission/reviewer-empathy-checker.md
     summary: "Neutralize defensiveness in reviewer responses and verify exact addressing."
+    summary_zh: "消解回复中的防御性语气，并检查是否逐点准确回应。"
+    display_name_zh: "审稿沟通校准"
+    when_to_use_zh: "当回复内容技术上正确，但语气可能过硬或防御性过强时使用。"
     inputs: [ResponseToReviewers]
     outputs: [EmpathyCheck]
     tags: [submission, rebuttal, empathy, tone, reviewer-response]
@@ -532,6 +646,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/code-builder.md
     summary: "Convert academic methods into executable code with domain-profile library selection."
+    summary_zh: "结合 domain profile 的库选择，把学术方法转成可执行代码。"
+    display_name_zh: "学术代码构建"
+    when_to_use_zh: "当你需要把论文方法转成可执行研究代码时使用。"
     inputs: [AnalysisPlan, DomainProfile]
     outputs: [AnalysisCode]
     tags: [code, implementation, multi-language, domain-profiles, reproducibility]
@@ -545,6 +662,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/data-cleaning-planner.md
     summary: "Define reproducible cleaning rules for validation, missingness, and harmonization."
+    summary_zh: "定义可复现的数据清洗规则，覆盖校验、缺失和 harmonization。"
+    display_name_zh: "数据清洗规划"
+    when_to_use_zh: "当原始数据清洗需要变成可审计流程时使用。"
     inputs: [DatasetPlan, VariableSpec, AnalysisPlan]
     outputs: [CleaningPlan]
     tags: [code, data, cleaning, missingness, validation]
@@ -558,6 +678,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/data-merge-planner.md
     summary: "Define join logic, key validation, and provenance controls for multi-source data."
+    summary_zh: "定义多源数据的 join 逻辑、主键校验和 provenance 控制。"
+    display_name_zh: "数据合并规划"
+    when_to_use_zh: "当多数据源需要安全合并并保留 provenance 时使用。"
     inputs: [DatasetPlan, VariableSpec, CleaningPlan]
     outputs: [MergePlan]
     tags: [code, data, merge, joins, provenance]
@@ -571,6 +694,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/code-specification.md
     summary: "Generate strict OPSX-style constraint sets before coding."
+    summary_zh: "在编码前生成严格的 OPSX 风格约束集。"
+    display_name_zh: "代码规范定义"
+    when_to_use_zh: "当编码前必须先锁定约束、输入输出和验收标准时使用。"
     inputs: [UserQuery]
     outputs: [CodeSpec]
     tags: [code, specification, requirements, OPSX, constraints]
@@ -584,6 +710,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/code-planning.md
     summary: "Transform specs into parallelizable, zero-decision execution plans."
+    summary_zh: "把规范转成可并行、零自由裁量的执行计划。"
+    display_name_zh: "代码执行规划"
+    when_to_use_zh: "当你需要零自由裁量的实现计划和并行拆分时使用。"
     inputs: [CodeSpec]
     outputs: [CodePlan]
     tags: [code, planning, execution-plan, parallelization]
@@ -597,6 +726,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/code-execution.md
     summary: "Execute code plans with cProfile performance profiling and optimization."
+    summary_zh: "按计划执行代码，并输出 cProfile 性能分析与优化记录。"
+    display_name_zh: "代码执行"
+    when_to_use_zh: "当你需要按既定计划实现代码并记录 profiling 与验证证据时使用。"
     inputs: [CodePlan]
     outputs: [PerformanceProfile]
     tags: [code, execution, profiling, performance, optimization]
@@ -610,6 +742,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/code-review.md
     summary: "Secondary model reviews code logic, security, and statistical validity."
+    summary_zh: "由第二模型审查代码逻辑、安全性和统计有效性。"
+    display_name_zh: "学术代码审查"
+    when_to_use_zh: "当你需要第二模型审查代码逻辑、统计有效性和方法一致性时使用。"
     inputs: [AnalysisCode, DomainProfile]
     outputs: [CodeReview]
     tags: [code, review, security, statistical-validity, domain-checklist]
@@ -623,6 +758,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/reproducibility-auditor.md
     summary: "Verify seeds, containerization, and fail-graceful contingencies."
+    summary_zh: "核验随机种子、容器化和失败时的 graceful contingency。"
+    display_name_zh: "可复现性审计"
+    when_to_use_zh: "当你需要检查 seed、环境、rerun recipe 和复现证据时使用。"
     inputs: [AnalysisCode]
     outputs: [ReproducibilityReport]
     tags: [code, reproducibility, audit, random-seeds, containerization]
@@ -636,6 +774,9 @@ skills:
     version: "0.1.0"
     file: skills/I_code/stats-engine.md
     summary: "Statistical modeling and hypothesis testing with domain-driven diagnostics."
+    summary_zh: "提供带领域诊断逻辑的统计建模与假设检验。"
+    display_name_zh: "统计引擎"
+    when_to_use_zh: "当重点是统计建模、诊断和假设检验，而不是一般编码时使用。"
     inputs: [AnalysisPlan, DomainProfile]
     outputs: [StatsReport]
     tags: [code, statistics, modeling, hypothesis-testing, diagnostics]
@@ -652,6 +793,9 @@ skills:
     version: "0.1.0"
     file: skills/Z_cross_cutting/metadata-enricher.md
     summary: "Normalize and enrich DOI, venue, year, author metadata across artifacts."
+    summary_zh: "在各类产物之间标准化并补全 DOI、期刊、年份和作者元数据。"
+    display_name_zh: "元数据补全"
+    when_to_use_zh: "当 DOI、作者、年份或 venue 元数据在不同产物之间不一致时使用。"
     inputs: [PaperNotes]
     outputs: [Bibliography]
     tags: [cross-cutting, metadata, DOI, normalization, enrichment]
@@ -665,6 +809,9 @@ skills:
     version: "0.1.0"
     file: skills/Z_cross_cutting/model-collaborator.md
     summary: "Coordinate multi-agent execution and cross-review across model runtimes."
+    summary_zh: "协调多模型运行时的协作执行与交叉复核。"
+    display_name_zh: "多模型协作"
+    when_to_use_zh: "当你需要 Codex、Claude 和 Gemini 分工协作或交叉复核时使用。"
     inputs: [TaskPacket]
     outputs: [CollaborationTrace]
     tags: [cross-cutting, multi-agent, collaboration, Codex, Claude, Gemini]
@@ -678,6 +825,9 @@ skills:
     version: "0.1.0"
     file: skills/Z_cross_cutting/self-critique.md
     summary: "Iterative red teaming against superficial reasoning, contradictions, and overclaiming."
+    summary_zh: "通过迭代式 red teaming 打击浅层推理、矛盾和过度主张。"
+    display_name_zh: "自我批判"
+    when_to_use_zh: "当你想主动提高 red-teaming 强度、压制浅层推理和过度主张时使用。"
     inputs: [AnyArtifact]
     outputs: [CritiqueLog]
     tags: [cross-cutting, critique, red-team, quality-assurance, Socratic]

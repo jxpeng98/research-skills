@@ -8,6 +8,12 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from research_skills.skill_docs import generate_skill_reference_docs
+
 EXPECTED_PAPER_TYPES = {"empirical", "qualitative", "systematic-review", "methods", "theory"}
 EXPECTED_STAGE_IDS = {stage for stage in "ABCDEFGHI"}
 EXPECTED_TASK_IDS = {
@@ -171,6 +177,10 @@ class SkillRegistryEntry:
     id: str
     stage: str
     file: str
+    summary: str
+    summary_zh: str
+    display_name_zh: str
+    when_to_use_zh: str
     inputs: list[str]
     outputs: list[str]
 
@@ -331,12 +341,20 @@ def parse_skill_registry_entries(content: str) -> dict[str, SkillRegistryEntry]:
     for skill_id, block in iter_yaml_list_blocks(section, item_indent=2):
         stage = parse_yaml_scalar(block, "stage", indent=4)
         file_path = parse_yaml_scalar(block, "file", indent=4)
+        summary = parse_yaml_scalar(block, "summary", indent=4)
+        summary_zh = parse_yaml_scalar(block, "summary_zh", indent=4)
+        display_name_zh = parse_yaml_scalar(block, "display_name_zh", indent=4)
+        when_to_use_zh = parse_yaml_scalar(block, "when_to_use_zh", indent=4)
         inputs = parse_inline_yaml_list(block, "inputs", indent=4)
         outputs = parse_inline_yaml_list(block, "outputs", indent=4)
         entries[skill_id] = SkillRegistryEntry(
             id=skill_id,
             stage=stage,
             file=file_path,
+            summary=summary,
+            summary_zh=summary_zh,
+            display_name_zh=display_name_zh,
+            when_to_use_zh=when_to_use_zh,
             inputs=inputs,
             outputs=outputs,
         )
@@ -754,6 +772,26 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
             f"skills/registry.yaml stage must be canonical for {skill_id}: {entry.stage}",
         )
         report.check(
+            bool(entry.summary),
+            f"Registry English summary exists for {skill_id}",
+            f"skills/registry.yaml missing summary for {skill_id}",
+        )
+        report.check(
+            bool(entry.summary_zh),
+            f"Registry Chinese summary exists for {skill_id}",
+            f"skills/registry.yaml missing summary_zh for {skill_id}",
+        )
+        report.check(
+            bool(entry.display_name_zh),
+            f"Registry Chinese display name exists for {skill_id}",
+            f"skills/registry.yaml missing display_name_zh for {skill_id}",
+        )
+        report.check(
+            bool(entry.when_to_use_zh),
+            f"Registry Chinese usage note exists for {skill_id}",
+            f"skills/registry.yaml missing when_to_use_zh for {skill_id}",
+        )
+        report.check(
             bool(entry.file),
             f"Registry file path exists for {skill_id}",
             f"skills/registry.yaml missing file path for {skill_id}",
@@ -821,6 +859,27 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
                 f"{entry.file} frontmatter stage mismatch: "
                 f"{frontmatter.get('stage', '<missing>')} vs registry {entry.stage}"
             ),
+        )
+
+
+def validate_generated_skill_docs(root: Path, report: ValidationReport) -> None:
+    generated = generate_skill_reference_docs(root)
+    for relative_path, expected_content in generated.items():
+        actual_content = read_text(root, relative_path, report)
+        if not actual_content:
+            continue
+        report.check(
+            actual_content == expected_content,
+            f"{relative_path} is in sync with generated registry docs",
+            (
+                f"{relative_path} is out of sync with skills/registry.yaml. "
+                "Run: python3 scripts/generate_skill_docs.py"
+            ),
+        )
+        report.check(
+            "Auto-generated" in actual_content or "自动生成" in actual_content,
+            f"{relative_path} includes generated-file marker",
+            f"{relative_path} must declare that it is generated from skills/registry.yaml",
         )
 
 
@@ -2162,6 +2221,7 @@ def main() -> int:
     print(f"Validating research standard in: {root}")
     validate_contract(root, report)
     validate_skill_registry(root, report)
+    validate_generated_skill_docs(root, report)
     validate_single_skill_source_of_truth(root, report)
     validate_mcp_agent_map(root, report)
     validate_portable_skill(root, report)

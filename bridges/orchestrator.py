@@ -33,7 +33,7 @@ from .claude_bridge import ClaudeBridge
 from .codex_bridge import CodexBridge
 from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
-from .i18n import get_text
+from .i18n import get_language, get_text
 from .critique_questions import get_critique_questions
 from .errors import (
     ResearchError,
@@ -311,6 +311,7 @@ class ModelOrchestrator:
         self.standards_dir = standards_dir or self.DEFAULT_STANDARDS_DIR
         self.mcp_connector = MCPConnector(timeout_seconds=mcp_timeout_seconds)
         self.interactive = interactive
+        self._skill_registry_metadata_cache: dict[str, dict[str, str]] | None = None
 
     def _deep_merge_dict(self, base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
         merged: dict[str, Any] = dict(base)
@@ -1078,6 +1079,43 @@ Provide your verification assessment.
             return value[1:-1]
         return value
 
+    def _load_skill_registry_metadata(self) -> dict[str, dict[str, str]]:
+        if self._skill_registry_metadata_cache is not None:
+            return self._skill_registry_metadata_cache
+
+        registry_path = self.standards_dir.parent / "skills" / "registry.yaml"
+        if not registry_path.exists():
+            self._skill_registry_metadata_cache = {}
+            return self._skill_registry_metadata_cache
+
+        try:
+            content = registry_path.read_text(encoding="utf-8")
+        except OSError:
+            self._skill_registry_metadata_cache = {}
+            return self._skill_registry_metadata_cache
+
+        section = self._extract_top_level_section(content, "skills")
+        entry_pattern = re.compile(
+            r"^\s{2}-\s*id:\s*([A-Za-z0-9_-]+)\s*$",
+            flags=re.MULTILINE,
+        )
+        matches = list(entry_pattern.finditer(section))
+        metadata: dict[str, dict[str, str]] = {}
+        for index, match in enumerate(matches):
+            start = match.start()
+            end = matches[index + 1].start() if index + 1 < len(matches) else len(section)
+            block = section[start:end]
+            skill_id = match.group(1)
+            metadata[skill_id] = {
+                "summary": self._parse_yaml_scalar(block, "summary", indent=4),
+                "summary_zh": self._parse_yaml_scalar(block, "summary_zh", indent=4),
+                "display_name_zh": self._parse_yaml_scalar(block, "display_name_zh", indent=4),
+                "when_to_use_zh": self._parse_yaml_scalar(block, "when_to_use_zh", indent=4),
+            }
+
+        self._skill_registry_metadata_cache = metadata
+        return self._skill_registry_metadata_cache
+
     def _load_task_outputs(self, task_id: str) -> tuple[str, list[str]]:
         contract = self._read_standard("research-workflow-contract.yaml")
         artifacts = self._extract_top_level_section(contract, "artifacts")
@@ -1402,38 +1440,49 @@ Provide your verification assessment.
             for prereq in spec.get("prerequisites_any", []):
                 mermaid_lines.append(f"  {prereq} -.-> {node}")
         mermaid = "\n".join(mermaid_lines)
+        zh_ui = get_language() == "zh-CN"
+        none_label = "None / 无" if zh_ui else "None"
+        ok_label = "OK / 已满足" if zh_ui else "OK"
+        missing_label = "MISSING / 缺失" if zh_ui else "MISSING"
 
         summary_lines = [
-            "## Task Plan",
-            f"- task_id: `{normalized_task}`",
-            f"- paper_type: `{paper_type}`",
-            f"- artifact_root: `{artifact_root}`",
-            f"- project_root: `{project_root}`",
+            "## Task Plan / 任务规划" if zh_ui else "## Task Plan",
+            f"- {'task_id / 任务ID' if zh_ui else 'task_id'}: `{normalized_task}`",
+            f"- {'paper_type / 论文类型' if zh_ui else 'paper_type'}: `{paper_type}`",
+            f"- {'artifact_root / 产物根目录' if zh_ui else 'artifact_root'}: `{artifact_root}`",
+            f"- {'project_root / 项目根目录' if zh_ui else 'project_root'}: `{project_root}`",
             "",
-            "### Functional routing",
+            "### Functional routing / 功能路由" if zh_ui else "### Functional routing",
             (
-                f"- target_owner: `{agent_plan['functional_owner']}` "
+                f"- {'target_owner / 功能负责人' if zh_ui else 'target_owner'}: `{agent_plan['functional_owner']}` "
                 f"[{agent_plan['functional_owner_source']}]"
             ),
-            f"- role: `{agent_plan['functional_role_id']}`",
+            f"- {'role / 角色' if zh_ui else 'role'}: `{agent_plan['functional_role_id']}`",
         ]
         if agent_plan.get("functional_display_name"):
-            summary_lines.append(f"- display_name: {agent_plan['functional_display_name']}")
+            summary_lines.append(
+                f"- {'display_name / 显示名称' if zh_ui else 'display_name'}: {agent_plan['functional_display_name']}"
+            )
         if agent_plan.get("functional_focus"):
-            summary_lines.append(f"- focus: {agent_plan['functional_focus']}")
+            summary_lines.append(
+                f"- {'focus / 核心关注' if zh_ui else 'focus'}: {agent_plan['functional_focus']}"
+            )
         if agent_plan.get("functional_tone"):
-            summary_lines.append(f"- tone: {agent_plan['functional_tone']}")
+            summary_lines.append(
+                f"- {'tone / 语气要求' if zh_ui else 'tone'}: {agent_plan['functional_tone']}"
+            )
         if handoff_chain:
             summary_lines.append(
-                "- handoff_chain: " + " -> ".join(f"`{owner}`" for owner in handoff_chain)
+                f"- {'handoff_chain / 交接链' if zh_ui else 'handoff_chain'}: "
+                + " -> ".join(f"`{owner}`" for owner in handoff_chain)
             )
         else:
-            summary_lines.append("- handoff_chain: None")
+            summary_lines.append(f"- {'handoff_chain / 交接链' if zh_ui else 'handoff_chain'}: {none_label}")
 
         summary_lines.extend(
             [
                 "",
-                "### Functional handoff trace",
+                "### Functional handoff trace / 功能交接轨迹" if zh_ui else "### Functional handoff trace",
             ]
         )
         if handoff_trace:
@@ -1443,56 +1492,83 @@ Provide your verification assessment.
                     f"[{item['functional_owner_source']}]"
                 )
         else:
-            summary_lines.append("- None")
+            summary_lines.append(f"- {none_label}")
 
         summary_lines.extend(
             [
                 "",
-                "### Runtime routing plan",
-                f"- draft: `{runtime_plan.get('primary_agent', '-') or '-'}`",
-                f"- review: `{runtime_plan.get('review_agent', '-') or '-'}`",
-                f"- fallback: `{runtime_plan.get('fallback_agent', '-') or '-'}`",
+                "### Runtime routing plan / 运行时路由预案" if zh_ui else "### Runtime routing plan",
+                f"- {'draft / 起草' if zh_ui else 'draft'}: `{runtime_plan.get('primary_agent', '-') or '-'}`",
+                f"- {'review / 复核' if zh_ui else 'review'}: `{runtime_plan.get('review_agent', '-') or '-'}`",
+                f"- {'fallback / 回退' if zh_ui else 'fallback'}: `{runtime_plan.get('fallback_agent', '-') or '-'}`",
                 "",
-                "### Required prerequisites (prerequisites_all, transitive)",
+                (
+                    "### Required prerequisites (prerequisites_all, transitive) / 必需前置任务"
+                    if zh_ui else
+                    "### Required prerequisites (prerequisites_all, transitive)"
+                ),
             ]
         )
         if required_chain:
             for index, node in enumerate(required_chain, start=1):
-                status = "OK" if completion.get(node) else "MISSING"
+                status = ok_label if completion.get(node) else missing_label
                 summary_lines.append(f"{index}. `{node}` [{status}]")
         else:
-            summary_lines.append("- None")
+            summary_lines.append(f"- {none_label}")
 
         summary_lines.append("")
-        summary_lines.append("### Any-of requirements (prerequisites_any)")
+        summary_lines.append(
+            "### Any-of requirements (prerequisites_any) / 满足其一的前置条件"
+            if zh_ui else
+            "### Any-of requirements (prerequisites_any)"
+        )
         if any_of_status:
             for item in any_of_status:
                 options = ", ".join(f"`{opt}`" for opt in item["any_of"])
                 satisfied_by = item.get("satisfied_by")
-                status = "OK" if item["satisfied"] else "MISSING"
-                suffix = f" (satisfied_by `{satisfied_by}`)" if satisfied_by else ""
-                summary_lines.append(f"- `{item['task']}` requires any of: {options} [{status}]{suffix}")
+                status = ok_label if item["satisfied"] else missing_label
+                suffix = (
+                    f" ({'satisfied_by / 由此满足' if zh_ui else 'satisfied_by'} `{satisfied_by}`)"
+                    if satisfied_by else ""
+                )
+                summary_lines.append(
+                    f"- `{item['task']}` "
+                    f"{'requires any of / 满足其一即可' if zh_ui else 'requires any of'}: "
+                    f"{options} [{status}]{suffix}"
+                )
         else:
-            summary_lines.append("- None")
+            summary_lines.append(f"- {none_label}")
 
         summary_lines.append("")
-        summary_lines.append("### Recommended prerequisites")
+        summary_lines.append(
+            "### Recommended prerequisites / 建议先完成的任务"
+            if zh_ui else
+            "### Recommended prerequisites"
+        )
         summary_lines.append(
             "- " + ", ".join(f"`{item}`" for item in recommended_prereq)
             if recommended_prereq
-            else "- None"
+            else f"- {none_label}"
         )
 
         summary_lines.append("")
-        summary_lines.append("### Suggested next tasks")
+        summary_lines.append(
+            "### Suggested next tasks / 推荐下一步任务"
+            if zh_ui else
+            "### Suggested next tasks"
+        )
         summary_lines.append(
             "- " + ", ".join(f"`{item}`" for item in recommended_next)
             if recommended_next
-            else "- None"
+            else f"- {none_label}"
         )
 
         summary_lines.append("")
-        summary_lines.append("### Dependency graph (Mermaid)")
+        summary_lines.append(
+            "### Dependency graph (Mermaid) / 依赖图"
+            if zh_ui else
+            "### Dependency graph (Mermaid)"
+        )
         summary_lines.append("```mermaid")
         summary_lines.append(mermaid)
         summary_lines.append("```")
@@ -1586,6 +1662,7 @@ Provide your verification assessment.
                 f"Task {task_id} has unknown skill entries: {', '.join(unknown_skills)}"
             )
         skill_catalog_section = self._extract_top_level_section(capability_map, "skill_catalog")
+        skill_registry_metadata = self._load_skill_registry_metadata()
         required_skill_cards: list[dict[str, Any]] = []
         for skill_name in required_skills:
             card_match = re.search(
@@ -1611,12 +1688,17 @@ Provide your verification assessment.
                 raise ValueError(f"Skill catalog entry missing category for {skill_name}")
             if not focus:
                 raise ValueError(f"Skill catalog entry missing focus for {skill_name}")
+            registry_metadata = skill_registry_metadata.get(skill_name, {})
             required_skill_cards.append(
                 {
                     "skill": skill_name,
                     "file": skill_file,
                     "category": category,
                     "focus": focus,
+                    "summary": str(registry_metadata.get("summary", "")).strip(),
+                    "summary_zh": str(registry_metadata.get("summary_zh", "")).strip(),
+                    "display_name_zh": str(registry_metadata.get("display_name_zh", "")).strip(),
+                    "when_to_use_zh": str(registry_metadata.get("when_to_use_zh", "")).strip(),
                     "default_outputs": default_outputs,
                 }
             )
@@ -1998,20 +2080,30 @@ Provide your verification assessment.
         }
 
     def _format_domain_context(self, task_packet: dict[str, Any]) -> str:
+        zh_ui = get_language() == "zh-CN"
         domain = str(task_packet.get("domain", "")).strip()
         if not domain or domain == "auto":
-            return "- No explicit domain profile injected."
+            return "- No explicit domain profile injected." if not zh_ui else "- 当前未注入显式 domain profile。"
 
         status = str(task_packet.get("domain_profile_status", "")).strip() or "unknown"
         display_name = str(task_packet.get("domain_profile_display_name", "")).strip() or domain
         file_rel = str(task_packet.get("domain_profile_file", "")).strip() or "-"
-        lines = [
-            f"- requested_domain: {str(task_packet.get('requested_domain', domain)).strip() or domain}",
-            f"- resolved_domain: {domain}",
-            f"- status: {status}",
-            f"- display_name: {display_name}",
-            f"- profile_file: {file_rel}",
-        ]
+        if zh_ui:
+            lines = [
+                f"- requested_domain / 用户请求领域: {str(task_packet.get('requested_domain', domain)).strip() or domain}",
+                f"- resolved_domain / 解析后领域: {domain}",
+                f"- status / 状态: {status}",
+                f"- display_name / 显示名称: {display_name}",
+                f"- profile_file / 配置文件: {file_rel}",
+            ]
+        else:
+            lines = [
+                f"- requested_domain: {str(task_packet.get('requested_domain', domain)).strip() or domain}",
+                f"- resolved_domain: {domain}",
+                f"- status: {status}",
+                f"- display_name: {display_name}",
+                f"- profile_file: {file_rel}",
+            ]
         excerpt = str(task_packet.get("domain_profile_excerpt", "")).strip()
         if excerpt:
             lines.extend(
@@ -2886,6 +2978,10 @@ Stage-I structure checks:
                 {
                     "skill": skill_name,
                     "category": str(card.get("category", "")).strip(),
+                    "summary": str(card.get("summary", "")).strip(),
+                    "summary_zh": str(card.get("summary_zh", "")).strip(),
+                    "display_name_zh": str(card.get("display_name_zh", "")).strip(),
+                    "when_to_use_zh": str(card.get("when_to_use_zh", "")).strip(),
                     "focus": str(card.get("focus", "")).strip(),
                     "file": file_rel,
                     "default_outputs": [
@@ -2902,26 +2998,53 @@ Stage-I structure checks:
         return resolved_cards, notes
 
     def _format_skill_context(self, skill_cards: list[dict[str, Any]]) -> str:
+        zh_ui = get_language() == "zh-CN"
         if not skill_cards:
-            return "- No required skill cards available."
+            return "- No required skill cards available." if not zh_ui else "- 当前没有可用的必需 skill 卡片。"
         lines: list[str] = []
+        status_map = {
+            "ok": "ok / 可用",
+            "missing": "missing / 缺失",
+        } if zh_ui else {}
         for card in skill_cards:
             skill_name = str(card.get("skill", "")).strip() or "unknown-skill"
             category = str(card.get("category", "")).strip() or "unspecified"
+            summary = str(card.get("summary", "")).strip()
+            summary_zh = str(card.get("summary_zh", "")).strip()
+            display_name_zh = str(card.get("display_name_zh", "")).strip()
+            when_to_use_zh = str(card.get("when_to_use_zh", "")).strip()
             focus = str(card.get("focus", "")).strip() or "No focus provided."
             status = str(card.get("status", "ok")).strip() or "ok"
+            status_label = status_map.get(status, status)
             outputs = [
                 str(item)
                 for item in card.get("default_outputs", [])
                 if str(item).strip()
             ]
             file_rel = str(card.get("file", "")).strip() or "-"
+            display_summary = summary_zh if zh_ui and summary_zh else summary
+            if not display_summary:
+                display_summary = "未提供摘要。" if zh_ui else "No summary provided."
+            if zh_ui and display_name_zh:
+                lines.append(f"- {display_name_zh} (`{skill_name}`) [{status_label}] ({category})")
+            else:
+                lines.append(f"- {skill_name} [{status_label}] ({category})")
             lines.append(
-                f"- {skill_name} [{status}] ({category}): {focus}"
+                f"  {'summary' if not zh_ui else '摘要/summary'}: {display_summary}"
             )
-            lines.append(f"  spec: {file_rel}")
+            if zh_ui and when_to_use_zh:
+                lines.append(
+                    f"  适用场景/when_to_use: {when_to_use_zh}"
+                )
+            if focus:
+                lines.append(
+                    f"  {'focus' if not zh_ui else '方法焦点/focus'}: {focus}"
+                )
+            lines.append(f"  {'spec' if not zh_ui else '规范文件/spec'}: {file_rel}")
             if outputs:
-                lines.append(f"  default_outputs: {', '.join(outputs)}")
+                lines.append(
+                    f"  {'default_outputs' if not zh_ui else '默认产物/default_outputs'}: {', '.join(outputs)}"
+                )
         return "\n".join(lines)
 
     def _collect_mcp_evidence(
@@ -2956,14 +3079,22 @@ Stage-I structure checks:
         return evidence_items, notes
 
     def _format_mcp_evidence(self, evidence_items: list[MCPEvidence]) -> str:
+        zh_ui = get_language() == "zh-CN"
         if not evidence_items:
-            return "- No MCP evidence collected."
+            return "- No MCP evidence collected." if not zh_ui else "- 当前没有采集到 MCP 证据。"
+        status_map = {
+            "ok": "ok / 可用",
+            "error": "error / 错误",
+            "not_configured": "not_configured / 未配置",
+            "missing": "missing / 缺失",
+        } if zh_ui else {}
         lines: list[str] = []
         for item in evidence_items:
-            lines.append(f"- {item.provider} [{item.status}]: {item.summary}")
+            status_label = status_map.get(item.status, item.status)
+            lines.append(f"- {item.provider} [{status_label}]: {item.summary}")
             if item.provenance:
                 lines.append(
-                    f"  provenance: {', '.join(item.provenance[:3])}"
+                    f"  {'provenance' if not zh_ui else '来源/provenance'}: {', '.join(item.provenance[:3])}"
                 )
         return "\n".join(lines)
 
@@ -4212,27 +4343,35 @@ Return sections:
                 "runtime_plan": dict(agent_plan.get("runtime_plan", {})),
             }
         )
+        zh_ui = get_language() == "zh-CN"
         routing_notes.append(
             f"Functional owner resolved for {normalized_task}: "
             f"{agent_plan['functional_owner']} "
             f"(role={agent_plan['functional_role_id']}, "
             f"source={agent_plan['functional_owner_source']})."
+            + (" / 已完成功能负责人解析。" if zh_ui else "")
         )
         if agent_plan.get("functional_focus"):
-            routing_notes.append(f"Functional focus: {agent_plan['functional_focus']}")
+            routing_notes.append(
+                f"Functional focus: {agent_plan['functional_focus']}"
+                + (" / 当前功能关注点。" if zh_ui else "")
+            )
         if functional_owner_chain:
             routing_notes.append(
                 "Functional handoff chain: " + " -> ".join(functional_owner_chain) + "."
+                + (" / 功能交接链已展开。" if zh_ui else "")
             )
         routing_notes.append(
             "Runtime plan: "
             f"draft={agent_plan['primary_agent']}, "
             f"review={agent_plan['review_agent']}, "
             f"fallback={agent_plan['fallback_agent']}."
+            + (" / 运行预案已确认。" if zh_ui else "")
         )
         routing_notes.append(
             "Output control: "
             f"policy={artifact_policy}, active_outputs={len(required_outputs)}/{len(contract_outputs)}."
+            + (" / 产物输出范围已收敛。" if zh_ui else "")
         )
         if str(packet.get("domain", "")).strip() and str(packet.get("domain", "")).strip() != "auto":
             routing_notes.append(
@@ -4240,17 +4379,26 @@ Return sections:
                 f"requested={packet.get('requested_domain', packet.get('domain', 'auto'))}, "
                 f"resolved={packet.get('domain', 'auto')}, "
                 f"status={packet.get('domain_profile_status', 'unknown')}."
+                + (" / 已注入领域画像。" if zh_ui else "")
             )
             if packet.get("domain_profile_file"):
                 routing_notes.append(
                     f"Domain profile file: {packet['domain_profile_file']}."
+                    + (" / 领域画像文件路径。" if zh_ui else "")
                 )
         if required_outputs:
-            routing_notes.append("Active outputs: " + ", ".join(required_outputs) + ".")
+            routing_notes.append(
+                "Active outputs: " + ", ".join(required_outputs) + "."
+                + (" / 当前激活产物。" if zh_ui else "")
+            )
         if deferred_outputs:
-            routing_notes.append("Deferred outputs: " + ", ".join(deferred_outputs) + ".")
+            routing_notes.append(
+                "Deferred outputs: " + ", ".join(deferred_outputs) + "."
+                + (" / 延后产物。" if zh_ui else "")
+            )
         routing_notes.append(
             f"Research depth: {depth_mode} (evidence_expansion_rounds={evidence_expansion_rounds})."
+            + (" / 研究深度设置。" if zh_ui else "")
         )
         targeted_follow_up_data: dict[str, Any] = {}
         if only_targets:

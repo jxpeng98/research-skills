@@ -203,6 +203,27 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertEqual(result.data["runtime_plan"]["primary_agent"], "claude")
         self.assertTrue(result.data["functional_owner_chain"])
 
+    def test_task_plan_accepts_qualitative_paper_type(self) -> None:
+        orchestrator = MockOrchestrator()
+        result = orchestrator.task_plan(
+            task_id="C1",
+            paper_type="qualitative",
+            topic="platform-governance-practices",
+            cwd=REPO_ROOT,
+        )
+
+        self.assertIn("- paper_type: `qualitative`", result.merged_analysis)
+        self.assertEqual(result.data["paper_type"], "qualitative")
+        self.assertEqual(result.data["functional_owner"], "methodology-agent")
+
+    def test_management_domain_alias_loads_business_management_profile(self) -> None:
+        orchestrator = MockOrchestrator()
+        context = orchestrator._load_domain_profile_context("management")
+
+        self.assertEqual(context["domain"], "business-management")
+        self.assertEqual(context["status"], "loaded")
+        self.assertIn("business-management.yaml", context["file"])
+
     def test_task_plan_routes_i8_to_academic_code_reviewer(self) -> None:
         orchestrator = MockOrchestrator()
         result = orchestrator.task_plan(

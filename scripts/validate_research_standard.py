@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-EXPECTED_PAPER_TYPES = {"empirical", "systematic-review", "methods", "theory"}
+EXPECTED_PAPER_TYPES = {"empirical", "qualitative", "systematic-review", "methods", "theory"}
 EXPECTED_STAGE_IDS = {stage for stage in "ABCDEFGHI"}
 EXPECTED_TASK_IDS = {
     "A1", "A1_5", "A2", "A3", "A4", "A5",

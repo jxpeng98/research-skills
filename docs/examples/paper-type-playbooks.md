@@ -1,9 +1,10 @@
 # Paper Type Playbooks
 
-This page gives standard example routes for the four canonical paper types:
+This page gives standard example routes for the five canonical paper types:
 
 - `systematic-review`
 - `empirical`
+- `qualitative`
 - `methods`
 - `theory`
 
@@ -163,7 +164,81 @@ python3 -m bridges.orchestrator task-run \
 If code is light, stay in the writing/design route.
 If code becomes central to the paper, switch into the full Stage-I code lane instead of using generic drafting alone.
 
-## 3. Methods Paper
+## 3. Qualitative Paper
+
+### Use this when
+
+The paper’s core evidence comes from interviews, case studies, ethnography, documents, or process tracing, and the goal is analytic depth about meaning, mechanism, or process rather than statistical estimation.
+
+### Recommended route
+
+1. `A1`: refine the qualitative research question, setting, and unit of analysis
+2. `A1_5`: define working propositions or sensitizing concepts
+3. `A3`: anchor the theoretical lens or process framing
+4. `A4`: specify the qualitative gap and expected contribution
+5. `B2`: targeted paper reading
+6. `B6`: literature map around mechanism, process, and rival explanations
+7. `C1`: build the qualitative design
+8. `C2`: write interview / observation / document protocols
+9. `C3`: lock coding, memoing, and comparison logic
+10. `C1_5`: define rival interpretations / disconfirming cases
+11. `D1`: ethics and data governance package
+12. `F1`: manuscript structure
+13. `F3`: full qualitative draft
+14. `G1`: reporting check (SRQR / COREQ)
+15. `H4`: fatal-flaw stress test
+
+### Narrower route
+
+Use this when fieldwork is done and you mainly need analysis-to-manuscript conversion:
+
+1. `C3`
+2. `F1`
+3. `F3`
+4. `G1`
+5. `H1`
+
+### Typical skills
+
+- `question-refiner`
+- `hypothesis-generator`
+- `theory-mapper`
+- `gap-analyzer`
+- `paper-extractor`
+- `literature-mapper`
+- `study-designer`
+- `rival-hypothesis-designer`
+- `analysis-interpreter`
+- `reporting-checker`
+- `manuscript-architect`
+
+### Typical outputs
+
+- qualitative RQ set and contribution memo
+- case / participant sampling logic
+- interview guide or observation protocol
+- coding and memoing plan
+- findings interpretation memo
+- manuscript draft
+- SRQR / COREQ checklist
+- fatal-flaw memo
+
+### Starter command
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id C1 \
+  --paper-type qualitative \
+  --topic platform-governance-practices \
+  --domain business-management \
+  --cwd .
+```
+
+### Common decision rule
+
+Use the qualitative route when the paper needs deep explanation of process, meaning, interpretation, or mechanism and the evidence base is interviews, cases, fieldnotes, or documents rather than a model-ready dataset.
+
+## 4. Methods Paper
 
 ### Use this when
 
@@ -237,7 +312,7 @@ If you are unsure whether the code lane is necessary, ask:
 
 If yes, use the Stage-I route.
 
-## 4. Theory Paper
+## 5. Theory Paper
 
 ### Use this when
 

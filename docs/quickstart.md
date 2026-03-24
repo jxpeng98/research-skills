@@ -3,7 +3,7 @@
 This guide focuses on stable user-facing entrypoints. You do not need to understand `skills/`, `roles/`, or `pipelines/` to start using the system.
 
 If you do want a detailed map of what each internal skill section contains, see [Skills Guide](/reference/skills).
-If you want scenario-driven routes such as literature review, empirical design, code-first methods, or rebuttal prep, see [Task Recipes](/guide/task-recipes).
+If you want scenario-driven routes such as literature review, empirical design, qualitative fieldwork writing, code-first methods, or rebuttal prep, see [Task Recipes](/guide/task-recipes).
 
 ::: warning Full Functionality Requirement
 If you want the full system, install and configure all of the following:
@@ -47,6 +47,7 @@ The canonical paper-type pipelines are:
 |---|---|---|
 | `systematic-review` | `systematic-review-prisma` | PRISMA-style evidence review |
 | `empirical` | `empirical-study` | Standard empirical research paper |
+| `qualitative` | `qualitative-study` | Interview, case, ethnographic, or process-oriented qualitative paper |
 | `empirical` | `rct-prereg` | RCT with preregistration and reporting checks |
 | `theory` | `theory-paper` | Conceptual or theory-building paper |
 | `methods` | `code-first-methods` | Methods paper where code is a first-class deliverable |

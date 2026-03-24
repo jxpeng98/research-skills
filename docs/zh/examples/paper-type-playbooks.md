@@ -1,9 +1,10 @@
 # Paper Type 路线图
 
-这一页给出四种 canonical paper type 的标准示例路线：
+这一页给出五种 canonical paper type 的标准示例路线：
 
 - `systematic-review`
 - `empirical`
+- `qualitative`
 - `methods`
 - `theory`
 
@@ -162,7 +163,81 @@ python3 -m bridges.orchestrator task-run \
 如果代码只是辅助，就留在 design + writing 路线。
 如果代码本身已经成为论文贡献的一部分，就切到完整 Stage-I 代码链，不要只靠普通写作流程。
 
-## 3. Methods Paper
+## 3. Qualitative Paper
+
+### 什么时候用
+
+当论文的核心证据来自访谈、案例、民族志、文档或过程追踪，并且目标是解释意义、机制或过程，而不是做统计估计时，用这条。
+
+### 推荐路线
+
+1. `A1`：收敛 qualitative research question、setting 和 unit of analysis
+2. `A1_5`：定义 working propositions 或 sensitizing concepts
+3. `A3`：锚定理论镜头或过程框架
+4. `A4`：明确 qualitative gap 和预期贡献
+5. `B2`：做定向论文提取
+6. `B6`：围绕 mechanism、process 和 rival explanation 建 literature map
+7. `C1`：完成 qualitative design
+8. `C2`：写 interview / observation / document protocols
+9. `C3`：锁定 coding、memoing 和 comparison logic
+10. `C1_5`：定义 rival interpretations / disconfirming cases
+11. `D1`：补 ethics 与 data governance
+12. `F1`：设计 manuscript structure
+13. `F3`：写 qualitative 全稿
+14. `G1`：做 reporting check（SRQR / COREQ）
+15. `H4`：做 fatal-flaw 压力测试
+
+### 更窄路线
+
+如果 fieldwork 已经完成，主要需求是把分析转成稿件，可直接用：
+
+1. `C3`
+2. `F1`
+3. `F3`
+4. `G1`
+5. `H1`
+
+### 典型 skills
+
+- `question-refiner`
+- `hypothesis-generator`
+- `theory-mapper`
+- `gap-analyzer`
+- `paper-extractor`
+- `literature-mapper`
+- `study-designer`
+- `rival-hypothesis-designer`
+- `analysis-interpreter`
+- `reporting-checker`
+- `manuscript-architect`
+
+### 典型产物
+
+- qualitative RQ 与 contribution memo
+- case / participant sampling logic
+- interview guide 或 observation protocol
+- coding 与 memoing plan
+- findings interpretation memo
+- manuscript draft
+- SRQR / COREQ checklist
+- fatal-flaw memo
+
+### 起手命令
+
+```bash
+python3 -m bridges.orchestrator task-run \
+  --task-id C1 \
+  --paper-type qualitative \
+  --topic platform-governance-practices \
+  --domain business-management \
+  --cwd .
+```
+
+### 常见判断规则
+
+当论文需要对 process、meaning、interpretation 或 mechanism 做深度解释，并且证据基础是访谈、案例、fieldnotes 或 documents 而不是可直接建模的数据集时，就走 qualitative 路线。
+
+## 4. Methods Paper
 
 ### 什么时候用
 
@@ -236,7 +311,7 @@ python3 -m bridges.orchestrator code-build \
 
 如果答案是“会”，就走 Stage-I 代码链。
 
-## 4. Theory Paper
+## 5. Theory Paper
 
 ### 什么时候用
 

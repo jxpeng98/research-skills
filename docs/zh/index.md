@@ -31,7 +31,7 @@ features:
 
 - [入门](/zh/guide/): 先看安装、升级、故障排除与快速开始。
 - [任务场景](/zh/guide/task-recipes): 按真实目标选择 stages、Task IDs 与 skills。
-- [示例](/zh/examples/): 查看按 paper type 组织的标准路线图。
+- [示例](/zh/examples/): 查看按 systematic-review、empirical、qualitative、methods、theory 组织的标准路线图。
 - [参考](/zh/reference/): 查看 CLI 命令参考、Skills 指南与系统规范。
 - [架构](/zh/architecture): 了解层次模型、依赖方向、领域挂载和多模型协同。
 - [高级](/zh/advanced/): 进入 MCP、Zotero、扩展与协同增强等主题。

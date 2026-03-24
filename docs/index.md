@@ -31,7 +31,7 @@ features:
 
 - [Guide](/guide/): start here for install, upgrade, troubleshooting, and quickstart.
 - [Task Recipes](/guide/task-recipes): choose stages and skills from real user goals such as review, writing, code, or rebuttal.
-- [Examples](/examples/): follow concrete paper-type playbooks for systematic review, empirical, methods, and theory papers.
+- [Examples](/examples/): follow concrete paper-type playbooks for systematic review, empirical, qualitative, methods, and theory papers.
 - [Reference](/reference/): command reference, skills guide, conventions, and stable operator-facing entrypoints.
 - [Architecture](/architecture): layer model, dependency direction, discipline domains, and runtime collaboration.
 - [Advanced](/advanced/): MCP providers, Zotero, skill-agent collaboration, and extension guides.

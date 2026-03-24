@@ -143,6 +143,7 @@ Every skill `.md` file MUST begin with YAML frontmatter containing:
 id: skill-name
 stage: A_framing          # Stage directory name
 version: "1.0.0"          # Semver
+                       # or "1.0.0-beta.1" for prereleases
 description: "One-line description"
 inputs:
   - type: ArtifactType    # From schemas/artifact-types.yaml

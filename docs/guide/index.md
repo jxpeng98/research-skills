@@ -6,7 +6,7 @@ Use this section when you are operating Research Skills as a user or project own
 
 - [Quickstart](/quickstart): stable entry modes and task-run flow.
 - [Task Recipes](/guide/task-recipes): scenario-based routes for literature review, empirical design, writing, code, and rebuttal.
-- [Examples](/examples/): paper-type playbooks for systematic review, empirical, methods, and theory workflows.
+- [Examples](/examples/): paper-type playbooks for systematic review, empirical, qualitative, methods, and theory workflows.
 - [Install](/guide/install): portable install, local install, and target behavior.
 - [Upgrade](/guide/upgrade): shell bootstrap, Python CLI, and long-lived clone upgrade paths.
 - [Troubleshooting](/guide/troubleshooting): unified error-code guide.

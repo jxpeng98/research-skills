@@ -3,7 +3,7 @@
 这一页是 `docs/quickstart.md` 的中文整理版，面向“先跑起来，再决定是否看维护者文档”的使用者。
 
 如果你确实想看清 `skills/` 每一部分都包含什么内容，请配合 [Skills 指南](/zh/reference/skills) 一起使用。
-如果你更关心“系统综述怎么走、methods paper 怎么走、审稿回复怎么走”，请直接看 [任务场景](/zh/guide/task-recipes)。
+如果你更关心“系统综述怎么走、qualitative paper 怎么走、methods paper 怎么走、审稿回复怎么走”，请直接看 [任务场景](/zh/guide/task-recipes)。
 
 ::: warning 完整功能依赖
 如果你要使用完整功能集，请确保已经安装并配置：
@@ -48,6 +48,7 @@ python3 scripts/validate_research_standard.py --strict
 |---|---|---|
 | `systematic-review` | `systematic-review-prisma` | PRISMA 风格系统综述 |
 | `empirical` | `empirical-study` | 标准实证研究 |
+| `qualitative` | `qualitative-study` | 访谈、案例、民族志或过程导向 qualitative paper |
 | `empirical` | `rct-prereg` | 含预注册的 RCT |
 | `theory` | `theory-paper` | 理论或概念型论文 |
 | `methods` | `code-first-methods` | 代码与方法并重的 methods paper |

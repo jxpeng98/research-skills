@@ -1,5 +1,7 @@
 # Skills 指南
 
+> 本页由 `python3 scripts/generate_skill_docs.py` 基于 `skills/registry.yaml` 自动生成，请不要手工编辑。
+
 这一页是面向使用者的 `skills/` 全景说明。
 
 它主要回答这些问题：
@@ -11,6 +13,7 @@
 
 ::: tip Canonical Source
 系统自动路由的 canonical skill 列表以 `skills/registry.yaml` 为准；这一页是在它基础上的用户版说明。
+中文界面会优先读取其中的 `summary_zh`、`display_name_zh` 和 `when_to_use_zh`。
 :::
 
 ## 使用者应该怎样理解 `skills/`
@@ -30,7 +33,7 @@
 如果你需要看精确命令参数，去 [CLI 参考](/zh/reference/cli)。
 如果你需要理解运行时 Agent 与 Skill 如何协同，去 [Agent + Skill 协同](/zh/advanced/agent-skill-collaboration)。
 如果你要修改系统本身，去 [扩展 Research Skills](/zh/advanced/extend-research-skills)。
-如果你更关心“系统综述 / methods paper / 审稿回复”这种真实场景怎么选路径，请看 [任务场景](/zh/guide/task-recipes)。
+如果你更关心“系统综述 / qualitative paper / methods paper / 审稿回复”这种真实场景怎么选路径，请看 [任务场景](/zh/guide/task-recipes)。
 
 ## 先记住几个边界
 
@@ -40,18 +43,18 @@
 
 ## Stage 总览
 
-| Stage | 关注点 | 使用者最常见的问题 |
-|---|---|---|
-| `A_framing` | 选题、问题、理论、gap、期刊定位 | “我的研究问题和贡献到底是什么？” |
-| `B_literature` | 检索、筛选、提取、引文、文献地图 | “文献怎么系统找、系统筛、系统整理？” |
-| `C_design` | 研究设计、变量、稳健性、数据可得性 | “这个研究该怎么设计和 operationalize？” |
-| `D_ethics` | IRB、隐私、治理 | “伦理与数据合规材料要怎么准备？” |
-| `E_synthesis` | 证据综合、质量评估、发表偏倚 | “已有证据要怎么整合和评级？” |
-| `F_writing` | 结构、结果解释、表格、图、摘要 | “如何把分析结果写成论文？” |
-| `G_compliance` | PRISMA、报告规范、学术语气 | “论文是否已经满足提交前规范？” |
-| `H_submission` | 投稿包、回复审稿、模拟评审 | “投稿前后怎么打包和应对审稿？” |
-| `I_code` | 学术代码、统计、可复现性 | “研究代码如何实现、审查、复现？” |
-| `Z_cross_cutting` | 元数据、多模型协作、自我批判 | “哪些能力是跨阶段通用的？” |
+| Stage | 关注点 | Skill 数量 | 使用者最常见的问题 |
+|---|---|---:|---|
+| `A_framing` | 选题、问题、理论、gap、期刊定位 | 5 | “我的研究问题和贡献到底是什么？” |
+| `B_literature` | 检索、筛选、提取、引文、文献地图 | 9 | “文献怎么系统找、系统筛、系统整理？” |
+| `C_design` | 研究设计、变量、稳健性、数据可得性 | 5 | “这个研究该怎么设计和 operationalize？” |
+| `D_ethics` | IRB、隐私、治理 | 2 | “伦理与数据合规材料要怎么准备？” |
+| `E_synthesis` | 证据综合、质量评估、发表偏倚 | 3 | “已有证据要怎么整合和评级？” |
+| `F_writing` | 结构、结果解释、表格、图、摘要 | 6 | “如何把分析结果写成论文？” |
+| `G_compliance` | PRISMA、报告规范、学术语气 | 3 | “论文是否已经满足提交前规范？” |
+| `H_submission` | 投稿包、回复审稿、模拟评审 | 5 | “投稿前后怎么打包和应对审稿？” |
+| `I_code` | 学术代码、统计、可复现性 | 9 | “研究代码如何实现、审查、复现？” |
+| `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 3 | “哪些能力是跨阶段通用的？” |
 
 ## 按 Stage 看 Canonical Skills
 
@@ -59,95 +62,95 @@
 
 当你还在定义研究问题、理论锚点、贡献定位、目标期刊时，用 Stage A。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `question-refiner` | 选题还很模糊、太大、不可执行 | 结构化研究问题、范围、检索词 |
-| `hypothesis-generator` | 需要把问题变成可检验假设或 proposition | 假设集合、机制、边界条件 |
-| `theory-mapper` | 需要概念图、理论框架或 Mermaid 图 | 理论框架图、概念关系图 |
-| `gap-analyzer` | 需要从已有文献里证明 novelty | 优先级 gap 分析 |
-| `venue-analyzer` | 方向基本清楚，想判断期刊/会议是否匹配 | venue fit 说明、格式约束、审稿偏好 |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `question-refiner` | 研究问题精炼 | 当选题还模糊、范围过大或研究问题不可执行时使用。 | `RQSet` |
+| `hypothesis-generator` | 假设生成 | 当你需要把研究问题转成可检验假设或 propositions 时使用。 | `HypothesisSet` |
+| `theory-mapper` | 理论映射 | 当你需要概念图、理论框架或机制关系图时使用。 | `TheoreticalFramework` |
+| `gap-analyzer` | 研究空白分析 | 当你需要从已有文献中证明 novelty 和贡献空间时使用。 | `GapAnalysis` |
+| `venue-analyzer` | 期刊匹配分析 | 当研究方向已较清楚，需要判断目标期刊或会议匹配度时使用。 | `VenueAnalysis` |
 
 ### B. Literature
 
 当你要构建某个主题的文献基础，尤其是系统综述或可复现检索流程时，用 Stage B。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `academic-searcher` | 需要可复现检索式和数据库搜索 | query plan、search results、search log |
-| `paper-screener` | 需要做纳入/排除决策 | screening log、PRISMA 计数 |
-| `paper-extractor` | 需要把入选论文整理成结构化笔记 | extraction table、paper notes |
-| `citation-snowballer` | 已有种子文献，但覆盖还不够 | forward/backward snowball log |
-| `fulltext-fetcher` | 找到论文了但还缺全文 | full-text status 与获取记录 |
-| `citation-formatter` | 写作前需要统一引文格式 | bibliography、citekeys、BibTeX |
-| `concept-extractor` | 检索概念还不稳定，需要补 controlled vocabulary | concept map、Boolean 术语集 |
-| `literature-mapper` | 需要把文献流派、机制、问题重新分组 | literature map、主题簇结构 |
-| `reference-manager-bridge` | 需要和 Zotero / Mendeley / EndNote 交换文献 | RIS / CSLJSON / bibliography 同步结果 |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `academic-searcher` | 学术检索 | 当你需要可复现的检索式、数据库搜索和 search log 时使用。 | `SearchQueryPlan`, `SearchResults`, `SearchLog` |
+| `paper-screener` | 文献筛选 | 当你需要按纳入排除标准筛选文献并留下决策记录时使用。 | `ScreeningDecisionLog`, `PRISMAFlowData` |
+| `paper-extractor` | 论文提取 | 当你需要把入选论文转成结构化笔记和 extraction table 时使用。 | `ExtractionTable`, `PaperNotes` |
+| `citation-snowballer` | 引文滚雪球 | 当已有种子文献但覆盖还不够时使用。 | `SnowballLog` |
+| `fulltext-fetcher` | 全文获取 | 当你已找到候选论文但缺少全文时使用。 | `FullTextStatus` |
+| `citation-formatter` | 引文格式化 | 当写作前需要统一 bibliography、citekey 和引文格式时使用。 | `Bibliography` |
+| `concept-extractor` | 检索概念提取 | 当检索概念不稳定，需要补 controlled vocabulary 和 Boolean 术语时使用。 | `ConceptMap` |
+| `literature-mapper` | 文献地图 | 当你需要重组文献流派、机制簇和开放问题时使用。 | `LiteratureMap` |
+| `reference-manager-bridge` | 文献管理器桥接 | 当你需要与 Zotero、Mendeley 或 EndNote 双向交换文献时使用。 | `Bibliography`, `RISExport`, `CSLJSONExport` |
 
 ### C. Design
 
 当问题已经较清楚，下一步变成“怎么设计研究、怎么找数据、怎么定义变量”时，用 Stage C。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `study-designer` | 需要完整研究设计骨架 | design spec、analysis plan、instrument、prereg handoff |
-| `rival-hypothesis-designer` | 需要主动处理竞争解释和 alternative theory | rival explanation matrix |
-| `robustness-planner` | 需要预先规定稳健性与敏感性分析 | robustness / sensitivity plan |
-| `dataset-finder` | 不确定有哪些可行数据源 | dataset feasibility / access plan |
-| `variable-constructor` | 需要把概念转成可审计变量 | variable spec、coding rules |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `study-designer` | 研究设计 | 当研究问题已清楚，需要搭建设计、测量和分析方案时使用。 | `DesignSpec`, `AnalysisPlan`, `DataManagementPlan`, `Instruments`, `Preregistration` |
+| `rival-hypothesis-designer` | 竞争解释设计 | 当你需要主动处理替代解释和 competing theories 时使用。 | `RivalHypotheses` |
+| `robustness-planner` | 稳健性规划 | 当经验设计需要预先规定稳健性和敏感性分析时使用。 | `RobustnessPlan` |
+| `dataset-finder` | 数据集搜寻 | 当你不确定有哪些可行数据源和获取路径时使用。 | `DatasetPlan` |
+| `variable-constructor` | 变量构造 | 当你需要把抽象构念落成可审计变量和编码规则时使用。 | `VariableSpec` |
 
 ### D. Ethics
 
 当研究涉及 IRB、人类受试者、敏感数据或数据治理要求时，用 Stage D。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `ethics-irb-helper` | 需要正式伦理材料 | IRB 材料、consent、招募文本、治理说明 |
-| `deidentification-planner` | 需要技术层面的隐私保护方案 | 去标识化 / 隐私控制计划 |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `ethics-irb-helper` | 伦理与IRB助手 | 当研究涉及 IRB、人类受试者或敏感数据时使用。 | `EthicsPackage` |
+| `deidentification-planner` | 去标识化规划 | 当你需要技术层面的隐私保护和去标识化方案时使用。 | `DeidentificationPlan` |
 
 ### E. Synthesis
 
 当你已经有了证据材料，现在要做证据整合、质量评估或偏倚检查时，用 Stage E。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `evidence-synthesizer` | 需要 narrative synthesis 或 meta-analysis | 综合叙述或 pooled evidence 结果 |
-| `quality-assessor` | 需要做 risk-of-bias / certainty judgment | 质量评估与偏倚评级 |
-| `publication-bias-checker` | 需要检查发表偏倚 | publication bias report |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `evidence-synthesizer` | 证据综合 | 当你已有证据材料，需要做叙事综合或 meta-analysis 时使用。 | `EvidenceTable`, `SynthesisMatrix` |
+| `quality-assessor` | 质量评估 | 当你需要评估 risk of bias 和证据确定性时使用。 | `QualityTable`, `GRADESummary` |
+| `publication-bias-checker` | 发表偏倚检查 | 当你需要判断结果是否受发表偏倚影响时使用。 | `PublicationBiasReport` |
 
 ### F. Writing
 
 当你的主要问题变成“怎么把分析和证据写成论文文本”时，用 Stage F。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `manuscript-architect` | 需要论文整体结构或分节草稿方案 | outline、section plan、draft spine |
-| `analysis-interpreter` | 需要把统计输出写成有限度的结果叙述 | bounded results narrative |
-| `effect-size-interpreter` | 系数需要转成读者能理解的实际意义 | effect size 的实际含义说明 |
-| `table-generator` | 需要把结果整理成论文级表格 | publication-ready tables |
-| `figure-specifier` | 需要先把图的逻辑定义清楚再出图 | figure spec、plotting guidance |
-| `meta-optimizer` | 需要优化标题、摘要和关键词 | title / abstract / keywords 优化稿 |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `manuscript-architect` | 论文架构师 | 当你需要搭建论文整体结构、章节推进和核心论证主线时使用。 | `ManuscriptOutline`, `Manuscript`, `ClaimGraph`, `FiguresTablesPlan` |
+| `analysis-interpreter` | 结果分析解释 | 当你需要把 quant 或 qualitative findings 写成有分析深度的结果叙述时使用。 | `ResultInterpretation` |
+| `effect-size-interpreter` | 效应量解释 | 当你需要把统计系数翻译成读者能理解的实际意义时使用。 | `EffectInterpretation` |
+| `table-generator` | 论文表格生成 | 当你需要把统计结果整理成论文级表格时使用。 | `FormattedTables` |
+| `figure-specifier` | 图形规范定义 | 当你需要先定义图的逻辑、编码和可及性要求时使用。 | `FigureSpecs` |
+| `meta-optimizer` | 题摘关键词优化 | 当你需要优化标题、摘要和关键词的可发现性时使用。 | `MetaOptimization` |
 
 ### G. Compliance
 
 当论文已经成形，需要做规范检查、PRISMA 核对和语气收敛时，用 Stage G。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `prisma-checker` | 系统综述需要 PRISMA 检查 | PRISMA completeness report |
-| `reporting-checker` | 需要做 CONSORT / STROBE / COREQ / TRIPOD 等检查 | reporting checklist coverage report |
-| `tone-normalizer` | 文字太松、太满、太绝对，或废话偏多 | 学术语气归一化日志 |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `prisma-checker` | PRISMA检查 | 当系统综述或证据综合需要核对 PRISMA 完整性时使用。 | `PRISMAChecklist` |
+| `reporting-checker` | 报告规范检查 | 当你需要核查 CONSORT、STROBE、COREQ、SRQR 或 TRIPOD 时使用。 | `ReportingChecklist` |
+| `tone-normalizer` | 学术语气归一 | 当文本太松、太满、太绝对或废话过多时使用。 | `ToneNormalization` |
 
 ### H. Submission
 
 当稿件接近投稿，或者已经进入审稿往返阶段时，用 Stage H。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `submission-packager` | 需要组装 cover letter、disclosure、supplement | submission package |
-| `rebuttal-assistant` | 需要把审稿意见转成逐点回应矩阵 | point-by-point rebuttal matrix |
-| `peer-review-simulation` | 想在投稿前做多 persona 模拟评审 | multi-persona review memo |
-| `fatal-flaw-detector` | 想先做一轮 desk-reject 风险扫描 | fatal-flaw analysis |
-| `reviewer-empathy-checker` | 技术回应对了，但语气可能太硬 | reviewer-response tone check |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `submission-packager` | 投稿包组装 | 当稿件接近投稿，需要准备 cover letter、声明和补充材料时使用。 | `SubmissionPackage` |
+| `rebuttal-assistant` | 审稿回复助手 | 当你需要把审稿意见转成逐点回复矩阵时使用。 | `ResponseToReviewers`, `ResponseLetter` |
+| `peer-review-simulation` | 同行评审模拟 | 当你想在投稿前做多 persona 压力测试时使用。 | `PeerReviewSimulation` |
+| `fatal-flaw-detector` | 致命缺陷检测 | 当你想先做一轮 desk-reject 风险扫描时使用。 | `FatalFlawAnalysis` |
+| `reviewer-empathy-checker` | 审稿沟通校准 | 当回复内容技术上正确，但语气可能过硬或防御性过强时使用。 | `EmpathyCheck` |
 
 ### I. Code
 
@@ -163,27 +166,27 @@
 
 这也是 `code-build --focus full` 想要强化的使用方式。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `code-builder` | 需要把论文方法转成可执行研究代码 | 面向学术方法的实现包 |
-| `data-cleaning-planner` | 原始数据清洗需要可审计规则 | cleaning rules 与 transformation plan |
-| `data-merge-planner` | 多数据源需要安全合并 | merge strategy 与 provenance controls |
-| `code-specification` | 编码前必须先锁定约束与边界 | `code/code_specification.md` |
-| `code-planning` | 需要 zero-decision 的执行计划 | `code/plan.md` |
-| `code-execution` | 需要记录实现、profiling 和验证证据 | `code/performance_profile.md` |
-| `code-review` | 需要第二模型做逻辑/统计有效性复核 | `code/code_review.md` |
-| `reproducibility-auditor` | 需要检查 seed、环境、rerun recipe | `code/reproducibility_audit.md` |
-| `stats-engine` | 重点是统计建模与诊断，而非一般编码 | `analysis/stats_report.md` |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `code-builder` | 学术代码构建 | 当你需要把论文方法转成可执行研究代码时使用。 | `AnalysisCode` |
+| `data-cleaning-planner` | 数据清洗规划 | 当原始数据清洗需要变成可审计流程时使用。 | `CleaningPlan` |
+| `data-merge-planner` | 数据合并规划 | 当多数据源需要安全合并并保留 provenance 时使用。 | `MergePlan` |
+| `code-specification` | 代码规范定义 | 当编码前必须先锁定约束、输入输出和验收标准时使用。 | `CodeSpec` |
+| `code-planning` | 代码执行规划 | 当你需要零自由裁量的实现计划和并行拆分时使用。 | `CodePlan` |
+| `code-execution` | 代码执行 | 当你需要按既定计划实现代码并记录 profiling 与验证证据时使用。 | `PerformanceProfile` |
+| `code-review` | 学术代码审查 | 当你需要第二模型审查代码逻辑、统计有效性和方法一致性时使用。 | `CodeReview` |
+| `reproducibility-auditor` | 可复现性审计 | 当你需要检查 seed、环境、rerun recipe 和复现证据时使用。 | `ReproducibilityReport` |
+| `stats-engine` | 统计引擎 | 当重点是统计建模、诊断和假设检验，而不是一般编码时使用。 | `StatsReport` |
 
 ### Z. Cross-Cutting
 
 当问题并不属于某一个论文 stage，而是跨阶段通用时，用 Stage Z。
 
-| Skill | 适用场景 | 典型结果 |
-|---|---|---|
-| `metadata-enricher` | 各种笔记、引文、结果中的元数据不一致 | DOI / 作者 / venue / 年份标准化结果 |
-| `model-collaborator` | 需要 Codex / Claude / Gemini 交叉执行与互审 | 多模型执行与复核方案 |
-| `self-critique` | 想强行增加 red-teaming 与 revision 压力 | critique questions 与修订提示 |
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `metadata-enricher` | 元数据补全 | 当 DOI、作者、年份或 venue 元数据在不同产物之间不一致时使用。 | `Bibliography` |
+| `model-collaborator` | 多模型协作 | 当你需要 Codex、Claude 和 Gemini 分工协作或交叉复核时使用。 | `CollaborationTrace` |
+| `self-critique` | 自我批判 | 当你想主动提高 red-teaming 强度、压制浅层推理和过度主张时使用。 | `CritiqueLog` |
 
 ## 补充卡片与镜像目录
 
@@ -224,6 +227,7 @@
 当前仓库自带的 profile 包括：
 
 - `biomedical`
+- `business-management`
 - `cs-ai`
 - `ecology-environmental`
 - `economics`

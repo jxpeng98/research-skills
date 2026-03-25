@@ -58,7 +58,6 @@ Recommended one-command local flow:
 - `research_skills/__init__.py`
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
-- all `skills/**/*.md` frontmatter `version` fields
 
 - `release_automation.sh pre` to run strict validator, repository unit tests, release smoke, and release note draft generation
 - `pypi_preflight.sh` to build the package, run `twine check`, and install-smoke the generated wheel

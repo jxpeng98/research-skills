@@ -58,7 +58,6 @@
 - `research_skills/__init__.py`
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
-- 所有 `skills/**/*.md` frontmatter 中的 `version`
 
 - `release_automation.sh pre`：运行 strict validator、仓库单元测试、release smoke，并自动生成 / 更新 release note draft
 - `pypi_preflight.sh`：构建包、执行 `twine check`，并对生成 wheel 做安装 smoke

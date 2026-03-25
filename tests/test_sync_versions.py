@@ -60,7 +60,7 @@ class SyncVersionsTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (root / "skills" / "F_writing" / "demo.md").write_text(
-                '---\nversion: "0.1.0"\n---\n',
+                '---\nid: "demo"\nstage: "F_writing"\n---\n',
                 encoding="utf-8",
             )
 
@@ -70,7 +70,6 @@ class SyncVersionsTests(unittest.TestCase):
             self.assertIn(root / "research_skills" / "__init__.py", changed)
             self.assertIn(root / "skills" / "registry.yaml", changed)
             self.assertIn(root / "research-paper-workflow" / "VERSION", changed)
-            self.assertIn(root / "skills" / "F_writing" / "demo.md", changed)
             self.assertIn('version = "0.2.0b2"', (root / "pyproject.toml").read_text())
             self.assertIn(
                 '__version__ = "0.2.0b2"',
@@ -84,7 +83,4 @@ class SyncVersionsTests(unittest.TestCase):
                 (root / "research-paper-workflow" / "VERSION").read_text().strip(),
                 "v0.2.0-beta.2",
             )
-            self.assertIn(
-                'version: "0.2.0-beta.2"',
-                (root / "skills" / "F_writing" / "demo.md").read_text(),
-            )
+            self.assertNotIn(root / "skills" / "F_writing" / "demo.md", changed)

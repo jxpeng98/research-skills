@@ -81,11 +81,6 @@ def sync_versions(root: Path, raw_version: str) -> list[Path]:
         version_file.write_text(repo_version + "\n", encoding="utf-8")
         changed.append(version_file)
 
-    skill_pattern = re.compile(r'^version: "[^"]+"$', re.MULTILINE)
-    for path in sorted((root / "skills").rglob("*.md")):
-        if replace_pattern(path, skill_pattern, f'version: "{skill_version}"'):
-            changed.append(path)
-
     return changed
 
 

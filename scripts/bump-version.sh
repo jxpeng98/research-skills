@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Bump release versions across package metadata, portable skill version,
-# and all skill frontmatter/registry entries from one source version.
+# and the skill registry from one source version.
 #
 # Usage:
 #   ./scripts/bump-version.sh <new-version>

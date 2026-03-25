@@ -49,7 +49,6 @@
 - `research_skills/__init__.py`
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
-- 所有 `skills/**/*.md` frontmatter 中的 `version`
 
 ```bash
 ./scripts/bump-version.sh 0.2.0

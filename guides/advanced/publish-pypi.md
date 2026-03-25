@@ -49,7 +49,6 @@ Use the `bump-version.sh` script to sync release versions across:
 - `research_skills/__init__.py`
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
-- all `skills/**/*.md` frontmatter `version` fields
 
 ```bash
 ./scripts/bump-version.sh 0.2.0

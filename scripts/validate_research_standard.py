@@ -860,6 +860,11 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
                 f"{frontmatter.get('stage', '<missing>')} vs registry {entry.stage}"
             ),
         )
+        report.check(
+            "version" not in frontmatter,
+            f"Skill frontmatter omits deprecated version field for {skill_id}",
+            f"{entry.file} should not define a frontmatter version; use skills/registry.yaml as the only skill version source",
+        )
 
 
 def validate_generated_skill_docs(root: Path, report: ValidationReport) -> None:

@@ -40,10 +40,17 @@ class MCPConnectorTests(unittest.TestCase):
 
     def test_resolve_provider_detects_external_slot(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):
-            resolution = self.connector.resolve_provider("fulltext-retrieval")
+            resolution = self.connector.resolve_provider("screening-tracker")
 
         self.assertEqual(resolution.source, "external_slot")
         self.assertEqual(resolution.command, None)
+
+    def test_resolve_provider_detects_builtin_fulltext_stub(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=False):
+            resolution = self.connector.resolve_provider("fulltext-retrieval")
+
+        self.assertEqual(resolution.source, "builtin")
+        self.assertTrue((resolution.native_script or "").endswith("mcp_fulltext_retrieval.py"))
 
     def test_builtin_metadata_registry_normalizes_local_doi(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -166,6 +173,41 @@ class MCPConnectorTests(unittest.TestCase):
             evidence.data["reference_state"]["external_enrichment"]["status"],
             "ok",
         )
+
+    def test_builtin_fulltext_retrieval_prepares_manifest_without_bib(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            project_root.mkdir(parents=True)
+            (project_root / "search_results.csv").write_text(
+                "record_id,source,query_id,retrieved_at,paper_id,title,authors,year,venue,doi,url,abstract,open_access_pdf_url\n"
+                "s2:1,semantic_scholar,q1,2026-03-25T00:00:00+00:00,S2-1,Platform Governance in Practice,\"Smith, Alex\",2024,Organization Science,10.1000/platform-governance,https://example.com/landing,Abstract text,https://example.com/platform-governance.pdf\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["search_results.csv"],
+            }
+
+            evidence = self.connector.collect("fulltext-retrieval", packet, root)
+
+        self.assertEqual(evidence.status, "ok")
+        self.assertEqual(evidence.data["provider_mode"], "builtin_fulltext_manifest_stub")
+        self.assertEqual(evidence.data["record_count"], 1)
+        self.assertEqual(
+            evidence.data["retrieval_manifest"][0]["retrieval_status"],
+            "not_retrieved:oa_candidate",
+        )
+        self.assertEqual(
+            evidence.data["retrieval_manifest"][0]["source_provider"],
+            "semantic_scholar_oa_candidate",
+        )
+        self.assertEqual(
+            evidence.data["screening_full_text_rows"][0]["fulltext_status"],
+            "not_retrieved:oa_candidate",
+        )
+        self.assertEqual(evidence.data["summary_counts"]["oa_candidates"], 1)
 
 
 if __name__ == "__main__":

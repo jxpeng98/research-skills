@@ -54,7 +54,7 @@ So the strictest practical baseline today is:
 | `metadata-registry` | yes | no for local mode | optional | built-in mode can merge BibTeX, RIS, CSL-JSON, notes, and search results; connect OpenAlex or another metadata MCP for authoritative enrichment |
 
 `bibliography.bib` is still the canonical export in this repo, but users do not need to maintain BibTeX as their day-to-day working source.
-| `fulltext-retrieval` | no | depends on provider | yes | connect Zotero or another full-text resolver |
+| `fulltext-retrieval` | yes, via built-in retrieval-manifest stub | no for stub mode | optional, but recommended for real downloads | builtin mode drafts retrieval status + provenance rows; connect Zotero or another resolver for actual acquisition |
 | `screening-tracker` | no | depends on provider | yes | systematic review support |
 | `extraction-store` | no | depends on provider | yes | systematic review support |
 
@@ -97,7 +97,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 
 ## Strict Mode
 
-With `--mcp-strict`, unconfigured required providers become blockers. In practice, `fulltext-retrieval` is still the first literature layer that usually needs explicit setup, while `metadata-registry` can now fall back to the built-in local reference provider. Use `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` for overlay enrichment, and reserve `RESEARCH_MCP_METADATA_REGISTRY_CMD` for a full override.
+With `--mcp-strict`, `error` and `not_configured` providers become blockers. Built-in `scholarly-search`, `citation-graph`, `metadata-registry`, and `fulltext-retrieval` can all satisfy their baseline layer without extra config. Use `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` for overlay enrichment, reserve `RESEARCH_MCP_METADATA_REGISTRY_CMD` for a full override, and set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` when you want actual resolver-backed downloads instead of the builtin planning stub.
 
 ## Recommended Search Stacks
 
@@ -146,7 +146,7 @@ Recommended artifacts:
 - `search_log.md`
 - `bibliography.bib`
 - `screening_decisions.csv`
-- `fulltext_manifest.csv`
+- `retrieval_manifest.csv`
 
 ## Engine Roles
 

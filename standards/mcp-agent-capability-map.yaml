@@ -69,6 +69,8 @@ provider_capability_examples:
       - "citation export/import metadata sync"
   fulltext-retrieval:
     includes:
+      - "retrieval-manifest planning"
+      - "local fulltext path verification"
       - "oa resolution"
       - "repository fallback"
       - "publisher landing-page resolution"

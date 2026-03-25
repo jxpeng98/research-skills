@@ -255,7 +255,7 @@ class OrchestratorWorkflowTests(unittest.TestCase):
 
         self.assertIn("MCP scholarly-search: env override configured:", result.merged_analysis)
         self.assertIn("MCP metadata-registry: builtin available: mcp_metadata_registry.py", result.merged_analysis)
-        self.assertIn("MCP fulltext-retrieval: external slot only;", result.merged_analysis)
+        self.assertIn("MCP fulltext-retrieval: builtin available: mcp_fulltext_retrieval.py", result.merged_analysis)
 
     def test_doctor_reports_metadata_registry_enrichment_overlay(self) -> None:
         orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")

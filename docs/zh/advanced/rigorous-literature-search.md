@@ -20,10 +20,10 @@
 - `scholarly-search` → 内置 Semantic Scholar 适配器，已带 query variants、结果规范化和基础 dedup
 - `citation-graph` → 内置 Semantic Scholar 引文图适配器，能先从 `search_results.csv`、`bibliography.bib`、`notes/` 中抽 seed
 - `metadata-registry` → 内置本地 reference provider，用于 identifier 规范化、本地记录合并和 citekey 生成
+- `fulltext-retrieval` → 内置 retrieval-manifest stub，可根据本地文献产物草拟 `retrieval_manifest.csv` 和 `screening/full_text.md`
 
 以下层仍然是外部 provider 插槽：
 
-- `fulltext-retrieval`
 - `screening-tracker`
 - `extraction-store`
 
@@ -32,7 +32,7 @@
 - 用内置 Semantic Scholar 做发现
 - 用内置 metadata-registry 做本地规范化，再用 OpenAlex MCP 做权威 enrichment
 - 用内置 citation graph 做 snowballing
-- 用 Zotero / OA resolver 做全文获取
+- 用内置全文 planning stub 打底，再用 Zotero / OA resolver 做真实全文获取
 
 ## 标准 Literature Bundle
 
@@ -56,7 +56,7 @@
 | `scholarly-search` | 可以，走内置 Semantic Scholar | 建议 | 可选 | 零配置能跑，并能产出 query variants 和 dedup-ready 结果行，但没有 key 时更容易被限流 |
 | `citation-graph` | 可以，走内置 Semantic Scholar graph | 不强制 | 可选 | 即使不接外部 MCP，也能先做 snowballing；内置模式会优先从本地产物抽 seed |
 | `metadata-registry` | 可以，走内置本地 reference provider | 本地模式不需要 | 可选 | 内置模式可直接合并 BibTeX、RIS、CSL-JSON、notes 与 search results；要权威 enrichment 时再接 OpenAlex 等外部实现 |
-| `fulltext-retrieval` | 不可以 | 取决于 provider | 需要 | 需要接 Zotero 或其他全文解析器 |
+| `fulltext-retrieval` | 可以，走内置 retrieval-manifest stub | 内置模式不需要 | 可选，但真实下载强烈建议配置 | 内置模式会先草拟 retrieval status 和 provenance；要真正下载 PDF/全文时再接 Zotero 或其他解析器 |
 | `screening-tracker` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
 | `extraction-store` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
 
@@ -94,7 +94,7 @@
 - `scholarly-search` 仍会尝试使用内置 Semantic Scholar
 - `citation-graph` 仍会尝试使用内置 Semantic Scholar graph
 - `metadata-registry` 仍会尝试使用内置本地 reference provider
-- `fulltext-retrieval` 处于未配置状态
+- `fulltext-retrieval` 仍会先生成本地 retrieval manifest 和 screening 草稿
 - 只要你没有显式启用严格 MCP 校验，任务通常仍能继续运行
 
 这足够做 exploratory search，但不适合作为严格 review-grade 检索的长期默认配置。
@@ -124,6 +124,12 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 这是一套对大多数用户最划算的默认增强方案，不需要自己做太多工程接入。
+
+如果你还没有接全文解析器，内置 `fulltext-retrieval` 也已经会先帮你准备：
+
+- `retrieval_manifest.csv` 草稿行
+- `screening/full_text.md` 草稿行
+- `not_retrieved:oa_candidate` / `not_retrieved:needs_provider` / `not_retrieved:missing_locator` 这类状态提示
 
 ### 方案 C：Review-Grade 多源方案
 
@@ -156,9 +162,10 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 
 - 内置 `scholarly-search` 和 `citation-graph` 仍可满足这两层，前提是你没有把它们 override 掉
 - 内置 `metadata-registry` 可以先满足本地规范化这一层，不需要额外配置
+- 内置 `fulltext-retrieval` 可以先满足 retrieval planning 这一层，不需要额外配置
 - 当你想在 builtin reference 模式之上叠加外部权威 enrichment 时，设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`
 - 只有当你想完全改成外部 metadata provider 时，才需要设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`
-- `fulltext-retrieval` 没有设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` 时，也会成为 strict 阻塞项
+- 当你想从“planning stub”升级到“真实全文解析/下载”时，再设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
 
 ## 推荐的检索栈
 
@@ -222,7 +229,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 - `search_log.md`
 - `bibliography.bib`
 - `screening_decisions.csv`
-- `fulltext_manifest.csv`
+- `retrieval_manifest.csv`
 
 ## 不同引擎分别适合什么
 

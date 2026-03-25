@@ -3,12 +3,12 @@
 运行 `rsk upgrade` 后，你可能会看到类似以下的提示信息：
 
 ```
-⚠  MCP metadata-registry: RESEARCH_MCP_METADATA_REGISTRY_CMD not configured
-⚠  MCP fulltext-retrieval: RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD not configured
+⚠  MCP screening-tracker: RESEARCH_MCP_SCREENING_TRACKER_CMD not configured
+⚠  MCP extraction-store: RESEARCH_MCP_EXTRACTION_STORE_CMD not configured
 ...
 ```
 
-**这些⚠仅为提示，不影响框架核心功能。** 这些 MCP（模型上下文协议工具）是可选的外部能力增强接口。本文档说明它们各是什么、从哪里获取、以及如何接入。
+**这些⚠仅为提示，不影响框架核心功能。** 这些 MCP（模型上下文协议工具）里有一部分已经是仓库内置 reference provider，另一部分仍是可选的外部能力增强接口。本文档说明它们各是什么、从哪里获取、以及如何接入。
 
 如果你的目标是更严格、可复现的 academic literature search，请在读完本页后继续看 [严格 Academic Literature Search](/zh/advanced/rigorous-literature-search)。本页讲 provider 的接线方式，后者讲的是这些检索层应该如何组合。
 
@@ -57,18 +57,23 @@ export RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 **作用：** 解析并获取论文 PDF 全文、追踪版本来源。  
 **使用场景：** B1（系统综述）、B2（全文提取）任务。
 
+这个 provider 现在也有仓库内置的 retrieval-planning stub。内置模式不会真正下载 PDF，但会根据本地文献产物草拟 `retrieval_manifest.csv` 和 `screening/full_text.md`，保留已有 manifest 行、检查本地路径是否存在，并标出需要 OA/manual follow-up 的条目。
+
 **推荐工具：**
 
 | 工具 | 类型 | 地址 |
 |------|------|------|
+| 内置 retrieval-planning stub | 仓库内置 | `scripts/mcp_fulltext_retrieval.py` |
 | Zotero MCP Server | Node.js，接入本地 Zotero 库 | [github.com/zcaceres/zotero-mcp](https://github.com/zcaceres/zotero-mcp) |
 | Unpaywall API wrapper | 可获取开放获取全文 | 自定义脚本接入 `api.unpaywall.org` |
 
 ```bash
-# 接入 Zotero MCP（需要 Zotero 桌面客户端运行中）
+# 如果你想要真正下载全文，再接入 Zotero MCP（需要 Zotero 桌面客户端运行中）
 npm install -g @zcaceres/zotero-mcp-server
 export RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
+
+只有当你想把 builtin planning stub 升级成“真实全文解析 provider”时，才需要设置这个环境变量。
 
 > **提示：** 详细的 Zotero 接入流程见 [`mcp-zotero-integration.md`](./mcp-zotero-integration.md)。
 
@@ -189,6 +194,7 @@ export RESEARCH_MCP_CODE_RUNTIME_CMD="python3 -m jupyter_mcp_server"
 # 按需取消注释并填写命令
 
 # RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+# RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 # RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 # RESEARCH_MCP_SCREENING_TRACKER_CMD="python3 /path/to/screening_stub.py"
 # RESEARCH_MCP_EXTRACTION_STORE_CMD="python3 /path/to/extraction_stub.py"

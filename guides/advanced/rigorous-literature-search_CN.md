@@ -47,7 +47,7 @@
 | `metadata-registry` | 可以 | 本地模式不需要 | 可选 | 内置模式可直接合并 BibTeX、RIS、CSL-JSON、notes 与 search results；权威 enrichment 时再接 OpenAlex 或其他 metadata MCP |
 
 `bibliography.bib` 仍是仓库里的 canonical export，但用户不需要把它当作唯一的日常管理格式。
-| `fulltext-retrieval` | 不可以 | 取决于 provider | 需要 | 建议接 Zotero 或其他全文解析器 |
+| `fulltext-retrieval` | 可以，走内置 retrieval-manifest stub | 内置模式不需要 | 可选，但真实下载强烈建议配置 | 内置模式先草拟 retrieval status 和 provenance；要真正拿全文时再接 Zotero 或其他解析器 |
 | `screening-tracker` | 不可以 | 取决于 provider | 需要 | systematic review 支持 |
 | `extraction-store` | 不可以 | 取决于 provider | 需要 | systematic review 支持 |
 
@@ -107,7 +107,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 
 ## 严格模式说明
 
-启用 `--mcp-strict` 后，所有必需 provider 都必须已配置。当前通常最先需要显式接入的是 `fulltext-retrieval`，而 `metadata-registry` 现在可以先回落到仓库内置的本地 reference provider。若只是想叠加外部权威补全，优先设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`；只有在想完全替换 builtin 时，才设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`。
+启用 `--mcp-strict` 后，只有 `error` 和 `not_configured` 的 provider 会成为阻塞项。当前内置 `scholarly-search`、`citation-graph`、`metadata-registry` 和 `fulltext-retrieval` 都能先满足各自的 baseline 层。若只是想叠加外部权威补全，优先设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`；只有在想完全替换 builtin 时，才设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`。若你希望从“planning stub”升级到“真实全文解析/下载”，再设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`。
 
 ## 推荐的检索栈
 
@@ -150,7 +150,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 - `search_log.md`
 - `bibliography.bib`
 - `screening_decisions.csv`
-- `fulltext_manifest.csv`
+- `retrieval_manifest.csv`
 
 ## 引擎职责
 

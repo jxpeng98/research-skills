@@ -3,12 +3,12 @@
 After running `rsk upgrade`, you may see warnings like:
 
 ```
-⚠  MCP metadata-registry: RESEARCH_MCP_METADATA_REGISTRY_CMD not configured
-⚠  MCP fulltext-retrieval: RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD not configured
+⚠  MCP screening-tracker: RESEARCH_MCP_SCREENING_TRACKER_CMD not configured
+⚠  MCP extraction-store: RESEARCH_MCP_EXTRACTION_STORE_CMD not configured
 ...
 ```
 
-**These ⚠ are informational only — they do not affect the framework's core functionality.** These MCPs (Model Context Protocol tools) are optional external capability slots. This document explains what each one does, where to find implementations, and how to connect them.
+**These ⚠ are informational only — they do not affect the framework's core functionality.** Some MCPs in this repo are built-in reference providers, while others are optional external capability slots. This document explains what each one does, where to find implementations, and how to connect them.
 
 If your goal is a review-grade or highly reproducible academic literature search stack, read [Rigorous Literature Search](/advanced/rigorous-literature-search) after this page. This page explains provider wiring; the other guide explains which search layers to combine.
 
@@ -57,18 +57,23 @@ Set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only if you want to replace the builtin
 **Purpose:** Resolve and retrieve full PDF text, track version provenance.  
 **Used in:** B1 (systematic review), B2 (full-text extraction).
 
+This provider now has a built-in retrieval-planning stub. The builtin mode does not download PDFs, but it can draft `retrieval_manifest.csv` and `screening/full_text.md` from local literature artifacts, preserve existing manifest rows, verify referenced local files, and flag OA/manual follow-up candidates.
+
 **Recommended tools:**
 
 | Tool | Type | Link |
 |------|------|------|
+| Built-in retrieval-planning stub | Included in this repo | `scripts/mcp_fulltext_retrieval.py` |
 | Zotero MCP Server | Node.js, connects to local Zotero library | [github.com/zcaceres/zotero-mcp](https://github.com/zcaceres/zotero-mcp) |
 | Unpaywall API wrapper | Retrieves open-access full text | Custom script via `api.unpaywall.org` |
 
 ```bash
-# Connect Zotero MCP (requires Zotero desktop app running)
+# Optional: connect Zotero MCP when you want actual downloads
 npm install -g @zcaceres/zotero-mcp-server
 export RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
+
+Use the env var only when you want to replace the builtin planning stub with a resolver-backed retrieval provider.
 
 > **See also:** Detailed Zotero setup in [`mcp-zotero-integration.md`](./mcp-zotero-integration.md).
 
@@ -189,6 +194,7 @@ Create `.env` in your project root (copy from `.env.example`):
 # Uncomment and fill in as needed
 
 # RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+# RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 # RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 # RESEARCH_MCP_SCREENING_TRACKER_CMD="python3 /path/to/screening_stub.py"
 # RESEARCH_MCP_EXTRACTION_STORE_CMD="python3 /path/to/extraction_stub.py"

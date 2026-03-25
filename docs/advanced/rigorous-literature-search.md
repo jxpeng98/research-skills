@@ -20,10 +20,10 @@ The current repository ships these built-in literature providers:
 - `scholarly-search` → built-in Semantic Scholar API adapter with query variants, normalized rows, and baseline dedup
 - `citation-graph` → built-in Semantic Scholar citation / reference adapter with local seed extraction from `search_results.csv`, `bibliography.bib`, and `notes/`
 - `metadata-registry` → built-in local reference provider for identifier normalization, local record merge, and citekey generation
+- `fulltext-retrieval` → built-in retrieval-manifest stub that drafts `retrieval_manifest.csv` and `screening/full_text.md` from local literature artifacts
 
 The other layers are external-provider slots:
 
-- `fulltext-retrieval`
 - `screening-tracker`
 - `extraction-store`
 
@@ -32,7 +32,7 @@ So the strictest practical baseline today is:
 - built-in Semantic Scholar for discovery
 - built-in metadata-registry for local normalization, plus OpenAlex MCP for authoritative enrichment
 - built-in citation graph for snowballing
-- Zotero / OA resolver for full text
+- built-in fulltext planning stub, plus Zotero / OA resolver for actual full-text downloads
 
 ## Standard Literature Bundle
 
@@ -56,7 +56,7 @@ Use this table to decide what you actually need to configure:
 | `scholarly-search` | yes, via built-in Semantic Scholar | recommended | optional | zero-config works, produces query variants + dedup-ready rows, but rate limiting is more likely without a key |
 | `citation-graph` | yes, via built-in Semantic Scholar graph | no | optional | useful for snowballing even before you add external MCPs; builtin mode can resolve seeds from local artifacts |
 | `metadata-registry` | yes, via built-in local reference provider | no for local mode | optional | built-in mode can merge local references from BibTeX, RIS, CSL-JSON, notes, and search results; connect OpenAlex or another metadata MCP for authoritative enrichment |
-| `fulltext-retrieval` | no | depends on provider | yes | connect Zotero or another full-text resolver |
+| `fulltext-retrieval` | yes, via built-in retrieval-manifest stub | no for stub mode | optional, but recommended for real downloads | builtin mode drafts retrieval status + provenance rows; connect Zotero or another resolver for actual PDF/full-text acquisition |
 | `screening-tracker` | no | depends on provider | yes | mostly relevant for systematic review workflows |
 | `extraction-store` | no | depends on provider | yes | mostly relevant for systematic review workflows |
 
@@ -67,7 +67,7 @@ If you configure nothing at all:
 - `scholarly-search` still attempts to use the built-in Semantic Scholar adapter
 - `citation-graph` still attempts to use the built-in Semantic Scholar graph adapter
 - `metadata-registry` still attempts to use the built-in local reference provider
-- `fulltext-retrieval` remains unconfigured
+- `fulltext-retrieval` still prepares a local retrieval manifest and screening draft
 - tasks can still run unless you explicitly require strict MCP enforcement
 
 This is enough for exploratory work, but not ideal for rigorous review-grade search.
@@ -97,6 +97,12 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 This is the best default for most users who want stricter search without building custom infrastructure.
+
+If you also want local full-text planning without wiring a resolver yet, the built-in `fulltext-retrieval` stub already prepares:
+
+- `retrieval_manifest.csv` draft rows
+- `screening/full_text.md` draft rows
+- `not_retrieved:oa_candidate` / `not_retrieved:needs_provider` / `not_retrieved:missing_locator` status hints
 
 ### Option C. Review-Grade Multi-Source Setup
 
@@ -129,9 +135,10 @@ If you run tasks with `--mcp-strict`, every required external provider must actu
 
 - built-in `scholarly-search` and `citation-graph` can still satisfy those layers if you do not override them
 - built-in `metadata-registry` can satisfy the local normalization layer without extra config
+- built-in `fulltext-retrieval` can satisfy the retrieval-planning layer without extra config
 - set `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` when you want authoritative external enrichment on top of the builtin reference mode
 - set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want a full external override
-- `fulltext-retrieval` will fail strict checks until you set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
+- set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` when you want actual resolver-backed downloads instead of the builtin planning stub
 
 ## Recommended Search Stacks
 
@@ -195,7 +202,7 @@ Artifacts to keep under `RESEARCH/[topic]/`:
 - `search_log.md`
 - `bibliography.bib`
 - `screening_decisions.csv`
-- `fulltext_manifest.csv`
+- `retrieval_manifest.csv`
 
 ## Engine Roles
 

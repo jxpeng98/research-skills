@@ -38,6 +38,7 @@ Maximize access to full-text papers while maintaining PRISMA-compliant documenta
 - `fulltext-retrieval` owns `screening/full_text.md` and `retrieval_manifest.csv`
 - it should not overwrite `search_strategy.md` or `bibliography.bib`
 - if retrieval changes study eligibility, that decision still flows back through screening artifacts
+- the built-in provider is a retrieval-planning stub: it can draft manifests and flag OA/manual follow-up candidates, but actual downloads still usually come from an external resolver such as Zotero
 
 ## Process
 
@@ -141,6 +142,11 @@ Record retrieval status for PRISMA compliance:
 | `NOT_RETRIEVED` | Full text unavailable | Document reason |
 | `PAYWALL` | Behind paywall, no OA | Exclude or note limitation |
 | `NOT_FOUND` | Paper not found in any source | Verify bibliographic info |
+
+When the built-in stub is used without an external resolver, it typically emits planning statuses such as:
+- `not_retrieved:oa_candidate`
+- `not_retrieved:needs_provider`
+- `not_retrieved:missing_locator`
 
 **"Not Retrieved" Reasons (PRISMA required):**
 | Reason | Description |

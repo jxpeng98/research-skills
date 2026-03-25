@@ -118,6 +118,55 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(evidence.data["records"][0]["citekey"], "smith2024platform")
         self.assertIn("csl_json", evidence.data["reference_state"]["source_formats"])
 
+    def test_builtin_metadata_registry_applies_external_enrichment_overlay(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            project_root.mkdir(parents=True)
+            (project_root / "search_results.csv").write_text(
+                "record_id,source,query_id,retrieved_at,title,authors,year,venue,doi,url,abstract\n"
+                "s2:1,semantic_scholar,q1,2026-03-25T00:00:00+00:00,Platform Governance in Practice,\"Smith, Alex\",2024,,10.1000/platform-governance,https://example.com,\n",
+                encoding="utf-8",
+            )
+            enrich_script = root / "metadata_enrich_stub.py"
+            enrich_script.write_text(
+                "import json, sys\n"
+                "payload = json.loads(sys.stdin.read())\n"
+                "records = payload.get('records', [])\n"
+                "for record in records:\n"
+                "    if record.get('doi') == '10.1000/platform-governance':\n"
+                "        record['venue'] = 'Administrative Science Quarterly'\n"
+                "        record['openalex_id'] = 'W1234567890'\n"
+                "print(json.dumps({'status': 'ok', 'summary': 'overlay enriched 1 record', 'data': {'records': records}}))\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["search_results.csv"],
+            }
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": f"python3 {enrich_script}",
+                },
+                clear=False,
+            ):
+                evidence = self.connector.collect("metadata-registry", packet, root)
+
+        self.assertEqual(evidence.status, "ok")
+        self.assertEqual(
+            evidence.data["records"][0]["venue"],
+            "Administrative Science Quarterly",
+        )
+        self.assertEqual(evidence.data["records"][0]["openalex_id"], "W1234567890")
+        self.assertTrue(evidence.data["reference_state"]["external_enrichment"]["configured"])
+        self.assertEqual(
+            evidence.data["reference_state"]["external_enrichment"]["status"],
+            "ok",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

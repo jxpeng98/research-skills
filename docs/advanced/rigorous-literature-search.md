@@ -93,7 +93,7 @@ Create `.env` in your project root:
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 This is the best default for most users who want stricter search without building custom infrastructure.
@@ -104,7 +104,7 @@ Use your own scholarly MCP for merged discovery, then keep metadata and full-tex
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -118,7 +118,7 @@ Route both discovery and full text through your local Zotero-backed corpus:
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 Use this when your search space must stay inside a curated local library.
@@ -129,7 +129,8 @@ If you run tasks with `--mcp-strict`, every required external provider must actu
 
 - built-in `scholarly-search` and `citation-graph` can still satisfy those layers if you do not override them
 - built-in `metadata-registry` can satisfy the local normalization layer without extra config
-- set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want authoritative external enrichment to replace the builtin reference mode
+- set `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` when you want authoritative external enrichment on top of the builtin reference mode
+- set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want a full external override
 - `fulltext-retrieval` will fail strict checks until you set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
 
 ## Recommended Search Stacks
@@ -140,7 +141,7 @@ Use this when you want better rigor without extra engineering:
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 This gives you:
@@ -155,7 +156,7 @@ Use this for systematic reviews, structured related-work chapters, or any projec
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -174,7 +175,7 @@ Use this when your review must stay inside a curated local corpus:
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 This is narrower, but often more auditable.

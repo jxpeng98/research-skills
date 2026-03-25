@@ -1897,6 +1897,24 @@ Provide your verification assessment.
                         "ok",
                         f"builtin available: {script_name} via {detail}",
                     )
+                    if provider == "metadata-registry":
+                        enrich_env = "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD"
+                        enrich_command = os.environ.get(enrich_env, "").strip()
+                        if enrich_command:
+                            enrich_ok, enrich_detail = self._check_command_available(enrich_command)
+                            if enrich_ok:
+                                add_check(
+                                    "MCP metadata-registry enrichment",
+                                    "ok",
+                                    f"overlay configured: {enrich_env} -> {enrich_detail}",
+                                )
+                            else:
+                                add_check(
+                                    "MCP metadata-registry enrichment",
+                                    "error",
+                                    f"{enrich_env} invalid: {enrich_detail}",
+                                    f"Fix {enrich_env} so builtin metadata-registry can apply external enrichment.",
+                                )
                 else:
                     add_check(f"MCP {provider}", "ok", detail)
             else:

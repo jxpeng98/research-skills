@@ -33,7 +33,7 @@
 **作用：** 补全和标准化论文的 DOI、期刊、年份、作者信息。  
 **使用场景：** B 阶段（文献处理）、C1 任务等。
 
-这个 provider 现在已经有仓库内置的本地 reference 实现，可用于 identifier 规范化、本地记录合并和 citekey 生成。它可以直接读取 `bibliography.bib`、`references.json`、`references.ris`、`search_results.csv` 和 `notes/*.md`。如果你需要更权威的 enrichment，仍然建议接 OpenAlex 这类外部实现。
+这个 provider 现在已经有仓库内置的本地 reference 实现，可用于 identifier 规范化、本地记录合并和 citekey 生成。它可以直接读取 `bibliography.bib`、`references.json`、`references.ris`、`search_results.csv` 和 `notes/*.md`。如果你需要更权威的 enrichment，优先建议在 builtin provider 之上叠加 OpenAlex 这类外部实现。
 
 **推荐工具：**
 
@@ -43,10 +43,12 @@
 | OpenAlex MCP | 开源 Python | [github.com/b-vitamins/openalex-mcp](https://github.com/b-vitamins/openalex-mcp) |
 
 ```bash
-# 示例：接入 OpenAlex MCP
+# 示例：保留 builtin metadata-registry，再叠加 OpenAlex enrichment
 pip install openalex-mcp
-export RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+export RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
+
+只有当你想完全替换 builtin metadata-registry 时，才去设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`。
 
 ---
 

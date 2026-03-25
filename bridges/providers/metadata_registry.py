@@ -3,7 +3,10 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
 import re
+import shlex
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +34,7 @@ STOPWORDS = {
     "to",
     "with",
 }
+METADATA_ENRICH_ENV = "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD"
 
 
 def artifact_project_root(task_packet: dict[str, Any], cwd: Path) -> Path:
@@ -269,6 +273,110 @@ def summarize_reference_state(project_root: Path, records: list[dict[str, Any]])
         "canonical_export": "bibliography.bib",
         "alt_exports": ["references.json", "references.ris"],
         "supports_non_bib_workflows": True,
+    }
+
+
+def apply_external_enrichment(
+    records: list[dict[str, Any]],
+    *,
+    cwd: Path,
+    context_hints: dict[str, Any],
+    timeout_seconds: int = 20,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    command = os.environ.get(METADATA_ENRICH_ENV, "").strip()
+    if not command or not records:
+        return records, {"configured": False}
+
+    payload = {
+        "provider": "metadata-registry",
+        "mode": "enrich",
+        "records": records,
+        "context_hints": context_hints,
+    }
+    try:
+        parsed_cmd = shlex.split(command)
+        run_result = subprocess.run(
+            parsed_cmd,
+            input=json.dumps(payload, ensure_ascii=False),
+            capture_output=True,
+            text=True,
+            cwd=str(cwd),
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return records, {
+            "configured": True,
+            "status": "error",
+            "summary": f"External enrichment timed out after {timeout_seconds}s.",
+            "provenance": [METADATA_ENRICH_ENV],
+        }
+    except OSError as exc:
+        return records, {
+            "configured": True,
+            "status": "error",
+            "summary": f"External enrichment failed to start: {exc}",
+            "provenance": [METADATA_ENRICH_ENV],
+        }
+
+    if run_result.returncode != 0:
+        stderr = (run_result.stderr or "").strip()
+        return records, {
+            "configured": True,
+            "status": "error",
+            "summary": f"External enrichment exited with code {run_result.returncode}.",
+            "provenance": [METADATA_ENRICH_ENV, stderr] if stderr else [METADATA_ENRICH_ENV],
+        }
+
+    stdout = (run_result.stdout or "").strip()
+    if not stdout:
+        return records, {
+            "configured": True,
+            "status": "warning",
+            "summary": "External enrichment returned empty output.",
+            "provenance": [METADATA_ENRICH_ENV],
+        }
+
+    try:
+        parsed = json.loads(stdout)
+    except json.JSONDecodeError:
+        return records, {
+            "configured": True,
+            "status": "warning",
+            "summary": "External enrichment returned non-JSON output.",
+            "provenance": [METADATA_ENRICH_ENV, stdout[:280]],
+        }
+
+    data = parsed.get("data", {})
+    if not isinstance(data, dict):
+        data = {}
+    raw_records = data.get("records", [])
+    if not isinstance(raw_records, list):
+        raw_records = []
+    external_records = [
+        _normalize_external_record(item, index)
+        for index, item in enumerate(raw_records, start=1)
+        if isinstance(item, dict)
+    ]
+    if not external_records:
+        return records, {
+            "configured": True,
+            "status": "warning",
+            "summary": str(parsed.get("summary", "External enrichment returned no records.")),
+            "provenance": _normalize_provenance(parsed.get("provenance")),
+        }
+
+    merged_records, applied_count = _merge_external_records(records, external_records)
+    status = str(parsed.get("status", "ok")).strip().lower() or "ok"
+    if status not in {"ok", "warning", "error"}:
+        status = "warning"
+    return merged_records, {
+        "configured": True,
+        "status": status,
+        "summary": str(parsed.get("summary", f"External enrichment merged {applied_count} records.")).strip(),
+        "provenance": _normalize_provenance(parsed.get("provenance")),
+        "record_count": len(external_records),
+        "applied_count": applied_count,
     }
 
 
@@ -513,6 +621,25 @@ def _merge_record(existing: dict[str, Any], candidate: dict[str, Any]) -> None:
     existing_paths = set(existing.get("source_paths", []))
     existing_paths.update(candidate.get("source_paths", []))
     existing["source_paths"] = sorted(existing_paths)
+    for key, value in candidate.items():
+        if key in {
+            "record_id",
+            "source_format",
+            "source_paths",
+            "title",
+            "authors",
+            "year",
+            "venue",
+            "doi",
+            "url",
+            "abstract",
+            "citekey",
+        }:
+            continue
+        if value in ("", None, []):
+            continue
+        if key not in existing or existing.get(key) in ("", None, []):
+            existing[key] = value
 
 
 def _record_merge_key(record: dict[str, Any]) -> tuple[str, str]:
@@ -600,3 +727,58 @@ def _first_nonempty(mapping: dict[str, list[str]], *keys: str) -> str:
             if value:
                 return value
     return ""
+
+
+def _normalize_external_record(item: dict[str, Any], index: int) -> dict[str, Any]:
+    authors_raw = item.get("authors", [])
+    if isinstance(authors_raw, list):
+        authors = [" ".join(str(author).split()) for author in authors_raw if str(author).strip()]
+    else:
+        authors = _normalize_authors(str(authors_raw or ""))
+    record = _base_record(
+        record_id=_clean_string(item.get("record_id")) or _clean_string(item.get("id")) or f"external:{index}",
+        source_format=_clean_string(item.get("source_format")) or "external_enrichment",
+        source_name=_clean_string(item.get("source")) or "external_enrichment",
+        title=_clean_string(item.get("title")),
+        authors=authors,
+        year=_safe_int(item.get("year")),
+        venue=_clean_string(item.get("venue")),
+        doi=normalize_doi(_clean_string(item.get("doi"))) if _clean_string(item.get("doi")) else "",
+        url=_clean_string(item.get("url")),
+        abstract=_clean_string(item.get("abstract")),
+        citekey=_clean_string(item.get("citekey")),
+    )
+    for key in ("openalex_id", "publisher", "volume", "issue", "pages", "oa_url", "citation_count"):
+        value = item.get(key)
+        if value not in ("", None, []):
+            record[key] = value
+    return record
+
+
+def _merge_external_records(
+    records: list[dict[str, Any]],
+    external_records: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], int]:
+    merged = [dict(record) for record in records]
+    index = { _record_merge_key(record)[0]: record for record in merged }
+    applied_count = 0
+    for external in external_records:
+        key, _ = _record_merge_key(external)
+        existing = index.get(key)
+        if existing is None:
+            merged.append(external)
+            index[key] = external
+            applied_count += 1
+            continue
+        _merge_record(existing, external)
+        applied_count += 1
+    assign_citekeys(merged)
+    return merged, applied_count
+
+
+def _normalize_provenance(raw: Any) -> list[str]:
+    if isinstance(raw, list):
+        return [str(item) for item in raw]
+    if raw:
+        return [str(raw)]
+    return [METADATA_ENRICH_ENV]

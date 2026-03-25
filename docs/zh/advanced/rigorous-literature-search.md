@@ -120,7 +120,7 @@
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 这是一套对大多数用户最划算的默认增强方案，不需要自己做太多工程接入。
@@ -131,7 +131,7 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -145,7 +145,7 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 适合审稿前证据链要求更严、或者必须限定语料范围的项目。
@@ -156,7 +156,8 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 - 内置 `scholarly-search` 和 `citation-graph` 仍可满足这两层，前提是你没有把它们 override 掉
 - 内置 `metadata-registry` 可以先满足本地规范化这一层，不需要额外配置
-- 只有当你想让外部权威 enrichment 覆盖 builtin reference 模式时，才需要设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`
+- 当你想在 builtin reference 模式之上叠加外部权威 enrichment 时，设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`
+- 只有当你想完全改成外部 metadata provider 时，才需要设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`
 - `fulltext-retrieval` 没有设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` 时，也会成为 strict 阻塞项
 
 ## 推荐的检索栈
@@ -167,7 +168,7 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 这套组合意味着：
@@ -182,7 +183,7 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -201,7 +202,7 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 它更窄，但通常更容易审计。

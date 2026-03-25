@@ -85,14 +85,14 @@
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ### 方案 C：Review-Grade 多源方案
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -102,12 +102,12 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ## 严格模式说明
 
-启用 `--mcp-strict` 后，所有必需 provider 都必须已配置。当前通常最先需要显式接入的是 `fulltext-retrieval`，而 `metadata-registry` 现在可以先回落到仓库内置的本地 reference provider。
+启用 `--mcp-strict` 后，所有必需 provider 都必须已配置。当前通常最先需要显式接入的是 `fulltext-retrieval`，而 `metadata-registry` 现在可以先回落到仓库内置的本地 reference provider。若只是想叠加外部权威补全，优先设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`；只有在想完全替换 builtin 时，才设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`。
 
 ## 推荐的检索栈
 
@@ -115,14 +115,14 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ### 2. Review-Grade 方案
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -132,7 +132,7 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ## 推荐查询流程

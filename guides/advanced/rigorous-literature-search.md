@@ -75,14 +75,14 @@ The built-in `scholarly-search` baseline still gives you:
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ### Option C. Review-Grade Multi-Source Setup
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -92,12 +92,12 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ## Strict Mode
 
-With `--mcp-strict`, unconfigured required providers become blockers. In practice, `fulltext-retrieval` is still the first literature layer that usually needs explicit setup, while `metadata-registry` can now fall back to the built-in local reference provider.
+With `--mcp-strict`, unconfigured required providers become blockers. In practice, `fulltext-retrieval` is still the first literature layer that usually needs explicit setup, while `metadata-registry` can now fall back to the built-in local reference provider. Use `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` for overlay enrichment, and reserve `RESEARCH_MCP_METADATA_REGISTRY_CMD` for a full override.
 
 ## Recommended Search Stacks
 
@@ -107,7 +107,7 @@ Use this when you want better rigor without extra engineering:
 
 ```env
 SEMANTIC_SCHOLAR_API_KEY="your-semantic-scholar-key"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ### 2. Review-Grade Stack
@@ -116,7 +116,7 @@ Use this for systematic reviews, structured related-work chapters, or any projec
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
@@ -128,7 +128,7 @@ Use this when your review must stay inside a curated local corpus:
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ## Recommended Query Workflow

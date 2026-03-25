@@ -257,6 +257,21 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("MCP metadata-registry: builtin available: mcp_metadata_registry.py", result.merged_analysis)
         self.assertIn("MCP fulltext-retrieval: external slot only;", result.merged_analysis)
 
+    def test_doctor_reports_metadata_registry_enrichment_overlay(self) -> None:
+        orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")
+        with mock.patch.dict(
+            os.environ,
+            {
+                "RESEARCH_CLI_LANG": "zh-CN",
+                "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": "python3 /tmp/openalex_overlay.py",
+            },
+            clear=False,
+        ):
+            result = orchestrator.doctor(REPO_ROOT)
+
+        self.assertIn("MCP metadata-registry: builtin available: mcp_metadata_registry.py", result.merged_analysis)
+        self.assertIn("MCP metadata-registry enrichment: overlay configured:", result.merged_analysis)
+
     def test_task_run_executes_with_draft_and_review(self) -> None:
         orchestrator = MockOrchestrator()
         result = orchestrator.task_run(

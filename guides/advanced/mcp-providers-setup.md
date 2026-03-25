@@ -33,7 +33,7 @@ When executing a task, the system spawns a subprocess from this command, pipes i
 **Purpose:** Enrich and normalize paper DOI, journal, year, and author metadata.  
 **Used in:** Stage B (literature processing), task C1, etc.
 
-This provider now has a built-in local reference implementation for identifier normalization, local record merge, and citekey generation. It can ingest `bibliography.bib`, `references.json`, `references.ris`, `search_results.csv`, and `notes/*.md`. For authoritative enrichment, connect an external tool such as OpenAlex.
+This provider now has a built-in local reference implementation for identifier normalization, local record merge, and citekey generation. It can ingest `bibliography.bib`, `references.json`, `references.ris`, `search_results.csv`, and `notes/*.md`. For authoritative enrichment, prefer an overlay command such as OpenAlex on top of the builtin provider.
 
 **Recommended tools:**
 
@@ -43,10 +43,12 @@ This provider now has a built-in local reference implementation for identifier n
 | OpenAlex MCP | Open-source Python | [github.com/b-vitamins/openalex-mcp](https://github.com/b-vitamins/openalex-mcp) |
 
 ```bash
-# Example: connect OpenAlex MCP
+# Example: keep builtin metadata-registry, add OpenAlex enrichment overlay
 pip install openalex-mcp
-export RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
+export RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
+
+Use `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want a full external override.
 
 ---
 

@@ -84,20 +84,20 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 ### Option D. Local-Library Controlled Setup
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ## Strict Mode
 
-With `--mcp-strict`, `error` and `not_configured` providers become blockers. Built-in `scholarly-search`, `citation-graph`, `metadata-registry`, and `fulltext-retrieval` can all satisfy their baseline layer without extra config. Use `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` for overlay enrichment, reserve `RESEARCH_MCP_METADATA_REGISTRY_CMD` for a full override, and set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` when you want actual resolver-backed downloads instead of the builtin planning stub.
+With `--mcp-strict`, `error` and `not_configured` providers become blockers. Built-in `scholarly-search`, `citation-graph`, `metadata-registry`, and `fulltext-retrieval` can all satisfy their baseline layer without extra config. Use `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` for overlay enrichment, reserve `RESEARCH_MCP_METADATA_REGISTRY_CMD` for a full override, set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD` when you want resolver-backed downloads layered on top of the builtin planning stub, and use `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` only for a full external override.
 
 ## Recommended Search Stacks
 
@@ -118,7 +118,7 @@ Use this for systematic reviews, structured related-work chapters, or any projec
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 ### 3. Local-Library Controlled Search
@@ -127,7 +127,7 @@ Use this when your review must stay inside a curated local corpus:
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 

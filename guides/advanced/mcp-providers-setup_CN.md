@@ -64,6 +64,16 @@ export RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 
 这个 provider 现在也有仓库内置的 retrieval-planning stub。内置模式不会真正下载 PDF，但会根据本地文献产物草拟 `retrieval_manifest.csv` 和 `screening/full_text.md`，保留已有 manifest 行、检查本地路径是否存在，并标出需要 OA/manual follow-up 的条目。
 
+resolver handoff 现在按分层合同处理：
+- 默认保留 builtin stub 作为 planning baseline
+- 当你希望外部解析器把真实获取结果写回 manifest 时，设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`
+- 只有想完全替换 builtin provider 时，才设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
+
+当前 resolver merge policy 不是简单覆盖，而是带 source-aware 优先级：
+- resolver 返回的 `retrieved_*` 状态会优先覆盖 builtin 的 `not_retrieved:*` planning 状态
+- resolver 提供的 `fulltext_path`、`license`、`version_label` 会在优先级相同或更高时替换 builtin 占位值
+- builtin planning notes 会保留，resolver notes 会追加进去，方便审计
+
 **推荐工具：**
 
 | 工具 | 类型 | 地址 |
@@ -73,12 +83,12 @@ export RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 | Unpaywall API wrapper | 可获取开放获取全文 | 自定义脚本接入 `api.unpaywall.org` |
 
 ```bash
-# 如果你想要真正下载全文，再接入 Zotero MCP（需要 Zotero 桌面客户端运行中）
+# 如果你想保留 builtin planning，再叠加 Zotero 的真实解析结果（需要 Zotero 桌面客户端运行中）
 npm install -g @zcaceres/zotero-mcp-server
-export RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+export RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
-只有当你想把 builtin planning stub 升级成“真实全文解析 provider”时，才需要设置这个环境变量。
+只有当你想完全把 builtin planning stub 替换成“外部全文解析 provider”时，才需要设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`。
 
 > **提示：** 详细的 Zotero 接入流程见 [`mcp-zotero-integration_CN.md`](./mcp-zotero-integration_CN.md)。
 

@@ -60,7 +60,7 @@
 | 文献发现检索 | 非必须，但强烈建议 | 做 related work、gap analysis、literature review 时 | `SEMANTIC_SCHOLAR_API_KEY`；可选 `RESEARCH_MCP_SCHOLARLY_SEARCH_CMD` | 内置 Semantic Scholar 或多源 scholarly MCP |
 | 引文扩展 | 可选 | 做 snowballing 时 | 可选 `RESEARCH_MCP_CITATION_GRAPH_CMD` | 内置 graph 或自定义 graph MCP |
 | 元数据标准化 | 严格检索时建议视为必须 | 做 DOI、作者、venue 标准化时 | `RESEARCH_MCP_METADATA_REGISTRY_CMD` | `python3 -m openalex_mcp` |
-| 全文获取 | 系统综述时建议配置 | 批量拿 PDF / 全文 / provenance 时 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` | Zotero MCP / OA resolver |
+| 全文获取 | 系统综述时建议配置 | 批量拿 PDF / 全文 / provenance 时 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD` | Zotero MCP / OA resolver |
 | 筛选跟踪 | systematic review 时建议配置 | 记录纳入/排除决策时 | `RESEARCH_MCP_SCREENING_TRACKER_CMD` | Rayyan MCP 或本地 stub |
 | 结构化提取库 | systematic review 时建议配置 | 维护 extraction table 时 | `RESEARCH_MCP_EXTRACTION_STORE_CMD` | Covidence 类 MCP 或 CSV/SQLite stub |
 | 统计分析引擎 | 分析导向任务时建议配置 | 做 meta-analysis、统计建模时 | `RESEARCH_MCP_STATS_ENGINE_CMD` | R / Python stats MCP |
@@ -94,20 +94,20 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 ### 方案 D：本地文献库受控方案
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
 ## 严格模式说明
 
-启用 `--mcp-strict` 后，只有 `error` 和 `not_configured` 的 provider 会成为阻塞项。当前内置 `scholarly-search`、`citation-graph`、`metadata-registry` 和 `fulltext-retrieval` 都能先满足各自的 baseline 层。若只是想叠加外部权威补全，优先设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`；只有在想完全替换 builtin 时，才设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`。若你希望从“planning stub”升级到“真实全文解析/下载”，再设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`。
+启用 `--mcp-strict` 后，只有 `error` 和 `not_configured` 的 provider 会成为阻塞项。当前内置 `scholarly-search`、`citation-graph`、`metadata-registry` 和 `fulltext-retrieval` 都能先满足各自的 baseline 层。若只是想叠加外部权威补全，优先设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`；只有在想完全替换 builtin 时，才设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`。若你希望在 builtin planning stub 之上叠加真实全文解析/下载，设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`；只有在想完全替换 builtin provider 时，才设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`。
 
 ## 推荐的检索栈
 
@@ -124,14 +124,14 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 ### 3. 本地文献库受控方案
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 

@@ -64,6 +64,16 @@ Use `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want a full external over
 
 This provider now has a built-in retrieval-planning stub. The builtin mode does not download PDFs, but it can draft `retrieval_manifest.csv` and `screening/full_text.md` from local literature artifacts, preserve existing manifest rows, verify referenced local files, and flag OA/manual follow-up candidates.
 
+Resolver handoff should follow a layered contract:
+- keep the builtin stub as the planning baseline
+- use `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD` when you want an external resolver to update manifest rows with actual retrieval outcomes
+- use `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` only when you want to replace the builtin provider entirely
+
+Current resolver merge policy is source-aware rather than last-write-wins:
+- resolver-backed `retrieved_*` statuses outrank builtin `not_retrieved:*` planning states
+- resolver `fulltext_path`, `license`, and `version_label` values replace builtin placeholders when the resolver has equal or higher priority
+- builtin planning notes are preserved and resolver notes are appended for auditability
+
 **Recommended tools:**
 
 | Tool | Type | Link |
@@ -73,12 +83,12 @@ This provider now has a built-in retrieval-planning stub. The builtin mode does 
 | Unpaywall API wrapper | Retrieves open-access full text | Custom script via `api.unpaywall.org` |
 
 ```bash
-# Optional: connect Zotero MCP when you want actual downloads
+# Optional: keep builtin planning and layer Zotero resolution on top
 npm install -g @zcaceres/zotero-mcp-server
-export RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+export RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
-Use the env var only when you want to replace the builtin planning stub with a resolver-backed retrieval provider.
+Set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` only when you want to replace the builtin planning stub with a fully external provider.
 
 > **See also:** Detailed Zotero setup in [`mcp-zotero-integration.md`](./mcp-zotero-integration.md).
 

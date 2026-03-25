@@ -148,7 +148,11 @@ def _collect_search_candidates(
                 "paper_id": paper_id,
             }
             key = record_match_key(record)[0]
-            access_url = _clean(row.get("open_access_pdf_url")) or _clean(row.get("url"))
+            access_url = _clean(row.get("open_access_pdf_url"))
+            if not access_url:
+                generic_url = _clean(row.get("url"))
+                if _looks_like_download_candidate(generic_url):
+                    access_url = generic_url
             if not access_url:
                 continue
             source_provider = (
@@ -219,10 +223,12 @@ def _build_manifest_row(
     record_id = str(existing_row.get("record_id") or record.get("record_id") or "").strip()
     citekey = str(existing_row.get("citekey") or record.get("citekey") or "").strip()
     doi = str(existing_row.get("doi") or record.get("doi") or "").strip().lower()
+    candidate_url = str(candidate.get("access_url") or "").strip()
+    fallback_url = str(record.get("url") or "").strip()
     access_url = (
         str(existing_row.get("access_url") or "").strip()
-        or str(candidate.get("access_url") or "").strip()
-        or str(record.get("url") or "").strip()
+        or candidate_url
+        or fallback_url
     )
     fulltext_path = str(existing_row.get("fulltext_path") or "").strip()
     resolved_path = _resolve_fulltext_path(project_root, fulltext_path)
@@ -233,9 +239,9 @@ def _build_manifest_row(
     retrieval_status = _resolve_retrieval_status(
         existing_status=str(existing_row.get("retrieval_status") or "").strip(),
         resolved_path=resolved_path,
-        access_url=access_url,
+        candidate_url=candidate_url,
         doi=doi,
-        fallback_url=str(record.get("url") or "").strip(),
+        fallback_url=fallback_url,
     )
     source_provider = (
         str(existing_row.get("source_provider") or "").strip()
@@ -332,12 +338,12 @@ def _resolve_retrieval_status(
     *,
     existing_status: str,
     resolved_path: str,
-    access_url: str,
+    candidate_url: str,
     doi: str,
     fallback_url: str,
 ) -> str:
     if resolved_path:
-        if _looks_like_preprint(access_url or resolved_path):
+        if _looks_like_preprint(candidate_url or fallback_url or resolved_path):
             return "retrieved_preprint"
         return "retrieved_oa"
 
@@ -345,7 +351,7 @@ def _resolve_retrieval_status(
         return "not_retrieved:path_missing"
     if existing_status:
         return existing_status
-    if access_url:
+    if candidate_url:
         return "not_retrieved:oa_candidate"
     if doi or fallback_url:
         return "not_retrieved:needs_provider"
@@ -374,6 +380,11 @@ def _infer_version_label(access_url: str, record: dict[str, Any]) -> str:
 def _looks_like_preprint(value: str) -> bool:
     lowered = value.lower()
     return any(token in lowered for token in ("arxiv.org", "biorxiv", "medrxiv", "preprint"))
+
+
+def _looks_like_download_candidate(value: str) -> bool:
+    lowered = value.lower()
+    return lowered.endswith(".pdf") or any(token in lowered for token in ("/pdf", "arxiv.org", "/pmc/"))
 
 
 def _build_screening_rows(manifest_rows: list[dict[str, str]]) -> list[dict[str, str]]:

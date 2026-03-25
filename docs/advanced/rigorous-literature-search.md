@@ -112,7 +112,7 @@ Use your own scholarly MCP for merged discovery, then keep metadata and full-tex
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 Use this when you need repeatable search logs, deduped merged candidates, and stronger provenance.
@@ -123,7 +123,7 @@ Route both discovery and full text through your local Zotero-backed corpus:
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
@@ -138,7 +138,8 @@ If you run tasks with `--mcp-strict`, every required external provider must actu
 - built-in `fulltext-retrieval` can satisfy the retrieval-planning layer without extra config
 - set `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD` when you want authoritative external enrichment on top of the builtin reference mode
 - set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want a full external override
-- set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` when you want actual resolver-backed downloads instead of the builtin planning stub
+- set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD` when you want resolver-backed downloads layered on top of the builtin planning stub
+- set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` only when you want a full external override
 
 ## Recommended Search Stacks
 
@@ -165,7 +166,7 @@ Use this for systematic reviews, structured related-work chapters, or any projec
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 Recommended responsibilities:
@@ -181,7 +182,7 @@ Use this when your review must stay inside a curated local corpus:
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 

@@ -71,7 +71,7 @@
 | 文献发现检索 | 非必须，但强烈建议 | 你要做 related work、gap analysis、literature review 时 | `SEMANTIC_SCHOLAR_API_KEY`；可选 `RESEARCH_MCP_SCHOLARLY_SEARCH_CMD` | 内置 Semantic Scholar；更严格时换成多源 scholarly MCP |
 | 引文扩展 | 可选 | 你要做 backward / forward snowballing 时 | 可选 `RESEARCH_MCP_CITATION_GRAPH_CMD` | 默认内置 graph；更严格时换成自定义 graph MCP |
 | 元数据标准化 | 严格检索时建议视为必须 | 你要统一 DOI、作者、venue、年份，或做可复现 bibliography 时 | 可选 `RESEARCH_MCP_METADATA_REGISTRY_CMD` | 内置本地 reference provider；权威 enrichment 时用 `python3 -m openalex_mcp` |
-| 全文获取 | 做系统综述或深度阅读时建议配置 | 你要批量拿 PDF、全文、版本来源链时 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` | Zotero MCP / OA resolver |
+| 全文获取 | 做系统综述或深度阅读时建议配置 | 你要批量拿 PDF、全文、版本来源链时 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD` | Zotero MCP / OA resolver |
 | 筛选跟踪 | systematic review 场景下建议配置 | 你需要记录纳入/排除决策、双人筛选流程时 | `RESEARCH_MCP_SCREENING_TRACKER_CMD` | Rayyan MCP 或本地 stub |
 | 结构化提取库 | systematic review 场景下建议配置 | 你要维护 extraction table、effect size、study attribute 时 | `RESEARCH_MCP_EXTRACTION_STORE_CMD` | Covidence 类 MCP 或 CSV/SQLite stub |
 | 统计分析引擎 | 做 meta-analysis、统计建模时建议配置 | 你希望把统计运行外包给 R/Python engine 时 | `RESEARCH_MCP_STATS_ENGINE_CMD` | R script MCP / Python stats MCP |
@@ -85,7 +85,7 @@
 |---|---|
 | 先跑起来 | 一个模型 API key |
 | 论文写作 / related work 更稳 | 一个模型 API key + `SEMANTIC_SCHOLAR_API_KEY`；要更强 metadata enrichment 时再加 `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
-| systematic review / review-grade | 上述配置 + `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`，必要时再补 `RESEARCH_MCP_SCREENING_TRACKER_CMD` 和 `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
+| systematic review / review-grade | 上述配置 + `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`，必要时再补 `RESEARCH_MCP_SCREENING_TRACKER_CMD` 和 `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
 
 ## 如果什么都不配置，会发生什么
 
@@ -139,7 +139,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 适合需要稳定 search log、合并候选集、可追溯 provenance 的项目。
@@ -150,7 +150,7 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 
@@ -165,7 +165,8 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 - 内置 `fulltext-retrieval` 可以先满足 retrieval planning 这一层，不需要额外配置
 - 当你想在 builtin reference 模式之上叠加外部权威 enrichment 时，设置 `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`
 - 只有当你想完全改成外部 metadata provider 时，才需要设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`
-- 当你想从“planning stub”升级到“真实全文解析/下载”时，再设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
+- 当你想在 builtin planning stub 之上叠加真实全文解析/下载时，设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`
+- 只有当你想完全替换 builtin provider 时，才设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
 
 ## 推荐的检索栈
 
@@ -192,7 +193,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="python3 /path/to/multi_source_search_mcp.py"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 RESEARCH_MCP_CITATION_GRAPH_CMD="python3 /path/to/graph_mcp.py"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 ```
 
 推荐职责分配：
@@ -208,7 +209,7 @@ RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
 
 ```env
 RESEARCH_MCP_SCHOLARLY_SEARCH_CMD="npx -y @zcaceres/zotero-mcp-server"
-RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD="npx -y @zcaceres/zotero-mcp-server"
+RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-server"
 RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 ```
 

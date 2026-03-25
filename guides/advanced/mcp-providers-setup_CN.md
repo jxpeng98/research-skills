@@ -35,6 +35,11 @@
 
 这个 provider 现在已经有仓库内置的本地 reference 实现，可用于 identifier 规范化、本地记录合并和 citekey 生成。它可以直接读取 `bibliography.bib`、`references.json`、`references.ris`、`search_results.csv` 和 `notes/*.md`。如果你需要更权威的 enrichment，优先建议在 builtin provider 之上叠加 OpenAlex 这类外部实现。
 
+当前 enrichment merge policy 不是简单的“后写覆盖前写”，而是带 source-aware 优先级：
+- `OpenAlex` 优先补 title、author list、venue、publisher 和 OA link
+- `Crossref` 优先补 volume / issue / pages 这类书目信息，以及 DOI landing-page 规范化
+- 本地已经确定的 `doi` 和 `citekey` 默认保持 sticky，除非原值缺失
+
 **推荐工具：**
 
 | 工具 | 类型 | 地址 |

@@ -35,6 +35,11 @@ When executing a task, the system spawns a subprocess from this command, pipes i
 
 This provider now has a built-in local reference implementation for identifier normalization, local record merge, and citekey generation. It can ingest `bibliography.bib`, `references.json`, `references.ris`, `search_results.csv`, and `notes/*.md`. For authoritative enrichment, prefer wiring an overlay command such as OpenAlex on top of the builtin provider.
 
+Current enrichment merge policy is source-aware rather than last-write-wins:
+- `OpenAlex` is preferred for title, author list, venue, publisher, and OA link enrichment
+- `Crossref` is preferred for volume / issue / page metadata and DOI landing-page normalization
+- locally established `doi` and `citekey` values remain sticky unless they are missing
+
 **Recommended tools:**
 
 | Tool | Type | Link |

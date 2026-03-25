@@ -1,6 +1,5 @@
 ---
 description: 从 RESEARCH 项目资料生成完整论文草稿（outline → manuscript → claim-evidence → figures/tables → readiness）
-argument-hint: [RESEARCH下topic文件夹名] [可选: paper_type empirical|sr|theory] [可选: venue]
 ---
 
 # Paper Writing (Full Draft)

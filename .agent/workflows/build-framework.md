@@ -1,6 +1,5 @@
 ---
 description: 构建研究的理论框架，梳理概念关系
-argument-hint: [理论名称或研究概念]
 ---
 
 # Theoretical Framework Building

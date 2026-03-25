@@ -1,6 +1,5 @@
 ---
 description: 学术论文写作辅助，支持各个章节的撰写
-argument-hint: [章节类型:title/keywords/abstract/introduction/related-work/literature/methodology/results/discussion/limitations/conclusion/appendix] [主题]
 ---
 
 # Academic Writing Assistant

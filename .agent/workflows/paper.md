@@ -1,6 +1,5 @@
 ---
 description: 研究论文写作工作流入口（选择论文类型 + 当前阶段/要写的部分）
-argument-hint: [可选: RESEARCH下topic文件夹名] [可选: venue]
 ---
 
 # Research Paper Workflow (Menu / Router)

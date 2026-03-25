@@ -1,6 +1,5 @@
 ---
 description: 基于已筛选/提取/质评结果执行证据综合（叙述/定性/定量 Meta-analysis）
-argument-hint: [RESEARCH下的topic文件夹名] [可选: outcome_id]
 ---
 
 # Evidence Synthesis / Meta-analysis

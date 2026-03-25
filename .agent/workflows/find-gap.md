@@ -1,6 +1,5 @@
 ---
 description: 系统性识别研究领域中的学术空白和研究机会
-argument-hint: [研究领域或主题]
 ---
 
 # Research Gap Identification

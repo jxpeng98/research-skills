@@ -1,6 +1,5 @@
 ---
 description: 生成伦理/IRB 文档包（consent、recruitment、data security、statement）
-argument-hint: [RESEARCH下topic文件夹名]
 ---
 
 # Ethics / IRB Pack

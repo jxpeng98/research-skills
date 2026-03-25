@@ -1,6 +1,5 @@
 ---
 description: 执行系统性文献综述，遵循 PRISMA 2020 方法论
-argument-hint: [研究主题] [可选:年份范围如2020-2024]
 ---
 
 # Systematic Literature Review

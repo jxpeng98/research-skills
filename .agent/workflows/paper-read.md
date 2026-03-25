@@ -1,6 +1,5 @@
 ---
 description: 深度阅读并分析单篇学术论文，生成结构化笔记
-argument-hint: [论文URL、DOI或标题]
 ---
 
 # Deep Paper Reading & Analysis

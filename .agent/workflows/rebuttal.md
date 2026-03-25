@@ -1,6 +1,5 @@
 ---
 description: 把审稿意见转成可执行 revision 计划 + response matrix + response letter
-argument-hint: [RESEARCH下topic文件夹名]
 ---
 
 # Rebuttal / Revision Response

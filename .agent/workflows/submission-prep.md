@@ -1,6 +1,5 @@
 ---
 description: 投稿前打包（reporting checklist + cover letter + submission checklist + statements）
-argument-hint: [RESEARCH下topic文件夹名] [可选: venue]
 ---
 
 # Submission Preparation

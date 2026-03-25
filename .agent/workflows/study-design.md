@@ -1,6 +1,5 @@
 ---
 description: 从研究问题到可执行的研究设计（study_design + analysis_plan + instruments + DMP + prereg 草案）
-argument-hint: [研究主题或RESEARCH下topic文件夹名]
 ---
 
 # Study Design (Empirical)

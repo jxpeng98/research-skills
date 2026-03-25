@@ -42,12 +42,17 @@ Extend literature search beyond database queries by:
 - this layer may append candidate records into `search_results.csv`
 - dedup decisions created during snowball expansion must be recorded in `dedup_log.csv`
 - final normalized bibliography still belongs to `metadata-registry`
+- builtin baseline may resolve seeds from `search_results.csv`, `bibliography.bib`, and `notes/*.md` before falling back to explicit `target_paper_id`
 
 ## Process
 
 ### Step 1: Identify Seed Papers
 
 Select seed papers from initial search results based on:
+
+Builtin baseline rule:
+- if `target_paper_id` is absent, first harvest seed identifiers from `search_results.csv`, `bibliography.bib`, and `notes/*.md`
+- use title lookup only as a fallback; prefer stable IDs (`paper_id`, DOI) when available
 
 **Selection Criteria:**
 | Criterion | Description |

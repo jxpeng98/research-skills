@@ -199,6 +199,7 @@ def normalize_search_hit(
     query_text: str,
     retrieved_at: str,
     ordinal: int,
+    source: str = "semantic_scholar",
 ) -> dict[str, Any]:
     paper_id = str(hit.get("paperId") or "").strip()
     external_ids = hit.get("externalIds", {})
@@ -218,7 +219,7 @@ def normalize_search_hit(
 
     return {
         "record_id": f"s2:{record_id}",
-        "source": "semantic_scholar",
+        "source": source,
         "query_id": query_id,
         "query_text": query_text,
         "retrieved_at": retrieved_at,
@@ -241,7 +242,7 @@ def dedupe_search_results(records: list[dict[str, Any]]) -> tuple[list[dict[str,
     dedup_log: list[dict[str, str]] = []
 
     for record in records:
-        match_key, match_basis = _record_match_key(record)
+        match_key, match_basis = record_match_key(record)
         existing = canonical_by_key.get(match_key)
         if existing is None:
             record["query_ids"] = [record.get("query_id", "")]
@@ -350,7 +351,7 @@ def _extract_open_access_url(hit: dict[str, Any]) -> str:
     return ""
 
 
-def _record_match_key(record: dict[str, Any]) -> tuple[str, str]:
+def record_match_key(record: dict[str, Any]) -> tuple[str, str]:
     doi = str(record.get("doi", "")).strip().lower()
     if doi:
         return f"doi:{doi}", "doi"
@@ -393,4 +394,3 @@ def _merge_record(canonical: dict[str, Any], candidate: dict[str, Any]) -> None:
     if isinstance(candidate_citations, int):
         if not isinstance(canonical_citations, int) or candidate_citations > canonical_citations:
             canonical["citation_count"] = candidate_citations
-

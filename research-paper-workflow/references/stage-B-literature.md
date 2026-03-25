@@ -35,6 +35,9 @@ Treat the literature stack as four coordinated layers, not one blob:
 
 If a workflow touches literature evidence, it should respect those ownership boundaries even when one runtime agent executes multiple steps.
 
+Builtin baseline expectation:
+- `citation-graph` should first try to derive seed identifiers from `search_results.csv`, `bibliography.bib`, and `notes/` before requiring an explicit `target_paper_id`
+
 ---
 
 ## B1 — Systematic Review Pipeline (PRISMA-style)

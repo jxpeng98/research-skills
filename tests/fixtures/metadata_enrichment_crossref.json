@@ -1,0 +1,29 @@
+{
+  "status": "ok",
+  "summary": "Crossref enrichment fixture",
+  "provenance": [
+    "https://api.crossref.org/works/10.1000/platform-governance"
+  ],
+  "data": {
+    "records": [
+      {
+        "id": "crossref:10.1000/platform-governance",
+        "source_provider": "crossref",
+        "source_format": "crossref",
+        "source": "crossref",
+        "title": "Platform Governance in Practice",
+        "authors": [
+          "Smith, Alex"
+        ],
+        "year": 2024,
+        "venue": "Organization Science",
+        "doi": "10.1000/platform-governance",
+        "url": "https://doi.org/10.1000/platform-governance",
+        "publisher": "INFORMS",
+        "volume": "35",
+        "issue": "2",
+        "pages": "123-145"
+      }
+    ]
+  }
+}

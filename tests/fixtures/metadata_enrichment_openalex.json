@@ -1,0 +1,29 @@
+{
+  "status": "ok",
+  "summary": "OpenAlex enrichment fixture",
+  "provenance": [
+    "https://api.openalex.org/works/W1234567890"
+  ],
+  "data": {
+    "records": [
+      {
+        "id": "openalex:W1234567890",
+        "source_provider": "openalex",
+        "source_format": "openalex",
+        "source": "openalex",
+        "title": "Platform Governance in Practice",
+        "authors": [
+          "Smith, Alex",
+          "Lee, Jordan"
+        ],
+        "year": 2024,
+        "venue": "Organization Science",
+        "doi": "10.1000/platform-governance",
+        "url": "https://openalex.org/W1234567890",
+        "openalex_id": "W1234567890",
+        "publisher": "INFORMS",
+        "oa_url": "https://oa.example.org/platform-governance.pdf"
+      }
+    ]
+  }
+}

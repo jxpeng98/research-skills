@@ -35,6 +35,35 @@ STOPWORDS = {
     "with",
 }
 METADATA_ENRICH_ENV = "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD"
+SOURCE_PROVIDER_PRIORITIES = {
+    "openalex": 90,
+    "crossref": 80,
+    "csl_json": 70,
+    "ris": 65,
+    "bibtex": 60,
+    "paper_note": 50,
+    "semantic_scholar": 45,
+    "search_results": 40,
+    "retrieval_manifest": 30,
+    "external_enrichment": 35,
+}
+FILL_ONLY_FIELDS = {"doi", "citekey", "openalex_id"}
+PROVENANCE_TRACKED_FIELDS = {
+    "title",
+    "authors",
+    "year",
+    "venue",
+    "doi",
+    "url",
+    "abstract",
+    "citekey",
+    "publisher",
+    "volume",
+    "issue",
+    "pages",
+    "oa_url",
+    "openalex_id",
+}
 
 
 def artifact_project_root(task_packet: dict[str, Any], cwd: Path) -> Path:
@@ -347,7 +376,18 @@ def apply_external_enrichment(
             "provenance": [METADATA_ENRICH_ENV, stdout[:280]],
         }
 
-    data = parsed.get("data", {})
+    merged_records, enrichment_info = merge_external_enrichment_payload(records, parsed)
+    return merged_records, {
+        "configured": True,
+        **enrichment_info,
+    }
+
+
+def merge_external_enrichment_payload(
+    records: list[dict[str, Any]],
+    payload: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    data = payload.get("data", {})
     if not isinstance(data, dict):
         data = {}
     raw_records = data.get("records", [])
@@ -360,21 +400,19 @@ def apply_external_enrichment(
     ]
     if not external_records:
         return records, {
-            "configured": True,
             "status": "warning",
-            "summary": str(parsed.get("summary", "External enrichment returned no records.")),
-            "provenance": _normalize_provenance(parsed.get("provenance")),
+            "summary": str(payload.get("summary", "External enrichment returned no records.")),
+            "provenance": _normalize_provenance(payload.get("provenance")),
         }
 
     merged_records, applied_count = _merge_external_records(records, external_records)
-    status = str(parsed.get("status", "ok")).strip().lower() or "ok"
+    status = str(payload.get("status", "ok")).strip().lower() or "ok"
     if status not in {"ok", "warning", "error"}:
         status = "warning"
     return merged_records, {
-        "configured": True,
         "status": status,
-        "summary": str(parsed.get("summary", f"External enrichment merged {applied_count} records.")).strip(),
-        "provenance": _normalize_provenance(parsed.get("provenance")),
+        "summary": str(payload.get("summary", f"External enrichment merged {applied_count} records.")).strip(),
+        "provenance": _normalize_provenance(payload.get("provenance")),
         "record_count": len(external_records),
         "applied_count": applied_count,
     }
@@ -592,10 +630,13 @@ def _base_record(
     url: str,
     abstract: str,
     citekey: str = "",
+    source_provider: str = "",
 ) -> dict[str, Any]:
-    return {
+    provider = _normalize_source_provider(source_provider or source_format)
+    record = {
         "record_id": record_id,
         "source_format": source_format,
+        "source_provider": provider,
         "source_paths": [source_name],
         "title": title,
         "authors": authors,
@@ -606,25 +647,37 @@ def _base_record(
         "abstract": abstract,
         "citekey": citekey,
     }
+    record["field_provenance"] = _build_field_provenance(record)
+    return record
 
 
 def _merge_record(existing: dict[str, Any], candidate: dict[str, Any]) -> None:
-    for field in ("title", "venue", "doi", "url", "abstract"):
-        if not existing.get(field) and candidate.get(field):
-            existing[field] = candidate[field]
-    if not existing.get("authors") and candidate.get("authors"):
-        existing["authors"] = candidate["authors"]
-    if existing.get("year") is None and candidate.get("year") is not None:
-        existing["year"] = candidate["year"]
-    if not existing.get("citekey") and candidate.get("citekey"):
-        existing["citekey"] = candidate["citekey"]
+    for field in (
+        "title",
+        "authors",
+        "year",
+        "venue",
+        "doi",
+        "url",
+        "abstract",
+        "citekey",
+        "publisher",
+        "volume",
+        "issue",
+        "pages",
+        "oa_url",
+        "openalex_id",
+    ):
+        _merge_field(existing, candidate, field)
     existing_paths = set(existing.get("source_paths", []))
     existing_paths.update(candidate.get("source_paths", []))
     existing["source_paths"] = sorted(existing_paths)
+    _merge_record_provenance(existing, candidate)
     for key, value in candidate.items():
         if key in {
             "record_id",
             "source_format",
+            "source_provider",
             "source_paths",
             "title",
             "authors",
@@ -634,6 +687,13 @@ def _merge_record(existing: dict[str, Any], candidate: dict[str, Any]) -> None:
             "url",
             "abstract",
             "citekey",
+            "publisher",
+            "volume",
+            "issue",
+            "pages",
+            "oa_url",
+            "openalex_id",
+            "field_provenance",
         }:
             continue
         if value in ("", None, []):
@@ -735,10 +795,17 @@ def _normalize_external_record(item: dict[str, Any], index: int) -> dict[str, An
         authors = [" ".join(str(author).split()) for author in authors_raw if str(author).strip()]
     else:
         authors = _normalize_authors(str(authors_raw or ""))
+    provider = _normalize_source_provider(
+        _clean_string(item.get("source_provider"))
+        or _clean_string(item.get("source"))
+        or _clean_string(item.get("provider"))
+        or _clean_string(item.get("source_format"))
+        or "external_enrichment"
+    )
     record = _base_record(
         record_id=_clean_string(item.get("record_id")) or _clean_string(item.get("id")) or f"external:{index}",
-        source_format=_clean_string(item.get("source_format")) or "external_enrichment",
-        source_name=_clean_string(item.get("source")) or "external_enrichment",
+        source_format=_clean_string(item.get("source_format")) or provider or "external_enrichment",
+        source_name=_clean_string(item.get("source")) or provider or "external_enrichment",
         title=_clean_string(item.get("title")),
         authors=authors,
         year=_safe_int(item.get("year")),
@@ -747,11 +814,14 @@ def _normalize_external_record(item: dict[str, Any], index: int) -> dict[str, An
         url=_clean_string(item.get("url")),
         abstract=_clean_string(item.get("abstract")),
         citekey=_clean_string(item.get("citekey")),
+        source_provider=provider,
     )
     for key in ("openalex_id", "publisher", "volume", "issue", "pages", "oa_url", "citation_count"):
         value = item.get(key)
         if value not in ("", None, []):
             record[key] = value
+            if key in PROVENANCE_TRACKED_FIELDS:
+                record.setdefault("field_provenance", {})[key] = _field_provenance_meta(record)
     return record
 
 
@@ -782,3 +852,126 @@ def _normalize_provenance(raw: Any) -> list[str]:
     if raw:
         return [str(raw)]
     return [METADATA_ENRICH_ENV]
+
+
+def _merge_field(existing: dict[str, Any], candidate: dict[str, Any], field: str) -> None:
+    candidate_value = candidate.get(field)
+    if candidate_value in ("", None, []):
+        return
+
+    existing_value = existing.get(field)
+    if existing_value in ("", None, []):
+        existing[field] = candidate_value
+        _set_field_provenance(existing, field, candidate)
+        return
+
+    if field in FILL_ONLY_FIELDS:
+        return
+
+    if not _should_prefer_candidate(existing, candidate, field):
+        return
+
+    existing[field] = candidate_value
+    _set_field_provenance(existing, field, candidate)
+
+
+def _should_prefer_candidate(existing: dict[str, Any], candidate: dict[str, Any], field: str) -> bool:
+    existing_priority = _field_priority(existing, field)
+    candidate_priority = _field_priority(candidate, field)
+
+    existing_value = existing.get(field)
+    candidate_value = candidate.get(field)
+
+    if field == "authors":
+        existing_len = len(existing_value) if isinstance(existing_value, list) else len(_normalize_authors(str(existing_value or "")))
+        candidate_len = len(candidate_value) if isinstance(candidate_value, list) else len(_normalize_authors(str(candidate_value or "")))
+        return candidate_priority > existing_priority and candidate_len >= existing_len
+
+    if field == "year":
+        return candidate_priority > existing_priority
+
+    if field in {"title", "venue", "publisher", "volume", "issue", "pages"}:
+        return candidate_priority > existing_priority and _string_quality(candidate_value) >= _string_quality(existing_value)
+
+    if field == "url":
+        return _url_quality(candidate_value) > _url_quality(existing_value) or (
+            candidate_priority > existing_priority and _url_quality(candidate_value) >= _url_quality(existing_value)
+        )
+
+    if field == "oa_url":
+        return candidate_priority >= existing_priority
+
+    if field == "abstract":
+        return candidate_priority > existing_priority and len(str(candidate_value)) >= len(str(existing_value))
+
+    return candidate_priority > existing_priority
+
+
+def _field_priority(record: dict[str, Any], field: str) -> int:
+    provenance = record.get("field_provenance", {})
+    meta = provenance.get(field) if isinstance(provenance, dict) else None
+    if isinstance(meta, dict):
+        provider = _normalize_source_provider(meta.get("provider") or meta.get("source_format"))
+        if provider:
+            return SOURCE_PROVIDER_PRIORITIES.get(provider, 20)
+    provider = _normalize_source_provider(record.get("source_provider") or record.get("source_format"))
+    return SOURCE_PROVIDER_PRIORITIES.get(provider, 20)
+
+
+def _build_field_provenance(record: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    provenance: dict[str, dict[str, Any]] = {}
+    for field in PROVENANCE_TRACKED_FIELDS:
+        value = record.get(field)
+        if value in ("", None, []):
+            continue
+        provenance[field] = _field_provenance_meta(record)
+    return provenance
+
+
+def _field_provenance_meta(record: dict[str, Any]) -> dict[str, Any]:
+    source_paths = record.get("source_paths", [])
+    source_path = source_paths[0] if isinstance(source_paths, list) and source_paths else ""
+    return {
+        "provider": _normalize_source_provider(record.get("source_provider") or record.get("source_format")),
+        "source_format": _clean_string(record.get("source_format")),
+        "source_path": _clean_string(source_path),
+    }
+
+
+def _set_field_provenance(existing: dict[str, Any], field: str, candidate: dict[str, Any]) -> None:
+    provenance = existing.setdefault("field_provenance", {})
+    if isinstance(provenance, dict):
+        provenance[field] = _field_provenance_meta(candidate)
+
+
+def _merge_record_provenance(existing: dict[str, Any], candidate: dict[str, Any]) -> None:
+    existing_provider = _normalize_source_provider(existing.get("source_provider") or existing.get("source_format"))
+    candidate_provider = _normalize_source_provider(candidate.get("source_provider") or candidate.get("source_format"))
+    if SOURCE_PROVIDER_PRIORITIES.get(candidate_provider, 20) > SOURCE_PROVIDER_PRIORITIES.get(existing_provider, 20):
+        existing["source_provider"] = candidate_provider
+
+
+def _normalize_source_provider(raw: Any) -> str:
+    value = _clean_string(raw).lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "search_results.csv": "search_results",
+        "retrieval_manifest.csv": "retrieval_manifest",
+        "paper_note": "paper_note",
+        "semantic_scholar": "semantic_scholar",
+    }
+    return aliases.get(value, value)
+
+
+def _string_quality(value: Any) -> int:
+    return len(_clean_string(value))
+
+
+def _url_quality(value: Any) -> int:
+    lowered = _clean_string(value).lower()
+    if not lowered:
+        return 0
+    if lowered.endswith(".pdf") or "/pdf" in lowered:
+        return 3
+    if "openalex.org" in lowered or "doi.org" in lowered:
+        return 2
+    return 1

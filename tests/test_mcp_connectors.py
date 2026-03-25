@@ -11,6 +11,7 @@ from bridges.mcp_connectors import MCPConnector
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+FIXTURES_DIR = REPO_ROOT / "tests" / "fixtures"
 
 
 class MCPConnectorTests(unittest.TestCase):
@@ -173,6 +174,47 @@ class MCPConnectorTests(unittest.TestCase):
             evidence.data["reference_state"]["external_enrichment"]["status"],
             "ok",
         )
+
+    def test_builtin_metadata_registry_applies_recorded_openalex_fixture(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            project_root.mkdir(parents=True)
+            (project_root / "search_results.csv").write_text(
+                "record_id,source,query_id,retrieved_at,title,authors,year,venue,doi,url,abstract\n"
+                "s2:1,semantic_scholar,q1,2026-03-25T00:00:00+00:00,Platform Governance Practice,\"Smith, Alex\",2024,Org Science,10.1000/platform-governance,https://example.com/platform-governance,\n",
+                encoding="utf-8",
+            )
+            fixture_path = FIXTURES_DIR / "metadata_enrichment_openalex.json"
+            enrich_script = root / "metadata_enrich_fixture.py"
+            enrich_script.write_text(
+                "from pathlib import Path\n"
+                "import sys\n"
+                "sys.stdout.write(Path(sys.argv[1]).read_text(encoding='utf-8'))\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["search_results.csv"],
+            }
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": f"python3 {enrich_script} {fixture_path}",
+                },
+                clear=False,
+            ):
+                evidence = self.connector.collect("metadata-registry", packet, root)
+
+        self.assertEqual(evidence.status, "ok")
+        record = evidence.data["records"][0]
+        self.assertEqual(record["title"], "Platform Governance in Practice")
+        self.assertEqual(record["venue"], "Organization Science")
+        self.assertEqual(record["field_provenance"]["title"]["provider"], "openalex")
+        self.assertEqual(record["field_provenance"]["venue"]["provider"], "openalex")
+        self.assertEqual(record["field_provenance"]["doi"]["provider"], "search_results")
 
     def test_builtin_fulltext_retrieval_prepares_manifest_without_bib(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

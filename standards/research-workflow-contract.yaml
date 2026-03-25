@@ -118,6 +118,7 @@ literature_evidence_bundle:
         - "identifier normalization and merge decisions"
         - "author/venue/year/DOI normalization"
         - "citekey stabilization for downstream notes and exports"
+        - "normalize reference state from bibliography.bib, references.json, references.ris, search_results.csv, or notes/"
     fulltext-retrieval:
       owns:
         - "screening/full_text.md"

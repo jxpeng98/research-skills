@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 import unittest
@@ -63,10 +64,59 @@ class MCPConnectorTests(unittest.TestCase):
             evidence = self.connector.collect("metadata-registry", packet, root)
 
         self.assertEqual(evidence.status, "ok")
-        self.assertIn("normalized 1 unique identifiers", evidence.summary.lower())
+        self.assertIn("normalized 1 identifiers", evidence.summary.lower())
         self.assertEqual(evidence.data["identifier_count"], 1)
+        self.assertEqual(evidence.data["record_count"], 1)
         self.assertEqual(evidence.data["identifiers"][0]["type"], "doi")
         self.assertEqual(evidence.data["identifiers"][0]["normalized"], "10.1234/example.5678")
+
+    def test_builtin_metadata_registry_supports_json_and_note_sources_without_bib(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            notes_dir = project_root / "notes"
+            notes_dir.mkdir(parents=True)
+            (project_root / "references.json").write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "existing-json-id",
+                            "title": "Platform Governance in Practice",
+                            "author": [{"family": "Smith", "given": "Alex"}],
+                            "issued": {"date-parts": [[2024]]},
+                            "container-title": "Organization Science",
+                            "DOI": "10.1000/platform-governance",
+                            "URL": "https://example.com/platform-governance",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            (notes_dir / "governance-note.md").write_text(
+                "# Platform Governance in Practice\n\n"
+                "## Metadata\n\n"
+                "| Field | Value |\n"
+                "|-------|-------|\n"
+                "| **Authors** | Smith, Alex |\n"
+                "| **Year** | 2024 |\n"
+                "| **Venue** | Organization Science |\n"
+                "| **DOI** | 10.1000/platform-governance |\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["references.json", "notes/governance-note.md"],
+            }
+
+            evidence = self.connector.collect("metadata-registry", packet, root)
+
+        self.assertEqual(evidence.status, "ok")
+        self.assertEqual(evidence.data["record_count"], 1)
+        self.assertTrue(evidence.data["reference_state"]["supports_non_bib_workflows"])
+        self.assertEqual(evidence.data["reference_state"]["preferred_input_mode"], "references.json")
+        self.assertEqual(evidence.data["records"][0]["citekey"], "smith2024platform")
+        self.assertIn("csl_json", evidence.data["reference_state"]["source_formats"])
 
 
 if __name__ == "__main__":

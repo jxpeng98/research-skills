@@ -19,7 +19,7 @@ The current repository ships these built-in literature providers:
 
 - `scholarly-search` → built-in Semantic Scholar API adapter with query variants, normalized rows, and baseline dedup
 - `citation-graph` → built-in Semantic Scholar citation / reference adapter with local seed extraction from `search_results.csv`, `bibliography.bib`, and `notes/`
-- `metadata-registry` → built-in local reference provider for identifier normalization
+- `metadata-registry` → built-in local reference provider for identifier normalization, local record merge, and citekey generation
 
 The other layers are external-provider slots:
 
@@ -55,7 +55,7 @@ Use this table to decide what you actually need to configure:
 |---|---|---|---|---|
 | `scholarly-search` | yes, via built-in Semantic Scholar | recommended | optional | zero-config works, produces query variants + dedup-ready rows, but rate limiting is more likely without a key |
 | `citation-graph` | yes, via built-in Semantic Scholar graph | no | optional | useful for snowballing even before you add external MCPs; builtin mode can resolve seeds from local artifacts |
-| `metadata-registry` | yes, via built-in local reference provider | no for local mode | optional | built-in mode normalizes identifiers locally; connect OpenAlex or another metadata MCP for authoritative enrichment |
+| `metadata-registry` | yes, via built-in local reference provider | no for local mode | optional | built-in mode can merge local references from BibTeX, RIS, CSL-JSON, notes, and search results; connect OpenAlex or another metadata MCP for authoritative enrichment |
 | `fulltext-retrieval` | no | depends on provider | yes | connect Zotero or another full-text resolver |
 | `screening-tracker` | no | depends on provider | yes | mostly relevant for systematic review workflows |
 | `extraction-store` | no | depends on provider | yes | mostly relevant for systematic review workflows |
@@ -71,6 +71,8 @@ If you configure nothing at all:
 - tasks can still run unless you explicitly require strict MCP enforcement
 
 This is enough for exploratory work, but not ideal for rigorous review-grade search.
+
+Important: `bibliography.bib` is the canonical export in this repo, but it is not the only supported working source. The built-in metadata layer can ingest `references.json`, `references.ris`, `search_results.csv`, and `notes/` even if the user does not actively manage BibTeX.
 
 ## Step-by-Step Setup
 

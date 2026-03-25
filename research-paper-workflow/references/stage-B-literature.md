@@ -37,6 +37,7 @@ If a workflow touches literature evidence, it should respect those ownership bou
 
 Builtin baseline expectation:
 - `citation-graph` should first try to derive seed identifiers from `search_results.csv`, `bibliography.bib`, and `notes/` before requiring an explicit `target_paper_id`
+- `metadata-registry` should treat `bibliography.bib` as the canonical export, but it may derive normalized reference state from `references.json`, `references.ris`, `search_results.csv`, and `notes/`
 
 ---
 

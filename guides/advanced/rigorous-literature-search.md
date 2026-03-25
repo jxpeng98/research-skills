@@ -19,7 +19,7 @@ The current repository ships these built-in literature providers:
 
 - `scholarly-search` → built-in Semantic Scholar API adapter with query variants, normalized rows, and baseline dedup
 - `citation-graph` → built-in Semantic Scholar citation / reference adapter with local seed extraction from `search_results.csv`, `bibliography.bib`, and `notes/`
-- `metadata-registry` → built-in local reference provider for identifier normalization
+- `metadata-registry` → built-in local reference provider for identifier normalization, local record merge, and citekey generation
 
 The other layers are external-provider slots:
 
@@ -51,7 +51,9 @@ So the strictest practical baseline today is:
 |---|---|---|---|---|
 | `scholarly-search` | yes | recommended | optional | built-in Semantic Scholar works, emits query variants + dedup-ready rows, but can rate-limit |
 | `citation-graph` | yes | no | optional | built-in graph adapter is available and can resolve seeds from local artifacts |
-| `metadata-registry` | yes | no for local mode | optional | built-in mode normalizes identifiers locally; connect OpenAlex or another metadata MCP for authoritative enrichment |
+| `metadata-registry` | yes | no for local mode | optional | built-in mode can merge BibTeX, RIS, CSL-JSON, notes, and search results; connect OpenAlex or another metadata MCP for authoritative enrichment |
+
+`bibliography.bib` is still the canonical export in this repo, but users do not need to maintain BibTeX as their day-to-day working source.
 | `fulltext-retrieval` | no | depends on provider | yes | connect Zotero or another full-text resolver |
 | `screening-tracker` | no | depends on provider | yes | systematic review support |
 | `extraction-store` | no | depends on provider | yes | systematic review support |

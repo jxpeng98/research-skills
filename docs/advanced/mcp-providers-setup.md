@@ -33,7 +33,7 @@ When executing a task, the system spawns a subprocess from this command, pipes i
 **Purpose:** Enrich and normalize paper DOI, journal, year, and author metadata.  
 **Used in:** Stage B (literature processing), task C1, etc.
 
-This provider now has a built-in local reference implementation for identifier normalization and lightweight metadata extraction. For authoritative enrichment, connect an external tool such as OpenAlex.
+This provider now has a built-in local reference implementation for identifier normalization, local record merge, and citekey generation. It can ingest `bibliography.bib`, `references.json`, `references.ris`, `search_results.csv`, and `notes/*.md`. For authoritative enrichment, connect an external tool such as OpenAlex.
 
 **Recommended tools:**
 

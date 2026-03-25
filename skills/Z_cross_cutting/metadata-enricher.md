@@ -32,12 +32,14 @@ Ensure consistent, complete metadata across all papers in a review by:
 - Completing missing fields from authoritative sources
 - Generating consistent citekeys
 - Improving deduplication accuracy
+- Supporting teams that manage references in RIS, CSL-JSON, note files, or search result tables instead of BibTeX
 
 ## Provider Ownership Boundary
 
-- `metadata-registry` owns the normalized state of `bibliography.bib`
+- `metadata-registry` owns the normalized state of `bibliography.bib` as the canonical export
 - merge and normalization decisions should append to `dedup_log.csv`
 - this layer should not own `search_strategy.md` or full-text provenance artifacts
+- builtin and external implementations may ingest `references.json`, `references.ris`, `search_results.csv`, and `notes/*.md`; BibTeX is preferred output, not the only valid source
 
 ## Process
 

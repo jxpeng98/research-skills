@@ -120,6 +120,7 @@ literature_provider_contract:
       - "identifier normalization"
       - "metadata merge and citekey stabilization"
       - "venue/year/author/DOI cleanup"
+      - "ingest and normalize local reference state from bibtex, ris, csl-json, search results, or notes"
     must_not_own:
       - "search_strategy.md"
       - "retrieval_manifest.csv"

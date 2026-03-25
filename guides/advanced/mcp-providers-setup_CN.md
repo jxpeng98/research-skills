@@ -33,7 +33,7 @@
 **作用：** 补全和标准化论文的 DOI、期刊、年份、作者信息。  
 **使用场景：** B 阶段（文献处理）、C1 任务等。
 
-这个 provider 现在已经有仓库内置的本地 reference 实现，可用于 identifier 规范化和轻量 metadata 提取。如果你需要更权威的 enrichment，仍然建议接 OpenAlex 这类外部实现。
+这个 provider 现在已经有仓库内置的本地 reference 实现，可用于 identifier 规范化、本地记录合并和 citekey 生成。它可以直接读取 `bibliography.bib`、`references.json`、`references.ris`、`search_results.csv` 和 `notes/*.md`。如果你需要更权威的 enrichment，仍然建议接 OpenAlex 这类外部实现。
 
 **推荐工具：**
 

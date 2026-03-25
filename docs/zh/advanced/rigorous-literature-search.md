@@ -19,7 +19,7 @@
 
 - `scholarly-search` → 内置 Semantic Scholar 适配器，已带 query variants、结果规范化和基础 dedup
 - `citation-graph` → 内置 Semantic Scholar 引文图适配器，能先从 `search_results.csv`、`bibliography.bib`、`notes/` 中抽 seed
-- `metadata-registry` → 内置本地 reference provider，用于 identifier 规范化
+- `metadata-registry` → 内置本地 reference provider，用于 identifier 规范化、本地记录合并和 citekey 生成
 
 以下层仍然是外部 provider 插槽：
 
@@ -55,7 +55,7 @@
 |---|---|---|---|---|
 | `scholarly-search` | 可以，走内置 Semantic Scholar | 建议 | 可选 | 零配置能跑，并能产出 query variants 和 dedup-ready 结果行，但没有 key 时更容易被限流 |
 | `citation-graph` | 可以，走内置 Semantic Scholar graph | 不强制 | 可选 | 即使不接外部 MCP，也能先做 snowballing；内置模式会优先从本地产物抽 seed |
-| `metadata-registry` | 可以，走内置本地 reference provider | 本地模式不需要 | 可选 | 内置模式能先做 identifier 规范化；要权威 enrichment 时再接 OpenAlex 等外部实现 |
+| `metadata-registry` | 可以，走内置本地 reference provider | 本地模式不需要 | 可选 | 内置模式可直接合并 BibTeX、RIS、CSL-JSON、notes 与 search results；要权威 enrichment 时再接 OpenAlex 等外部实现 |
 | `fulltext-retrieval` | 不可以 | 取决于 provider | 需要 | 需要接 Zotero 或其他全文解析器 |
 | `screening-tracker` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
 | `extraction-store` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
@@ -98,6 +98,8 @@
 - 只要你没有显式启用严格 MCP 校验，任务通常仍能继续运行
 
 这足够做 exploratory search，但不适合作为严格 review-grade 检索的长期默认配置。
+
+需要注意：`bibliography.bib` 仍是这个仓库里的 canonical export，但它不是唯一支持的工作输入。即使用户平时不用 BibTeX，内置 metadata 层也可以直接吃 `references.json`、`references.ris`、`search_results.csv` 和 `notes/`。
 
 ## 分步配置说明
 

@@ -65,8 +65,13 @@ Gather all papers from the review:
 ```
 Source files:
 - RESEARCH/[topic]/bibliography.bib (existing BibTeX)
+- RESEARCH/[topic]/references.json (existing CSL-JSON, optional)
+- RESEARCH/[topic]/references.ris (existing RIS, optional)
+- RESEARCH/[topic]/search_results.csv (search-derived candidate metadata)
 - RESEARCH/[topic]/notes/*.md (paper notes with metadata)
 - RESEARCH/[topic]/extraction_table.md (extracted metadata)
+
+`bibliography.bib` remains the canonical export target in this repo, but it does not have to be the user's primary working format.
 ```
 
 ### Step 2: Normalize Metadata

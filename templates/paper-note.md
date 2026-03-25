@@ -185,7 +185,9 @@ Save to: RESEARCH/[topic]/notes/[citekey].md
 ### Weaknesses
 - 
 
-## BibTeX
+## BibTeX (Optional)
+
+<!-- Optional if you manage references in CSL-JSON, RIS, Zotero, or another system. -->
 
 ```bibtex
 @article{citekey,

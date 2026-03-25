@@ -8,6 +8,10 @@ inputs:
 outputs:
   - type: SnowballLog
     artifact: "snowball_log.md"
+  - type: SearchResults
+    artifact: "search_results.csv"
+  - type: DedupLog
+    artifact: "dedup_log.csv"
 constraints:
   - "Must select 5-15 seed papers"
   - "Must apply relevance scoring with weighted factors"
@@ -31,6 +35,13 @@ Extend literature search beyond database queries by:
 - Backward reference searching (what does this paper cite?)
 - Identifying seminal and highly-cited works
 - Capturing papers missed by keyword searches
+
+## Provider Ownership Boundary
+
+- `citation-graph` owns `snowball_log.md`
+- this layer may append candidate records into `search_results.csv`
+- dedup decisions created during snowball expansion must be recorded in `dedup_log.csv`
+- final normalized bibliography still belongs to `metadata-registry`
 
 ## Process
 

@@ -17,7 +17,10 @@ def search_paper(query: str, limit: int = 10) -> dict[str, Any]:
         return {"data": []}
     
     encoded_query = urllib.parse.quote(query)
-    url = f"{S2_GRAPH_BASE}/paper/search?query={encoded_query}&limit={limit}&fields=title,authors,year,abstract,url,citationCount,venue"
+    url = (
+        f"{S2_GRAPH_BASE}/paper/search?query={encoded_query}&limit={limit}"
+        "&fields=paperId,title,authors,year,abstract,url,citationCount,venue,externalIds,openAccessPdf"
+    )
     
     return _make_request(url)
 

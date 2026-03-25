@@ -8,6 +8,8 @@ inputs:
 outputs:
   - type: Bibliography
     artifact: "bibliography.bib"
+  - type: DedupLog
+    artifact: "dedup_log.csv"
 constraints:
   - "Must resolve DOI to canonical metadata"
   - "Must handle missing identifiers gracefully"
@@ -30,6 +32,12 @@ Ensure consistent, complete metadata across all papers in a review by:
 - Completing missing fields from authoritative sources
 - Generating consistent citekeys
 - Improving deduplication accuracy
+
+## Provider Ownership Boundary
+
+- `metadata-registry` owns the normalized state of `bibliography.bib`
+- merge and normalization decisions should append to `dedup_log.csv`
+- this layer should not own `search_strategy.md` or full-text provenance artifacts
 
 ## Process
 

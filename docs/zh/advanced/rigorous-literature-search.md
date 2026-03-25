@@ -15,14 +15,14 @@
 
 ## 当前仓库内置了什么
 
-目前仓库内置的文献 provider 只有两项：
+目前仓库内置的文献 provider 有：
 
-- `scholarly-search` → 内置 Semantic Scholar 适配器
+- `scholarly-search` → 内置 Semantic Scholar 适配器，已带 query variants、结果规范化和基础 dedup
 - `citation-graph` → 内置 Semantic Scholar 引文图适配器
+- `metadata-registry` → 内置本地 reference provider，用于 identifier 规范化
 
 以下层仍然是外部 provider 插槽：
 
-- `metadata-registry`
 - `fulltext-retrieval`
 - `screening-tracker`
 - `extraction-store`
@@ -30,9 +30,22 @@
 所以当前最现实的“严格 baseline”是：
 
 - 用内置 Semantic Scholar 做发现
-- 用 OpenAlex MCP 做元数据标准化
+- 用内置 metadata-registry 做本地规范化，再用 OpenAlex MCP 做权威 enrichment
 - 用内置 citation graph 做 snowballing
 - 用 Zotero / OA resolver 做全文获取
+
+## 标准 Literature Bundle
+
+当 literature workflow 运转正常时，建议最终收敛到这组共享产物：
+
+- `search_strategy.md`
+- `search_log.md`
+- `search_results.csv`
+- `dedup_log.csv`
+- `snowball_log.md`
+- `bibliography.bib`
+- `screening/full_text.md`
+- `retrieval_manifest.csv`
 
 ## 配置矩阵
 
@@ -40,9 +53,9 @@
 
 | 层 | 零配置可否运行 | 是否建议 key | 是否需要 `RESEARCH_MCP_*_CMD` | 说明 |
 |---|---|---|---|---|
-| `scholarly-search` | 可以，走内置 Semantic Scholar | 建议 | 可选 | 零配置能跑，但没有 key 时更容易被限流 |
+| `scholarly-search` | 可以，走内置 Semantic Scholar | 建议 | 可选 | 零配置能跑，并能产出 query variants 和 dedup-ready 结果行，但没有 key 时更容易被限流 |
 | `citation-graph` | 可以，走内置 Semantic Scholar graph | 不强制 | 可选 | 即使不接外部 MCP，也能先做 snowballing |
-| `metadata-registry` | 不可以 | 取决于 provider | 需要 | 如果你要 DOI / venue / author 标准化，就要接外部实现 |
+| `metadata-registry` | 可以，走内置本地 reference provider | 本地模式不需要 | 可选 | 内置模式能先做 identifier 规范化；要权威 enrichment 时再接 OpenAlex 等外部实现 |
 | `fulltext-retrieval` | 不可以 | 取决于 provider | 需要 | 需要接 Zotero 或其他全文解析器 |
 | `screening-tracker` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
 | `extraction-store` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
@@ -57,7 +70,7 @@
 | CLI 语言 | 可选 | 你希望 CLI 输出固定为中文或英文时 | `RESEARCH_CLI_LANG` | `zh-CN` 或 `en` |
 | 文献发现检索 | 非必须，但强烈建议 | 你要做 related work、gap analysis、literature review 时 | `SEMANTIC_SCHOLAR_API_KEY`；可选 `RESEARCH_MCP_SCHOLARLY_SEARCH_CMD` | 内置 Semantic Scholar；更严格时换成多源 scholarly MCP |
 | 引文扩展 | 可选 | 你要做 backward / forward snowballing 时 | 可选 `RESEARCH_MCP_CITATION_GRAPH_CMD` | 默认内置 graph；更严格时换成自定义 graph MCP |
-| 元数据标准化 | 严格检索时建议视为必须 | 你要统一 DOI、作者、venue、年份，或做可复现 bibliography 时 | `RESEARCH_MCP_METADATA_REGISTRY_CMD` | `python3 -m openalex_mcp` |
+| 元数据标准化 | 严格检索时建议视为必须 | 你要统一 DOI、作者、venue、年份，或做可复现 bibliography 时 | 可选 `RESEARCH_MCP_METADATA_REGISTRY_CMD` | 内置本地 reference provider；权威 enrichment 时用 `python3 -m openalex_mcp` |
 | 全文获取 | 做系统综述或深度阅读时建议配置 | 你要批量拿 PDF、全文、版本来源链时 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` | Zotero MCP / OA resolver |
 | 筛选跟踪 | systematic review 场景下建议配置 | 你需要记录纳入/排除决策、双人筛选流程时 | `RESEARCH_MCP_SCREENING_TRACKER_CMD` | Rayyan MCP 或本地 stub |
 | 结构化提取库 | systematic review 场景下建议配置 | 你要维护 extraction table、effect size、study attribute 时 | `RESEARCH_MCP_EXTRACTION_STORE_CMD` | Covidence 类 MCP 或 CSV/SQLite stub |
@@ -71,7 +84,7 @@
 | 使用目标 | 最少配置 |
 |---|---|
 | 先跑起来 | 一个模型 API key |
-| 论文写作 / related work 更稳 | 一个模型 API key + `SEMANTIC_SCHOLAR_API_KEY` + `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
+| 论文写作 / related work 更稳 | 一个模型 API key + `SEMANTIC_SCHOLAR_API_KEY`；要更强 metadata enrichment 时再加 `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
 | systematic review / review-grade | 上述配置 + `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`，必要时再补 `RESEARCH_MCP_SCREENING_TRACKER_CMD` 和 `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
 
 ## 如果什么都不配置，会发生什么
@@ -80,7 +93,8 @@
 
 - `scholarly-search` 仍会尝试使用内置 Semantic Scholar
 - `citation-graph` 仍会尝试使用内置 Semantic Scholar graph
-- `metadata-registry` 和 `fulltext-retrieval` 处于未配置状态
+- `metadata-registry` 仍会尝试使用内置本地 reference provider
+- `fulltext-retrieval` 处于未配置状态
 - 只要你没有显式启用严格 MCP 校验，任务通常仍能继续运行
 
 这足够做 exploratory search，但不适合作为严格 review-grade 检索的长期默认配置。
@@ -90,6 +104,13 @@
 ### 方案 A：零配置起步
 
 什么都不配，直接使用内置 provider。优点是最快，缺点是召回、metadata 质量和限流稳定性都有限。
+
+当前内置 `scholarly-search` baseline 仍会帮你产出：
+
+- 基于 topic / question / keywords 的多组 query variants
+- 规范化后的 `search_results` 结果行
+- 机器可读的 `dedup_log`
+- 按 query 记录的 `search_log` 执行条目
 
 ### 方案 B：推荐的轻量增强版
 
@@ -132,7 +153,8 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 如果你用 `--mcp-strict` 跑任务，所有必需的外部 provider 都必须真的配置好。实际含义是：
 
 - 内置 `scholarly-search` 和 `citation-graph` 仍可满足这两层，前提是你没有把它们 override 掉
-- `metadata-registry` 没有设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD` 时，会成为 strict 阻塞项
+- 内置 `metadata-registry` 可以先满足本地规范化这一层，不需要额外配置
+- 只有当你想让外部权威 enrichment 覆盖 builtin reference 模式时，才需要设置 `RESEARCH_MCP_METADATA_REGISTRY_CMD`
 - `fulltext-retrieval` 没有设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` 时，也会成为 strict 阻塞项
 
 ## 推荐的检索栈

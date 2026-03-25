@@ -15,6 +15,8 @@ outputs:
     artifact: "search_results.csv"
   - type: SearchLog
     artifact: "search_log.md"
+  - type: DedupLog
+    artifact: "dedup_log.csv"
 constraints:
   - "Must log exact query strings and timestamps for reproducibility"
   - "Must deduplicate across databases"
@@ -59,10 +61,21 @@ If a change only affects one of those concerns, update this skill, its templates
 - `RESEARCH/[topic]/search_strategy.md`
 - `RESEARCH/[topic]/search_log.md`
 - `RESEARCH/[topic]/search_results.csv`
+- `RESEARCH/[topic]/dedup_log.csv`
 
 Template references:
 - `templates/search-strategy.md`
 - `templates/search-log.md`
+- `templates/dedup-log.csv`
+
+## Provider Ownership Boundary
+
+- `scholarly-search` owns query planning, provider execution, and raw hit capture
+- `scholarly-search` appends dedup candidate decisions to `dedup_log.csv`
+- `metadata-registry` owns final normalized bibliography state
+- `fulltext-retrieval` owns full-text provenance and retrieval manifests
+
+Do not collapse all literature responsibilities into this skill just because one agent is executing the step.
 
 ## Supported Databases
 
@@ -181,6 +194,12 @@ Recommended minimal schema:
 
 ```csv
 record_id,source,query_id,retrieved_at,title,authors,year,venue,doi,url,abstract
+```
+
+#### `dedup_log.csv` (one row per dedup decision)
+
+```csv
+candidate_record_id,canonical_record_id,decision,match_basis,resolver,notes
 ```
 
 #### `search_log.md` (reproducibility log)

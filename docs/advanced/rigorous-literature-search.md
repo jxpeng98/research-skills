@@ -17,12 +17,12 @@ For rigorous work, do not depend on only one engine.
 
 The current repository ships these built-in literature providers:
 
-- `scholarly-search` → built-in Semantic Scholar API adapter
+- `scholarly-search` → built-in Semantic Scholar API adapter with query variants, normalized rows, and baseline dedup
 - `citation-graph` → built-in Semantic Scholar citation / reference adapter
+- `metadata-registry` → built-in local reference provider for identifier normalization
 
 The other layers are external-provider slots:
 
-- `metadata-registry`
 - `fulltext-retrieval`
 - `screening-tracker`
 - `extraction-store`
@@ -30,9 +30,22 @@ The other layers are external-provider slots:
 So the strictest practical baseline today is:
 
 - built-in Semantic Scholar for discovery
-- OpenAlex MCP for metadata normalization
+- built-in metadata-registry for local normalization, plus OpenAlex MCP for authoritative enrichment
 - built-in citation graph for snowballing
 - Zotero / OA resolver for full text
+
+## Standard Literature Bundle
+
+When literature workflows are behaving correctly, the shared bundle should converge on:
+
+- `search_strategy.md`
+- `search_log.md`
+- `search_results.csv`
+- `dedup_log.csv`
+- `snowball_log.md`
+- `bibliography.bib`
+- `screening/full_text.md`
+- `retrieval_manifest.csv`
 
 ## Configuration Matrix
 
@@ -40,9 +53,9 @@ Use this table to decide what you actually need to configure:
 
 | Layer | Works with zero config | Needs API key | Needs `RESEARCH_MCP_*_CMD` | Notes |
 |---|---|---|---|---|
-| `scholarly-search` | yes, via built-in Semantic Scholar | recommended | optional | zero-config works, but rate limiting is more likely without a key |
+| `scholarly-search` | yes, via built-in Semantic Scholar | recommended | optional | zero-config works, produces query variants + dedup-ready rows, but rate limiting is more likely without a key |
 | `citation-graph` | yes, via built-in Semantic Scholar graph | no | optional | useful for snowballing even before you add external MCPs |
-| `metadata-registry` | no | depends on provider | yes | connect OpenAlex or another metadata MCP if you want normalized DOI / venue / author data |
+| `metadata-registry` | yes, via built-in local reference provider | no for local mode | optional | built-in mode normalizes identifiers locally; connect OpenAlex or another metadata MCP for authoritative enrichment |
 | `fulltext-retrieval` | no | depends on provider | yes | connect Zotero or another full-text resolver |
 | `screening-tracker` | no | depends on provider | yes | mostly relevant for systematic review workflows |
 | `extraction-store` | no | depends on provider | yes | mostly relevant for systematic review workflows |
@@ -53,7 +66,8 @@ If you configure nothing at all:
 
 - `scholarly-search` still attempts to use the built-in Semantic Scholar adapter
 - `citation-graph` still attempts to use the built-in Semantic Scholar graph adapter
-- `metadata-registry` and `fulltext-retrieval` remain unconfigured
+- `metadata-registry` still attempts to use the built-in local reference provider
+- `fulltext-retrieval` remains unconfigured
 - tasks can still run unless you explicitly require strict MCP enforcement
 
 This is enough for exploratory work, but not ideal for rigorous review-grade search.
@@ -63,6 +77,13 @@ This is enough for exploratory work, but not ideal for rigorous review-grade sea
 ### Option A. Zero-Config Start
 
 Do nothing. Use the built-in providers and accept that recall, metadata quality, and rate-limit stability are limited.
+
+The built-in `scholarly-search` baseline now still gives you:
+
+- multiple query variants derived from topic/question/keywords
+- normalized `search_results` rows
+- a machine-readable `dedup_log`
+- per-query `search_log` execution entries
 
 ### Option B. Recommended Lightweight Setup
 
@@ -105,7 +126,8 @@ Use this when your search space must stay inside a curated local library.
 If you run tasks with `--mcp-strict`, every required external provider must actually be configured. In practice this means:
 
 - built-in `scholarly-search` and `citation-graph` can still satisfy those layers if you do not override them
-- `metadata-registry` will fail strict checks until you set `RESEARCH_MCP_METADATA_REGISTRY_CMD`
+- built-in `metadata-registry` can satisfy the local normalization layer without extra config
+- set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only when you want authoritative external enrichment to replace the builtin reference mode
 - `fulltext-retrieval` will fail strict checks until you set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD`
 
 ## Recommended Search Stacks

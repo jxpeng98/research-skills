@@ -15,25 +15,36 @@
 
 ## 当前仓库内置了什么
 
-目前仓库内置的文献 provider 只有：
+目前仓库内置的文献 provider 有：
 
-- `scholarly-search` → 内置 Semantic Scholar 适配器
+- `scholarly-search` → 内置 Semantic Scholar 适配器，已带 query variants、结果规范化和基础 dedup
 - `citation-graph` → 内置 Semantic Scholar 引文图适配器
+- `metadata-registry` → 内置本地 reference provider，用于 identifier 规范化
 
 其余层仍需外部 provider：
 
-- `metadata-registry`
 - `fulltext-retrieval`
 - `screening-tracker`
 - `extraction-store`
+
+## 标准 Literature Bundle
+
+- `search_strategy.md`
+- `search_log.md`
+- `search_results.csv`
+- `dedup_log.csv`
+- `snowball_log.md`
+- `bibliography.bib`
+- `screening/full_text.md`
+- `retrieval_manifest.csv`
 
 ## 配置矩阵
 
 | 层 | 零配置可否运行 | 是否建议 key | 是否需要 `RESEARCH_MCP_*_CMD` | 说明 |
 |---|---|---|---|---|
-| `scholarly-search` | 可以 | 建议 | 可选 | 内置 Semantic Scholar 能跑，但可能限流 |
+| `scholarly-search` | 可以 | 建议 | 可选 | 内置 Semantic Scholar 能跑，并能产出 query variants 和 dedup-ready 结果行，但可能限流 |
 | `citation-graph` | 可以 | 不强制 | 可选 | 内置 graph adapter 可用 |
-| `metadata-registry` | 不可以 | 取决于 provider | 需要 | 建议接 OpenAlex 或其他 metadata MCP |
+| `metadata-registry` | 可以 | 本地模式不需要 | 可选 | 内置模式能先做 identifier 规范化；权威 enrichment 时再接 OpenAlex 或其他 metadata MCP |
 | `fulltext-retrieval` | 不可以 | 取决于 provider | 需要 | 建议接 Zotero 或其他全文解析器 |
 | `screening-tracker` | 不可以 | 取决于 provider | 需要 | systematic review 支持 |
 | `extraction-store` | 不可以 | 取决于 provider | 需要 | systematic review 支持 |
@@ -61,6 +72,13 @@
 
 只用内置 provider。
 
+当前内置 `scholarly-search` baseline 仍会给你：
+
+- 基于 topic / question / keywords 的多组 query variants
+- 规范化后的 `search_results` 结果行
+- 机器可读的 `dedup_log`
+- 按 query 记录的 `search_log` 执行条目
+
 ### 方案 B：推荐的轻量增强版
 
 ```env
@@ -87,7 +105,7 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 ## 严格模式说明
 
-启用 `--mcp-strict` 后，所有必需 provider 都必须已配置。通常最先需要显式接入的是 `metadata-registry` 和 `fulltext-retrieval`。
+启用 `--mcp-strict` 后，所有必需 provider 都必须已配置。当前通常最先需要显式接入的是 `fulltext-retrieval`，而 `metadata-registry` 现在可以先回落到仓库内置的本地 reference provider。
 
 ## 推荐的检索栈
 

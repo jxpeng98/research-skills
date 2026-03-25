@@ -8,6 +8,8 @@ inputs:
 outputs:
   - type: FullTextStatus
     artifact: "screening/full_text.md"
+  - type: RetrievalManifest
+    artifact: "retrieval_manifest.csv"
 constraints:
   - "Must attempt retrieval through priority-ordered OA pipeline"
   - "Must document not-retrieved reasons for PRISMA reporting"
@@ -30,6 +32,12 @@ Maximize access to full-text papers while maintaining PRISMA-compliant documenta
 - Document retrieval success/failure with reasons
 - Support "reports not retrieved" PRISMA reporting
 - Avoid paywalled/illegal access
+
+## Provider Ownership Boundary
+
+- `fulltext-retrieval` owns `screening/full_text.md` and `retrieval_manifest.csv`
+- it should not overwrite `search_strategy.md` or `bibliography.bib`
+- if retrieval changes study eligibility, that decision still flows back through screening artifacts
 
 ## Process
 
@@ -219,6 +227,10 @@ Create retrieval log for PRISMA flow diagram:
 
 *Retrieval completed: [Date]*
 *Sources attempted: Unpaywall, Semantic Scholar, CORE, arXiv, PMC*
+```
+
+```csv
+record_id,citekey,doi,retrieval_status,version_label,source_provider,retrieved_at,fulltext_path,access_url,license,notes
 ```
 
 ## API Reference

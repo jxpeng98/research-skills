@@ -1868,39 +1868,43 @@ Provide your verification assessment.
             mcp_registry = []
 
         for provider in mcp_registry:
+            resolution = self.mcp_connector.resolve_provider(provider)
             if provider == "filesystem":
                 add_check("MCP filesystem", "ok", "local provider (no external command required)")
                 continue
-            env_name = self.mcp_connector._provider_env_var(provider)
-            command = os.environ.get(env_name, "").strip()
-            
-            if not command:
-                safe_provider_name = provider.replace("-", "_")
-                native_script = Path(__file__).resolve().parents[1] / "scripts" / f"mcp_{safe_provider_name}.py"
-                if native_script.exists():
-                    add_check(
-                        f"MCP {provider}", 
-                        "ok", 
-                        f"builtin provider ({native_script.name})"
-                    )
-                    continue
-                    
+
+            if resolution.source == "external_slot":
                 add_check(
                     f"MCP {provider}",
                     "warning",
-                    f"{env_name} not configured",
-                    f"Set {env_name} to enable {provider} evidence collection.",
+                    f"external slot only; {resolution.env_name} not configured",
+                    f"Set {resolution.env_name} to enable {provider} evidence collection.",
                 )
                 continue
-            command_ok, detail = self._check_command_available(command)
+
+            command_ok, detail = self._check_command_available(resolution.command or "")
             if command_ok:
-                add_check(f"MCP {provider}", "ok", f"{env_name} -> {detail}")
+                if resolution.source == "env_override":
+                    add_check(
+                        f"MCP {provider}",
+                        "ok",
+                        f"env override configured: {resolution.env_name} -> {detail}",
+                    )
+                elif resolution.source == "builtin":
+                    script_name = Path(resolution.native_script or "").name or provider
+                    add_check(
+                        f"MCP {provider}",
+                        "ok",
+                        f"builtin available: {script_name} via {detail}",
+                    )
+                else:
+                    add_check(f"MCP {provider}", "ok", detail)
             else:
                 add_check(
                     f"MCP {provider}",
                     "error",
-                    f"{env_name} invalid: {detail}",
-                    f"Fix {env_name} command so {provider} can execute.",
+                    f"{resolution.env_name} invalid: {detail}",
+                    f"Fix {resolution.env_name} command so {provider} can execute.",
                 )
 
         status_counts = {"ok": 0, "warning": 0, "error": 0}

@@ -20,6 +20,8 @@ artifacts:
     - "bibliography.bib"
     - "search_log.md"
     - "search_results.csv"
+    - "dedup_log.csv"
+    - "retrieval_manifest.csv"
     - "screening/title_abstract.md"
     - "screening/full_text.md"
     - "screening/prisma_flow.md"
@@ -76,6 +78,55 @@ paper_types:
   - id: "theory"
     focus: "constructs, propositions, conceptual contribution"
 
+literature_evidence_bundle:
+  shared_artifacts:
+    - "search_strategy.md"
+    - "search_log.md"
+    - "search_results.csv"
+    - "dedup_log.csv"
+    - "snowball_log.md"
+    - "bibliography.bib"
+    - "screening/full_text.md"
+    - "retrieval_manifest.csv"
+  provider_roles:
+    scholarly-search:
+      owns:
+        - "search_strategy.md"
+        - "search_log.md"
+        - "search_results.csv"
+      appends:
+        - "dedup_log.csv"
+      responsibilities:
+        - "query planning and provider-specific query translation"
+        - "raw provider hit capture before screening"
+        - "initial dedup candidate generation"
+    citation-graph:
+      owns:
+        - "snowball_log.md"
+      appends:
+        - "search_results.csv"
+        - "dedup_log.csv"
+      responsibilities:
+        - "forward/backward seed expansion"
+        - "traceable corpus growth beyond direct query hits"
+    metadata-registry:
+      owns:
+        - "bibliography.bib"
+      appends:
+        - "dedup_log.csv"
+      responsibilities:
+        - "identifier normalization and merge decisions"
+        - "author/venue/year/DOI normalization"
+        - "citekey stabilization for downstream notes and exports"
+    fulltext-retrieval:
+      owns:
+        - "screening/full_text.md"
+        - "retrieval_manifest.csv"
+      responsibilities:
+        - "full-text access resolution"
+        - "version and provenance tracking"
+        - "retrieval status needed for PRISMA-style reporting"
+
 stages:
   - id: "A"
     name: "framing-positioning"
@@ -97,10 +148,12 @@ stages:
       - "search_strategy.md"
       - "literature/concept_extraction.md"
       - "search_results.csv"
+      - "dedup_log.csv"
       - "notes/"
       - "bibliography.bib"
       - "search_log.md"
       - "snowball_log.md"
+      - "retrieval_manifest.csv"
       - "screening/"
       - "extraction_table.md"
       - "quality_table.md"
@@ -247,9 +300,12 @@ task_catalog:
       - "search_strategy.md"
       - "search_log.md"
       - "search_results.csv"
+      - "dedup_log.csv"
+      - "snowball_log.md"
       - "screening/"
       - "notes/"
       - "bibliography.bib"
+      - "retrieval_manifest.csv"
       - "extraction_table.md"
       - "quality_table.md"
       - "synthesis_matrix.md"
@@ -265,11 +321,14 @@ task_catalog:
     outputs:
       - "notes/"
       - "bibliography.bib"
+      - "retrieval_manifest.csv"
   B3:
     stage: "B"
     title: "citation-snowballing"
     outputs:
       - "snowball_log.md"
+      - "search_results.csv"
+      - "dedup_log.csv"
   B4:
     stage: "B"
     title: "related-work-writing"

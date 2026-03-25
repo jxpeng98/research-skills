@@ -57,4 +57,6 @@ AND
 ## 7) Execution Log Pointers
 - Search log file: `search_log.md`
 - Results file: `search_results.csv`
+- Dedup decisions file: `dedup_log.csv`
+- Full-text provenance file: `retrieval_manifest.csv`
 - Notes / exceptions:

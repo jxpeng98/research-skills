@@ -33,14 +33,14 @@ When executing a task, the system spawns a subprocess from this command, pipes i
 **Purpose:** Enrich and normalize paper DOI, journal, year, and author metadata.  
 **Used in:** Stage B (literature processing), task C1, etc.
 
-This provider is not built in today. You should connect an external tool if you want normalized metadata.
+This provider now has a built-in local reference implementation for identifier normalization and lightweight metadata extraction. For authoritative enrichment, connect an external tool such as OpenAlex.
 
 **Recommended tools:**
 
 | Tool | Type | Link |
 |------|------|------|
+| Built-in local reference provider | Included in this repo | `scripts/mcp_metadata_registry.py` |
 | OpenAlex MCP | Open-source Python | [github.com/b-vitamins/openalex-mcp](https://github.com/b-vitamins/openalex-mcp) |
-| Semantic Scholar (built-in) | Already built-in, no config needed | — |
 
 ```bash
 # Example: connect OpenAlex MCP

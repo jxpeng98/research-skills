@@ -17,12 +17,12 @@ For rigorous work, do not depend on only one engine.
 
 The current repository ships these built-in literature providers:
 
-- `scholarly-search` → built-in Semantic Scholar API adapter
+- `scholarly-search` → built-in Semantic Scholar API adapter with query variants, normalized rows, and baseline dedup
 - `citation-graph` → built-in Semantic Scholar citation / reference adapter
+- `metadata-registry` → built-in local reference provider for identifier normalization
 
 The other layers are external-provider slots:
 
-- `metadata-registry`
 - `fulltext-retrieval`
 - `screening-tracker`
 - `extraction-store`
@@ -30,17 +30,28 @@ The other layers are external-provider slots:
 So the strictest practical baseline today is:
 
 - built-in Semantic Scholar for discovery
-- OpenAlex MCP for metadata normalization
+- built-in metadata-registry for local normalization, plus OpenAlex MCP for authoritative enrichment
 - built-in citation graph for snowballing
 - Zotero / OA resolver for full text
+
+## Standard Literature Bundle
+
+- `search_strategy.md`
+- `search_log.md`
+- `search_results.csv`
+- `dedup_log.csv`
+- `snowball_log.md`
+- `bibliography.bib`
+- `screening/full_text.md`
+- `retrieval_manifest.csv`
 
 ## Configuration Matrix
 
 | Layer | Works with zero config | Needs API key | Needs `RESEARCH_MCP_*_CMD` | Notes |
 |---|---|---|---|---|
-| `scholarly-search` | yes | recommended | optional | built-in Semantic Scholar works, but can rate-limit |
+| `scholarly-search` | yes | recommended | optional | built-in Semantic Scholar works, emits query variants + dedup-ready rows, but can rate-limit |
 | `citation-graph` | yes | no | optional | built-in graph adapter is available |
-| `metadata-registry` | no | depends on provider | yes | connect OpenAlex or another metadata MCP |
+| `metadata-registry` | yes | no for local mode | optional | built-in mode normalizes identifiers locally; connect OpenAlex or another metadata MCP for authoritative enrichment |
 | `fulltext-retrieval` | no | depends on provider | yes | connect Zotero or another full-text resolver |
 | `screening-tracker` | no | depends on provider | yes | systematic review support |
 | `extraction-store` | no | depends on provider | yes | systematic review support |
@@ -50,6 +61,13 @@ So the strictest practical baseline today is:
 ### Option A. Zero-Config Start
 
 Use the built-in providers only.
+
+The built-in `scholarly-search` baseline still gives you:
+
+- multiple query variants from topic/question/keywords
+- normalized `search_results` rows
+- a machine-readable `dedup_log`
+- per-query `search_log` entries
 
 ### Option B. Lightweight Recommended Setup
 
@@ -77,7 +95,7 @@ RESEARCH_MCP_METADATA_REGISTRY_CMD="python3 -m openalex_mcp"
 
 ## Strict Mode
 
-With `--mcp-strict`, unconfigured required providers become blockers. In practice, `metadata-registry` and `fulltext-retrieval` are the first layers that usually need explicit setup.
+With `--mcp-strict`, unconfigured required providers become blockers. In practice, `fulltext-retrieval` is still the first literature layer that usually needs explicit setup, while `metadata-registry` can now fall back to the built-in local reference provider.
 
 ## Recommended Search Stacks
 

@@ -175,6 +175,8 @@ Filters: [Humans, English, etc.]
 | Duplicates identified | |
 | **Unique records for screening** | |
 
+Detailed row-level decisions should be stored in `dedup_log.csv`.
+
 **Deduplication Method:**
 - [ ] DOI matching
 - [ ] Semantic Scholar paperId matching

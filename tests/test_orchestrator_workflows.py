@@ -240,6 +240,23 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertEqual(result.data["functional_role_id"], "academic-code-reviewer")
         self.assertIn("Academic Code Reviewer", result.merged_analysis)
 
+    def test_doctor_distinguishes_builtin_env_override_and_external_slot(self) -> None:
+        orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")
+        script_path = REPO_ROOT / "scripts" / "mcp_scholarly_search.py"
+        with mock.patch.dict(
+            os.environ,
+            {
+                "RESEARCH_CLI_LANG": "zh-CN",
+                "RESEARCH_MCP_SCHOLARLY_SEARCH_CMD": f"python3 {script_path}",
+            },
+            clear=False,
+        ):
+            result = orchestrator.doctor(REPO_ROOT)
+
+        self.assertIn("MCP scholarly-search: env override configured:", result.merged_analysis)
+        self.assertIn("MCP metadata-registry: builtin available: mcp_metadata_registry.py", result.merged_analysis)
+        self.assertIn("MCP fulltext-retrieval: external slot only;", result.merged_analysis)
+
     def test_task_run_executes_with_draft_and_review(self) -> None:
         orchestrator = MockOrchestrator()
         result = orchestrator.task_run(

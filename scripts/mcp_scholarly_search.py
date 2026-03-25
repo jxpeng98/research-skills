@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import json
 import sys
-from pathlib import Path
+from bridges.providers.literature_search import run_scholarly_search
 from bridges.providers.s2_client import search_paper
 
-def main():
+
+def main() -> None:
     try:
         input_data = sys.stdin.read()
         if not input_data.strip():
@@ -13,36 +14,11 @@ def main():
 
         payload = json.loads(input_data)
         task_packet = payload.get("task_packet", {})
-        topic = task_packet.get("topic", "")
-        
-        if not topic:
-            print(json.dumps({"status": "warning", "summary": "Empty topic, no search performed."}))
-            return
+        if not isinstance(task_packet, dict):
+            task_packet = {}
 
-        # Perform the actual search
-        results = search_paper(topic, limit=10)
-        
-        if "error" in results:
-            print(json.dumps({
-                "status": "error", 
-                "summary": f"S2 API Error: {results['error']}",
-                "data": {"error": results["error"]}
-            }))
-            return
-
-        data_array = results.get("data", [])
-        
-        output = {
-            "status": "ok",
-            "summary": f"Found {len(data_array)} papers on Semantic Scholar for '{topic}'",
-            "provenance": ["https://api.semanticscholar.org/graph/v1"],
-            "data": {
-                "results": data_array
-            }
-        }
-        
+        output = run_scholarly_search(task_packet, search_paper)
         print(json.dumps(output, ensure_ascii=False))
-        
     except Exception as e:
         print(json.dumps({
             "status": "error",

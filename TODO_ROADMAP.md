@@ -14,7 +14,7 @@
 
 - Verified completed workstreams: 7
 - Verified-but-not-fully-accepted items: 4
-- Active TODOs: 18
+- Active TODOs: 19
 - Deferred future bets: 5
 
 ---
@@ -219,6 +219,13 @@ Key facts confirmed from current repo:
   - enforce maximum size / section-count heuristics for repo-internal skill files
   - prevent registry-summary duplication inside markdown bodies
   - keep alias skills as thin stubs instead of silently growing into duplicate canonical specs
+
+- [ ] Define an external skill-set borrowing framework
+  - classify imported ideas into `provider`, `workflow`, `rubric`, `interaction`, or `canonical skill` before implementation
+  - require borrowed capabilities to map back to existing `task_id`, artifact paths, and provider-layer contracts instead of copying prompt bodies wholesale
+  - document when an external capability should become an MCP bridge versus a new canonical skill
+  - prioritize borrowing evaluation rubrics, review checklists, and workflow structure before borrowing prose-heavy skill bodies
+  - add a maintainer-facing intake checklist for assessing drift risk, overlap with existing skills, and canonicalization cost
 
 ### P3 Strategic
 

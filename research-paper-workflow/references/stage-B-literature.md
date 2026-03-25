@@ -4,10 +4,10 @@ This stage builds the *evidence base* for positioning: search → screening → 
 
 ## Canonical outputs (contract paths)
 
-- `B1` → `protocol.md`, `search_strategy.md`, `search_log.md`, `search_results.csv`, `screening/`, `notes/`, `bibliography.bib`, `extraction_table.md`, `quality_table.md`, `synthesis_matrix.md`, `synthesis.md`
+- `B1` → `protocol.md`, `search_strategy.md`, `search_log.md`, `search_results.csv`, `dedup_log.csv`, `snowball_log.md`, `screening/`, `notes/`, `bibliography.bib`, `retrieval_manifest.csv`, `extraction_table.md`, `quality_table.md`, `synthesis_matrix.md`, `synthesis.md`
 - `B1_5` → `literature/concept_extraction.md`
-- `B2` → `notes/`, `bibliography.bib`
-- `B3` → `snowball_log.md`
+- `B2` → `notes/`, `bibliography.bib`, `retrieval_manifest.csv`
+- `B3` → `snowball_log.md`, `search_results.csv`, `dedup_log.csv`
 - `B4` → `manuscript/manuscript.md` (related work section)
 - `B5` → `bibliography.bib`, `references.ris`, `references.json`
 - `B6` → `literature/literature_map.md`
@@ -16,6 +16,24 @@ This stage builds the *evidence base* for positioning: search → screening → 
 
 - `Q4` (reproducibility baseline) starts here: search queries, inclusion/exclusion, and logs must be reproducible.
 - For `systematic-review`, PRISMA consistency is enforced later (`G2`), but data should be prepared in B.
+
+## Literature Provider Contract
+
+Treat the literature stack as four coordinated layers, not one blob:
+
+1. `scholarly-search`
+   Owns `search_strategy.md`, `search_log.md`, `search_results.csv`
+   Appends to `dedup_log.csv`
+2. `citation-graph`
+   Owns `snowball_log.md`
+   Appends to `search_results.csv` and `dedup_log.csv`
+3. `metadata-registry`
+   Owns `bibliography.bib`
+   Appends to `dedup_log.csv`
+4. `fulltext-retrieval`
+   Owns `screening/full_text.md` and `retrieval_manifest.csv`
+
+If a workflow touches literature evidence, it should respect those ownership boundaries even when one runtime agent executes multiple steps.
 
 ---
 
@@ -29,8 +47,11 @@ Use `B1` when you want an end-to-end pipeline. If you only need one component (e
 - `search_strategy.md` contains reproducible database queries (exact strings + limits)
 - `search_log.md` records dates/timestamps + counts per source
 - `search_results.csv` is a dedup-ready record table (one row per record)
+- `dedup_log.csv` records merge/drop decisions and the basis for each dedup action
+- `snowball_log.md` records citation-based expansions when used
 - `screening/` contains title/abstract + full-text decisions and reasons
 - `notes/` contains structured notes for included studies
+- `retrieval_manifest.csv` tracks full-text provenance, version, and retrieval status
 - `extraction_table.md` and `quality_table.md` cover all included studies
 - `synthesis_matrix.md` supports transparent synthesis
 - `synthesis.md` is consistent with extraction + quality tables
@@ -48,6 +69,32 @@ Notes:
 - `record_id`: stable within a project (e.g., `S2-000001`, `OA-000123`)
 - `query_id`: tie back to the exact query string in `search_strategy.md`
 - `retrieved_at`: ISO timestamp with timezone
+
+### `dedup_log.csv` minimal schema (recommended)
+
+Keep one row per deduplication decision:
+
+```csv
+candidate_record_id,canonical_record_id,decision,match_basis,resolver,notes
+```
+
+Notes:
+- `decision`: `merge` / `drop_duplicate` / `keep_separate`
+- `match_basis`: DOI / title-year-author / provider-id / manual-review
+- `resolver`: human, builtin provider, or external MCP name
+
+### `retrieval_manifest.csv` minimal schema (recommended)
+
+Keep one row per full-text retrieval attempt:
+
+```csv
+record_id,citekey,doi,retrieval_status,version_label,source_provider,retrieved_at,fulltext_path,access_url,license,notes
+```
+
+Notes:
+- `retrieval_status`: align with the controlled `fulltext_status` vocabulary
+- `version_label`: published / accepted / submitted / abstract-only
+- `source_provider`: Zotero, Unpaywall, CORE, arXiv, PMC, publisher page, etc.
 
 ### Screening logs (recommended tables)
 
@@ -72,6 +119,7 @@ Where `fulltext_status` uses a controlled set:
 
 - Search strategy cannot be reproduced (missing exact query strings / limits / dates)
 - Dedup is undocumented (later PRISMA counts cannot reconcile)
+- Retrieval provenance is undocumented (later full-text decisions cannot be audited)
 - Screening reasons are inconsistent or missing (PRISMA 2020 failure)
 - Synthesis makes claims not supported by extracted evidence
 
@@ -121,6 +169,8 @@ Recommended note filename convention:
 
 **Definition of done**
 - `snowball_log.md` lists seeds + forward/backward expansions + dedup decisions
+- `search_results.csv` is updated or append-ready for new snowballed candidates
+- `dedup_log.csv` records which snowballed candidates were merged, dropped, or kept separate
 - The corpus expands with a documented rationale (not “add everything”)
 
 Suggested `snowball_log.md` table:
@@ -169,4 +219,3 @@ Goal: map the field so your paper can claim novelty without hand-waving.
   - open problems per cluster
 
 Write into: `literature/literature_map.md`.
-

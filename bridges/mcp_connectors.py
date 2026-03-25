@@ -21,6 +21,15 @@ class MCPEvidence:
         return asdict(self)
 
 
+@dataclass
+class MCPProviderResolution:
+    provider: str
+    env_name: str
+    source: str
+    command: str | None = None
+    native_script: str | None = None
+
+
 class MCPConnector:
     """Collect evidence from local and external MCP providers."""
 
@@ -87,22 +96,17 @@ class MCPConnector:
         task_packet: dict[str, Any],
         cwd: Path,
     ) -> MCPEvidence:
-        env_name = self._provider_env_var(provider)
-        command = os.environ.get(env_name, "").strip()
-        
+        resolution = self.resolve_provider(provider)
+        env_name = resolution.env_name
+        command = resolution.command
+
         if not command:
-            # Check for native Python provider fallback
-            safe_provider_name = provider.replace("-", "_")
-            native_script = Path(__file__).resolve().parents[1] / "scripts" / f"mcp_{safe_provider_name}.py"
-            if native_script.exists():
-                command = f"python3 {native_script}"
-            else:
-                return MCPEvidence(
-                    provider=provider,
-                    status="not_configured",
-                    summary=f"External MCP not configured. Set {env_name}.",
-                    provenance=[env_name],
-                )
+            return MCPEvidence(
+                provider=provider,
+                status="not_configured",
+                summary=f"External MCP not configured. Set {env_name}.",
+                provenance=[env_name],
+            )
 
         payload = {
             "provider": provider,
@@ -187,3 +191,43 @@ class MCPConnector:
     def _provider_env_var(self, provider: str) -> str:
         key = provider.upper().replace("-", "_")
         return f"{self.env_prefix}{key}_CMD"
+
+    def _provider_native_script(self, provider: str) -> Path:
+        safe_provider_name = provider.replace("-", "_")
+        return Path(__file__).resolve().parents[1] / "scripts" / f"mcp_{safe_provider_name}.py"
+
+    def resolve_provider(self, provider: str) -> MCPProviderResolution:
+        env_name = self._provider_env_var(provider)
+        if provider == "filesystem":
+            return MCPProviderResolution(
+                provider=provider,
+                env_name=env_name,
+                source="filesystem",
+            )
+
+        command = os.environ.get(env_name, "").strip()
+        native_script = self._provider_native_script(provider)
+        native_script_str = str(native_script) if native_script.exists() else None
+
+        if command:
+            return MCPProviderResolution(
+                provider=provider,
+                env_name=env_name,
+                source="env_override",
+                command=command,
+                native_script=native_script_str,
+            )
+        if native_script_str:
+            return MCPProviderResolution(
+                provider=provider,
+                env_name=env_name,
+                source="builtin",
+                command=f"python3 {native_script_str}",
+                native_script=native_script_str,
+            )
+        return MCPProviderResolution(
+            provider=provider,
+            env_name=env_name,
+            source="external_slot",
+            native_script=native_script_str,
+        )

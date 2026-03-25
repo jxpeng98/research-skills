@@ -33,14 +33,14 @@
 **作用：** 补全和标准化论文的 DOI、期刊、年份、作者信息。  
 **使用场景：** B 阶段（文献处理）、C1 任务等。
 
-这个 provider 当前不是仓库内置能力。如果你想要真正的 metadata 标准化，需要接一个外部实现。
+这个 provider 现在已经有仓库内置的本地 reference 实现，可用于 identifier 规范化和轻量 metadata 提取。如果你需要更权威的 enrichment，仍然建议接 OpenAlex 这类外部实现。
 
 **推荐工具：**
 
 | 工具 | 类型 | 地址 |
 |------|------|------|
+| 内置本地 reference provider | 仓库内置 | `scripts/mcp_metadata_registry.py` |
 | OpenAlex MCP | 开源 Python | [github.com/b-vitamins/openalex-mcp](https://github.com/b-vitamins/openalex-mcp) |
-| Semantic Scholar（内置） | 已内置，无需配置 | — |
 
 ```bash
 # 示例：接入 OpenAlex MCP

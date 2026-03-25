@@ -73,6 +73,68 @@ provider_capability_examples:
       - "repository fallback"
       - "publisher landing-page resolution"
 
+literature_provider_contract:
+  shared_bundle:
+    - "search_strategy.md"
+    - "search_log.md"
+    - "search_results.csv"
+    - "dedup_log.csv"
+    - "snowball_log.md"
+    - "bibliography.bib"
+    - "screening/full_text.md"
+    - "retrieval_manifest.csv"
+  scholarly-search:
+    owns_artifacts:
+      - "search_strategy.md"
+      - "search_log.md"
+      - "search_results.csv"
+    appends_to:
+      - "dedup_log.csv"
+    responsibilities:
+      - "provider-backed discovery"
+      - "query translation and execution"
+      - "raw hit capture before screening"
+    must_not_own:
+      - "bibliography.bib"
+      - "retrieval_manifest.csv"
+  citation-graph:
+    owns_artifacts:
+      - "snowball_log.md"
+    appends_to:
+      - "search_results.csv"
+      - "dedup_log.csv"
+    responsibilities:
+      - "seed-paper expansion"
+      - "forward and backward citation tracing"
+      - "traceable corpus-growth logging"
+    must_not_own:
+      - "search_strategy.md"
+      - "bibliography.bib"
+      - "retrieval_manifest.csv"
+  metadata-registry:
+    owns_artifacts:
+      - "bibliography.bib"
+    appends_to:
+      - "dedup_log.csv"
+    responsibilities:
+      - "identifier normalization"
+      - "metadata merge and citekey stabilization"
+      - "venue/year/author/DOI cleanup"
+    must_not_own:
+      - "search_strategy.md"
+      - "retrieval_manifest.csv"
+  fulltext-retrieval:
+    owns_artifacts:
+      - "screening/full_text.md"
+      - "retrieval_manifest.csv"
+    responsibilities:
+      - "full-text access resolution"
+      - "version provenance"
+      - "PRISMA-style retrieval status tracking"
+    must_not_own:
+      - "search_strategy.md"
+      - "bibliography.bib"
+
 agent_registry:
   - "codex"
   - "claude"
@@ -224,11 +286,12 @@ skill_catalog:
   academic-searcher:
     file: "skills/B_literature/academic-searcher.md"
     category: "literature-discovery"
-    focus: "Own query design, provider-backed retrieval, and deduplicated search outputs."
+    focus: "Own query design, provider-backed retrieval, raw search capture, and deduplicated search bundle outputs."
     default_outputs:
       - "search_strategy.md"
       - "search_results.csv"
       - "search_log.md"
+      - "dedup_log.csv"
   paper-screener:
     file: "skills/B_literature/paper-screener.md"
     category: "study-selection"
@@ -269,18 +332,22 @@ skill_catalog:
     focus: "Expand corpus using forward/backward citation chaining."
     default_outputs:
       - "snowball_log.md"
+      - "search_results.csv"
+      - "dedup_log.csv"
   fulltext-fetcher:
     file: "skills/B_literature/fulltext-fetcher.md"
     category: "fulltext-acquisition"
     focus: "Resolve full text access, version provenance, and retrieval status."
     default_outputs:
       - "screening/full_text.md"
+      - "retrieval_manifest.csv"
   metadata-enricher:
     file: "skills/Z_cross_cutting/metadata-enricher.md"
     category: "metadata-normalization"
-    focus: "Normalize DOI, venue, year, author, and identifier metadata."
+    focus: "Normalize DOI, venue, year, author, and identifier metadata while stabilizing bibliography and dedup decisions."
     default_outputs:
       - "bibliography.bib"
+      - "dedup_log.csv"
   citation-formatter:
     file: "skills/B_literature/citation-formatter.md"
     category: "reference-formatting"
@@ -550,6 +617,7 @@ skill_boundary_notes:
       - "search_strategy.md"
       - "search_results.csv"
       - "search_log.md"
+      - "dedup_log.csv"
     embedded_subflows:
       - "query drafting"
       - "keyword expansion"
@@ -561,6 +629,36 @@ skill_boundary_notes:
     templates:
       - "templates/search-strategy.md"
       - "templates/search-log.md"
+      - "templates/dedup-log.csv"
+  citation-snowballer:
+    owns_contract_artifacts:
+      - "snowball_log.md"
+    appends_shared_artifacts:
+      - "search_results.csv"
+      - "dedup_log.csv"
+    provider_dependencies:
+      - "citation-graph"
+      - "metadata-registry"
+    templates:
+      - "templates/dedup-log.csv"
+  fulltext-fetcher:
+    owns_contract_artifacts:
+      - "screening/full_text.md"
+      - "retrieval_manifest.csv"
+    provider_dependencies:
+      - "fulltext-retrieval"
+      - "metadata-registry"
+    templates:
+      - "templates/retrieval-manifest.csv"
+  metadata-enricher:
+    owns_contract_artifacts:
+      - "bibliography.bib"
+    appends_shared_artifacts:
+      - "dedup_log.csv"
+    provider_dependencies:
+      - "metadata-registry"
+    templates:
+      - "templates/dedup-log.csv"
   paper-extractor:
     owns_contract_artifacts:
       - "notes/"

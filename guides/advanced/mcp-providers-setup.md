@@ -10,6 +10,8 @@ After running `rsk upgrade`, you may see warnings like:
 
 **These ⚠ are informational only — they do not affect the framework's core functionality.** These MCPs (Model Context Protocol tools) are optional external capability slots. This document explains what each one does, where to find implementations, and how to connect them.
 
+If your goal is a review-grade or highly reproducible academic literature search stack, read [Rigorous Literature Search](./rigorous-literature-search.md) after this page. This page explains provider wiring; the other guide explains which search layers to combine.
+
 ---
 
 ## How It Works
@@ -30,6 +32,8 @@ When executing a task, the system spawns a subprocess from this command, pipes i
 
 **Purpose:** Enrich and normalize paper DOI, journal, year, and author metadata.  
 **Used in:** Stage B (literature processing), task C1, etc.
+
+This provider is not built in today. You should connect an external tool if you want normalized metadata.
 
 **Recommended tools:**
 

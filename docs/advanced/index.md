@@ -7,6 +7,7 @@ Use this section when the default install and CLI path is already clear and you 
 - [Extend Research Skills](/advanced/extend-research-skills)
 - [Agent + Skill Collaboration](/advanced/agent-skill-collaboration)
 - [MCP Providers Setup](/advanced/mcp-providers-setup)
+- [Rigorous Literature Search](/advanced/rigorous-literature-search)
 - [Zotero Integration](/advanced/mcp-zotero-integration)
 - [Publish to PyPI](/advanced/publish-pypi)
 

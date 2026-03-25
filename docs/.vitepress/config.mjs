@@ -58,6 +58,7 @@ const enSidebar = {
         { text: 'Extend Research Skills', link: '/advanced/extend-research-skills' },
         { text: 'Agent + Skill Collaboration', link: '/advanced/agent-skill-collaboration' },
         { text: 'MCP Providers Setup', link: '/advanced/mcp-providers-setup' },
+        { text: 'Rigorous Literature Search', link: '/advanced/rigorous-literature-search' },
         { text: 'Zotero Integration', link: '/advanced/mcp-zotero-integration' },
         { text: 'Publish to PyPI', link: '/advanced/publish-pypi' }
       ]
@@ -119,6 +120,7 @@ const zhSidebar = {
         { text: '扩展 Research Skills', link: '/zh/advanced/extend-research-skills' },
         { text: 'Agent + Skill 协同', link: '/zh/advanced/agent-skill-collaboration' },
         { text: 'MCP Providers 接入', link: '/zh/advanced/mcp-providers-setup' },
+        { text: '严格 Literature Search', link: '/zh/advanced/rigorous-literature-search' },
         { text: 'Zotero 集成', link: '/zh/advanced/mcp-zotero-integration' },
         { text: '发布到 PyPI', link: '/zh/advanced/publish-pypi' }
       ]

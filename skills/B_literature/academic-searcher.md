@@ -304,12 +304,14 @@ When API calls fail, apply this fallback chain:
 ### Fallback Priority
 
 ```
-Primary Search:
-1. Semantic Scholar API
-   ↓ (on failure)
-2. OpenAlex API
-   ↓ (on failure)
-3. Google Scholar Web Search
+Discovery Layer:
+1. Semantic Scholar API (fast relevance scan, concept discovery)
+2. OpenAlex API (work metadata, broader scholarly graph)
+3. Crossref API (DOI-focused normalization and reproducible record lookup)
+
+Review-Grade Extension:
+4. Citation graph expansion from seed papers
+5. Full-text retrieval from Zotero / OA resolver
 ```
 
 ### Error Types & Recovery
@@ -331,7 +333,7 @@ Document all fallback events:
 | Timestamp | Primary Source | Error | Fallback Source | Result |
 |-----------|----------------|-------|-----------------|--------|
 | [time] | Semantic Scholar | 429 | OpenAlex | Success |
-| [time] | OpenAlex | Timeout | Google Scholar | Success |
+| [time] | OpenAlex | Timeout | Crossref | Success |
 ```
 
 ### Rate Limit Management
@@ -343,6 +345,20 @@ Document all fallback events:
 | Crossref | Polite pool: 50/sec | Add mailto header |
 | CORE | Varies by plan | Check quota before batch |
 | Unpaywall | 100k/day | Cache responses |
+
+### Review-Grade Search Policy
+
+For rigorous academic literature search, do not rely on a single search engine.
+
+Minimum review-grade stack:
+1. Run discovery queries across Semantic Scholar plus one metadata-focused source (OpenAlex or Crossref)
+2. Normalize DOI, author, venue, and year via `metadata-registry`
+3. Record exact search strings, dates, provider names, and result counts in `search_log.md`
+4. Deduplicate before screening
+5. Snowball backward and forward citations from high-value seed papers
+6. Resolve full text with provenance before synthesis
+
+Avoid using Google Scholar as the primary reproducible pipeline source. It can still be useful for manual spot checks, but it is not the default audit-friendly fallback for this system.
 
 ## Usage
 

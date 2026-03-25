@@ -1,6 +1,6 @@
 # Optimization Roadmap TODO
 
-> Last reorganized: 2026-03-24
+> Last reorganized: 2026-03-25
 > This file now tracks only three things:
 > 1. verified completed milestones
 > 2. active remaining work
@@ -12,16 +12,16 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 6
+- Verified completed workstreams: 7
 - Verified-but-not-fully-accepted items: 4
-- Active TODOs: 13
+- Active TODOs: 18
 - Deferred future bets: 5
 
 ---
 
 ## Verification Basis
 
-Checked against current repository structure on 2026-03-24.
+Checked against current repository structure on 2026-03-25.
 
 Verified from source:
 - `standards/research-workflow-contract.yaml`
@@ -37,6 +37,7 @@ Verified from source:
 - `scripts/release_preflight.sh`
 - `scripts/generate_release_notes.sh`
 - `scripts/install_research_skill.sh`
+- `scripts/sync_versions.py`
 - `docs/conventions.md`
 - `guides/advanced/extend-research-skills.md`
 - `research-paper-workflow/SKILL.md`
@@ -53,6 +54,7 @@ Key facts confirmed from current repo:
 - `--domain` runtime injection already exists
 - native reference MCP scripts already exist for `scholarly-search` and `citation-graph`
 - release preparation is already unified through `scripts/release_ready.sh`
+- `skills/registry.yaml` is now the single canonical skill version source
 
 ---
 
@@ -99,10 +101,17 @@ Key facts confirmed from current repo:
 
 ### 6. Release Automation
 
-- [x] Unified version sync across package metadata, registry, workflow `VERSION`, and skill frontmatter
+- [x] Unified version sync across package metadata, registry, and workflow `VERSION`
 - [x] Added publish-ready local entrypoint via `scripts/release_ready.sh`
 - [x] Updated release notes template, runbook, and publish docs to the new flow
 - [x] Added tests for version normalization / sync behavior
+
+### 7. Skill Metadata Simplification
+
+- [x] Removed deprecated `version` from all `skills/*.md` frontmatter
+- [x] Made `skills/registry.yaml` the only canonical skill version source
+- [x] Updated validator to reject reintroduction of skill frontmatter `version`
+- [x] Updated release/publish docs to reflect registry-only skill version sync
 
 ---
 
@@ -143,6 +152,26 @@ Key facts confirmed from current repo:
 
 - [ ] Generalize `model-collaborator` from code-only to research-wide collaboration language
 
+- [ ] Collapse duplicate / alias skill layouts into one canonical-file rule
+  - clean up `skills/I_code/build/`, `skills/I_code/planning/`, `skills/I_code/run/`, and `skills/I_code/qa/`
+  - keep only canonical skill paths in `skills/registry.yaml`
+  - add validator checks so registry entries cannot point at alias/stub copies
+
+- [ ] Make alias semantics explicit in skill metadata
+  - add `canonical`, `alias_of`, and/or `deprecated` fields to `skills/registry.yaml`
+  - stop relying on prose-only notes like "canonical version is ..."
+  - make docs generation and orchestrator rendering understand aliases directly
+
+- [ ] Standardize a strict skill file skeleton
+  - freeze one canonical frontmatter shape for repo-internal skills
+  - require a shared body outline such as `Purpose`, `When To Use`, `Process`, `Outputs`, `Quality Bar`
+  - add validator checks for missing required sections
+
+- [ ] Move more user-facing skill metadata out of markdown prose and into the registry
+  - evaluate adding `display_name`, `when_to_use`, `canonical/alias`, and `deprecated` fields
+  - keep markdown focused on execution guidance rather than duplicated metadata
+  - keep generated docs and orchestrator skill cards registry-driven
+
 - [ ] Improve install/upgrade ergonomics
   - add part-level control (`--parts` or equivalent) to `scripts/install_research_skill.sh`
   - pass the same control through `rsk upgrade`
@@ -154,7 +183,18 @@ Key facts confirmed from current repo:
 - [ ] Finish MCP/provider hardening
   - add a native `metadata-registry` reference provider
   - keep `doctor` output explicit about builtin vs env-configured providers
+  - make the builtin-vs-external matrix explicit for every MCP slot, not just literature search
+  - document when users should wire an external MCP directly versus dropping in a thin local wrapper/stub
   - remove stale `search_web` / `read_url_content` wording from literature skills and fully align prose with provider-layer terminology
+
+- [ ] Consolidate MCP integration for literature search
+  - define one canonical provider contract for literature retrieval, citation expansion, metadata enrichment, and fulltext lookup
+  - unify provider naming across skills, capability map, doctor output, docs, and user-facing prompts
+  - make literature-search routing explicit between `scholarly-search`, `citation-graph`, `metadata-registry`, and `fulltext-retrieval`
+  - document clearly which layers already have builtin reference providers (`scholarly-search`, `citation-graph`) and which are external capability slots by default
+  - provide a user-facing decision table for zero-config, key-assisted, external MCP, and stub/wrapper-based literature setups
+  - standardize search evidence artifacts so query plan, provider hits, dedup log, and retrieval provenance are emitted in one consistent bundle
+  - clarify fallback order between builtin search, env-configured MCP providers, and bridge-level wrappers for literature workflows
 
 - [ ] Add resume/checkpoint support for long literature flows
   - `paper-screener`
@@ -174,6 +214,11 @@ Key facts confirmed from current repo:
   - `systematic-review-prisma`
   - `empirical-study`
   - `theory-paper`
+
+- [ ] Add a skill-structure lint layer
+  - enforce maximum size / section-count heuristics for repo-internal skill files
+  - prevent registry-summary duplication inside markdown bodies
+  - keep alias skills as thin stubs instead of silently growing into duplicate canonical specs
 
 ### P3 Strategic
 

@@ -1,7 +1,6 @@
 ---
 id: venue-analyzer
 stage: A_framing
-version: "0.2.2"
 description: "Analyze venue fit, formatting constraints, and reviewer expectations to scope and position a paper for a target publication."
 inputs:
   - type: UserQuery

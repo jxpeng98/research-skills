@@ -1,7 +1,6 @@
 ---
 id: dataset-finder
 stage: C_design
-version: "0.2.2"
 description: "Identify feasible primary or secondary datasets, access routes, and coverage limitations for an empirical design."
 inputs:
   - type: RQSet

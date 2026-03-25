@@ -1,7 +1,6 @@
 ---
 id: code-review
 stage: I_code
-version: "0.2.2"
 description: "Secondary model reviews code logic, security, statistical validity, and domain-specific correctness."
 inputs:
   - type: AnalysisCode

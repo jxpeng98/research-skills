@@ -1,7 +1,6 @@
 ---
 id: citation-snowballer
 stage: B_literature
-version: "0.2.2"
 description: "Trace citations forward and backward from seed papers to expand corpus coverage and identify seminal works."
 inputs:
   - type: SearchResults

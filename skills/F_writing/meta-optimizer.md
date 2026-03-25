@@ -1,7 +1,6 @@
 ---
 id: meta-optimizer
 stage: F_writing
-version: "0.2.2"
 description: "Optimize abstract, title, and keywords for indexing, discoverability, SEO, and reader engagement."
 inputs:
   - type: Manuscript

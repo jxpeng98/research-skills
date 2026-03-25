@@ -1,7 +1,6 @@
 ---
 id: model-collaborator
 stage: Z_cross_cutting
-version: "0.2.2"
 description: "Coordinate execution and cross-review across model runtimes (Codex, Claude, Gemini) for multi-agent verification."
 inputs:
   - type: TaskPacket

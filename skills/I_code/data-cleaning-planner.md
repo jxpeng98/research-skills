@@ -1,7 +1,6 @@
 ---
 id: data-cleaning-planner
 stage: I_code
-version: "0.2.2"
 description: "Define executable data-cleaning rules covering validation, missingness, outliers, and harmonization."
 inputs:
   - type: DatasetPlan

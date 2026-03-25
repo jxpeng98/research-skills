@@ -1,7 +1,6 @@
 ---
 id: code-builder
 stage: I_code
-version: "0.2.2"
 description: "Systematic conversion of academic methodologies into executable code (Python/R/Stata/MATLAB/Julia) with domain-profile-driven library selection."
 inputs:
   - type: AnalysisPlan

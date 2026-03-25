@@ -1,7 +1,6 @@
 ---
 id: variable-operationalizer
 stage: C_design
-version: "0.2.2"
 description: "Map abstract constructs to concrete, measurable variables with validity/reliability justification."
 inputs:
   - type: TheoreticalFramework

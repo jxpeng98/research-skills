@@ -1,7 +1,6 @@
 ---
 id: peer-review-simulation
 stage: H_submission
-version: "0.2.2"
 description: "Simulate parallel, independent cross-reviews using distinct reviewer personas (Methodologist, Domain Expert, Reviewer 2)."
 inputs:
   - type: Manuscript

@@ -1,7 +1,6 @@
 ---
 id: prisma-checker
 stage: G_compliance
-version: "0.2.2"
 description: "Verify PRISMA 2020 flow diagram completeness, checklist coverage, and reporting transparency for systematic reviews."
 inputs:
   - type: Manuscript

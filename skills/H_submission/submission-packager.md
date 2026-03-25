@@ -1,7 +1,6 @@
 ---
 id: submission-packager
 stage: H_submission
-version: "0.2.2"
 description: "Assemble submission-ready package: cover letter, compliance files, title page, disclosures, and supplementary materials."
 inputs:
   - type: Manuscript

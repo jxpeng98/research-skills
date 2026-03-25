@@ -1,7 +1,6 @@
 ---
 id: study-designer
 stage: C_design
-version: "0.2.2"
 description: "Design empirical, qualitative, or mixed-methods studies including sampling strategy, instruments, procedures, analysis plans, and protocol lock-in."
 inputs:
   - type: RQSet

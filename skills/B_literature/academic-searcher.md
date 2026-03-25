@@ -1,7 +1,6 @@
 ---
 id: academic-searcher
 stage: B_literature
-version: "0.2.2"
 description: "Conduct systematic multi-database searches across Semantic Scholar, arXiv, OpenAlex, and other sources to build a reproducible corpus."
 inputs:
   - type: RQSet

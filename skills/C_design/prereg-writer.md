@@ -1,7 +1,6 @@
 ---
 id: prereg-writer
 stage: C_design
-version: "0.2.2"
 description: "Generate preregistration documents for OSF/AsPredicted/ClinicalTrials.gov from study design and analysis plan."
 inputs:
   - type: DesignSpec

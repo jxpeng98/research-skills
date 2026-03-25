@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 7
+- Verified completed workstreams: 8
 - Verified-but-not-fully-accepted items: 4
-- Active TODOs: 19
+- Active TODOs: 23
 - Deferred future bets: 5
 
 ---
@@ -35,6 +35,7 @@ Verified from source:
 - `scripts/release_ready.sh`
 - `scripts/bump-version.sh`
 - `scripts/release_preflight.sh`
+- `scripts/run_literature_smoke.sh`
 - `scripts/generate_release_notes.sh`
 - `scripts/install_research_skill.sh`
 - `scripts/sync_versions.py`
@@ -42,6 +43,7 @@ Verified from source:
 - `guides/advanced/extend-research-skills.md`
 - `research-paper-workflow/SKILL.md`
 - `tests/test_orchestrator_workflows.py`
+- `tests/test_literature_pipeline_integration.py`
 - `tests/test_skill_doc_generation.py`
 - `tests/test_sync_versions.py`
 
@@ -52,9 +54,10 @@ Key facts confirmed from current repo:
 - `runtime_options` already flow into Codex / Claude / Gemini bridge construction
 - `team-run` already exists as a distinct fanout/fanin execution mode
 - `--domain` runtime injection already exists
-- native reference MCP scripts already exist for `scholarly-search` and `citation-graph`
+- native reference MCP scripts already exist for `scholarly-search`, `citation-graph`, `metadata-registry`, and `fulltext-retrieval`
 - release preparation is already unified through `scripts/release_ready.sh`
 - `skills/registry.yaml` is now the single canonical skill version source
+- the literature pipeline now has a dedicated integration smoke wired into the main smoke entrypoint
 
 ---
 
@@ -112,6 +115,14 @@ Key facts confirmed from current repo:
 - [x] Made `skills/registry.yaml` the only canonical skill version source
 - [x] Updated validator to reject reintroduction of skill frontmatter `version`
 - [x] Updated release/publish docs to reflect registry-only skill version sync
+
+### 8. Literature MCP Baseline and Smoke
+
+- [x] Added builtin `metadata-registry` reference provider with optional external enrichment overlay
+- [x] Added builtin `fulltext-retrieval` planning stub for `retrieval_manifest.csv` and `screening/full_text.md`
+- [x] Unified the four-layer literature contract across standards, Stage B docs, and user-facing setup guides
+- [x] Added an end-to-end builtin literature integration smoke
+- [x] Wired literature smoke into the main beta/release smoke entrypoint
 
 ---
 
@@ -181,20 +192,14 @@ Key facts confirmed from current repo:
 ### P2 Mid-Term
 
 - [ ] Finish MCP/provider hardening
-  - add a native `metadata-registry` reference provider
-  - keep `doctor` output explicit about builtin vs env-configured providers
   - make the builtin-vs-external matrix explicit for every MCP slot, not just literature search
   - document when users should wire an external MCP directly versus dropping in a thin local wrapper/stub
   - remove stale `search_web` / `read_url_content` wording from literature skills and fully align prose with provider-layer terminology
 
 - [ ] Consolidate MCP integration for literature search
-  - define one canonical provider contract for literature retrieval, citation expansion, metadata enrichment, and fulltext lookup
-  - unify provider naming across skills, capability map, doctor output, docs, and user-facing prompts
-  - make literature-search routing explicit between `scholarly-search`, `citation-graph`, `metadata-registry`, and `fulltext-retrieval`
-  - document clearly which layers already have builtin reference providers (`scholarly-search`, `citation-graph`) and which are external capability slots by default
-  - provide a user-facing decision table for zero-config, key-assisted, external MCP, and stub/wrapper-based literature setups
-  - standardize search evidence artifacts so query plan, provider hits, dedup log, and retrieval provenance are emitted in one consistent bundle
-  - clarify fallback order between builtin search, env-configured MCP providers, and bridge-level wrappers for literature workflows
+  - add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment
+  - decide whether `fulltext-retrieval` should remain a planning stub by default or grow a stronger resolver abstraction
+  - tighten external-provider handoff contracts so builtin literature artifacts can be consumed cleanly by bridge-level wrappers
 
 - [ ] Add resume/checkpoint support for long literature flows
   - `paper-screener`
@@ -205,10 +210,10 @@ Key facts confirmed from current repo:
   - auto-generate `research-paper-workflow/references/workflow-contract.md`
   - or enforce stronger YAML/MD equivalence validation
 
-- [ ] Add integration smoke tests
-  - real bridge command construction
-  - real or recorded CLI output parsing
-  - minimal end-to-end artifact checks
+- [ ] Expand integration smoke beyond the builtin literature baseline
+  - add real bridge command construction checks
+  - add recorded external-provider output parsing checks
+  - decide which smoke stages should be part of release gating versus optional maintainers' checks
 
 - [ ] Add empirical acceptance / eval coverage for the refactored pipelines
   - `systematic-review-prisma`

@@ -2028,6 +2028,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
     smoke_content = read_text(root, "scripts/run_beta_smoke.sh", report)
     if smoke_content:
         for token in (
+            "./scripts/run_literature_smoke.sh",
+            "[literature-smoke] passed",
             "bridges.orchestrator doctor",
             "bridges.orchestrator parallel",
             "bridges.orchestrator task-run",
@@ -2039,12 +2041,25 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
                 f"scripts/run_beta_smoke.sh missing token: {token}",
             )
 
+    literature_smoke_content = read_text(root, "scripts/run_literature_smoke.sh", report)
+    if literature_smoke_content:
+        for token in (
+            "tests.test_literature_pipeline_integration",
+            "[literature-smoke] passed",
+        ):
+            report.check(
+                token in literature_smoke_content,
+                f"run_literature_smoke.sh includes {token}",
+                f"scripts/run_literature_smoke.sh missing token: {token}",
+            )
+
     preflight_content = read_text(root, "scripts/release_preflight.sh", report)
     if preflight_content:
         for token in (
             "validate_research_standard.py",
             "unittest discover -s tests -v",
             "./scripts/run_beta_smoke.sh",
+            "literature pipeline + doctor + parallel + task-run",
             "generate_release_notes.sh",
             "--skip-note-gen",
             "--from-tag",

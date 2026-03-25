@@ -68,6 +68,15 @@ JSON
 
 cd "$ROOT_DIR"
 
+echo "[smoke] literature pipeline"
+# Success marker expected from the delegated smoke script: [literature-smoke] passed
+literature_output="$(./scripts/run_literature_smoke.sh 2>&1)"
+echo "$literature_output"
+if ! contains_text "\\[literature-smoke\\] passed" "$literature_output"; then
+  echo "[smoke] literature pipeline missing success marker" >&2
+  exit 1
+fi
+
 echo "[smoke] doctor"
 run_and_assert_output "doctor" "Doctor Summary" \
   python3 -m bridges.orchestrator doctor --cwd .

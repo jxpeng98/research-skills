@@ -19,7 +19,7 @@ Description:
     0) auto-generate release note draft (when --tag is provided)
     1) strict standard validator
     2) repository unit tests
-    3) release smoke script (doctor + parallel + task-run)
+    3) release smoke script (literature pipeline + doctor + parallel + task-run)
 
 Options:
   --tag <tag>     Optional release tag to pre-check. If provided, script verifies

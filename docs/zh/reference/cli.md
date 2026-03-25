@@ -289,7 +289,15 @@ mode 列表：
 ./scripts/run_beta_smoke.sh
 ```
 
-### 4.5 CI 注入打包默认上游：`./scripts/inject_project_toml.sh`
+这个主 smoke 入口现在也会先运行一遍内置 literature pipeline smoke，再继续做 CLI / profile 路径检查。
+
+### 4.5 Literature smoke：`./scripts/run_literature_smoke.sh`
+
+```bash
+./scripts/run_literature_smoke.sh
+```
+
+### 4.6 CI 注入打包默认上游：`./scripts/inject_project_toml.sh`
 
 GitHub Actions 构建时会运行它，把当前仓库 slug 写入 `research_skills/project.toml`，让 pipx 安装后的 CLI 默认指向正确上游。
 

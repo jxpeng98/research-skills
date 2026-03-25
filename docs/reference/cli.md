@@ -289,7 +289,15 @@ Also executable individually:
 ./scripts/run_beta_smoke.sh
 ```
 
-### 4.5 CI Default Upstream Injector: `./scripts/inject_project_toml.sh`
+This smoke entrypoint now also runs the built-in literature pipeline smoke before the CLI/profile checks.
+
+### 4.5 Literature smoke: `./scripts/run_literature_smoke.sh`
+
+```bash
+./scripts/run_literature_smoke.sh
+```
+
+### 4.6 CI Default Upstream Injector: `./scripts/inject_project_toml.sh`
 
 Executed by GitHub actions during packaging to hardcode the repo slug into `research_skills/project.toml`.
 

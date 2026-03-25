@@ -1915,6 +1915,24 @@ Provide your verification assessment.
                                     f"{enrich_env} invalid: {enrich_detail}",
                                     f"Fix {enrich_env} so builtin metadata-registry can apply external enrichment.",
                                 )
+                    if provider == "fulltext-retrieval":
+                        resolve_env = "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD"
+                        resolve_command = os.environ.get(resolve_env, "").strip()
+                        if resolve_command:
+                            resolve_ok, resolve_detail = self._check_command_available(resolve_command)
+                            if resolve_ok:
+                                add_check(
+                                    "MCP fulltext-retrieval resolution",
+                                    "ok",
+                                    f"overlay configured: {resolve_env} -> {resolve_detail}",
+                                )
+                            else:
+                                add_check(
+                                    "MCP fulltext-retrieval resolution",
+                                    "error",
+                                    f"{resolve_env} invalid: {resolve_detail}",
+                                    f"Fix {resolve_env} so builtin fulltext-retrieval can apply resolver updates.",
+                                )
                 else:
                     add_check(f"MCP {provider}", "ok", detail)
             else:

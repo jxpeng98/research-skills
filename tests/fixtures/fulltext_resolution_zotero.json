@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "summary": "Resolver attached one local full text.",
+  "provenance": [
+    "zotero://select/library/items/ABC123"
+  ],
+  "data": {
+    "retrieval_manifest": [
+      {
+        "record_id": "s2:1",
+        "doi": "10.1000/platform-governance",
+        "retrieval_status": "retrieved_oa",
+        "version_label": "published",
+        "source_provider": "zotero",
+        "retrieved_at": "2026-03-25T00:10:00+00:00",
+        "fulltext_path": "fulltext/platform-governance.pdf",
+        "access_url": "https://files.example.org/platform-governance.pdf",
+        "license": "CC-BY-4.0",
+        "notes": "Resolved from Zotero attachment."
+      }
+    ]
+  }
+}

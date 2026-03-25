@@ -251,6 +251,49 @@ class MCPConnectorTests(unittest.TestCase):
         )
         self.assertEqual(evidence.data["summary_counts"]["oa_candidates"], 1)
 
+    def test_builtin_fulltext_retrieval_applies_external_resolution_overlay(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            (project_root / "fulltext").mkdir(parents=True)
+            (project_root / "fulltext" / "platform-governance.pdf").write_bytes(b"%PDF-1.4\n")
+            (project_root / "search_results.csv").write_text(
+                "record_id,source,query_id,retrieved_at,paper_id,title,authors,year,venue,doi,url,abstract,open_access_pdf_url\n"
+                "s2:1,semantic_scholar,q1,2026-03-25T00:00:00+00:00,S2-1,Platform Governance in Practice,\"Smith, Alex\",2024,Organization Science,10.1000/platform-governance,https://example.com/landing,Abstract text,https://example.com/platform-governance.pdf\n",
+                encoding="utf-8",
+            )
+            fixture_path = FIXTURES_DIR / "fulltext_resolution_zotero.json"
+            resolve_script = root / "fulltext_resolve_fixture.py"
+            resolve_script.write_text(
+                "from pathlib import Path\n"
+                "import sys\n"
+                "sys.stdout.write(Path(sys.argv[1]).read_text(encoding='utf-8'))\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["search_results.csv"],
+            }
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD": f"python3 {resolve_script} {fixture_path}",
+                },
+                clear=False,
+            ):
+                evidence = self.connector.collect("fulltext-retrieval", packet, root)
+
+        self.assertEqual(evidence.status, "ok")
+        self.assertEqual(evidence.data["provider_mode"], "builtin_fulltext_manifest_overlay")
+        self.assertTrue(evidence.data["external_resolution"]["configured"])
+        row = evidence.data["retrieval_manifest"][0]
+        self.assertEqual(row["retrieval_status"], "retrieved_oa")
+        self.assertEqual(row["source_provider"], "zotero")
+        self.assertEqual(row["fulltext_path"], "fulltext/platform-governance.pdf")
+        self.assertEqual(row["license"], "CC-BY-4.0")
+
 
 if __name__ == "__main__":
     unittest.main()

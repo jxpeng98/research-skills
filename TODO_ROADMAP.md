@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 8
+- Verified completed workstreams: 9
 - Verified-but-not-fully-accepted items: 4
-- Active TODOs: 23
+- Active TODOs: 37
 - Deferred future bets: 5
 
 ---
@@ -124,6 +124,13 @@ Key facts confirmed from current repo:
 - [x] Added an end-to-end builtin literature integration smoke
 - [x] Wired literature smoke into the main beta/release smoke entrypoint
 
+### 9. Cross-Platform Workflow Consistency
+
+- [x] Removed non-standard `argument-hint` from all workflow frontmatter (Gemini compatibility)
+- [x] Enhanced `.gemini/research-skills.md` with task-ID routing, skill loading strategy, and architecture references
+- [x] Added `validate_cross_platform_consistency()` CI guard rail to catch future regressions
+- [x] Verified all 14 workflows discoverable across Claude, Codex, and Gemini
+
 ---
 
 ## Verified but Not Yet Fully Accepted
@@ -138,6 +145,12 @@ Key facts confirmed from current repo:
 ## Active TODO List
 
 ### P0 Blocking
+
+- [ ] Create Stage J skill directory and skill cards
+  - create `skills/J_proofread/` with 4 skill cards: `ai-fingerprint-scanner.md` (J1), `human-voice-rewriter.md` (J2), `similarity-checker.md` (J3), `final-proofreader.md` (J4)
+  - register all 4 in `skills/registry.yaml`
+  - add `"J_proofread"` to `EXPECTED_SKILL_STAGES` in the validator
+  - these are the only task IDs (J1–J4) with zero backing skill files
 
 - [ ] Implement a real `validator-gate` in `task-run`
   - add a dedicated post-run validation step
@@ -188,6 +201,32 @@ Key facts confirmed from current repo:
   - pass the same control through `rsk upgrade`
   - add `rsk doctor`
   - add `rsk init`
+
+- [ ] Add `statement-generator` skill for Stage D2
+  - generate ethics, data availability, CRediT, funding, COI, and AI disclosure statements from structured inputs
+  - currently D2 is handled ad hoc by manuscript-architect with no dedicated guidance
+
+- [ ] Add `effect-size-calculator` skill for Stage E2
+  - standardized extraction: Cohen's d/g, OR/RR conversions, extraction from p-values/F-stats/medians
+  - currently E2 reuses the broad evidence-synthesizer without dedicated conversion guidance
+
+- [ ] Add `/compliance-check` workflow for standalone Stage G access
+  - G1 (reporting checklist), G2 (PRISMA), G3 (cross-section), G4 (tone) are only reachable via `/paper` routing
+  - compliance checks are frequently needed independently after drafting
+
+- [ ] Add `contribution-crafter` skill for Stage A2
+  - structured contribution statement: theoretical + empirical + practical + methodological
+  - currently A2 has no dedicated skill file
+
+- [ ] Register 5 unregistered skills in `registry.yaml`
+  - `C_design/data-dictionary-builder.md`, `C_design/data-management-plan.md`, `C_design/prereg-writer.md`, `C_design/variable-operationalizer.md`, `H_submission/credit-taxonomy-helper.md`
+  - these files exist on disk but are not in the registry → invisible to orchestrator and docs generation
+  - remove duplicate `Z_cross_cutting/tone-normalizer.md` (canonical is `G_compliance/tone-normalizer.md`)
+
+- [ ] Enrich 11 thin skills to match Tier 1 quality standard
+  - add output templates, worked examples, and quality bars to: `hypothesis-generator`, `venue-analyzer`, `concept-extractor`, `literature-mapper`, `rival-hypothesis-designer`, `robustness-planner`, `ethics-irb-helper`, `deidentification-planner`, `publication-bias-checker`, `reporting-checker`, `meta-optimizer`
+  - these skills are currently 40–60 lines (functional but insufficient guidance for rigorous academic use)
+  - target: all skills should have at minimum a `## Minimal Output Format` section and document clear quality acceptance criteria
 
 ### P2 Mid-Term
 
@@ -245,6 +284,18 @@ Key facts confirmed from current repo:
 - [ ] Improve confidence scoring using agreement + validation outcomes
 
 - [ ] Add metrics / timing output for orchestration runs
+
+- [ ] Add `discussion-writer` skill for structured Discussion sections
+  - findings summary → theory dialogue → practical implications → limitations → future work
+  - currently Discussion is part of manuscript-architect but lacks dedicated scaffolding
+
+- [ ] Add `limitation-auditor` skill for proactive limitation identification
+  - selection bias, measurement, generalizability, design-specific threats
+  - run before submission to anticipate reviewer objections
+
+- [ ] Add `qualitative-coding` skill for iterative coding workflow
+  - codebook management, inter-rater reliability, theme development
+  - currently qualitative analysis relies on general evidence-synthesizer guidance
 
 ---
 

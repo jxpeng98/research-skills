@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import csv
 import io
+import json
+import os
+import shlex
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -13,6 +17,18 @@ from bridges.providers.metadata_registry import (
     merge_reference_records,
     read_candidate_files,
 )
+
+FULLTEXT_RESOLVE_ENV = "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD"
+FULLTEXT_PROVIDER_PRIORITIES = {
+    "local_file": 95,
+    "zotero": 90,
+    "oa_resolver": 85,
+    "crossref": 75,
+    "openalex": 70,
+    "semantic_scholar_oa_candidate": 45,
+    "search_result_locator": 40,
+    "builtin_fulltext_stub": 20,
+}
 
 
 def run_fulltext_retrieval(
@@ -38,6 +54,15 @@ def run_fulltext_retrieval(
         project_root=project_root,
         retrieved_at=timestamp,
     )
+    manifest_rows, resolution_info = apply_external_resolution(
+        manifest_rows,
+        cwd=project_root,
+        context_hints={
+            "task_packet": task_packet,
+            "project_root": str(project_root),
+            "artifact_bundle": _artifact_bundle(),
+        },
+    )
     screening_rows = _build_screening_rows(manifest_rows)
     summary_counts = _summarize_manifest(manifest_rows)
 
@@ -49,6 +74,12 @@ def run_fulltext_retrieval(
             f"{summary_counts['oa_candidates']} OA/manual candidates, "
             f"{summary_counts['unresolved']} unresolved)."
         )
+        if resolution_info.get("configured"):
+            resolution_status = str(resolution_info.get("status") or "").strip()
+            if resolution_status == "ok":
+                summary += " External resolver overlay merged retrieval updates."
+            elif resolution_status:
+                summary += f" External resolver overlay status: {resolution_status}."
         status = "ok"
     else:
         summary = (
@@ -79,11 +110,128 @@ def run_fulltext_retrieval(
             "artifact_bundle": _artifact_bundle(),
             "dedup_log": dedup_log[:100],
             "existing_manifest_count": len(existing_manifest),
+            "external_resolution": resolution_info,
             "external_resolver_hint": (
-                "Set RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD to connect Zotero or another "
-                "full-text resolver for actual downloads."
+                "Set RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD to layer a resolver on top "
+                "of the builtin planning stub, or RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD to fully "
+                "override the provider."
+            ),
+            "provider_mode": (
+                "builtin_fulltext_manifest_overlay"
+                if resolution_info.get("configured")
+                else "builtin_fulltext_manifest_stub"
             ),
         },
+    }
+
+
+def apply_external_resolution(
+    manifest_rows: list[dict[str, str]],
+    *,
+    cwd: Path,
+    context_hints: dict[str, Any],
+    timeout_seconds: int = 20,
+) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    command = os.environ.get(FULLTEXT_RESOLVE_ENV, "").strip()
+    if not command or not manifest_rows:
+        return manifest_rows, {"configured": False}
+
+    payload = {
+        "provider": "fulltext-retrieval",
+        "mode": "resolve",
+        "retrieval_manifest": manifest_rows,
+        "context_hints": context_hints,
+    }
+    try:
+        parsed_cmd = shlex.split(command)
+        run_result = subprocess.run(
+            parsed_cmd,
+            input=json.dumps(payload, ensure_ascii=False),
+            capture_output=True,
+            text=True,
+            cwd=str(cwd),
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return manifest_rows, {
+            "configured": True,
+            "status": "error",
+            "summary": f"External fulltext resolver timed out after {timeout_seconds}s.",
+            "provenance": [FULLTEXT_RESOLVE_ENV],
+        }
+    except OSError as exc:
+        return manifest_rows, {
+            "configured": True,
+            "status": "error",
+            "summary": f"External fulltext resolver failed to start: {exc}",
+            "provenance": [FULLTEXT_RESOLVE_ENV],
+        }
+
+    if run_result.returncode != 0:
+        stderr = (run_result.stderr or "").strip()
+        return manifest_rows, {
+            "configured": True,
+            "status": "error",
+            "summary": f"External fulltext resolver exited with code {run_result.returncode}.",
+            "provenance": [FULLTEXT_RESOLVE_ENV, stderr] if stderr else [FULLTEXT_RESOLVE_ENV],
+        }
+
+    stdout = (run_result.stdout or "").strip()
+    if not stdout:
+        return manifest_rows, {
+            "configured": True,
+            "status": "warning",
+            "summary": "External fulltext resolver returned empty output.",
+            "provenance": [FULLTEXT_RESOLVE_ENV],
+        }
+
+    try:
+        parsed = json.loads(stdout)
+    except json.JSONDecodeError:
+        return manifest_rows, {
+            "configured": True,
+            "status": "warning",
+            "summary": "External fulltext resolver returned non-JSON output.",
+            "provenance": [FULLTEXT_RESOLVE_ENV, stdout[:280]],
+        }
+
+    merged_rows, resolution_info = merge_external_resolution_payload(manifest_rows, parsed)
+    return merged_rows, {"configured": True, **resolution_info}
+
+
+def merge_external_resolution_payload(
+    manifest_rows: list[dict[str, str]],
+    payload: dict[str, Any],
+) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    data = payload.get("data", {})
+    if not isinstance(data, dict):
+        data = {}
+    raw_rows = data.get("retrieval_manifest") or data.get("manifest_rows") or []
+    if not isinstance(raw_rows, list):
+        raw_rows = []
+    external_rows = [
+        _normalize_external_manifest_row(item, index)
+        for index, item in enumerate(raw_rows, start=1)
+        if isinstance(item, dict)
+    ]
+    if not external_rows:
+        return manifest_rows, {
+            "status": "warning",
+            "summary": str(payload.get("summary", "External fulltext resolver returned no manifest rows.")),
+            "provenance": _normalize_resolution_provenance(payload.get("provenance")),
+        }
+
+    merged_rows, applied_count = _merge_external_manifest_rows(manifest_rows, external_rows)
+    status = str(payload.get("status", "ok")).strip().lower() or "ok"
+    if status not in {"ok", "warning", "error"}:
+        status = "warning"
+    return merged_rows, {
+        "status": status,
+        "summary": str(payload.get("summary", f"External fulltext resolver merged {applied_count} manifest rows.")).strip(),
+        "provenance": _normalize_resolution_provenance(payload.get("provenance")),
+        "record_count": len(external_rows),
+        "applied_count": applied_count,
     }
 
 
@@ -212,6 +360,87 @@ def _build_manifest_rows(
     return sorted(rows, key=lambda item: (_status_sort_key(item.get("retrieval_status", "")), item.get("citekey", ""), item.get("record_id", "")))
 
 
+def _merge_external_manifest_rows(
+    manifest_rows: list[dict[str, str]],
+    external_rows: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], int]:
+    existing = [dict(row) for row in manifest_rows]
+    index_by_key: dict[str, int] = {}
+    for index, row in enumerate(existing):
+        for key in _manifest_lookup_keys(row):
+            index_by_key.setdefault(key, index)
+
+    applied = 0
+    for candidate in external_rows:
+        matched_index = None
+        for key in _manifest_lookup_keys(candidate):
+            if key in index_by_key:
+                matched_index = index_by_key[key]
+                break
+        if matched_index is None:
+            existing.append(candidate)
+            matched_index = len(existing) - 1
+            for key in _manifest_lookup_keys(candidate):
+                index_by_key.setdefault(key, matched_index)
+            applied += 1
+            continue
+
+        merged = _merge_manifest_row(existing[matched_index], candidate)
+        if merged != existing[matched_index]:
+            applied += 1
+        existing[matched_index] = merged
+        for key in _manifest_lookup_keys(merged):
+            index_by_key.setdefault(key, matched_index)
+
+    return sorted(existing, key=lambda item: (_status_sort_key(item.get("retrieval_status", "")), item.get("citekey", ""), item.get("record_id", ""))), applied
+
+
+def _merge_manifest_row(existing: dict[str, str], candidate: dict[str, str]) -> dict[str, str]:
+    merged = dict(existing)
+    for field in (
+        "record_id",
+        "citekey",
+        "doi",
+        "retrieval_status",
+        "version_label",
+        "source_provider",
+        "retrieved_at",
+        "fulltext_path",
+        "access_url",
+        "license",
+    ):
+        current = str(merged.get(field, "") or "").strip()
+        incoming = str(candidate.get(field, "") or "").strip()
+        if not incoming:
+            continue
+        if not current or _should_prefer_manifest_candidate(existing, candidate, field):
+            merged[field] = incoming
+
+    merged["notes"] = _merge_notes(
+        str(existing.get("notes", "") or "").strip(),
+        str(candidate.get("notes", "") or "").strip(),
+    )
+    return merged
+
+
+def _should_prefer_manifest_candidate(
+    existing: dict[str, str],
+    candidate: dict[str, str],
+    field: str,
+) -> bool:
+    existing_priority = _manifest_provider_priority(existing)
+    candidate_priority = _manifest_provider_priority(candidate)
+    if field == "retrieval_status":
+        return _retrieval_status_rank(candidate.get(field, "")) >= _retrieval_status_rank(existing.get(field, "")) and (
+            candidate_priority >= existing_priority or _retrieval_status_rank(candidate.get(field, "")) > _retrieval_status_rank(existing.get(field, ""))
+        )
+    if field in {"fulltext_path", "access_url", "license", "version_label", "retrieved_at"}:
+        return candidate_priority >= existing_priority
+    if field == "source_provider":
+        return candidate_priority > existing_priority
+    return candidate_priority >= existing_priority
+
+
 def _build_manifest_row(
     record: dict[str, Any],
     existing_row: dict[str, str],
@@ -253,7 +482,7 @@ def _build_manifest_row(
         if retrieval_status == "not_retrieved:oa_candidate":
             notes = _append_note(
                 notes,
-                "Candidate access URL identified locally; configure RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD for actual download.",
+                "Candidate access URL identified locally; configure RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD for resolver-backed download updates.",
             )
         elif retrieval_status == "not_retrieved:needs_provider":
             notes = _append_note(
@@ -403,6 +632,54 @@ def _build_screening_rows(manifest_rows: list[dict[str, str]]) -> list[dict[str,
     return rows
 
 
+def _normalize_external_manifest_row(item: dict[str, Any], index: int) -> dict[str, str]:
+    source_provider = _normalize_provider_name(
+        item.get("source_provider") or item.get("resolver") or item.get("provider") or item.get("source")
+    ) or "external_resolver"
+    doi = _clean(item.get("doi")).lower()
+    return {
+        "record_id": _clean(item.get("record_id")) or f"resolver:{index}",
+        "citekey": _clean(item.get("citekey")),
+        "doi": doi,
+        "retrieval_status": _clean(item.get("retrieval_status")),
+        "version_label": _clean(item.get("version_label")),
+        "source_provider": source_provider,
+        "retrieved_at": _clean(item.get("retrieved_at")),
+        "fulltext_path": _clean(item.get("fulltext_path")),
+        "access_url": _clean(item.get("access_url") or item.get("resolved_url")),
+        "license": _clean(item.get("license")),
+        "notes": _clean(item.get("notes")),
+    }
+
+
+def _normalize_resolution_provenance(raw: Any) -> list[str]:
+    if isinstance(raw, list):
+        return [str(item) for item in raw if str(item).strip()]
+    if raw:
+        return [str(raw)]
+    return []
+
+
+def _manifest_provider_priority(row: dict[str, str]) -> int:
+    provider = _normalize_provider_name(row.get("source_provider"))
+    return FULLTEXT_PROVIDER_PRIORITIES.get(provider, 20)
+
+
+def _normalize_provider_name(raw: Any) -> str:
+    return _clean(raw).lower().replace("-", "_").replace(" ", "_")
+
+
+def _retrieval_status_rank(status: str) -> int:
+    normalized = _clean(status)
+    if normalized in {"retrieved_oa", "retrieved_preprint"}:
+        return 3
+    if normalized == "not_retrieved:oa_candidate":
+        return 2
+    if normalized:
+        return 1
+    return 0
+
+
 def _summarize_manifest(rows: list[dict[str, str]]) -> dict[str, int]:
     summary = {
         "total": len(rows),
@@ -434,6 +711,14 @@ def _append_note(existing: str, addition: str) -> str:
     if addition in existing:
         return existing
     return f"{existing} {addition}".strip()
+
+
+def _merge_notes(existing: str, candidate: str) -> str:
+    if not existing:
+        return candidate
+    if not candidate or candidate in existing:
+        return existing
+    return f"{existing} {candidate}".strip()
 
 
 def _clean(value: Any) -> str:

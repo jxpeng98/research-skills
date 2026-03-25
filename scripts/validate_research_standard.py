@@ -1677,6 +1677,88 @@ def validate_docs(root: Path, report: ValidationReport) -> None:
         )
 
 
+def validate_cross_platform_consistency(root: Path, report: ValidationReport) -> None:
+    """Ensure workflow files stay consistent across Codex, Claude, and Gemini."""
+    workflow_dir = root / ".agent" / "workflows"
+    if not workflow_dir.exists():
+        report.errors.append("Missing .agent/workflows/ directory")
+        print("[FAIL] Missing .agent/workflows/ directory")
+        return
+
+    # Discover all workflow files
+    workflow_files = sorted(p for p in workflow_dir.iterdir() if p.suffix == ".md")
+    workflow_names = {p.stem for p in workflow_files}
+    report.check(
+        len(workflow_files) > 0,
+        "Workflow directory contains .md files",
+        "No .md workflow files found in .agent/workflows/",
+    )
+
+    # --- Check 1: Workflow frontmatter must only have 'description' ---
+    allowed_frontmatter_keys = {"description"}
+    for wf_path in workflow_files:
+        try:
+            wf_content = wf_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        fm, _body = parse_frontmatter(wf_content)
+        extra_keys = set(fm.keys()) - allowed_frontmatter_keys
+        report.check(
+            not extra_keys,
+            f"{wf_path.name} frontmatter has only 'description'",
+            (
+                f"{wf_path.name} frontmatter has non-standard keys: "
+                f"{', '.join(sorted(extra_keys))}. "
+                "Only 'description' is supported by Gemini/Antigravity"
+            ),
+        )
+        report.check(
+            "description" in fm,
+            f"{wf_path.name} frontmatter includes 'description'",
+            f"{wf_path.name} frontmatter missing required 'description' field",
+        )
+
+    # --- Check 2: .gemini/research-skills.md references all workflows ---
+    gemini_context = root / ".gemini" / "research-skills.md"
+    if gemini_context.exists():
+        gemini_content = gemini_context.read_text(encoding="utf-8")
+        report.passed += 1
+        print("[PASS] .gemini/research-skills.md exists")
+        for wf_name in sorted(workflow_names):
+            report.warn(
+                f"/{wf_name}" in gemini_content,
+                f".gemini/research-skills.md lists /{wf_name}",
+                f".gemini/research-skills.md missing quick command /{wf_name}",
+            )
+    else:
+        report.warnings.append(".gemini/research-skills.md not found")
+        print("[WARN] .gemini/research-skills.md not found")
+
+    # --- Check 3: CLAUDE.md references all workflows ---
+    claude_content = read_text(root, "CLAUDE.md", report)
+    if claude_content:
+        for wf_name in sorted(workflow_names):
+            report.warn(
+                f"/{wf_name}" in claude_content,
+                f"CLAUDE.md lists /{wf_name}",
+                f"CLAUDE.md missing quick command /{wf_name}",
+            )
+
+    # --- Check 4: Gemini context references key architecture files ---
+    if gemini_context.exists():
+        gemini_content = gemini_context.read_text(encoding="utf-8")
+        for key_ref in (
+            "skills-core.md",
+            "workflow-contract.md",
+            "RESEARCH/[topic]/",
+        ):
+            report.warn(
+                key_ref in gemini_content,
+                f".gemini/research-skills.md references {key_ref}",
+                f".gemini/research-skills.md should reference {key_ref} for skill routing",
+            )
+
+
 def validate_orchestrator(root: Path, report: ValidationReport) -> None:
     content = read_text(root, "bridges/orchestrator.py", report)
     if not content:
@@ -2280,6 +2362,7 @@ def main() -> int:
     validate_guides(root, report)
     validate_stage_i_templates(root, report)
     validate_docs(root, report)
+    validate_cross_platform_consistency(root, report)
 
     total_failed = len(report.errors)
     total_warn = len(report.warnings)

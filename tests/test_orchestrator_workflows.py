@@ -272,6 +272,21 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("MCP metadata-registry: builtin available: mcp_metadata_registry.py", result.merged_analysis)
         self.assertIn("MCP metadata-registry enrichment: overlay configured:", result.merged_analysis)
 
+    def test_doctor_reports_fulltext_resolution_overlay(self) -> None:
+        orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")
+        with mock.patch.dict(
+            os.environ,
+            {
+                "RESEARCH_CLI_LANG": "zh-CN",
+                "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD": "python3 /tmp/zotero_overlay.py",
+            },
+            clear=False,
+        ):
+            result = orchestrator.doctor(REPO_ROOT)
+
+        self.assertIn("MCP fulltext-retrieval: builtin available: mcp_fulltext_retrieval.py", result.merged_analysis)
+        self.assertIn("MCP fulltext-retrieval resolution: overlay configured:", result.merged_analysis)
+
     def test_task_run_executes_with_draft_and_review(self) -> None:
         orchestrator = MockOrchestrator()
         result = orchestrator.task_run(

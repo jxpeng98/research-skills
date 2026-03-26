@@ -57,6 +57,8 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 
 ## 目标环境行为
 
+- 项目级默认内容
+  - 默认将 `.env.example` 复制为 `<project>/.env`，让项目开箱就有可编辑的运行时配置文件。
 - `codex`
   - 将 `research-paper-workflow` 安装到 `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`。
 - `claude`
@@ -67,6 +69,11 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
   - 将 `research-paper-workflow` 安装到 `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`。
   - 在 `<project>/.gemini/research-skills.md` 中创建 orchestrator 快速启动命令参考。
   - 将 `standards/agent-profiles.example.json` 复制到 `<project>/.gemini/agent-profiles.example.json`。
+- `antigravity`
+  - 在写入全局目录前，先检查 `PATH` 中是否存在 `antigravity` CLI。
+  - 将 workspace skill 安装到 `<project>/.agents/skills/research-paper-workflow`。
+  - 同时写入兼容旧目录的 `<project>/.agent/skills/research-paper-workflow`。
+  - 若 CLI 可用，则把全局 skill 安装到 `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow`。
 
 ## 常用参数
 

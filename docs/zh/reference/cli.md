@@ -76,7 +76,7 @@ rsk upgrade \
   [--repo <owner/repo|url>] \
   [--ref <tag-or-branch>] \
   [--ref-type tag|branch] \
-  [--target codex|claude|gemini|all] \
+  [--target codex|claude|gemini|antigravity|all] \
   [--project-dir <path>] \
   [--no-overwrite] \
   [--doctor] \
@@ -84,7 +84,7 @@ rsk upgrade \
 ```
 
 说明：
-- `--project-dir` 用于写入项目内集成文件（例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`）。
+- `--project-dir` 用于写入项目内集成文件（例如 `.agent/workflows/`、`.agents/skills/`、`CLAUDE.md`、`.gemini/`）。
 - Shell CLI 会通过随附的 bootstrap helper 执行升级，不依赖 Python。
 - 对 shell CLI 而言，`upgrade` 应视为 copy 模式刷新；如果你需要 `link` 软链接安装，请直接使用本地安装器。
 - 退出码为底层安装器返回码（若安装失败，沿用其错误码）。

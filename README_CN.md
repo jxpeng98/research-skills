@@ -296,7 +296,7 @@ pipx install research-skills-installer
 | `--repo <owner/repo|git-url>` | 指定上游 GitHub 仓库 | 默认取 `RESEARCH_SKILLS_REPO`，否则 `jxpeng98/research-skills` |
 | `--ref <tag-or-branch>` | 指定安装的版本或分支 | 默认自动解析 latest release |
 | `--ref-type <tag|branch>` | 指定 `--ref` 是 tag 还是 branch | 默认 `tag` |
-| `--target <codex|claude|gemini|all>` | 指定写入哪些客户端目录 | 默认 `all` |
+| `--target <codex|claude|gemini|antigravity|all>` | 指定写入哪些客户端目录 | 默认 `all` |
 | `--project-dir <path>` | 指定项目集成文件的写入目录 | 默认当前目录 |
 | `--install-cli` | 安装 shell CLI | 默认开启 |
 | `--no-cli` | 跳过 shell CLI 安装，只装 workflow 资产 | 与 `--install-cli` 相反 |
@@ -339,7 +339,7 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 
 | 参数 | 作用 | 默认值 / 说明 |
 |------|------|---------------|
-| `--target <codex|claude|gemini|all>` | 指定写入哪些客户端目录 | 默认 `all` |
+| `--target <codex|claude|gemini|antigravity|all>` | 指定写入哪些客户端目录 | 默认 `all` |
 | `--mode <copy|link>` | 复制文件或创建软链接 | 默认 `copy` |
 | `--project-dir <path>` | 指定项目集成文件写入目录 | 默认当前目录 |
 | `--install-cli` | 安装 shell CLI | 默认关闭 |
@@ -397,7 +397,7 @@ rsk check --json
 | `--repo <owner/repo|url>` | 指定上游仓库 |
 | `--ref <tag-or-branch>` | 指定版本或分支 |
 | `--ref-type <tag|branch>` | 指定 ref 类型 |
-| `--target <codex|claude|gemini|all>` | 指定安装目标 |
+| `--target <codex|claude|gemini|antigravity|all>` | 指定安装目标 |
 | `--project-dir <path>` | 指定项目路径 |
 | `--no-cli` | 升级时不刷新 shell CLI |
 | `--cli-dir <path>` | 指定 shell CLI 目录 |
@@ -440,6 +440,7 @@ rsk align --repo jxpeng98/research-skills
 | `CODEX_HOME` | Codex skill 安装根目录 |
 | `CLAUDE_CODE_HOME` | Claude Code skill 安装根目录 |
 | `GEMINI_HOME` | Gemini skill 安装根目录 |
+| `ANTIGRAVITY_HOME` | Antigravity 全局 skill 安装根目录 |
 | `GITHUB_TOKEN` / `GH_TOKEN` | 私有仓库或 GitHub API 限流时的认证令牌 |
 
 ### 6. 什么时候需要 Python

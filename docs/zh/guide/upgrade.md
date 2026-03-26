@@ -46,14 +46,17 @@ rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --
 
 这个项目有两类“安装目标”：
 
-- **三端本地 skill 安装目录**（让 Codex / Claude Code / Gemini 识别 skill）  
+- **本地 skill 安装目录**（让 Codex / Claude Code / Gemini / Antigravity 识别 skill）  
   - Codex: `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`
   - Claude: `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`
   - Gemini: `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`
+  - Antigravity（全局）: `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow`
 - **项目内集成文件**（让 Claude Code 的 `/...` 命令在你的项目里可用）  
   - `<project>/.agent/workflows/*.md`
   - `<project>/CLAUDE.md`（或 `CLAUDE.research-skills.md`）
   - `<project>/.gemini/research-skills.md`
+  - `<project>/.agents/skills/research-paper-workflow`
+  - `<project>/.agent/skills/research-paper-workflow`
 
 升级的本质就是：**把这些目标路径覆盖为新版本**（通常需要 `--overwrite`）。
 

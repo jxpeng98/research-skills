@@ -295,7 +295,7 @@ Common args:
 | `--repo <owner/repo|git-url>` | Choose the upstream GitHub repo | Defaults to `RESEARCH_SKILLS_REPO`, else `jxpeng98/research-skills` |
 | `--ref <tag-or-branch>` | Install a specific release tag or branch | Defaults to latest release |
 | `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` | Default `tag` |
-| `--target <codex|claude|gemini|all>` | Choose which client targets to write | Default `all` |
+| `--target <codex|claude|gemini|antigravity|all>` | Choose which client targets to write | Default `all` |
 | `--project-dir <path>` | Choose where project integration files are written | Default current directory |
 | `--install-cli` | Install shell CLI commands | Enabled by default |
 | `--no-cli` | Skip shell CLI installation and install workflow assets only | Opposite of `--install-cli` |
@@ -338,7 +338,7 @@ Common args:
 
 | Arg | Purpose | Default / Notes |
 |-----|---------|-----------------|
-| `--target <codex|claude|gemini|all>` | Choose which client targets to write | Default `all` |
+| `--target <codex|claude|gemini|antigravity|all>` | Choose which client targets to write | Default `all` |
 | `--mode <copy|link>` | Copy files or create symlinks | Default `copy` |
 | `--project-dir <path>` | Choose where project integration files are written | Default current directory |
 | `--install-cli` | Install shell CLI | Off by default |
@@ -396,7 +396,7 @@ Common args:
 | `--repo <owner/repo|url>` | Override the upstream repo |
 | `--ref <tag-or-branch>` | Choose a release tag or branch |
 | `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` |
-| `--target <codex|claude|gemini|all>` | Choose install target |
+| `--target <codex|claude|gemini|antigravity|all>` | Choose install target |
 | `--project-dir <path>` | Choose project path |
 | `--no-cli` | Skip shell CLI refresh |
 | `--cli-dir <path>` | Choose shell CLI directory |
@@ -439,6 +439,7 @@ rsk align --repo jxpeng98/research-skills
 | `CODEX_HOME` | Root directory for Codex skill installation |
 | `CLAUDE_CODE_HOME` | Root directory for Claude Code skill installation |
 | `GEMINI_HOME` | Root directory for Gemini skill installation |
+| `ANTIGRAVITY_HOME` | Root directory for Antigravity global skill installation |
 | `GITHUB_TOKEN` / `GH_TOKEN` | Auth token for private repos or GitHub API limits |
 
 ### 6. What still needs Python

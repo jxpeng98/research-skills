@@ -43,6 +43,8 @@ If you already have a repository checkout, you can run the installer directly:
 
 ## Target behaviors
 
+- project-level defaults
+  - Copies `.env.example` to `<project>/.env` by default so the project has a ready-to-edit runtime config template.
 - `codex`
   - Installs `research-paper-workflow` into `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`.
 - `claude`
@@ -53,6 +55,11 @@ If you already have a repository checkout, you can run the installer directly:
   - Installs `research-paper-workflow` into `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`.
   - Creates `<project>/.gemini/research-skills.md` with orchestrator quickstart commands.
   - Copies `standards/agent-profiles.example.json` to `<project>/.gemini/agent-profiles.example.json`.
+- `antigravity`
+  - Checks whether the `antigravity` CLI is present before writing the global install target.
+  - Installs workspace-local skills to `<project>/.agents/skills/research-paper-workflow`.
+  - Writes the backward-compatible workspace copy to `<project>/.agent/skills/research-paper-workflow`.
+  - Installs the global skill to `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow` when the CLI is available.
 
 ## Common flags
 

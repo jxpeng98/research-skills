@@ -76,7 +76,7 @@ rsk upgrade \
   [--repo <owner/repo|url>] \
   [--ref <tag-or-branch>] \
   [--ref-type tag|branch] \
-  [--target codex|claude|gemini|all] \
+  [--target codex|claude|gemini|antigravity|all] \
   [--project-dir <path>] \
   [--no-overwrite] \
   [--doctor] \
@@ -84,7 +84,7 @@ rsk upgrade \
 ```
 
 Notes:
-- `--project-dir` tells the installer where to write the project-level integrations (e.g., `.agent/workflows/`, `CLAUDE.md`, `.gemini/`).
+- `--project-dir` tells the installer where to write the project-level integrations (e.g., `.agent/workflows/`, `.agents/skills/`, `CLAUDE.md`, `.gemini/`).
 - Shell CLI uses the bundled bootstrap helper and does not require Python.
 - Treat shell-CLI `upgrade` as copy-mode refresh. If you need symlink-based `link` installs, use the local installer directly.
 - The command exits with the error code returned by the underlying installer.

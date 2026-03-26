@@ -4,11 +4,12 @@ import json
 import os
 import tempfile
 import unittest
-from unittest import mock
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 from bridges.base_bridge import BridgeResponse, CollaborationResult
+from bridges.command_runtime import current_python_command
 from bridges import i18n as i18n_module
 from bridges.mcp_connectors import MCPEvidence
 from bridges.orchestrator import CollaborationMode, ModelOrchestrator
@@ -247,7 +248,7 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             os.environ,
             {
                 "RESEARCH_CLI_LANG": "zh-CN",
-                "RESEARCH_MCP_SCHOLARLY_SEARCH_CMD": f"python3 {script_path}",
+                "RESEARCH_MCP_SCHOLARLY_SEARCH_CMD": current_python_command(str(script_path)),
             },
             clear=False,
         ):
@@ -263,7 +264,9 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             os.environ,
             {
                 "RESEARCH_CLI_LANG": "zh-CN",
-                "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": "python3 /tmp/openalex_overlay.py",
+                "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": current_python_command(
+                    "/tmp/openalex_overlay.py"
+                ),
             },
             clear=False,
         ):
@@ -278,7 +281,9 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             os.environ,
             {
                 "RESEARCH_CLI_LANG": "zh-CN",
-                "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD": "python3 /tmp/zotero_overlay.py",
+                "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD": current_python_command(
+                    "/tmp/zotero_overlay.py"
+                ),
             },
             clear=False,
         ):

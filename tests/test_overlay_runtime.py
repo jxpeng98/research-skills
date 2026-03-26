@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from bridges.command_runtime import current_python_command
 from bridges.providers.overlay_runtime import invoke_overlay_json
 
 
@@ -32,7 +33,7 @@ class OverlayRuntimeTests(unittest.TestCase):
             script.write_text("print('not-json')\n", encoding="utf-8")
             with mock.patch.dict(
                 os.environ,
-                {"RESEARCH_MCP_FAKE_OVERLAY_CMD": f"python3 {script}"},
+                {"RESEARCH_MCP_FAKE_OVERLAY_CMD": current_python_command(str(script))},
                 clear=False,
             ):
                 parsed, info = invoke_overlay_json(

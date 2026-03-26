@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
 import subprocess
 from pathlib import Path
 from typing import Any
+
+from bridges.command_runtime import split_command
 
 
 def invoke_overlay_json(
@@ -21,7 +22,7 @@ def invoke_overlay_json(
         return None, {"configured": False}
 
     try:
-        parsed_cmd = shlex.split(command)
+        parsed_cmd = split_command(command)
         run_result = subprocess.run(
             parsed_cmd,
             input=json.dumps(payload, ensure_ascii=False),

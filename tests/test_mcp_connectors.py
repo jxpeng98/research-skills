@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from bridges.command_runtime import current_python_command
 from bridges.mcp_connectors import MCPConnector
 
 
@@ -23,13 +24,13 @@ class MCPConnectorTests(unittest.TestCase):
         script_path = REPO_ROOT / "scripts" / "mcp_scholarly_search.py"
         with mock.patch.dict(
             os.environ,
-            {"RESEARCH_MCP_SCHOLARLY_SEARCH_CMD": f"python3 {script_path}"},
+            {"RESEARCH_MCP_SCHOLARLY_SEARCH_CMD": current_python_command(str(script_path))},
             clear=False,
         ):
             resolution = self.connector.resolve_provider("scholarly-search")
 
         self.assertEqual(resolution.source, "env_override")
-        self.assertIn("python3", resolution.command or "")
+        self.assertIn(str(script_path), resolution.command or "")
         self.assertEqual(resolution.native_script, str(script_path))
 
     def test_resolve_provider_detects_builtin(self) -> None:
@@ -157,7 +158,9 @@ class MCPConnectorTests(unittest.TestCase):
             with mock.patch.dict(
                 os.environ,
                 {
-                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": f"python3 {enrich_script}",
+                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": current_python_command(
+                        str(enrich_script)
+                    ),
                 },
                 clear=False,
             ):
@@ -202,7 +205,10 @@ class MCPConnectorTests(unittest.TestCase):
             with mock.patch.dict(
                 os.environ,
                 {
-                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": f"python3 {enrich_script} {fixture_path}",
+                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": current_python_command(
+                        str(enrich_script),
+                        str(fixture_path),
+                    ),
                 },
                 clear=False,
             ):
@@ -279,7 +285,10 @@ class MCPConnectorTests(unittest.TestCase):
             with mock.patch.dict(
                 os.environ,
                 {
-                    "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD": f"python3 {resolve_script} {fixture_path}",
+                    "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD": current_python_command(
+                        str(resolve_script),
+                        str(fixture_path),
+                    ),
                 },
                 clear=False,
             ):

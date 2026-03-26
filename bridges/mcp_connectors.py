@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
 import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
+
+from bridges.command_runtime import current_python_command, split_command
 
 
 @dataclass
@@ -113,7 +114,7 @@ class MCPConnector:
             "task_packet": task_packet,
         }
         try:
-            parsed_cmd = shlex.split(command)
+            parsed_cmd = split_command(command)
             run_result = subprocess.run(
                 parsed_cmd,
                 input=json.dumps(payload, ensure_ascii=False),
@@ -222,7 +223,7 @@ class MCPConnector:
                 provider=provider,
                 env_name=env_name,
                 source="builtin",
-                command=f"python3 {native_script_str}",
+                command=current_python_command(native_script_str),
                 native_script=native_script_str,
             )
         return MCPProviderResolution(

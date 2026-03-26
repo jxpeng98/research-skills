@@ -19,7 +19,6 @@ import argparse
 import json
 import os
 import re
-import shlex
 import shutil
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -30,6 +29,7 @@ from typing import Any
 
 from .base_bridge import BridgeResponse, CollaborationResult, configure_stdio
 from .claude_bridge import ClaudeBridge
+from .command_runtime import split_command
 from .codex_bridge import CodexBridge
 from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
@@ -1765,7 +1765,7 @@ Provide your verification assessment.
 
     def _check_command_available(self, command: str) -> tuple[bool, str]:
         try:
-            parsed = shlex.split(command)
+            parsed = split_command(command)
         except ValueError as exc:
             return False, f"Invalid command syntax: {exc}"
         if not parsed:

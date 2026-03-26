@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 9
+- Verified completed workstreams: 11
 - Verified-but-not-fully-accepted items: 4
-- Active TODOs: 37
+- Active TODOs: 35
 - Deferred future bets: 5
 
 ---
@@ -131,6 +131,22 @@ Key facts confirmed from current repo:
 - [x] Added `validate_cross_platform_consistency()` CI guard rail to catch future regressions
 - [x] Verified all 14 workflows discoverable across Claude, Codex, and Gemini
 
+### 10. Skill Corpus Deep Enrichment (Tier 1–3)
+
+- [x] Enriched 17 Tier 2 skills to Tier 1 standard (Round 1)
+- [x] Deepened 8 existing Tier 1 skills with section templates, decision matrices, and quality bars (Round 2)
+- [x] Rewrote 9 remaining Tier 3 stubs to full Tier 1 standard (Round 3)
+- [x] Total skill corpus: 14,141 lines across 54 registered skills
+- [x] All skills now contain: process substeps, output templates, quality bars, pitfalls, academic methodology references
+
+### 11. Stage K_presentation — Academic Presentation
+
+- [x] Created `skills/K_presentation/` with 4 skill files: `presentation-planner`, `slide-architect`, `slidev-scholarly-builder`, `beamer-builder`
+- [x] Registered all 4 in `skills/registry.yaml`
+- [x] Created `.agent/workflows/academic-present.md` slash-command workflow
+- [x] Integrated `slidev-theme-scholarly` layouts, components, and presets
+- [x] Updated README.md, README_CN.md, and `.gemini/research-skills.md`
+
 ---
 
 ## Verified but Not Yet Fully Accepted
@@ -223,10 +239,7 @@ Key facts confirmed from current repo:
   - these files exist on disk but are not in the registry → invisible to orchestrator and docs generation
   - remove duplicate `Z_cross_cutting/tone-normalizer.md` (canonical is `G_compliance/tone-normalizer.md`)
 
-- [ ] Enrich 11 thin skills to match Tier 1 quality standard
-  - add output templates, worked examples, and quality bars to: `hypothesis-generator`, `venue-analyzer`, `concept-extractor`, `literature-mapper`, `rival-hypothesis-designer`, `robustness-planner`, `ethics-irb-helper`, `deidentification-planner`, `publication-bias-checker`, `reporting-checker`, `meta-optimizer`
-  - these skills are currently 40–60 lines (functional but insufficient guidance for rigorous academic use)
-  - target: all skills should have at minimum a `## Minimal Output Format` section and document clear quality acceptance criteria
+- [x] ~~Enrich 11 thin skills to match Tier 1 quality standard~~ (Completed in Milestone 10)
 
 ### P2 Mid-Term
 

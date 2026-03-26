@@ -543,6 +543,70 @@ python -m bridges.orchestrator code-build \
 
 ---
 
+## presentation-planner
+
+**Purpose:** Design the story arc, content budget, and audience calibration for an academic talk
+
+**Process:**
+1. Classify talk type (conference / seminar / job talk / poster / lightning)
+2. Map manuscript sections → slide inventory (show / cut / appendix)
+3. Choose story arc (3-act / claim-first / puzzle)
+4. Calibrate for audience expertise level
+5. Create slide blueprint with per-slide time budget
+6. Plan appendix slides for Q&A
+7. Select output backend (Slidev / Beamer / PPTX)
+
+**Output:** `PresentationPlan`
+
+---
+
+## slide-architect
+
+**Purpose:** Design backend-agnostic slide content specs using assertion-evidence format
+
+**Process:**
+1. Convert each blueprint item into assertion (title) + evidence (body)
+2. Map slide types to Slidev / Beamer / PPTX layouts
+3. Adapt paper figures for projection (≥20pt text, high contrast)
+4. Write speaker notes for every content slide
+5. Plan progressive reveal / animations
+
+**Output:** `SlideDeckSpec`
+
+---
+
+## slidev-scholarly-builder
+
+**Purpose:** Generate Slidev deck with `slidev-theme-scholarly` layouts and BibTeX citations
+
+**Process:**
+1. Scaffold project: `npx sch init my-talk --template academic`
+2. Configure frontmatter (theme, authors, preset)
+3. Build slides using scholarly layouts (cover, section, methodology, results, compare, references, etc.)
+4. Use components (@citekey, Theorem, Block, Steps, Keywords)
+5. Set up `references.bib` for auto-citations
+6. Export: `npx slidev export`
+
+**Output:** `SlidevDeck`, `BibTeXFile`
+
+---
+
+## beamer-builder
+
+**Purpose:** Generate LaTeX Beamer presentation with theme selection and BibLaTeX
+
+**Process:**
+1. Select Beamer theme (metropolis / Madrid / Berlin / etc.)
+2. Build document skeleton with packages and metadata
+3. Construct frame types (content, figure, table, columns, theorem)
+4. Add overlays/animations (\pause, \onslide, \only)
+5. Configure BibLaTeX citations (\textcite, \parencite)
+6. Compile: `latexmk -pdf slides.tex`
+
+**Output:** `BeamerDeck`, `BibTeXFile`
+
+---
+
 ## API Quick Reference
 
 | API | Base URL | Rate Limit |

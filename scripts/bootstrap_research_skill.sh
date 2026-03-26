@@ -47,7 +47,7 @@ Options:
   --repo <owner/repo|git-url>          Upstream repo (default: RESEARCH_SKILLS_REPO or jxpeng98/research-skills)
   --ref <tag-or-branch>                Explicit release tag or branch name
   --ref-type <tag|branch>              How to interpret --ref (default: tag)
-  --target <codex|claude|gemini|all>   Install target (default: all)
+  --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy>                        Install mode for remote bootstrap (default: copy)
   --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
   --install-cli                        Install shell CLI commands into the bin dir (default: on)
@@ -264,7 +264,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$TARGET" in
-  codex|claude|gemini|all) ;;
+  codex|claude|gemini|antigravity|all) ;;
   *)
     err "Unsupported target: $TARGET"
     exit 2

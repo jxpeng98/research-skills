@@ -306,8 +306,8 @@ cmd_align() {
   printf -- '- CLI aliases: `research-skills`, `rsk`, `rsw`.\n'
   printf -- '- A bundled bootstrap helper used by `upgrade`.\n\n'
   printf 'What `%s upgrade` modifies:\n' "$prog"
-  printf -- '- Global skills: ~/.codex|~/.claude|~/.gemini under `skills/research-paper-workflow/`\n'
-  printf -- '- One project: `<project>/.agent/workflows/`, `CLAUDE.md`, `.gemini/`\n'
+  printf -- '- Global skills: ~/.codex|~/.claude|~/.gemini and ~/.gemini/antigravity under `skills/research-paper-workflow/`\n'
+  printf -- '- One project: `<project>/.agent/workflows/`, `<project>/.agents/skills/`, `CLAUDE.md`, `.gemini/`\n'
   printf -- '- Shell CLI files in `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` when installed via bootstrap\n\n'
   printf 'Typical usage:\n'
   printf '1) Check:   %s check --repo %s\n' "$prog" "$repo_hint"
@@ -328,8 +328,8 @@ cmd_upgrade() {
 cmd_check() {
   local repo_arg="" json=0 strict_network=0
   local repo repo_root="" local_version="" latest_tag="" latest_status="" update_available=0
-  local codex_dir claude_dir gemini_dir
-  local codex_version="" claude_version="" gemini_version=""
+  local codex_dir claude_dir gemini_dir antigravity_dir
+  local codex_version="" claude_version="" gemini_version="" antigravity_version=""
   local best_version="" best_key="" candidate key
 
   while [[ $# -gt 0 ]]; do
@@ -374,9 +374,11 @@ EOF
   codex_dir="${CODEX_HOME:-$HOME/.codex}/skills/research-paper-workflow"
   claude_dir="${CLAUDE_CODE_HOME:-$HOME/.claude}/skills/research-paper-workflow"
   gemini_dir="${GEMINI_HOME:-$HOME/.gemini}/skills/research-paper-workflow"
+  antigravity_dir="${ANTIGRAVITY_HOME:-$HOME/.gemini/antigravity}/skills/research-paper-workflow"
   codex_version="$(read_version_file "$codex_dir/VERSION" || true)"
   claude_version="$(read_version_file "$claude_dir/VERSION" || true)"
   gemini_version="$(read_version_file "$gemini_dir/VERSION" || true)"
+  antigravity_version="$(read_version_file "$antigravity_dir/VERSION" || true)"
 
   if latest_tag="$(resolve_latest_tag "$repo" 2>/dev/null)"; then
     latest_status="ok"
@@ -388,7 +390,7 @@ EOF
     fi
   fi
 
-  for candidate in "$local_version" "$codex_version" "$claude_version" "$gemini_version"; do
+  for candidate in "$local_version" "$codex_version" "$claude_version" "$gemini_version" "$antigravity_version"; do
     [[ -n "$candidate" ]] || continue
     if key="$(version_key "$candidate" 2>/dev/null)"; then
       if [[ -z "$best_key" || "$key" > "$best_key" ]]; then
@@ -429,6 +431,11 @@ EOF
       "path": "$(json_escape "$gemini_dir")",
       "installed": $( [[ -d "$gemini_dir" ]] && printf 'true' || printf 'false' ),
       "version": "$(json_escape "$gemini_version")"
+    },
+    "antigravity": {
+      "path": "$(json_escape "$antigravity_dir")",
+      "installed": $( [[ -d "$antigravity_dir" ]] && printf 'true' || printf 'false' ),
+      "version": "$(json_escape "$antigravity_version")"
     }
   },
   "latest_release": "$(json_escape "$latest_tag")",
@@ -453,6 +460,7 @@ EOF
   printf '   - codex:  version=%s, path=%s\n' "${codex_version:-<unknown>}" "$codex_dir"
   printf '   - claude: version=%s, path=%s\n' "${claude_version:-<unknown>}" "$claude_dir"
   printf '   - gemini: version=%s, path=%s\n' "${gemini_version:-<unknown>}" "$gemini_dir"
+  printf '   - antigravity: version=%s, path=%s\n' "${antigravity_version:-<unknown>}" "$antigravity_dir"
   printf '\n3) Upstream Release\n'
   printf '   - Repo: %s\n' "$repo"
   if [[ -n "$latest_tag" ]]; then

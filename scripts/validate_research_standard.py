@@ -710,6 +710,19 @@ def validate_portable_skill(root: Path, report: ValidationReport) -> None:
                 f"Missing file: research-paper-workflow/{reference_path}",
             )
 
+    lowercase_skill_content = read_text(root, "research-paper-workflow/skill.md", report)
+    report.check(
+        bool(lowercase_skill_content),
+        "skill.md lowercase compatibility entry exists",
+        "Missing file: research-paper-workflow/skill.md",
+    )
+    if skill_content and lowercase_skill_content:
+        report.check(
+            lowercase_skill_content == skill_content,
+            "skill.md matches canonical SKILL.md",
+            "research-paper-workflow/skill.md must stay byte-identical to SKILL.md",
+        )
+
     yaml_content = read_text(root, "research-paper-workflow/agents/openai.yaml", report)
     if yaml_content:
         required_keys = (
@@ -1921,6 +1934,7 @@ def validate_guides(root: Path, report: ValidationReport) -> None:
         "CODEX_HOME",
         "CLAUDE_CODE_HOME",
         "GEMINI_HOME",
+        "ANTIGRAVITY_HOME",
         "bridges.orchestrator doctor",
     ):
         report.check(
@@ -2233,12 +2247,14 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
     installer_content = read_text(root, "scripts/install_research_skill.sh", report)
     if installer_content:
         for token in (
-            "--target <codex|claude|gemini|all>",
+            "--target <codex|claude|gemini|antigravity|all>",
             "--project-dir",
             "--doctor",
             "research-paper-workflow",
             ".agent/workflows",
             "research-skills.md",
+            ".agents/skills",
+            "ANTIGRAVITY_HOME",
         ):
             report.check(
                 token in installer_content,

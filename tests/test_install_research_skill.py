@@ -53,7 +53,64 @@ class InstallResearchSkillTests(unittest.TestCase):
             self.assertTrue((project_dir / ".agent" / "workflows" / "proofread.md").exists())
             self.assertTrue((project_dir / ".agent" / "workflows" / "study-design.md").exists())
             self.assertTrue((project_dir / "CLAUDE.md").exists())
+            self.assertTrue((project_dir / ".env").exists())
+            self.assertIn("Env", result.stdout)
             self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
+
+    def test_antigravity_install_writes_workspace_and_global_skill_when_cli_exists(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            antigravity_home = temp_root / "antigravity-home"
+            home_dir = temp_root / "home"
+            bin_dir = temp_root / "bin"
+            home_dir.mkdir()
+            bin_dir.mkdir()
+            antigravity_cli = bin_dir / "antigravity"
+            antigravity_cli.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+            antigravity_cli.chmod(0o755)
+
+            env = os.environ.copy()
+            env["HOME"] = str(home_dir)
+            env["ANTIGRAVITY_HOME"] = str(antigravity_home)
+            env["PATH"] = f"{bin_dir}{os.pathsep}{env.get('PATH', '')}"
+            env["NO_COLOR"] = "1"
+
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(INSTALL_SCRIPT),
+                    "--target",
+                    "antigravity",
+                    "--mode",
+                    "copy",
+                    "--project-dir",
+                    str(project_dir),
+                ],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn("CLI", result.stdout)
+            self.assertIn("antigravity", result.stdout)
+            self.assertTrue(
+                (project_dir / ".agents" / "skills" / "research-paper-workflow" / "SKILL.md").exists()
+            )
+            self.assertTrue(
+                (project_dir / ".agent" / "skills" / "research-paper-workflow" / "SKILL.md").exists()
+            )
+            self.assertTrue(
+                (antigravity_home / "skills" / "research-paper-workflow" / "SKILL.md").exists()
+            )
 
 
 if __name__ == "__main__":

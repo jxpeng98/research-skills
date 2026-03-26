@@ -55,7 +55,7 @@ Usage:
   ./scripts/install_research_skill.sh [options]
 
 Options:
-  --target <codex|claude|gemini|all>   Install target (default: all)
+  --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy|link>                   Install mode (default: copy)
   --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
   --install-cli                        Install shell CLI commands (`research-skills`, `rsk`, `rsw`)
@@ -70,6 +70,7 @@ Environment overrides:
   CODEX_HOME        Default: $HOME/.codex
   CLAUDE_CODE_HOME  Default: $HOME/.claude
   GEMINI_HOME       Default: $HOME/.gemini
+  ANTIGRAVITY_HOME  Default: $HOME/.gemini/antigravity
   RESEARCH_SKILLS_BIN_DIR Default: $HOME/.local/bin
 EOF
 }
@@ -160,6 +161,30 @@ resolve_abs() {
 
 has_python3() {
   command -v python3 >/dev/null 2>&1
+}
+
+cli_name_for_target() {
+  case "$1" in
+    codex) printf 'codex\n' ;;
+    claude) printf 'claude\n' ;;
+    gemini) printf 'gemini\n' ;;
+    antigravity) printf 'antigravity\n' ;;
+    *) return 1 ;;
+  esac
+}
+
+check_target_cli() {
+  local target="$1"
+  local cli_name resolved
+
+  cli_name="$(cli_name_for_target "$target")" || return 1
+  if resolved="$(command -v "$cli_name" 2>/dev/null)"; then
+    ok "CLI" "$target -> $resolved"
+    return 0
+  fi
+
+  warn "$target CLI not found in PATH: $cli_name"
+  return 1
 }
 
 path_contains_dir() {
@@ -295,6 +320,18 @@ copy_workflows_for_claude() {
   fi
 }
 
+install_project_env() {
+  local env_src="$ROOT_DIR/.env.example"
+  local env_dest="$PROJECT_DIR/.env"
+
+  if [[ ! -f "$env_src" ]]; then
+    warn "Missing .env template: $env_src"
+    return 0
+  fi
+
+  copy_item_display "$env_src" "$env_dest" "Env"
+}
+
 write_gemini_quickstart() {
   local quickstart_dir="$PROJECT_DIR/.gemini"
   local quickstart_path="$quickstart_dir/research-skills.md"
@@ -327,6 +364,13 @@ EOF
   fi
 
   copy_item_display "$ROOT_DIR/standards/agent-profiles.example.json" "$profile_dest" "Profiles"
+}
+
+install_antigravity_workspace() {
+  local primary_dest="$PROJECT_DIR/.agents/skills/research-paper-workflow"
+  local legacy_dest="$PROJECT_DIR/.agent/skills/research-paper-workflow"
+  copy_item_display "$SKILL_SRC" "$primary_dest" "Workspace Skill"
+  copy_item_display "$SKILL_SRC" "$legacy_dest" "Legacy Skill"
 }
 
 # ── Parse arguments ──────────────────────────────────────────────────────────
@@ -385,7 +429,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$TARGET" in
-  codex|claude|gemini|all) ;;
+  codex|claude|gemini|antigravity|all) ;;
   *)
     echo "Unsupported target: $TARGET" >&2
     usage
@@ -413,6 +457,8 @@ fi
 CODEX_SKILL_DEST="${CODEX_HOME:-$HOME/.codex}/skills/research-paper-workflow"
 CLAUDE_SKILL_DEST="${CLAUDE_CODE_HOME:-$HOME/.claude}/skills/research-paper-workflow"
 GEMINI_SKILL_DEST="${GEMINI_HOME:-$HOME/.gemini}/skills/research-paper-workflow"
+ANTIGRAVITY_SKILL_DEST="${ANTIGRAVITY_HOME:-$HOME/.gemini/antigravity}/skills/research-paper-workflow"
+ANTIGRAVITY_CLI_FOUND=0
 
 # ── Header ───────────────────────────────────────────────────────────────────
 printf "\n${C_BOLD}Research Skills Installer${C_RESET}\n"
@@ -422,6 +468,32 @@ info "target:  $TARGET  |  mode: $MODE"
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   info "cli:     install -> $CLI_DIR"
 fi
+
+section "CLI Checks"
+case "$TARGET" in
+  codex)
+    check_target_cli codex || true
+    ;;
+  claude)
+    check_target_cli claude || true
+    ;;
+  gemini)
+    check_target_cli gemini || true
+    ;;
+  antigravity)
+    if check_target_cli antigravity; then
+      ANTIGRAVITY_CLI_FOUND=1
+    fi
+    ;;
+  all)
+    check_target_cli codex || true
+    check_target_cli claude || true
+    check_target_cli gemini || true
+    if check_target_cli antigravity; then
+      ANTIGRAVITY_CLI_FOUND=1
+    fi
+    ;;
+esac
 
 # ── Install targets ──────────────────────────────────────────────────────────
 if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
@@ -446,9 +518,22 @@ if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
   write_gemini_quickstart
 fi
 
+if [[ "$TARGET" == "antigravity" || "$TARGET" == "all" ]]; then
+  section "Antigravity"
+  install_antigravity_workspace
+  if [[ "$ANTIGRAVITY_CLI_FOUND" -eq 1 ]]; then
+    copy_item_display "$SKILL_SRC" "$ANTIGRAVITY_SKILL_DEST" "Global Skill"
+  else
+    skip "Global Skill" "$ANTIGRAVITY_SKILL_DEST (antigravity CLI not found)"
+  fi
+fi
+
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   install_cli_assets
 fi
+
+section "Project Env"
+install_project_env
 
 # ── Doctor ───────────────────────────────────────────────────────────────────
 if [[ "$RUN_DOCTOR" -eq 1 ]]; then
@@ -535,7 +620,7 @@ fi
 # ── Footer ───────────────────────────────────────────────────────────────────
 printf "\n${C_GREEN}${C_BOLD}✓ Installation complete${C_RESET}"
 case "$TARGET" in
-  all)  printf " ${C_DIM}(codex + claude + gemini)${C_RESET}" ;;
+  all)  printf " ${C_DIM}(codex + claude + gemini + antigravity)${C_RESET}" ;;
   *)    printf " ${C_DIM}($TARGET)${C_RESET}" ;;
 esac
 printf "\n"

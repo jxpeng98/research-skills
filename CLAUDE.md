@@ -16,6 +16,7 @@ Local validation:
 python3 scripts/validate_research_standard.py --strict
 python3 -m unittest tests.test_orchestrator_workflows -v
 python3 -m bridges.orchestrator doctor --cwd .
+./scripts/install_research_skill.sh --target all --project-dir /path/to/project --doctor
 ```
 
 ## Quick Commands

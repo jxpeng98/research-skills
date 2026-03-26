@@ -786,6 +786,73 @@ skills:
     domain_aware: true
 
   # ══════════════════════════════════════════════════════════
+  # K_presentation — Academic presentation preparation
+  # ══════════════════════════════════════════════════════════
+  - id: presentation-planner
+    stage: K_presentation
+    version: "0.3.0"
+    file: skills/K_presentation/presentation-planner.md
+    summary: "Design story arc, content budget, and audience calibration for academic talks."
+    summary_zh: "设计学术报告的叙事弧线、内容预算和观众校准策略。"
+    display_name_zh: "报告规划"
+    when_to_use_zh: "当你需要从论文出发策划一个学术报告的结构和取舍时使用。"
+    inputs: [Manuscript, UserQuery]
+    outputs: [PresentationPlan]
+    tags: [presentation, planning, story-arc, audience, time-management]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: slide-architect
+    stage: K_presentation
+    version: "0.3.0"
+    file: skills/K_presentation/slide-architect.md
+    summary: "Design slide content specs with assertion-evidence format and multi-backend layout mapping."
+    summary_zh: "用 assertion-evidence 格式设计每页幻灯片内容，并映射到多个渲染后端。"
+    display_name_zh: "幻灯片架构"
+    when_to_use_zh: "当你需要逐页定义幻灯片的内容、布局和演讲备注时使用。"
+    inputs: [PresentationPlan, Manuscript, FigureSpecs]
+    outputs: [SlideDeckSpec]
+    tags: [presentation, slides, design, assertion-evidence, layout-mapping]
+    depends_on: [presentation-planner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: slidev-scholarly-builder
+    stage: K_presentation
+    version: "0.3.0"
+    file: skills/K_presentation/slidev-scholarly-builder.md
+    summary: "Generate Slidev deck with slidev-theme-scholarly layouts, BibTeX citations, and visual presets."
+    summary_zh: "用 slidev-theme-scholarly 生成带学术布局、BibTeX 引文和视觉预设的演示文稿。"
+    display_name_zh: "Slidev 学术构建"
+    when_to_use_zh: "当你选择 Slidev + scholarly 主题作为演示后端时使用。"
+    inputs: [SlideDeckSpec, Bibliography, FigureSpecs]
+    outputs: [SlidevDeck, BibTeXFile]
+    tags: [presentation, slidev, scholarly, markdown, citations, web]
+    depends_on: [slide-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: false
+
+  - id: beamer-builder
+    stage: K_presentation
+    version: "0.3.0"
+    file: skills/K_presentation/beamer-builder.md
+    summary: "Generate LaTeX Beamer presentation with theme selection, BibLaTeX citations, and math support."
+    summary_zh: "生成带主题选择、BibLaTeX 引文和数学支持的 LaTeX Beamer 演示文稿。"
+    display_name_zh: "Beamer 构建"
+    when_to_use_zh: "当你选择 LaTeX Beamer 作为演示后端时使用。"
+    inputs: [SlideDeckSpec, Bibliography, FigureSpecs]
+    outputs: [BeamerDeck, BibTeXFile]
+    tags: [presentation, beamer, latex, PDF, citations, math]
+    depends_on: [slide-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
   # Z_cross_cutting — Multi-agent, metadata, QA
   # ══════════════════════════════════════════════════════════
   - id: metadata-enricher

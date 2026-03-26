@@ -37,7 +37,7 @@
 
 ## 先记住几个边界
 
-- 当前 internal skill registry 覆盖的是 `A` 到 `I` 阶段，再加 `Z_cross_cutting`。
+- 当前 internal skill registry 覆盖的是 `A` 到 `K` 阶段，再加 `Z_cross_cutting`。
 - `J` 类 proofread / polish 入口目前主要在 workflow 层，不是单独的 top-level internal skill stage。
 - `skills/` 下面有一部分文件是**补充卡片**，还有一部分是 Stage-I 代码链路的**镜像目录**；它们都很有用，但不等于“独立的 canonical routed skill”。
 
@@ -54,6 +54,7 @@
 | `G_compliance` | PRISMA、报告规范、学术语气 | 3 | “论文是否已经满足提交前规范？” |
 | `H_submission` | 投稿包、回复审稿、模拟评审 | 5 | “投稿前后怎么打包和应对审稿？” |
 | `I_code` | 学术代码、统计、可复现性 | 9 | “研究代码如何实现、审查、复现？” |
+| `K_presentation` | 学术报告（Slidev / Beamer / PPTX） | 4 | “怎么把论文变成一个学术报告？” |
 | `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 3 | “哪些能力是跨阶段通用的？” |
 
 ## 按 Stage 看 Canonical Skills
@@ -177,6 +178,17 @@
 | `code-review` | 学术代码审查 | 当你需要第二模型审查代码逻辑、统计有效性和方法一致性时使用。 | `CodeReview` |
 | `reproducibility-auditor` | 可复现性审计 | 当你需要检查 seed、环境、rerun recipe 和复现证据时使用。 | `ReproducibilityReport` |
 | `stats-engine` | 统计引擎 | 当重点是统计建模、诊断和假设检验，而不是一般编码时使用。 | `StatsReport` |
+
+### K. 演示（Presentation）
+
+当你有了研究成果，需要准备学术报告时，用 Stage K —— 会议报告、Seminar、Job talk 或海报。
+
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `presentation-planner` | 报告规划 | 当你需要从论文出发策划一个学术报告的结构和取舍时使用。 | `PresentationPlan` |
+| `slide-architect` | 幻灯片架构 | 当你需要逐页定义幻灯片的内容、布局和演讲备注时使用。 | `SlideDeckSpec` |
+| `slidev-scholarly-builder` | Slidev 学术构建 | 当你选择 Slidev + scholarly 主题作为演示后端时使用。 | `SlidevDeck`, `BibTeXFile` |
+| `beamer-builder` | Beamer 构建 | 当你选择 LaTeX Beamer 作为演示后端时使用。 | `BeamerDeck`, `BibTeXFile` |
 
 ### Z. Cross-Cutting
 

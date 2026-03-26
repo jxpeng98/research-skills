@@ -106,6 +106,7 @@ If you prefer command entrypoints instead of explicit Task IDs, use the Claude w
 /study-design
 /paper-write
 /submission-prep
+/academic-present
 ```
 
 These commands are entry UX only. The canonical task and artifact truth still lives in `standards/`.

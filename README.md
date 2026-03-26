@@ -24,6 +24,7 @@ A contract-driven academic workflow system for Codex, Claude Code, and Gemini, c
 - 🧑‍⚖️ **Multi-Persona Peer Review** - Parallel, independent cross-reviews (Methodologist, Domain Expert, "Reviewer 2")
 - 🔎 **AI De-fingerprinting & Proofread** - Multi-AI collaborative de-AI rewriting, similarity reduction, and final proofread
 - 🚀 **Strict Stage-I Academic Code Flow** - `I5 -> I6 -> I7 -> I8` with structured spec/plan/execute/review artifacts and targeted follow-up
+- 🎤 **Academic Presentation** - Story arc design → slide content spec → output to Slidev (scholarly theme), LaTeX Beamer, or PPTX
 - 🛡️ **Iterative Critique Loop (Red Teaming)** - AI self-review and Socratic questioning to continuously narrow down and refine outputs
 - 🤖 **Multi-Model Collaboration** - Codex + Claude + Gemini coordination across research stages
 - ⚡ **Token Optimized** - Layered skills architecture (~90% reduction)
@@ -210,6 +211,7 @@ If your client is using the installed workflow entry markdowns, try these comman
 | `/rebuttal` | Rebuttal / revision response | `/rebuttal ai-in-education` |
 | `/code-build` | Strict Stage-I academic code flow | `/code-build "Staggered DID" --topic policy-effects --domain econ --focus full` |
 | `/proofread` | AI de-fingerprinting & final proofread | `/proofread ai-in-education` |
+| `/academic-present` | Academic presentation prep | `/academic-present ai-in-education --format slidev` |
 
 ---
 
@@ -719,7 +721,7 @@ research-skills/
 ├── roles/                    # Functional-agent role configs (research responsibility layer)
 ├── bridges/                  # Runtime orchestration and model adapters
 ├── skills/                   # Internal skill specs referenced by the capability map
-│   ├── [...]                 # Stages A through J
+│   ├── [...]                 # Stages A through K
 │   └── domain-profiles/      # Domain-specific configs (economics, cs-ai, etc.)
 ├── schemas/                  # JSON schemas + artifact type vocab
 ├── eval/                     # Golden test cases

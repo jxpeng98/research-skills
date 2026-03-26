@@ -37,7 +37,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 
 ## Important Boundaries
 
-- The current internal skill registry covers stages `A` through `I`, plus `Z_cross_cutting`.
+- The current internal skill registry covers stages `A` through `K`, plus `Z_cross_cutting`.
 - `J`-level proofread and polishing entrypoints live at the workflow layer today; they are not a separate top-level skill stage in the internal registry.
 - Some markdown files under `skills/` are **supplemental cards** or **mirror copies** for the Stage-I code lane. They are documented below, but they are not all separate routed skills.
 
@@ -54,6 +54,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 | `G_compliance` | reporting checklists, tone, PRISMA | 3 | "Is this compliant and submission-ready?" |
 | `H_submission` | submission package, rebuttal, review simulation | 5 | "How do I package, defend, and stress-test the paper?" |
 | `I_code` | academic code, stats, reproducibility | 9 | "How do I implement and verify research code?" |
+| `K_presentation` | academic presentations (Slidev / Beamer / PPTX) | 4 | "How do I turn my paper into a talk?" |
 | `Z_cross_cutting` | metadata, model collaboration, self-critique | 3 | "How do I improve quality across stages?" |
 
 ## Canonical Skills By Stage
@@ -177,6 +178,17 @@ That sequence is what `code-build --focus full` is designed to reinforce.
 | `code-review` | Secondary model reviews code logic, security, and statistical validity. | `CodeReview` |
 | `reproducibility-auditor` | Verify seeds, containerization, and fail-graceful contingencies. | `ReproducibilityReport` |
 | `stats-engine` | Statistical modeling and hypothesis testing with domain-driven diagnostics. | `StatsReport` |
+
+### K. Presentation
+
+Use Stage K when you have results and need to prepare an academic presentation — conference talk, seminar, job talk, or poster.
+
+| Skill | What it does | Produces |
+|---|---|---|
+| `presentation-planner` | Design story arc, content budget, and audience calibration for academic talks. | `PresentationPlan` |
+| `slide-architect` | Design slide content specs with assertion-evidence format and multi-backend layout mapping. | `SlideDeckSpec` |
+| `slidev-scholarly-builder` | Generate Slidev deck with slidev-theme-scholarly layouts, BibTeX citations, and visual presets. | `SlidevDeck`, `BibTeXFile` |
+| `beamer-builder` | Generate LaTeX Beamer presentation with theme selection, BibLaTeX citations, and math support. | `BeamerDeck`, `BibTeXFile` |
 
 ### Z. Cross-Cutting
 

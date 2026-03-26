@@ -24,6 +24,7 @@
 - 🧑‍⚖️ **多角色专家互审** - 平行独立审稿模拟（Methodologist, Domain Expert, "Reviewer 2"）
 - 🔎 **AI 去痕与终审校对** - 多 AI 协作去 AI 化改写、降重检测、终审校对
 - 🚀 **严格 Stage-I 学术代码流** - `I5 -> I6 -> I7 -> I8` 结构化 spec/plan/execute/review 产物，以及定向 follow-up 重跑
+- 🎤 **学术报告制作** - 故事线设计 → 幻灯片内容定义 → 输出到 Slidev（scholarly 主题）、LaTeX Beamer 或 PPTX
 - 🤖 **多模型（Multi-Model）协同** - 混合调度 Codex、Claude、Gemini 跨阶段作业
 - ⚡ **Token 深度优化** - 采用分层结构，指令 Token 开销降低 ~90%
 
@@ -210,6 +211,7 @@ python3 -m bridges.orchestrator code-build \
 | `/rebuttal` | 审稿意见回复与矩阵生成 | `/rebuttal ai-in-education` |
 | `/code-build` | 严格 Stage-I 学术代码流 | `/code-build "Staggered DID" --topic policy-effects --domain econ --focus full` |
 | `/proofread` | AI 去痕与终审校对 | `/proofread ai-in-education` |
+| `/academic-present` | 学术报告制作 | `/academic-present ai-in-education --format slidev` |
 
 ---
 
@@ -610,7 +612,7 @@ research-skills/
 ├── .agent/workflows/         # 安装后的 workflow 入口 markdown / slash-command surface
 ├── bridges/                  # Python Orchestrator 多端路由通信网桥
 ├── skills/                   # 系统全系学术卡片
-│   ├── [...]                 # 对应阶段 A 到 J
+│   ├── [...]                 # 对应阶段 A 到 K
 │   └── domain-profiles/      # (动态挂载的领域知识图谱 Economics, Bio等)
 ├── schemas/                  # Validator 数据验证
 ├── eval/                     # 性能及覆盖率对焦 Test Cases

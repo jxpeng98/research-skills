@@ -2,10 +2,6 @@ from __future__ import annotations
 
 import csv
 import io
-import json
-import os
-import shlex
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -17,6 +13,7 @@ from bridges.providers.metadata_registry import (
     merge_reference_records,
     read_candidate_files,
 )
+from bridges.providers.overlay_runtime import invoke_overlay_json
 
 FULLTEXT_RESOLVE_ENV = "RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD"
 FULLTEXT_PROVIDER_PRIORITIES = {
@@ -132,8 +129,7 @@ def apply_external_resolution(
     context_hints: dict[str, Any],
     timeout_seconds: int = 20,
 ) -> tuple[list[dict[str, str]], dict[str, Any]]:
-    command = os.environ.get(FULLTEXT_RESOLVE_ENV, "").strip()
-    if not command or not manifest_rows:
+    if not manifest_rows:
         return manifest_rows, {"configured": False}
 
     payload = {
@@ -142,62 +138,18 @@ def apply_external_resolution(
         "retrieval_manifest": manifest_rows,
         "context_hints": context_hints,
     }
-    try:
-        parsed_cmd = shlex.split(command)
-        run_result = subprocess.run(
-            parsed_cmd,
-            input=json.dumps(payload, ensure_ascii=False),
-            capture_output=True,
-            text=True,
-            cwd=str(cwd),
-            timeout=timeout_seconds,
-            check=False,
-        )
-    except subprocess.TimeoutExpired:
-        return manifest_rows, {
-            "configured": True,
-            "status": "error",
-            "summary": f"External fulltext resolver timed out after {timeout_seconds}s.",
-            "provenance": [FULLTEXT_RESOLVE_ENV],
-        }
-    except OSError as exc:
-        return manifest_rows, {
-            "configured": True,
-            "status": "error",
-            "summary": f"External fulltext resolver failed to start: {exc}",
-            "provenance": [FULLTEXT_RESOLVE_ENV],
-        }
-
-    if run_result.returncode != 0:
-        stderr = (run_result.stderr or "").strip()
-        return manifest_rows, {
-            "configured": True,
-            "status": "error",
-            "summary": f"External fulltext resolver exited with code {run_result.returncode}.",
-            "provenance": [FULLTEXT_RESOLVE_ENV, stderr] if stderr else [FULLTEXT_RESOLVE_ENV],
-        }
-
-    stdout = (run_result.stdout or "").strip()
-    if not stdout:
-        return manifest_rows, {
-            "configured": True,
-            "status": "warning",
-            "summary": "External fulltext resolver returned empty output.",
-            "provenance": [FULLTEXT_RESOLVE_ENV],
-        }
-
-    try:
-        parsed = json.loads(stdout)
-    except json.JSONDecodeError:
-        return manifest_rows, {
-            "configured": True,
-            "status": "warning",
-            "summary": "External fulltext resolver returned non-JSON output.",
-            "provenance": [FULLTEXT_RESOLVE_ENV, stdout[:280]],
-        }
+    parsed, overlay_info = invoke_overlay_json(
+        env_name=FULLTEXT_RESOLVE_ENV,
+        payload=payload,
+        cwd=cwd,
+        timeout_seconds=timeout_seconds,
+        label="External fulltext resolver",
+    )
+    if parsed is None:
+        return manifest_rows, overlay_info
 
     merged_rows, resolution_info = merge_external_resolution_payload(manifest_rows, parsed)
-    return merged_rows, {"configured": True, **resolution_info}
+    return merged_rows, {**overlay_info, **resolution_info}
 
 
 def merge_external_resolution_payload(

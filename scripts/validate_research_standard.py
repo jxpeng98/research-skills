@@ -49,6 +49,7 @@ EXPECTED_SKILL_STAGES = {
     "G_compliance",
     "H_submission",
     "I_code",
+    "K_presentation",
     "Z_cross_cutting",
 }
 EXPECTED_ROUTING_STAGE_IDS = EXPECTED_STAGE_IDS | {"J"}

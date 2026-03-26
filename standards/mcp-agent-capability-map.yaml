@@ -278,6 +278,10 @@ skill_registry:
   - "code-planning"
   - "code-execution"
   - "code-review"
+  - "presentation-planner"
+  - "slide-architect"
+  - "slidev-scholarly-builder"
+  - "beamer-builder"
 
 skill_catalog:
   question-refiner:
@@ -613,6 +617,32 @@ skill_catalog:
     focus: "Secondary model reviews code logic, security, and statistical validity."
     default_outputs:
       - "code/code_review.md"
+  presentation-planner:
+    file: "skills/K_presentation/presentation-planner.md"
+    category: "academic-presentation"
+    focus: "Plan talk-level story arc, audience calibration, and time budget from manuscript material."
+    default_outputs:
+      - "presentation/presentation_plan.md"
+  slide-architect:
+    file: "skills/K_presentation/slide-architect.md"
+    category: "academic-presentation"
+    focus: "Translate talk plan into slide-by-slide assertion-evidence specs and backend-agnostic layout guidance."
+    default_outputs:
+      - "presentation/slide_deck_spec.md"
+  slidev-scholarly-builder:
+    file: "skills/K_presentation/slidev-scholarly-builder.md"
+    category: "academic-presentation"
+    focus: "Build Slidev scholarly decks with citation wiring and visual layout presets."
+    default_outputs:
+      - "presentation/slidev/"
+      - "presentation/slides.bib"
+  beamer-builder:
+    file: "skills/K_presentation/beamer-builder.md"
+    category: "academic-presentation"
+    focus: "Build LaTeX Beamer decks with theme selection, math support, and BibLaTeX references."
+    default_outputs:
+      - "presentation/beamer/"
+      - "presentation/slides.bib"
 
 skill_boundary_notes:
   academic-searcher:

@@ -15,6 +15,7 @@ STAGE_ORDER = [
     "G_compliance",
     "H_submission",
     "I_code",
+    "K_presentation",
     "Z_cross_cutting",
 ]
 
@@ -74,6 +75,12 @@ STAGE_META_EN: dict[str, dict[str, str]] = {
         "intent": '"How do I implement and verify research code?"',
         "intro": "Use Stage I for academic code, data workflows, statistical execution, and reproducibility. This lane is stricter than general engineering prompts.",
         "extra": "The core strict sequence is:\n\n1. `code-specification`\n2. `code-planning`\n3. `code-execution`\n4. `code-review`\n5. `reproducibility-auditor`\n\nThat sequence is what `code-build --focus full` is designed to reinforce.",
+    },
+    "K_presentation": {
+        "label": "K. Presentation",
+        "focus": "academic talks, slide planning, Slidev, Beamer",
+        "intent": '"How do I turn the paper into a defensible talk?"',
+        "intro": "Use Stage K when the paper already exists and the next task is to turn it into a talk, seminar deck, or conference presentation.",
     },
     "Z_cross_cutting": {
         "label": "Z. Cross-Cutting",
@@ -139,6 +146,12 @@ STAGE_META_ZH: dict[str, dict[str, str]] = {
         "intent": "“研究代码如何实现、审查、复现？”",
         "intro": "当你做的是学术代码、统计执行、数据流水线和可复现性收口时，用 Stage I。它比通用工程 prompt 更强调“低自由度、强审计”。",
         "extra": "当前严格主链是：\n\n1. `code-specification`\n2. `code-planning`\n3. `code-execution`\n4. `code-review`\n5. `reproducibility-auditor`\n\n这也是 `code-build --focus full` 想要强化的使用方式。",
+    },
+    "K_presentation": {
+        "label": "K. Presentation",
+        "focus": "学术报告、幻灯片规划、Slidev、Beamer",
+        "intent": "“怎么把论文变成一个可讲、可答辩的学术报告？”",
+        "intro": "当论文已经成形，下一步是把内容转成 seminar、conference talk 或 defense deck 时，用 Stage K。",
     },
     "Z_cross_cutting": {
         "label": "Z. Cross-Cutting",
@@ -438,7 +451,7 @@ def render_skill_reference_en(root: Path) -> str:
         "",
         "## Important Boundaries",
         "",
-        "- The current internal skill registry covers stages `A` through `I`, plus `Z_cross_cutting`.",
+        "- The current internal skill registry covers stages `A` through `I`, plus `K_presentation` and `Z_cross_cutting`.",
         "- `J`-level proofread and polishing entrypoints live at the workflow layer today; they are not a separate top-level skill stage in the internal registry.",
         "- Some markdown files under `skills/` are **supplemental cards** or **mirror copies** for the Stage-I code lane. They are documented below, but they are not all separate routed skills.",
         "",
@@ -533,7 +546,7 @@ def render_skill_reference_zh(root: Path) -> str:
         "",
         "## 先记住几个边界",
         "",
-        "- 当前 internal skill registry 覆盖的是 `A` 到 `I` 阶段，再加 `Z_cross_cutting`。",
+        "- 当前 internal skill registry 覆盖的是 `A` 到 `I` 阶段，再加 `K_presentation` 和 `Z_cross_cutting`。",
         "- `J` 类 proofread / polish 入口目前主要在 workflow 层，不是单独的 top-level internal skill stage。",
         "- `skills/` 下面有一部分文件是**补充卡片**，还有一部分是 Stage-I 代码链路的**镜像目录**；它们都很有用，但不等于“独立的 canonical routed skill”。",
         "",

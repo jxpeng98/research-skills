@@ -37,7 +37,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 
 ## Important Boundaries
 
-- The current internal skill registry covers stages `A` through `K`, plus `Z_cross_cutting`.
+- The current internal skill registry covers stages `A` through `I`, plus `K_presentation` and `Z_cross_cutting`.
 - `J`-level proofread and polishing entrypoints live at the workflow layer today; they are not a separate top-level skill stage in the internal registry.
 - Some markdown files under `skills/` are **supplemental cards** or **mirror copies** for the Stage-I code lane. They are documented below, but they are not all separate routed skills.
 
@@ -54,7 +54,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 | `G_compliance` | reporting checklists, tone, PRISMA | 3 | "Is this compliant and submission-ready?" |
 | `H_submission` | submission package, rebuttal, review simulation | 5 | "How do I package, defend, and stress-test the paper?" |
 | `I_code` | academic code, stats, reproducibility | 9 | "How do I implement and verify research code?" |
-| `K_presentation` | academic presentations (Slidev / Beamer / PPTX) | 4 | "How do I turn my paper into a talk?" |
+| `K_presentation` | academic talks, slide planning, Slidev, Beamer | 4 | "How do I turn the paper into a defensible talk?" |
 | `Z_cross_cutting` | metadata, model collaboration, self-critique | 3 | "How do I improve quality across stages?" |
 
 ## Canonical Skills By Stage
@@ -181,7 +181,7 @@ That sequence is what `code-build --focus full` is designed to reinforce.
 
 ### K. Presentation
 
-Use Stage K when you have results and need to prepare an academic presentation — conference talk, seminar, job talk, or poster.
+Use Stage K when the paper already exists and the next task is to turn it into a talk, seminar deck, or conference presentation.
 
 | Skill | What it does | Produces |
 |---|---|---|

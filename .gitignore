@@ -10,4 +10,5 @@ docs/.vitepress/dist/
 
 # Local agent artifacts generated during `rsk` install tests
 .gemini/
+!.gemini/research-skills.md
 .claude/

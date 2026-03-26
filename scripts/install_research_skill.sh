@@ -299,10 +299,14 @@ write_gemini_quickstart() {
   local quickstart_dir="$PROJECT_DIR/.gemini"
   local quickstart_path="$quickstart_dir/research-skills.md"
   local profile_dest="$quickstart_dir/agent-profiles.example.json"
+  local quickstart_src="$ROOT_DIR/.gemini/research-skills.md"
 
   if [[ -e "$quickstart_path" && "$OVERWRITE" -ne 1 ]]; then
     skip "Quickstart" "$quickstart_path (use --overwrite)"
+  elif [[ -f "$quickstart_src" ]]; then
+    copy_item_display "$quickstart_src" "$quickstart_path" "Quickstart"
   else
+    # Fallback: write minimal stub if source template is missing
     ensure_dir "$quickstart_dir"
     if [[ "$DRY_RUN" -eq 1 ]]; then
       printf '[dry-run] write %q\n' "$quickstart_path"
@@ -319,7 +323,7 @@ python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --t
 ```
 EOF
     fi
-    ok "Quickstart" "$quickstart_path"
+    ok "Quickstart" "$quickstart_path (fallback stub)"
   fi
 
   copy_item_display "$ROOT_DIR/standards/agent-profiles.example.json" "$profile_dest" "Profiles"

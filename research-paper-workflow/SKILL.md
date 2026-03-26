@@ -43,3 +43,4 @@ Treat this package as the portable entry skill for clients. Do not treat it as t
   - `references/stage-J-proofread.md`
   - `references/stage-H-submission.md`
   - `references/stage-I-code.md`
+  - `references/stage-K-presentation.md`

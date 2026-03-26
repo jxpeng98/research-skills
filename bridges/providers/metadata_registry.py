@@ -3,12 +3,11 @@ from __future__ import annotations
 import csv
 import io
 import json
-import os
 import re
-import shlex
-import subprocess
 from pathlib import Path
 from typing import Any
+
+from bridges.providers.overlay_runtime import invoke_overlay_json
 
 
 DOI_RE = re.compile(r"(?:https?://(?:dx\.)?doi\.org/|doi:\s*)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.I)
@@ -312,8 +311,7 @@ def apply_external_enrichment(
     context_hints: dict[str, Any],
     timeout_seconds: int = 20,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    command = os.environ.get(METADATA_ENRICH_ENV, "").strip()
-    if not command or not records:
+    if not records:
         return records, {"configured": False}
 
     payload = {
@@ -322,63 +320,19 @@ def apply_external_enrichment(
         "records": records,
         "context_hints": context_hints,
     }
-    try:
-        parsed_cmd = shlex.split(command)
-        run_result = subprocess.run(
-            parsed_cmd,
-            input=json.dumps(payload, ensure_ascii=False),
-            capture_output=True,
-            text=True,
-            cwd=str(cwd),
-            timeout=timeout_seconds,
-            check=False,
-        )
-    except subprocess.TimeoutExpired:
-        return records, {
-            "configured": True,
-            "status": "error",
-            "summary": f"External enrichment timed out after {timeout_seconds}s.",
-            "provenance": [METADATA_ENRICH_ENV],
-        }
-    except OSError as exc:
-        return records, {
-            "configured": True,
-            "status": "error",
-            "summary": f"External enrichment failed to start: {exc}",
-            "provenance": [METADATA_ENRICH_ENV],
-        }
-
-    if run_result.returncode != 0:
-        stderr = (run_result.stderr or "").strip()
-        return records, {
-            "configured": True,
-            "status": "error",
-            "summary": f"External enrichment exited with code {run_result.returncode}.",
-            "provenance": [METADATA_ENRICH_ENV, stderr] if stderr else [METADATA_ENRICH_ENV],
-        }
-
-    stdout = (run_result.stdout or "").strip()
-    if not stdout:
-        return records, {
-            "configured": True,
-            "status": "warning",
-            "summary": "External enrichment returned empty output.",
-            "provenance": [METADATA_ENRICH_ENV],
-        }
-
-    try:
-        parsed = json.loads(stdout)
-    except json.JSONDecodeError:
-        return records, {
-            "configured": True,
-            "status": "warning",
-            "summary": "External enrichment returned non-JSON output.",
-            "provenance": [METADATA_ENRICH_ENV, stdout[:280]],
-        }
+    parsed, overlay_info = invoke_overlay_json(
+        env_name=METADATA_ENRICH_ENV,
+        payload=payload,
+        cwd=cwd,
+        timeout_seconds=timeout_seconds,
+        label="External enrichment",
+    )
+    if parsed is None:
+        return records, overlay_info
 
     merged_records, enrichment_info = merge_external_enrichment_payload(records, parsed)
     return merged_records, {
-        "configured": True,
+        **overlay_info,
         **enrichment_info,
     }
 

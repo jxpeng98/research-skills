@@ -354,6 +354,37 @@ artifact_types:
     produced_by: [stats-engine]
     consumed_by: [manuscript-architect, evidence-synthesizer, analysis-interpreter, effect-size-interpreter, table-generator, figure-specifier]
 
+  # ── K_presentation outputs ──
+  - name: PresentationPlan
+    description: "Talk-level story arc, timing budget, and audience calibration plan"
+    format: markdown
+    produced_by: [presentation-planner]
+    consumed_by: [slide-architect]
+
+  - name: SlideDeckSpec
+    description: "Slide-by-slide specification including assertions, evidence, layout, and speaker notes"
+    format: markdown
+    produced_by: [slide-architect]
+    consumed_by: [slidev-scholarly-builder, beamer-builder]
+
+  - name: SlidevDeck
+    description: "Slidev presentation project with scholarly layouts and citation wiring"
+    format: markdown_directory
+    produced_by: [slidev-scholarly-builder]
+    consumed_by: []
+
+  - name: BeamerDeck
+    description: "LaTeX Beamer presentation source ready for PDF compilation"
+    format: latex_directory
+    produced_by: [beamer-builder]
+    consumed_by: []
+
+  - name: BibTeXFile
+    description: "BibTeX bibliography file packaged specifically for slide builders"
+    format: bibtex
+    produced_by: [slidev-scholarly-builder, beamer-builder]
+    consumed_by: []
+
   # ── Cross-cutting and integration types ──
   - name: UserQuery
     description: "Original user request or problem statement packet"

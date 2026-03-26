@@ -1,0 +1,53 @@
+from __future__ import annotations
+
+import os
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from bridges.providers.overlay_runtime import invoke_overlay_json
+
+
+class OverlayRuntimeTests(unittest.TestCase):
+    def test_invoke_overlay_json_returns_not_configured_without_env(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            payload = {"provider": "demo"}
+            with mock.patch.dict(os.environ, {}, clear=False):
+                parsed, info = invoke_overlay_json(
+                    env_name="RESEARCH_MCP_FAKE_OVERLAY_CMD",
+                    payload=payload,
+                    cwd=Path(tmp_dir),
+                    timeout_seconds=1,
+                    label="Fake overlay",
+                )
+
+        self.assertIsNone(parsed)
+        self.assertEqual(info, {"configured": False})
+
+    def test_invoke_overlay_json_reports_non_json_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            script = root / "emit_text.py"
+            script.write_text("print('not-json')\n", encoding="utf-8")
+            with mock.patch.dict(
+                os.environ,
+                {"RESEARCH_MCP_FAKE_OVERLAY_CMD": f"python3 {script}"},
+                clear=False,
+            ):
+                parsed, info = invoke_overlay_json(
+                    env_name="RESEARCH_MCP_FAKE_OVERLAY_CMD",
+                    payload={"provider": "demo"},
+                    cwd=root,
+                    timeout_seconds=5,
+                    label="Fake overlay",
+                )
+
+        self.assertIsNone(parsed)
+        self.assertTrue(info["configured"])
+        self.assertEqual(info["status"], "warning")
+        self.assertIn("non-JSON", info["summary"])
+
+
+if __name__ == "__main__":
+    unittest.main()

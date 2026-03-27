@@ -58,13 +58,63 @@
 - [CLI 参考](docs/zh/reference/cli.md)
 - [系统架构](docs/zh/architecture.md)
 
-### 0. Preliminary：先装 Python（推荐）
+### 0. 先选 `partial` 还是 `full`
 
-Python 主要是为了启用 orchestrator 运行时，而不是为了单纯复制 skills 文件。如果你只想把 workflow 资产安装到项目里，`partial` 安装可以不依赖 Python。如果你要 `doctor`、validator、`python3 -m bridges.orchestrator ...` 和完整执行链，建议安装 `Python >= 3.12`。仓库当前的 Python 包声明也是 `requires-python = ">=3.12"`。
+现在的一键 bootstrap 已经会处理环境准备，你不需要为了首装而手动先装 Python。
 
-推荐用 `mise` 管理 Python：
+| Profile | 你会得到什么 | 安装前是否要求 Python | 安装后结果 |
+|---|---|---|---|
+| `partial` | skills、workflows、项目集成文件 | 否 | 资产可用，但 orchestrator 还没准备好 |
+| `full` | `partial` + shell CLI + 缺失时自动补 Python 3.12 + `doctor` | 否 | orchestrator 运行时可直接使用 |
 
-如果机器上还没有 `mise`，先安装并激活它：
+`full` 模式的真实行为：
+
+- 如果系统里已经有 `python3 >= 3.12`，bootstrap 会直接复用。
+- 如果 Python 缺失或版本过低，bootstrap 会先安装 `mise`，再安装 `python@3.12`。
+- Windows 上由 PowerShell 直接安装，只有在 shell CLI 包装器需要 Bash 时才会通过 `winget` 安装 Git for Windows。
+
+如果你不传 `--profile`，脚本会先解释两种模式，再提示你选择。
+
+### 1. 运行一键安装
+
+Linux / macOS：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+```
+
+Windows PowerShell：
+
+```powershell
+Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+```
+
+如果你想跳过交互，直接指定 profile：
+
+```bash
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile partial --project-dir "$PWD" --target all
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
+```
+
+```powershell
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+```
+
+这一步会安装：
+
+- Codex / Claude Code / Gemini 的 workflow 资产
+- 项目集成文件，例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`
+- `full` 模式下的 shell CLI：`research-skills`、`rsk`、`rsw`
+
+### 2. 可选：手动准备 Python
+
+只有在你想提前自己准备 Python，而不是交给 `full` bootstrap 自动处理时，才需要这一节。
+
+推荐用 `mise`：
 
 ```bash
 # Linux / macOS
@@ -84,7 +134,7 @@ source "${ZDOTDIR-$HOME}/.zshrc"
 ```
 
 ```powershell
-# Windows (PowerShell)
+# Windows
 scoop install mise
 ```
 
@@ -99,13 +149,7 @@ mise use -g python@3.12
 python3 --version
 ```
 
-说明：
-
-- 如果你的机器还没有 `mise`，需要先把 `mise` 预装好，再执行上面的 Python 安装命令。
-- 这样后续的 `python3 -m bridges.orchestrator ...`、`--doctor`、validator、tests 都能直接使用。
-- 即使你只打算先跑 shell 安装，先把 Python 配好也能减少后续升级和诊断时的环境问题。
-
-### 1. 先选入口
+### 3. 先选入口
 
 稳定入口现在有三类：
 
@@ -113,34 +157,7 @@ python3 --version
 - 安装 / 升级 CLI：`research-skills`、`rsk`、`rsw`
 - Orchestrator CLI：`python3 -m bridges.orchestrator ...`
 
-### 2. 安装或刷新系统
-
-如果是一台还没装 Python 的机器，首装入口建议优先走“零 Python bootstrap”。如果你不传 `--profile`，脚本会先解释 `partial` 和 `full` 的区别，再提示你选择。
-
-统一安装行为：
-
-| profile | 安装内容 | 安装前是否要求 Python | 安装后是否可直接跑 orchestrator |
-|---|---|---|---|
-| `partial` | skills、workflows、项目集成文件 | 否 | 否 |
-| `full` | `partial` + shell CLI + 缺失时通过 `mise` 安装 Python 3.12 + `doctor` | 否 | 是 |
-
-Linux / macOS，一键 bootstrap：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
-```
-
-Windows PowerShell，一键 bootstrap：
-
-```powershell
-Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
-```
-
-profile 行为：
-
-- `partial`：安装 workflow 资产和项目集成文件，不安装 shell CLI，也不跑 doctor。
-- `full`：安装 workflow 资产，启用 shell CLI，自动通过 `mise` 补齐 Python 3.12，并运行 doctor，让 orchestrator 运行时可用。Windows bootstrap 现在由 PowerShell 直接完成安装，只有在需要 shell CLI 包装器时才会通过 `winget` 安装 Git for Windows。
+### 4. 可选：本地安装器与刷新路径
 
 如果机器已经有 Python，也可以改用跨平台本地安装器：
 
@@ -148,14 +165,6 @@ profile 行为：
 python3 scripts/bootstrap_research_skill.py --profile partial --project-dir .
 python3 scripts/bootstrap_research_skill.py --profile full --project-dir .
 ```
-
-Windows 的 PowerShell bootstrap 脚本在仓库里的路径是 `scripts/bootstrap_research_skill.ps1`，现在由 PowerShell 直接完成安装，适合不想先装 Python 的用户。
-
-它会安装：
-
-- Codex / Claude Code / Gemini 的 workflow 资产
-- 项目集成文件，例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`
-- shell CLI：`research-skills`、`rsk`、`rsw`，默认落到 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
 
 如果机器已经有 Python，且你只想继续使用 Python 分发的升级器 CLI，这条路径依然保留：
 
@@ -175,7 +184,7 @@ rsk upgrade --target all --project-dir . --doctor
 
 *Python 边界：shell 版 `rsk check|upgrade|align` 不需要 Python；`--doctor`、`python3 -m bridges.orchestrator ...`、validator 和 tests 仍然需要 `python3`。*
 
-### 3. 先做环境检查
+### 5. 先做环境检查
 
 如果机器有 Python，建议在跑大任务前先做稳定预检：
 
@@ -189,7 +198,7 @@ python3 scripts/validate_research_standard.py --strict
 - `doctor` 负责检查运行时 CLI、API key、MCP wiring
 - validator 负责检查仓库级 contract / schema 一致性
 
-### 4. 先 plan 再 run
+### 6. 先 plan 再 run
 
 先看任务依赖、产物路径和路由：
 
@@ -208,7 +217,7 @@ python3 -m bridges.orchestrator task-plan \
 - functional owner 与 handoff trace
 - runtime plan（`draft` / `review` / `fallback`）
 
-### 5. 运行 canonical research task
+### 7. 运行 canonical research task
 
 ```bash
 python3 -m bridges.orchestrator task-run \
@@ -236,7 +245,7 @@ python3 -m bridges.orchestrator task-run \
   --only-target S1
 ```
 
-### 6. 运行严格学术代码流
+### 8. 运行严格学术代码流
 
 当代码本身是研究产物，而不是泛工程实现时，用 `code-build`：
 
@@ -269,7 +278,7 @@ python3 -m bridges.orchestrator code-build \
   --cwd .
 ```
 
-### 7. 需要 slash-command UX 时再用 workflow 命令
+### 9. 需要 slash-command UX 时再用 workflow 命令
 
 如果你的客户端已经挂载了 workflow 入口 markdown，可以直接用这些命令：
 

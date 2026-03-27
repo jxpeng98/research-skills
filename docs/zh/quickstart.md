@@ -17,50 +17,47 @@
 如果缺少这些依赖，你仍然可以安装 workflow 资产并使用 shell `rsk check|upgrade|align`，但 `doctor`、validator、tests 与完整 orchestrator 执行链会受限。
 :::
 
-## 0. Preliminary：先装 Python（推荐）
+## 0. 先选 `partial` 还是 `full`
 
-Python 主要是为了 orchestrator 运行时。如果你只想安装 workflow 资产，`partial` 安装不要求 Python。如果你要 `doctor`、validator 和 `python3 -m bridges.orchestrator ...`，建议先准备好 `Python >= 3.12`。这是当前 Python CLI 的最低版本要求。
+现在推荐的首装路径是一键 bootstrap，不需要你先手动装 Python。
 
-推荐使用 `mise`：
+| Profile | 适用场景 | 结果 |
+|---|---|---|
+| `partial` | 你只想安装 skills、workflows 和项目集成文件 | 资产可用，但 orchestrator 还没准备好 |
+| `full` | 你想直接拿到可运行的运行时、shell CLI 和 doctor 预检 | bootstrap 会复用现有 `python3 >= 3.12`，或自动安装 `mise` + `python@3.12` |
 
-如果机器上还没有 `mise`，先安装并激活它：
+如果你不传 `--profile`，bootstrap 会先解释两种模式，再提示你选择。
+
+## 1. 用一键 bootstrap 安装
+
+Linux / macOS：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+```
+
+Windows PowerShell：
+
+```powershell
+Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+```
+
+如果你想跳过交互：
 
 ```bash
 # Linux / macOS
-curl https://mise.run | sh
-```
-
-```bash
-# bash
-echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-```bash
-# zsh
-echo 'eval "$(mise activate zsh)"' >> "${ZDOTDIR-$HOME}/.zshrc"
-source "${ZDOTDIR-$HOME}/.zshrc"
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile partial --project-dir "$PWD" --target all
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
 ```
 
 ```powershell
-# Windows (PowerShell)
-scoop install mise
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
 ```
 
-```powershell
-# Windows 备用方式
-winget install jdx.mise
-```
-
-```bash
-mise install python@3.12
-mise use -g python@3.12
-python3 --version
-```
-
-如果你的机器还没有 `mise`，需要先把 `mise` 预装好，再执行上面的 Python 安装命令。
-
-## 1. 先选入口
+## 2. 先选入口
 
 你通常只需要在下面三种入口里选一种：
 
@@ -70,7 +67,7 @@ python3 --version
 | 安装 / 升级 CLI | 你想安装或刷新 skill 与项目集成文件 | `research-skills` / `rsk` / `rsw` |
 | Orchestrator CLI | 你想显式按 Task ID 执行与校验 | `python3 -m bridges.orchestrator ...` |
 
-## 2. 先做环境检查
+## 3. 先做环境检查
 
 如果你的机器有 Python，建议先运行：
 
@@ -83,7 +80,15 @@ python3 scripts/validate_research_standard.py --strict
 - `doctor` 侧重运行时环境、CLI、API key、MCP wiring
 - validator 侧重仓库内部 contract / schema 一致性
 
-## 3. 先确定 paper type
+如果你想手动准备 Python，也可以直接执行：
+
+```bash
+mise install python@3.12
+mise use -g python@3.12
+python3 --version
+```
+
+## 4. 先确定 paper type
 
 典型 paper type 与 pipeline 对应关系：
 
@@ -96,7 +101,7 @@ python3 scripts/validate_research_standard.py --strict
 | `theory` | `theory-paper` | 理论或概念型论文 |
 | `methods` | `code-first-methods` | 代码与方法并重的 methods paper |
 
-## 4. 先 plan 再 run
+## 5. 先 plan 再 run
 
 推荐先看任务的依赖和路由：
 
@@ -116,7 +121,7 @@ python3 -m bridges.orchestrator task-plan \
 - handoff 轨迹
 - runtime plan（draft / review / fallback）
 
-## 5. 再执行 canonical task
+## 6. 再执行 canonical task
 
 ```bash
 python3 -m bridges.orchestrator task-run \
@@ -139,7 +144,7 @@ python3 -m bridges.orchestrator task-run \
 - `--focus-output` 与 `--output-budget`：把本次运行收敛到更小的 active outputs，减少辅助文件扩散
 - `--research-depth deep` 配合 `--max-rounds`：强制更窄、更有对抗性的证据扩展与修订流程
 
-## 6. 什么时候切到维护者文档
+## 7. 什么时候切到维护者文档
 
 你只是“使用系统”时，看这一页和 [入门](/zh/guide/) 就够了。
 

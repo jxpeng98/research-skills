@@ -60,13 +60,63 @@ Start with the consolidated docs when you need detail:
 - [CLI Reference](docs/reference/cli.md)
 - [Architecture](docs/architecture.md)
 
-### 0. Preliminary: Install Python First (Recommended)
+### 0. Choose `partial` Or `full`
 
-Python is mainly needed for the orchestrator runtime, not for copying the skills themselves. If you only want the installed workflow assets, `partial` install can work without Python. If you want `doctor`, validators, `python3 -m bridges.orchestrator ...`, and the full execution flow, install `Python >= 3.12`. The packaged Python CLI in this repo currently declares `requires-python = ">=3.12"`.
+The bootstrap installer now handles the environment setup for you. You do not need to preinstall Python just to get started.
 
-Recommended path: use `mise` to manage Python.
+| Profile | What you get | Python needed before install | Result after install |
+|---|---|---|---|
+| `partial` | skills, workflows, project integration files | No | Assets are ready; orchestrator is not |
+| `full` | `partial` + shell CLI + Python 3.12 when needed + `doctor` | No | Orchestrator runtime is ready |
 
-If `mise` is not installed yet, install and activate it first:
+Behavior in `full` mode:
+
+- If `python3 >= 3.12` already exists, bootstrap reuses it.
+- If Python is missing or too old, bootstrap installs `mise`, then installs `python@3.12`.
+- On Windows, bootstrap runs directly in PowerShell and installs Git for Windows via `winget` only when shell CLI wrappers need Bash.
+
+If you omit `--profile`, the bootstrap script explains both choices and prompts you to choose.
+
+### 1. Run The One-Click Bootstrap
+
+Linux / macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+```
+
+Windows PowerShell:
+
+```powershell
+Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+```
+
+If you want to skip the prompt and force a profile:
+
+```bash
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile partial --project-dir "$PWD" --target all
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
+```
+
+```powershell
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+```
+
+This installs:
+
+- workflow assets for Codex / Claude Code / Gemini
+- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
+- shell CLI commands `research-skills`, `rsk`, `rsw` in `full` mode
+
+### 2. Optional Manual Python Setup
+
+You only need this if you want to prepare Python yourself instead of letting `full` bootstrap handle it.
+
+Recommended path: use `mise`.
 
 ```bash
 # Linux / macOS
@@ -86,7 +136,7 @@ source "${ZDOTDIR-$HOME}/.zshrc"
 ```
 
 ```powershell
-# Windows (PowerShell)
+# Windows
 scoop install mise
 ```
 
@@ -101,13 +151,7 @@ mise use -g python@3.12
 python3 --version
 ```
 
-Notes:
-
-- If `mise` is not available on the machine yet, preinstall `mise` before running the Python commands above.
-- This makes `python3 -m bridges.orchestrator ...`, `--doctor`, validators, and tests available immediately.
-- Even if you start with the shell installer, having Python ready avoids a second round of environment setup when you later need upgrade or diagnostic flows.
-
-### 1. Pick an Entry Mode
+### 3. Pick An Entry Mode
 
 Use one of these stable entrypoints:
 
@@ -115,49 +159,14 @@ Use one of these stable entrypoints:
 - Installer / updater CLI: `research-skills`, `rsk`, `rsw`
 - Orchestrator CLI: `python3 -m bridges.orchestrator ...`
 
-### 2. Install or Refresh the System
+### 4. Optional Local Installers And Refresh Paths
 
-For first install on a machine that may not have Python yet, prefer the zero-Python bootstrap entrypoint. If you omit `--profile`, the script explains `partial` vs `full` and prompts you to choose.
-
-Unified install behavior:
-
-| Profile | What it installs | Python required before install | Orchestrator ready after install |
-|---|---|---|---|
-| `partial` | skills, workflows, project integration files | No | No |
-| `full` | `partial` + shell CLI + Python 3.12 via `mise` when needed + `doctor` | No | Yes |
-
-Linux / macOS, one-click bootstrap:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
-```
-
-Windows PowerShell, one-click bootstrap:
-
-```powershell
-Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
-```
-
-Profile behavior:
-
-- `partial`: installs workflow assets and project integration files without shell CLI or doctor.
-- `full`: installs workflow assets, enables shell CLI installation, ensures Python 3.12 is available via `mise`, and runs doctor so the orchestrator runtime is ready. On Windows bootstrap, PowerShell now performs the install directly and only installs Git for Windows via `winget` when shell CLI wrappers need Bash.
-
-Once Python is already available, you can also use the local cross-platform installer:
+If Python is already available, you can also use the local cross-platform installer:
 
 ```bash
 python3 scripts/bootstrap_research_skill.py --profile partial --project-dir .
 python3 scripts/bootstrap_research_skill.py --profile full --project-dir .
 ```
-
-The PowerShell bootstrap script lives in the repo at `scripts/bootstrap_research_skill.ps1`. It now performs the Windows install directly instead of bridging through Bash.
-
-This installs:
-
-- workflow assets for Codex / Claude Code / Gemini
-- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
-- shell CLI commands `research-skills`, `rsk`, `rsw` into `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
 
 If Python is already available and you specifically want the Python-distributed updater CLI, that path still exists:
 
@@ -177,7 +186,7 @@ If you already used the shell bootstrap above, re-run it or `rsk upgrade` with `
 
 *Python boundary: shell `rsk check|upgrade|align` do not require Python; `--doctor`, `python3 -m bridges.orchestrator ...`, validators, and tests still require `python3`.*
 
-### 3. Validate Local Readiness
+### 5. Validate Local Readiness
 
 If Python is available, run the stable preflight checks before a larger workflow:
 
@@ -189,7 +198,7 @@ python3 scripts/validate_research_standard.py --strict
 Use `doctor` for runtime CLIs, API keys, and MCP wiring.
 Use the validator for repo-level contract and schema consistency.
 
-### 4. Plan Before You Run
+### 6. Plan Before You Run
 
 Inspect prerequisites, output paths, and routing before execution:
 
@@ -208,7 +217,7 @@ python3 -m bridges.orchestrator task-plan \
 - functional owner and handoff trace
 - runtime plan (`draft` / `review` / `fallback`)
 
-### 5. Run a Canonical Research Task
+### 7. Run a Canonical Research Task
 
 ```bash
 python3 -m bridges.orchestrator task-run \
@@ -236,7 +245,7 @@ python3 -m bridges.orchestrator task-run \
   --only-target S1
 ```
 
-### 6. Run the Strict Academic Code Flow
+### 8. Run the Strict Academic Code Flow
 
 Use `code-build` when code is a first-class research artifact rather than a generic engineering task:
 
@@ -269,7 +278,7 @@ python3 -m bridges.orchestrator code-build \
   --cwd .
 ```
 
-### 7. Use Workflow Commands When You Want Slash-Command UX
+### 9. Use Workflow Commands When You Want Slash-Command UX
 
 If your client is using the installed workflow entry markdowns, try these commands:
 

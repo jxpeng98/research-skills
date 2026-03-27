@@ -35,6 +35,7 @@ Notes:
 - Add `--overwrite` when re-installing/upgrading existing targets.
 - Use `--no-cli` if you only want the workflow assets.
 - Use `--cli-dir <path>` to install the shell CLI elsewhere.
+- The installer checks the selected underlying client CLIs first and prints install hints when `codex`, `claude`, `gemini`, or `antigravity` are missing from `PATH`.
 - `--doctor` is optional and only runs when `python3` is available.
 - Remote bootstrap only supports `--mode copy`. If you want `--mode link`, clone the repo and use the local installer below.
 

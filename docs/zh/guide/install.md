@@ -35,6 +35,7 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 - 如果是已有安装上的刷新/升级，请加 `--overwrite`。
 - 如果你只想安装 workflow 资产，可加 `--no-cli`。
 - 如果你要改 CLI 落盘目录，可用 `--cli-dir <path>`。
+- 安装器会先检查所选底层客户端 CLI；如果 `codex`、`claude`、`gemini` 或 `antigravity` 不在 `PATH` 中，会直接打印安装提示。
 - `--doctor` 是可选项，只有检测到 `python3` 时才会执行。
 - 远程 bootstrap 只支持 `--mode copy`。如果你需要 `--mode link`，请先 clone 仓库，再使用下面的本地安装脚本。
 

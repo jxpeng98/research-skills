@@ -15,6 +15,7 @@ RAW_REPO="${RESEARCH_SKILLS_REPO:-$DEFAULT_REPO}"
 INSTALL_CLI=1
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
 MISE_BIN="${HOME}/.local/bin/mise"
+PYTHON_RUNTIME_MODE=""
 
 if [[ -z "${NO_COLOR:-}" ]] && [[ -t 1 ]]; then
   C_RESET='\033[0m'
@@ -191,6 +192,7 @@ ensure_python_runtime() {
     if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
       if (( BASH_REMATCH[1] > 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] >= 12) )); then
         info "python:  $current_python ($current_version)"
+        PYTHON_RUNTIME_MODE="direct"
         return 0
       fi
     fi
@@ -202,12 +204,14 @@ ensure_python_runtime() {
   install_mise
   if [[ "$DRY_RUN" -eq 1 ]]; then
     info "python:  install via mise -> python@3.12"
+    PYTHON_RUNTIME_MODE="mise"
     return 0
   fi
 
   "$MISE_BIN" install python@3.12
   "$MISE_BIN" use -g python@3.12
   info "python:  installed via mise -> python@3.12"
+  PYTHON_RUNTIME_MODE="mise"
 }
 
 normalize_repo() {
@@ -556,7 +560,7 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   cmd+=(--dry-run)
 fi
 
-if [[ "$PROFILE" == "full" && "$DRY_RUN" -ne 1 ]]; then
+if [[ "$PROFILE" == "full" && "$DRY_RUN" -ne 1 && "$PYTHON_RUNTIME_MODE" == "mise" ]]; then
   "$MISE_BIN" exec python@3.12 -- "${cmd[@]}"
 else
   "${cmd[@]}"

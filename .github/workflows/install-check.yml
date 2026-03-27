@@ -1,0 +1,175 @@
+name: Install Check
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+env:
+  BOOTSTRAP_REPO: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+  BOOTSTRAP_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  unix-bootstrap-install:
+    name: Unix Bootstrap Install (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Partial bootstrap install
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CODEX_HOME="$RUNNER_TEMP/codex-home-partial"
+          export CLAUDE_CODE_HOME="$RUNNER_TEMP/claude-home-partial"
+          export GEMINI_HOME="$RUNNER_TEMP/gemini-home-partial"
+          export ANTIGRAVITY_HOME="$RUNNER_TEMP/antigravity-home-partial"
+          project_dir="$RUNNER_TEMP/project-partial"
+
+          bash scripts/bootstrap_research_skill.sh \
+            --profile partial \
+            --repo "$BOOTSTRAP_REPO" \
+            --ref "$BOOTSTRAP_REF" \
+            --ref-type branch \
+            --project-dir "$project_dir" \
+            --overwrite
+
+          test -f "$CODEX_HOME/skills/research-paper-workflow/SKILL.md"
+          test -f "$CLAUDE_CODE_HOME/skills/research-paper-workflow/SKILL.md"
+          test -f "$GEMINI_HOME/skills/research-paper-workflow/SKILL.md"
+          test -f "$project_dir/.agent/workflows/proofread.md"
+          test -f "$project_dir/.gemini/research-skills.md"
+          test -f "$project_dir/.env"
+
+      - name: Full bootstrap install
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CODEX_HOME="$RUNNER_TEMP/codex-home-full"
+          export CLAUDE_CODE_HOME="$RUNNER_TEMP/claude-home-full"
+          export GEMINI_HOME="$RUNNER_TEMP/gemini-home-full"
+          export ANTIGRAVITY_HOME="$RUNNER_TEMP/antigravity-home-full"
+          project_dir="$RUNNER_TEMP/project-full"
+          cli_dir="$RUNNER_TEMP/bin-full"
+
+          bash scripts/bootstrap_research_skill.sh \
+            --profile full \
+            --repo "$BOOTSTRAP_REPO" \
+            --ref "$BOOTSTRAP_REF" \
+            --ref-type branch \
+            --project-dir "$project_dir" \
+            --cli-dir "$cli_dir" \
+            --overwrite
+
+          test -f "$CODEX_HOME/skills/research-paper-workflow/SKILL.md"
+          if [[ ! -f "$project_dir/CLAUDE.md" && ! -f "$project_dir/CLAUDE.research-skills.md" ]]; then
+            echo "Missing Claude project integration file" >&2
+            exit 1
+          fi
+          test -f "$project_dir/.gemini/agent-profiles.example.json"
+          test -f "$cli_dir/research-skills"
+          if [[ ! -L "$cli_dir/rsk" && ! -f "$cli_dir/rsk" ]]; then
+            echo "Missing CLI alias: $cli_dir/rsk" >&2
+            exit 1
+          fi
+          if [[ ! -L "$cli_dir/rsw" && ! -f "$cli_dir/rsw" ]]; then
+            echo "Missing CLI alias: $cli_dir/rsw" >&2
+            exit 1
+          fi
+
+  windows-bootstrap-install:
+    name: Windows Bootstrap Install
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Partial bootstrap install
+        shell: pwsh
+        run: |
+          $env:CODEX_HOME = Join-Path $env:RUNNER_TEMP "codex-home-partial"
+          $env:CLAUDE_CODE_HOME = Join-Path $env:RUNNER_TEMP "claude-home-partial"
+          $env:GEMINI_HOME = Join-Path $env:RUNNER_TEMP "gemini-home-partial"
+          $env:ANTIGRAVITY_HOME = Join-Path $env:RUNNER_TEMP "antigravity-home-partial"
+          $projectDir = Join-Path $env:RUNNER_TEMP "project-partial"
+
+          & .\scripts\bootstrap_research_skill.ps1 `
+            -Profile partial `
+            -Repo $env:BOOTSTRAP_REPO `
+            -Ref $env:BOOTSTRAP_REF `
+            -RefType branch `
+            -ProjectDir $projectDir `
+            -Overwrite
+
+          $checks = @(
+            (Join-Path $env:CODEX_HOME "skills\research-paper-workflow\SKILL.md"),
+            (Join-Path $env:CLAUDE_CODE_HOME "skills\research-paper-workflow\SKILL.md"),
+            (Join-Path $env:GEMINI_HOME "skills\research-paper-workflow\SKILL.md"),
+            (Join-Path $projectDir ".agent\workflows\proofread.md"),
+            (Join-Path $projectDir ".gemini\research-skills.md"),
+            (Join-Path $projectDir ".env")
+          )
+          foreach ($path in $checks) {
+            if (-not (Test-Path $path)) {
+              throw "Missing expected install output: $path"
+            }
+          }
+
+      - name: Full bootstrap install
+        shell: pwsh
+        run: |
+          $shimDir = Join-Path $env:RUNNER_TEMP "python3-shim"
+          New-Item -ItemType Directory -Path $shimDir -Force | Out-Null
+          $shimPath = Join-Path $shimDir "python3.cmd"
+          Set-Content -Path $shimPath -Value "@echo off`r`npython %*" -Encoding Ascii
+          $env:PATH = "$shimDir;$env:PATH"
+
+          $env:CODEX_HOME = Join-Path $env:RUNNER_TEMP "codex-home-full"
+          $env:CLAUDE_CODE_HOME = Join-Path $env:RUNNER_TEMP "claude-home-full"
+          $env:GEMINI_HOME = Join-Path $env:RUNNER_TEMP "gemini-home-full"
+          $env:ANTIGRAVITY_HOME = Join-Path $env:RUNNER_TEMP "antigravity-home-full"
+          $projectDir = Join-Path $env:RUNNER_TEMP "project-full"
+          $cliDir = Join-Path $env:RUNNER_TEMP "bin-full"
+
+          & .\scripts\bootstrap_research_skill.ps1 `
+            -Profile full `
+            -Repo $env:BOOTSTRAP_REPO `
+            -Ref $env:BOOTSTRAP_REF `
+            -RefType branch `
+            -ProjectDir $projectDir `
+            -CliDir $cliDir `
+            -Overwrite
+
+          $checks = @(
+            (Join-Path $env:CODEX_HOME "skills\research-paper-workflow\SKILL.md"),
+            (Join-Path $projectDir ".agent\workflows\proofread.md"),
+            (Join-Path $projectDir ".gemini\agent-profiles.example.json"),
+            (Join-Path $cliDir "research-skills.cmd"),
+            (Join-Path $cliDir "rsk.cmd"),
+            (Join-Path $cliDir "rsw.cmd")
+          )
+          foreach ($path in $checks) {
+            if (-not (Test-Path $path)) {
+              throw "Missing expected install output: $path"
+            }
+          }

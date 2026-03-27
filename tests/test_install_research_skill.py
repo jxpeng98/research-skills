@@ -112,6 +112,51 @@ class InstallResearchSkillTests(unittest.TestCase):
                 (antigravity_home / "skills" / "research-paper-workflow" / "SKILL.md").exists()
             )
 
+    def test_all_target_reports_install_hints_for_missing_clis(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            home_dir = temp_root / "home"
+            home_dir.mkdir()
+
+            env = os.environ.copy()
+            env["HOME"] = str(home_dir)
+            env["PATH"] = "/usr/bin:/bin"
+            env["NO_COLOR"] = "1"
+
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(INSTALL_SCRIPT),
+                    "--target",
+                    "all",
+                    "--mode",
+                    "copy",
+                    "--project-dir",
+                    str(project_dir),
+                ],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn("codex CLI not found in PATH", result.stdout)
+            self.assertIn("Install the Codex CLI from the official OpenAI distribution", result.stdout)
+            self.assertIn("claude CLI not found in PATH", result.stdout)
+            self.assertIn("npm install -g @anthropic-ai/claude-code", result.stdout)
+            self.assertIn("gemini CLI not found in PATH", result.stdout)
+            self.assertIn("npm install -g @google/gemini-cli", result.stdout)
+            self.assertIn("antigravity CLI not found in PATH", result.stdout)
+            self.assertIn("Install Antigravity and ensure the `antigravity` binary is on PATH", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

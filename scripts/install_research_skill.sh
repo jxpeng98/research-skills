@@ -173,9 +173,29 @@ cli_name_for_target() {
   esac
 }
 
+cli_install_hint() {
+  case "$1" in
+    codex)
+      printf 'Install the Codex CLI from the official OpenAI distribution, then ensure `codex` is on PATH.\n'
+      ;;
+    claude)
+      printf 'Install Claude Code: npm install -g @anthropic-ai/claude-code\n'
+      ;;
+    gemini)
+      printf 'Install Gemini CLI: npm install -g @google/gemini-cli\n'
+      ;;
+    antigravity)
+      printf 'Install Antigravity and ensure the `antigravity` binary is on PATH before relying on the global skill directory.\n'
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 check_target_cli() {
   local target="$1"
-  local cli_name resolved
+  local cli_name resolved install_hint
 
   cli_name="$(cli_name_for_target "$target")" || return 1
   if resolved="$(command -v "$cli_name" 2>/dev/null)"; then
@@ -184,6 +204,10 @@ check_target_cli() {
   fi
 
   warn "$target CLI not found in PATH: $cli_name"
+  install_hint="$(cli_install_hint "$target" || true)"
+  if [[ -n "$install_hint" ]]; then
+    info "hint: $install_hint"
+  fi
   return 1
 }
 

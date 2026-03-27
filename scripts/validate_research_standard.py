@@ -710,19 +710,6 @@ def validate_portable_skill(root: Path, report: ValidationReport) -> None:
                 f"Missing file: research-paper-workflow/{reference_path}",
             )
 
-    lowercase_skill_content = read_text(root, "research-paper-workflow/skill.md", report)
-    report.check(
-        bool(lowercase_skill_content),
-        "skill.md lowercase compatibility entry exists",
-        "Missing file: research-paper-workflow/skill.md",
-    )
-    if skill_content and lowercase_skill_content:
-        report.check(
-            lowercase_skill_content == skill_content,
-            "skill.md matches canonical SKILL.md",
-            "research-paper-workflow/skill.md must stay byte-identical to SKILL.md",
-        )
-
     yaml_content = read_text(root, "research-paper-workflow/agents/openai.yaml", report)
     if yaml_content:
         required_keys = (

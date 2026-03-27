@@ -8,11 +8,13 @@ PROJECT_DIR="$(pwd)"
 OVERWRITE=0
 RUN_DOCTOR=0
 DRY_RUN=0
+PROFILE=""
 REF=""
 REF_TYPE="tag"
 RAW_REPO="${RESEARCH_SKILLS_REPO:-$DEFAULT_REPO}"
 INSTALL_CLI=1
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
+MISE_BIN="${HOME}/.local/bin/mise"
 
 if [[ -z "${NO_COLOR:-}" ]] && [[ -t 1 ]]; then
   C_RESET='\033[0m'
@@ -44,6 +46,7 @@ Usage:
   ./scripts/bootstrap_research_skill.sh [options]
 
 Options:
+  --profile <partial|full>            Install preset (partial: assets only, full: assets + shell CLI + doctor)
   --repo <owner/repo|git-url>          Upstream repo (default: RESEARCH_SKILLS_REPO or jxpeng98/research-skills)
   --ref <tag-or-branch>                Explicit release tag or branch name
   --ref-type <tag|branch>              How to interpret --ref (default: tag)
@@ -55,17 +58,156 @@ Options:
   --cli-dir <path>                     Directory for shell CLI binaries (default: RESEARCH_SKILLS_BIN_DIR or ~/.local/bin)
   --overwrite                          Overwrite existing installed files
   --doctor                             Run orchestrator doctor after install when python3 exists
+  --no-doctor                          Skip doctor even in full profile
   --dry-run                            Print actions without writing files
   -h, --help                           Show help
 
 Notes:
   - This bootstrap path only requires bash + curl/wget + tar.
   - Remote bootstrap always uses copy mode. For link mode, clone the repo and run scripts/install_research_skill.sh locally.
+  - `partial` skips shell CLI installation and doctor.
+  - `full` enables shell CLI installation and doctor (when python3 exists).
 EOF
+}
+
+describe_profiles() {
+  cat <<'EOF'
+
+Choose an install profile:
+
+  1) partial
+     - Installs workflow assets and project integration files only
+     - Does not install shell CLI
+     - Does not require Python
+     - Does not run orchestrator doctor
+
+  2) full
+     - Installs workflow assets and project integration files
+     - Installs shell CLI commands (`research-skills`, `rsk`, `rsw`)
+     - Ensures Python 3.12 is available via mise if missing
+     - Runs orchestrator doctor after install
+
+EOF
+}
+
+apply_profile_defaults() {
+  case "${1:-}" in
+    partial)
+      INSTALL_CLI=0
+      RUN_DOCTOR=0
+      ;;
+    full)
+      INSTALL_CLI=1
+      RUN_DOCTOR=1
+      ;;
+    *)
+      err "Unsupported profile: $1"
+      exit 2
+      ;;
+  esac
+}
+
+prompt_for_profile() {
+  local tty_fd
+  local answer
+
+  if ! exec {tty_fd}<>/dev/tty 2>/dev/null; then
+    err "Missing --profile and no interactive terminal is available. Pass --profile partial or --profile full."
+    exit 2
+  fi
+
+  describe_profiles >&${tty_fd}
+  while true; do
+    printf "Select profile [1/2]: " >&${tty_fd}
+    IFS= read -r -u "$tty_fd" answer
+    case "$answer" in
+      1|partial|PARTIAL)
+        PROFILE="partial"
+        apply_profile_defaults "$PROFILE"
+        exec {tty_fd}>&-
+        return 0
+        ;;
+      2|full|FULL)
+        PROFILE="full"
+        apply_profile_defaults "$PROFILE"
+        exec {tty_fd}>&-
+        return 0
+        ;;
+      *)
+        printf "  %sPlease enter 1, 2, partial, or full.%s\n" "${C_YELLOW}" "${C_RESET}" >&${tty_fd}
+        ;;
+    esac
+  done
 }
 
 have_cmd() {
   command -v "$1" >/dev/null 2>&1
+}
+
+resolve_mise_bin() {
+  if have_cmd mise; then
+    command -v mise
+    return 0
+  fi
+  if [[ -x "$MISE_BIN" ]]; then
+    printf '%s\n' "$MISE_BIN"
+    return 0
+  fi
+  return 1
+}
+
+install_mise() {
+  local installer_url="https://mise.run"
+  local mise_path
+
+  if mise_path="$(resolve_mise_bin)"; then
+    MISE_BIN="$mise_path"
+    info "mise:    $MISE_BIN"
+    return 0
+  fi
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    info "mise:    install via $installer_url"
+    MISE_BIN="${HOME}/.local/bin/mise"
+    return 0
+  fi
+
+  info "mise:    installing via $installer_url"
+  download_text "$installer_url" | sh
+  if ! mise_path="$(resolve_mise_bin)"; then
+    err "Installed mise but could not locate the binary."
+    exit 1
+  fi
+  MISE_BIN="$mise_path"
+  info "mise:    ready -> $MISE_BIN"
+}
+
+ensure_python_runtime() {
+  local current_python
+  local current_version
+
+  if current_python="$(command -v python3 2>/dev/null)"; then
+    current_version="$("$current_python" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || true)"
+    if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+      if (( BASH_REMATCH[1] > 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] >= 12) )); then
+        info "python:  $current_python ($current_version)"
+        return 0
+      fi
+    fi
+    warn "python3 found at $current_python but version is below 3.12; installing python@3.12 via mise."
+  else
+    warn "python3 not found; full profile needs Python 3.12 for orchestrator."
+  fi
+
+  install_mise
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    info "python:  install via mise -> python@3.12"
+    return 0
+  fi
+
+  "$MISE_BIN" install python@3.12
+  "$MISE_BIN" use -g python@3.12
+  info "python:  installed via mise -> python@3.12"
 }
 
 normalize_repo() {
@@ -196,6 +338,12 @@ resolve_latest_tag() {
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --profile)
+      [[ $# -ge 2 ]] || { err "Missing value for --profile"; exit 2; }
+      PROFILE="$2"
+      apply_profile_defaults "$PROFILE"
+      shift 2
+      ;;
     --repo)
       [[ $# -ge 2 ]] || { err "Missing value for --repo"; exit 2; }
       RAW_REPO="$2"
@@ -247,6 +395,10 @@ while [[ $# -gt 0 ]]; do
       RUN_DOCTOR=1
       shift
       ;;
+    --no-doctor)
+      RUN_DOCTOR=0
+      shift
+      ;;
     --dry-run)
       DRY_RUN=1
       shift
@@ -262,6 +414,10 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ -z "$PROFILE" ]]; then
+  prompt_for_profile
+fi
 
 case "$TARGET" in
   codex|claude|gemini|antigravity|all) ;;
@@ -334,10 +490,15 @@ info "repo:    $REPO"
 info "ref:     $REF ($REF_TYPE)"
 info "project: $PROJECT_DIR"
 info "target:  $TARGET  |  mode: $MODE"
+info "profile: $PROFILE"
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   info "cli:     install -> $CLI_DIR"
 else
   info "cli:     skip"
+fi
+
+if [[ "$PROFILE" == "full" ]]; then
+  ensure_python_runtime
 fi
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -395,4 +556,8 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   cmd+=(--dry-run)
 fi
 
-"${cmd[@]}"
+if [[ "$PROFILE" == "full" && "$DRY_RUN" -ne 1 ]]; then
+  "$MISE_BIN" exec python@3.12 -- "${cmd[@]}"
+else
+  "${cmd[@]}"
+fi

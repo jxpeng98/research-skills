@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+MANIFEST_PATH="$ROOT_DIR/install/install_manifest.tsv"
 TARGET="all"
 MODE="copy"
 PROJECT_DIR="$(pwd)"
@@ -9,6 +10,7 @@ OVERWRITE=0
 DRY_RUN=0
 RUN_DOCTOR=0
 INSTALL_CLI=0
+PROFILE="custom"
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
 
 # ── ANSI colors (respects NO_COLOR) ──────────────────────────────────────────
@@ -55,6 +57,7 @@ Usage:
   ./scripts/install_research_skill.sh [options]
 
 Options:
+  --profile <partial|full>             Install preset (partial: assets only, full: assets + shell CLI + doctor)
   --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy|link>                   Install mode (default: copy)
   --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
@@ -72,11 +75,32 @@ Environment overrides:
   GEMINI_HOME       Default: $HOME/.gemini
   ANTIGRAVITY_HOME  Default: $HOME/.gemini/antigravity
   RESEARCH_SKILLS_BIN_DIR Default: $HOME/.local/bin
+
+Profile behavior:
+  partial           Install workflow assets and project integration files only
+  full              Install workflow assets, shell CLI, and run doctor
 EOF
 }
 
 log() {
   echo "[install] $*"
+}
+
+apply_profile_defaults() {
+  case "${1:-}" in
+    partial)
+      INSTALL_CLI=0
+      RUN_DOCTOR=0
+      ;;
+    full)
+      INSTALL_CLI=1
+      RUN_DOCTOR=1
+      ;;
+    *)
+      err "Unsupported profile: $1"
+      exit 2
+      ;;
+  esac
 }
 
 run_cmd() {
@@ -324,9 +348,20 @@ install_cli_assets() {
   fi
 }
 
-copy_workflows_for_claude() {
+expand_manifest_path() {
+  local raw="$1"
+  local value="$raw"
+  value="${value//\$\{PROJECT_DIR\}/$PROJECT_DIR}"
+  value="${value//\$\{CODEX_HOME\}/${CODEX_HOME:-$HOME/.codex}}"
+  value="${value//\$\{CLAUDE_CODE_HOME\}/${CLAUDE_CODE_HOME:-$HOME/.claude}}"
+  value="${value//\$\{GEMINI_HOME\}/${GEMINI_HOME:-$HOME/.gemini}}"
+  value="${value//\$\{ANTIGRAVITY_HOME\}/${ANTIGRAVITY_HOME:-$HOME/.gemini/antigravity}}"
+  printf '%s\n' "$value"
+}
+
+copy_workflows_from_manifest() {
   local workflows_src="$ROOT_DIR/.agent/workflows"
-  local workflows_dest="$PROJECT_DIR/.agent/workflows"
+  local workflows_dest="$1"
   ensure_dir "$workflows_dest"
   local count=0
   local workflow_file
@@ -344,16 +379,48 @@ copy_workflows_for_claude() {
   fi
 }
 
-install_project_env() {
-  local env_src="$ROOT_DIR/.env.example"
-  local env_dest="$PROJECT_DIR/.env"
+apply_manifest_entry() {
+  local op="$1"
+  local label="$2"
+  local source_rel="$3"
+  local dest_tpl="$4"
+  local src="$ROOT_DIR/$source_rel"
+  local dest
+  dest="$(expand_manifest_path "$dest_tpl")"
 
-  if [[ ! -f "$env_src" ]]; then
-    warn "Missing .env template: $env_src"
-    return 0
-  fi
-
-  copy_item_display "$env_src" "$env_dest" "Env"
+  case "$op" in
+    dir-copy|file-copy)
+      copy_item_display "$src" "$dest" "$label"
+      ;;
+    glob-copy)
+      copy_workflows_from_manifest "$dest"
+      ;;
+    claude-template)
+      if [[ -f "$PROJECT_DIR/CLAUDE.md" && "$OVERWRITE" -ne 1 ]]; then
+        copy_item_display "$src" "$PROJECT_DIR/CLAUDE.research-skills.md" "$label"
+      else
+        copy_item_display "$src" "$dest" "$label"
+      fi
+      ;;
+    quickstart-file)
+      if [[ -f "$src" ]]; then
+        copy_item_display "$src" "$dest" "$label"
+      else
+        write_gemini_quickstart
+      fi
+      ;;
+    conditional-dir-copy)
+      if [[ "$ANTIGRAVITY_CLI_FOUND" -eq 1 ]]; then
+        copy_item_display "$src" "$dest" "$label"
+      else
+        skip "$label" "$dest (antigravity CLI not found)"
+      fi
+      ;;
+    *)
+      err "Unsupported manifest operation: $op"
+      exit 1
+      ;;
+  esac
 }
 
 write_gemini_quickstart() {
@@ -397,9 +464,36 @@ install_antigravity_workspace() {
   copy_item_display "$SKILL_SRC" "$legacy_dest" "Legacy Skill"
 }
 
+install_manifest_target() {
+  local wanted_target="$1"
+  local manifest_target op label source_rel dest_tpl
+  while IFS=$'\t' read -r manifest_target op label source_rel dest_tpl; do
+    [[ -n "$manifest_target" ]] || continue
+    [[ "$manifest_target" == \#* ]] && continue
+    [[ "$manifest_target" == "$wanted_target" ]] || continue
+    apply_manifest_entry "$op" "$label" "$source_rel" "$dest_tpl"
+  done < "$MANIFEST_PATH"
+}
+
+install_project_manifest() {
+  local manifest_target op label source_rel dest_tpl
+  while IFS=$'\t' read -r manifest_target op label source_rel dest_tpl; do
+    [[ -n "$manifest_target" ]] || continue
+    [[ "$manifest_target" == \#* ]] && continue
+    [[ "$manifest_target" == "project" ]] || continue
+    apply_manifest_entry "$op" "$label" "$source_rel" "$dest_tpl"
+  done < "$MANIFEST_PATH"
+}
+
 # ── Parse arguments ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --profile)
+      [[ $# -ge 2 ]] || { echo "Missing value for --profile" >&2; exit 2; }
+      PROFILE="$2"
+      apply_profile_defaults "$PROFILE"
+      shift 2
+      ;;
     --target)
       [[ $# -ge 2 ]] || { echo "Missing value for --target" >&2; exit 2; }
       TARGET="$2"
@@ -489,6 +583,7 @@ printf "\n${C_BOLD}Research Skills Installer${C_RESET}\n"
 info "source:  $SKILL_SRC"
 info "project: $PROJECT_DIR"
 info "target:  $TARGET  |  mode: $MODE"
+info "profile: $PROFILE"
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   info "cli:     install -> $CLI_DIR"
 fi
@@ -522,34 +617,22 @@ esac
 # ── Install targets ──────────────────────────────────────────────────────────
 if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
   section "Codex"
-  copy_item_display "$SKILL_SRC" "$CODEX_SKILL_DEST" "Skill"
+  install_manifest_target codex
 fi
 
 if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
   section "Claude"
-  copy_item_display "$SKILL_SRC" "$CLAUDE_SKILL_DEST" "Skill"
-  copy_workflows_for_claude
-  if [[ -f "$PROJECT_DIR/CLAUDE.md" && "$OVERWRITE" -ne 1 ]]; then
-    copy_item_display "$ROOT_DIR/templates/CLAUDE.project.md" "$PROJECT_DIR/CLAUDE.research-skills.md" "CLAUDE.md"
-  else
-    copy_item_display "$ROOT_DIR/templates/CLAUDE.project.md" "$PROJECT_DIR/CLAUDE.md" "CLAUDE.md"
-  fi
+  install_manifest_target claude
 fi
 
 if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
   section "Gemini"
-  copy_item_display "$SKILL_SRC" "$GEMINI_SKILL_DEST" "Skill"
-  write_gemini_quickstart
+  install_manifest_target gemini
 fi
 
 if [[ "$TARGET" == "antigravity" || "$TARGET" == "all" ]]; then
   section "Antigravity"
-  install_antigravity_workspace
-  if [[ "$ANTIGRAVITY_CLI_FOUND" -eq 1 ]]; then
-    copy_item_display "$SKILL_SRC" "$ANTIGRAVITY_SKILL_DEST" "Global Skill"
-  else
-    skip "Global Skill" "$ANTIGRAVITY_SKILL_DEST (antigravity CLI not found)"
-  fi
+  install_manifest_target antigravity
 fi
 
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
@@ -557,7 +640,7 @@ if [[ "$INSTALL_CLI" -eq 1 ]]; then
 fi
 
 section "Project Env"
-install_project_env
+install_project_manifest
 
 # ── Doctor ───────────────────────────────────────────────────────────────────
 if [[ "$RUN_DOCTOR" -eq 1 ]]; then

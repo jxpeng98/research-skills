@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import __version__
+from .universal_installer import InstallOptions, install
 
 TAG_PATTERN = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+)|b(\d+))?$")
 RELEASE_NOTE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
@@ -617,30 +618,22 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
         _download(tar_url, archive_path)
         print(f"\r  {_green}✓{_reset} downloaded      ")
         extracted_root = _extract_tarball(archive_path, temp_root / "src")
-        install_script = extracted_root / "scripts" / "install_research_skill.sh"
+        install_script = extracted_root / "scripts" / "bootstrap_research_skill.py"
         if not install_script.exists():
-            print(f"[error] install script not found in archive: {install_script}", file=sys.stderr)
+            print(f"[error] Python install script not found in archive: {install_script}", file=sys.stderr)
             return 1
-
-        cmd = [
-            "bash",
-            str(install_script),
-            "--target",
-            args.target,
-            "--mode",
-            args.mode,
-            "--project-dir",
-            str(project_dir),
-        ]
-        if args.overwrite:
-            cmd.append("--overwrite")
-        if args.doctor:
-            cmd.append("--doctor")
-        if args.dry_run:
-            cmd.append("--dry-run")
-
-        result = subprocess.run(cmd, cwd=str(extracted_root), check=False)
-        return int(result.returncode)
+        return install(
+            InstallOptions(
+                repo_root=extracted_root,
+                project_dir=project_dir,
+                target=args.target,
+                mode=args.mode,
+                overwrite=args.overwrite,
+                install_cli=False,
+                doctor=args.doctor,
+                dry_run=args.dry_run,
+            )
+        )
 
 def cmd_align(args: argparse.Namespace) -> int:
     repo_hint = (

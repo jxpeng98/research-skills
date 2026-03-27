@@ -109,33 +109,30 @@ apply_profile_defaults() {
 }
 
 prompt_for_profile() {
-  local tty_fd
   local answer
 
-  if ! exec {tty_fd}<>/dev/tty 2>/dev/null; then
+  if ! : >/dev/tty 2>/dev/null || ! : </dev/tty 2>/dev/null; then
     err "Missing --profile and no interactive terminal is available. Pass --profile partial or --profile full."
     exit 2
   fi
 
-  describe_profiles >&${tty_fd}
+  describe_profiles >/dev/tty
   while true; do
-    printf "Select profile [1/2]: " >&${tty_fd}
-    IFS= read -r -u "$tty_fd" answer
+    printf "Select profile [1/2]: " >/dev/tty
+    IFS= read -r answer </dev/tty
     case "$answer" in
       1|partial|PARTIAL)
         PROFILE="partial"
         apply_profile_defaults "$PROFILE"
-        exec {tty_fd}>&-
         return 0
         ;;
       2|full|FULL)
         PROFILE="full"
         apply_profile_defaults "$PROFILE"
-        exec {tty_fd}>&-
         return 0
         ;;
       *)
-        printf "  %sPlease enter 1, 2, partial, or full.%s\n" "${C_YELLOW}" "${C_RESET}" >&${tty_fd}
+        printf "  %sPlease enter 1, 2, partial, or full.%s\n" "${C_YELLOW}" "${C_RESET}" >/dev/tty
         ;;
     esac
   done

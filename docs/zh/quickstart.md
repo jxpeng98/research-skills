@@ -17,6 +17,49 @@
 如果缺少这些依赖，你仍然可以安装 workflow 资产并使用 shell `rsk check|upgrade|align`，但 `doctor`、validator、tests 与完整 orchestrator 执行链会受限。
 :::
 
+## 0. Preliminary：先装 Python（推荐）
+
+Python 主要是为了 orchestrator 运行时。如果你只想安装 workflow 资产，`partial` 安装不要求 Python。如果你要 `doctor`、validator 和 `python3 -m bridges.orchestrator ...`，建议先准备好 `Python >= 3.12`。这是当前 Python CLI 的最低版本要求。
+
+推荐使用 `mise`：
+
+如果机器上还没有 `mise`，先安装并激活它：
+
+```bash
+# Linux / macOS
+curl https://mise.run | sh
+```
+
+```bash
+# bash
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
+# zsh
+echo 'eval "$(mise activate zsh)"' >> "${ZDOTDIR-$HOME}/.zshrc"
+source "${ZDOTDIR-$HOME}/.zshrc"
+```
+
+```powershell
+# Windows (PowerShell)
+scoop install mise
+```
+
+```powershell
+# Windows 备用方式
+winget install jdx.mise
+```
+
+```bash
+mise install python@3.12
+mise use -g python@3.12
+python3 --version
+```
+
+如果你的机器还没有 `mise`，需要先把 `mise` 预装好，再执行上面的 Python 安装命令。
+
 ## 1. 先选入口
 
 你通常只需要在下面三种入口里选一种：

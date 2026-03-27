@@ -23,6 +23,18 @@ These errors occur when the Orchestrator cannot locate a required CLI binary (li
 - **Fix**: Install the underlying CLI tools globally:
   - `npm install -g @anthropic-ai/claude-code`
 
+### `[ERR-RS-ENV-003]` `curl: (60) SSL certificate problem: certificate is not yet valid`.
+- **Cause**: The install command reached GitHub, but TLS validation failed before the script could be downloaded. This usually means the machine clock is wrong, the CA certificate bundle is stale, or a proxy is intercepting HTTPS traffic.
+- **Fix**:
+  - Check the system clock first: `date -u` and `timedatectl status`.
+  - Refresh CA certificates:
+    - Debian/Ubuntu: `sudo apt-get update && sudo apt-get install --reinstall ca-certificates curl`
+    - RHEL/CentOS/Fedora: `sudo dnf reinstall ca-certificates curl` then `sudo update-ca-trust`
+  - If you are behind a corporate proxy, install the proxy root certificate into the system trust store.
+  - Retry with the exact script name and shell expansion:
+    - `curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all`
+  - Avoid `curl -k` unless you are doing a temporary local test and understand the security tradeoff.
+
 ---
 
 ## Configuration & Standards (CFG)

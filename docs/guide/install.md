@@ -14,9 +14,64 @@ For the complete system, install and configure:
 Without them, installation and shell `rsk` maintenance commands still work, but orchestrator execution, `doctor`, validators, and full multi-model flows will be incomplete.
 :::
 
-## 1. Portable Install (No Python Required)
+## 0. Preliminary: Install Python First (Recommended)
 
-The most portable install path is the shell bootstrapper. It downloads the selected release archive and runs the bundled installer:
+Python is mainly for the orchestrator runtime. If you only want to install workflow assets into a project, `partial` install can work without Python. If you want `doctor`, validators, and `python3 -m bridges.orchestrator ...`, install `Python >= 3.12`. The packaged Python CLI in this repo currently declares `requires-python = ">=3.12"`.
+
+Recommended path: use `mise`.
+
+If `mise` is not installed yet, install and activate it first:
+
+```bash
+# Linux / macOS
+curl https://mise.run | sh
+```
+
+```bash
+# bash
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
+# zsh
+echo 'eval "$(mise activate zsh)"' >> "${ZDOTDIR-$HOME}/.zshrc"
+source "${ZDOTDIR-$HOME}/.zshrc"
+```
+
+```powershell
+# Windows (PowerShell)
+scoop install mise
+```
+
+```powershell
+# Windows alternative
+winget install jdx.mise
+```
+
+```bash
+mise install python@3.12
+mise use -g python@3.12
+python3 --version
+```
+
+Notes:
+- If `mise` is not available on the machine yet, preinstall `mise` before running the Python commands above.
+- This enables `python3 -m bridges.orchestrator ...`, `--doctor`, validators, and tests immediately.
+- Even if you start with the shell bootstrapper, pre-installing Python avoids a second round of environment setup when you later need upgrade or troubleshooting flows.
+
+## 1. Zero-Python Bootstrap (Recommended For First Install)
+
+If the machine may not have Python yet, start with a bootstrap entrypoint. If you omit `--profile`, the script explains `partial` vs `full` and prompts you to choose.
+
+Unified profile behavior:
+
+| Profile | What it installs | Python required before install | Orchestrator ready after install |
+|---|---|---|---|
+| `partial` | skills, workflows, project integration files | No | No |
+| `full` | `partial` + shell CLI + Python 3.12 via `mise` when needed + `doctor` | No | Yes |
+
+Linux / macOS, one-click bootstrap:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
@@ -24,22 +79,44 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
   --target all
 ```
 
-Requirements:
-- `bash`
-- `curl` or `wget`
-- `tar`
+Windows PowerShell, one-click bootstrap:
+
+```powershell
+Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "C:\path\to\project" -Target all
+```
+
+Profile behavior:
+- `partial`: install workflow assets and project integration files only.
+- `full`: install workflow assets, enable shell CLI installation, ensure Python 3.12 is available via `mise`, and run doctor so the orchestrator runtime is ready. On Windows bootstrap, PowerShell now performs the install directly and only installs Git for Windows via `winget` when shell CLI wrappers need Bash.
+
+## 2. Cross-Platform Python Installer (Optional Once Python Exists)
+
+Once Python is available, you can also use the local Python installer. It works on Linux, macOS, and Windows without requiring Bash.
+
+Partial install:
+
+```bash
+python3 scripts/bootstrap_research_skill.py --profile partial --project-dir .
+```
+
+Full install:
+
+```bash
+python3 scripts/bootstrap_research_skill.py --profile full --project-dir .
+```
+
+Profile behavior:
+- `partial`: install workflow assets and project integration files only.
+- `full`: install workflow assets, attempt shell CLI installation when supported, print readiness hints, and run doctor.
 
 Notes:
-- By default this also installs a shell CLI: `research-skills`, `rsk`, `rsw`.
-- Default CLI location: `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`.
-- Add `--overwrite` when re-installing/upgrading existing targets.
-- Use `--no-cli` if you only want the workflow assets.
-- Use `--cli-dir <path>` to install the shell CLI elsewhere.
-- The installer checks the selected underlying client CLIs first and prints install hints when `codex`, `claude`, `gemini`, or `antigravity` are missing from `PATH`.
-- `--doctor` is optional and only runs when `python3` is available.
-- Remote bootstrap only supports `--mode copy`. If you want `--mode link`, clone the repo and use the local installer below.
+- The shell bootstrap path still requires `bash` on Linux/macOS.
+- `rsk upgrade` is now Python-based and does not require Bash.
+- On Windows, the PowerShell bootstrap performs the install directly and installs Git for Windows via `winget` only when shell CLI wrappers need Bash.
+- The shell bootstrap path installs shell CLI commands by default in `full` mode and skips them in `partial` mode.
 
-## 2. Optional Python CLI
+## 3. Optional Python CLI
 
 If Python is already available on the machine, you can install the updater CLI with `pipx`:
 
@@ -48,12 +125,15 @@ pipx install research-skills-installer
 rsk upgrade --target all --project-dir /path/to/project --doctor
 ```
 
-## 3. Local Repository Installer
+This `pip` / `pipx` path is retained as an optional distribution for the updater CLI. It is not the recommended first-install path anymore.
+
+## 4. Local Repository Installer
 
 If you already have a repository checkout, you can run the installer directly:
 
 ```bash
-./scripts/install_research_skill.sh --target all --project-dir /path/to/project --install-cli --doctor
+./scripts/install_research_skill.sh --profile partial --target all --project-dir /path/to/project
+./scripts/install_research_skill.sh --profile full --target all --project-dir /path/to/project
 ```
 
 ## Target behaviors

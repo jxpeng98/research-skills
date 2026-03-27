@@ -14,9 +14,64 @@
 如果缺少这些依赖，安装流程和 shell `rsk` 维护命令仍可使用，但 orchestrator 执行、`doctor`、validator 和完整多模型流程会不完整。
 :::
 
-## 1. 通用安装方式（不依赖 Python）
+## 0. Preliminary：先安装 Python（推荐）
 
-最通用的安装方式是 shell bootstrap。它会下载指定 release 的压缩包，并执行其中自带的安装脚本：
+Python 主要是为了启用 orchestrator 运行时，而不是为了单纯复制 skills 文件。如果你只想把 workflow 资产装到项目里，`partial` 安装可以不依赖 Python。如果你要 `doctor`、validator 和 `python3 -m bridges.orchestrator ...`，建议先安装 `Python >= 3.12`。仓库当前的 Python 包要求也是 `requires-python = ">=3.12"`。
+
+推荐使用 `mise`：
+
+如果机器上还没有 `mise`，先安装并激活它：
+
+```bash
+# Linux / macOS
+curl https://mise.run | sh
+```
+
+```bash
+# bash
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
+# zsh
+echo 'eval "$(mise activate zsh)"' >> "${ZDOTDIR-$HOME}/.zshrc"
+source "${ZDOTDIR-$HOME}/.zshrc"
+```
+
+```powershell
+# Windows (PowerShell)
+scoop install mise
+```
+
+```powershell
+# Windows 备用方式
+winget install jdx.mise
+```
+
+```bash
+mise install python@3.12
+mise use -g python@3.12
+python3 --version
+```
+
+说明：
+- 如果你的机器还没有 `mise`，需要先把 `mise` 预装好，再执行上面的 Python 安装命令。
+- 这样后续的 `python3 -m bridges.orchestrator ...`、`--doctor`、validator 和 tests 都能直接运行。
+- 即使当前只准备走 shell bootstrap，也推荐先把 Python 配好，避免后面切到升级、预检或排障时再补环境。
+
+## 1. 零 Python Bootstrap（首次安装推荐）
+
+如果机器上可能还没有 Python，首装建议先走 bootstrap 入口。如果你不传 `--profile`，脚本会先解释 `partial` 和 `full` 的区别，再提示你选择。
+
+统一 profile 行为：
+
+| profile | 安装内容 | 安装前是否要求 Python | 安装后是否可直接跑 orchestrator |
+|---|---|---|---|
+| `partial` | skills、workflows、项目集成文件 | 否 | 否 |
+| `full` | `partial` + shell CLI + 缺失时通过 `mise` 安装 Python 3.12 + `doctor` | 否 | 是 |
+
+Linux / macOS，一键 bootstrap：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
@@ -24,22 +79,44 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
   --target all
 ```
 
-依赖：
-- `bash`
-- `curl` 或 `wget`
-- `tar`
+Windows PowerShell，一键 bootstrap：
+
+```powershell
+Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "C:\path\to\project" -Target all
+```
+
+profile 行为：
+- `partial`：只安装 workflow 资产和项目集成文件。
+- `full`：安装 workflow 资产，启用 shell CLI，自动通过 `mise` 补齐 Python 3.12，并运行 doctor，让 orchestrator 运行时可用。Windows bootstrap 现在由 PowerShell 直接完成安装，只有在 shell CLI 包装器需要 Bash 时才会通过 `winget` 安装 Git for Windows。
+
+## 2. 跨平台 Python 安装器（已有 Python 时可选）
+
+如果机器上已经有 Python，也可以使用本地 Python 安装器。它在 Linux、macOS 和 Windows 上都能工作，不依赖 Bash。
+
+部分功能安装：
+
+```bash
+python3 scripts/bootstrap_research_skill.py --profile partial --project-dir .
+```
+
+完整功能安装：
+
+```bash
+python3 scripts/bootstrap_research_skill.py --profile full --project-dir .
+```
+
+profile 行为：
+- `partial`：只安装 workflow 资产和项目集成文件。
+- `full`：安装 workflow 资产，尽量安装 shell CLI，打印完整依赖提示，并运行 doctor。
 
 说明：
-- 默认也会安装 shell CLI：`research-skills`、`rsk`、`rsw`。
-- 默认 CLI 目录：`${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`。
-- 如果是已有安装上的刷新/升级，请加 `--overwrite`。
-- 如果你只想安装 workflow 资产，可加 `--no-cli`。
-- 如果你要改 CLI 落盘目录，可用 `--cli-dir <path>`。
-- 安装器会先检查所选底层客户端 CLI；如果 `codex`、`claude`、`gemini` 或 `antigravity` 不在 `PATH` 中，会直接打印安装提示。
-- `--doctor` 是可选项，只有检测到 `python3` 时才会执行。
-- 远程 bootstrap 只支持 `--mode copy`。如果你需要 `--mode link`，请先 clone 仓库，再使用下面的本地安装脚本。
+- shell bootstrap 路径在 Linux/macOS 上仍然需要 `bash`。
+- `rsk upgrade` 现在已经是纯 Python 路径，不再依赖 Bash。
+- Windows PowerShell bootstrap 现在由 PowerShell 直接完成安装，只有在 shell CLI 包装器需要 Bash 时才会通过 `winget` 安装 Git for Windows。
+- shell bootstrap 路径在 `full` 模式下默认安装 shell CLI，在 `partial` 模式下默认跳过。
 
-## 2. 可选：Python CLI
+## 3. 可选：Python CLI
 
 如果机器上已经有 Python，也可以继续使用 `pipx` 安装升级器 CLI：
 
@@ -48,12 +125,15 @@ pipx install research-skills-installer
 rsk upgrade --target all --project-dir /path/to/project --doctor
 ```
 
-## 3. 本地仓库安装脚本
+这条 `pip` / `pipx` 路径现在主要保留为升级器 CLI 的兼容性分发方式，不再是推荐的首次安装入口。
+
+## 4. 本地仓库安装脚本
 
 如果你已经有仓库副本，可以直接运行统一安装脚本：
 
 ```bash
-./scripts/install_research_skill.sh --target all --project-dir /path/to/project --install-cli --doctor
+./scripts/install_research_skill.sh --profile partial --target all --project-dir /path/to/project
+./scripts/install_research_skill.sh --profile full --target all --project-dir /path/to/project
 ```
 
 ## 目标环境行为

@@ -23,6 +23,18 @@
 - **修复**：全局安装底层的 CLI 工具：
   - `npm install -g @anthropic-ai/claude-code`
 
+### `[ERR-RS-ENV-003]` `curl: (60) SSL certificate problem: certificate is not yet valid`。
+- **原因**：安装命令已经连到了 GitHub，但在下载脚本前 TLS 校验失败。常见原因是系统时间不对、CA 证书包过旧，或者公司代理拦截了 HTTPS。
+- **修复**：
+  - 先检查系统时间：`date -u` 和 `timedatectl status`。
+  - 刷新 CA 证书：
+    - Debian/Ubuntu：`sudo apt-get update && sudo apt-get install --reinstall ca-certificates curl`
+    - RHEL/CentOS/Fedora：`sudo dnf reinstall ca-certificates curl`，然后执行 `sudo update-ca-trust`
+  - 如果在公司代理后面，需要把代理的根证书导入系统信任库。
+  - 重试时请确认脚本名和变量展开都写对：
+    - `curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all`
+  - 除非你明确接受安全风险，否则不要用 `curl -k` 绕过证书校验。
+
 ---
 
 ## 配置与标准 (CFG)

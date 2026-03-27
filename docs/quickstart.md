@@ -17,6 +17,49 @@ If you want the full system, install and configure all of the following:
 Without them, you can still install workflow assets and use shell `rsk check|upgrade|align`, but `doctor`, validators, tests, and full orchestrator execution will be limited.
 :::
 
+## 0. Preliminary: Install Python First (Recommended)
+
+Python is mainly needed for the orchestrator runtime. If you only want to install workflow assets, Python is not required for `partial` install. If you want `doctor`, validators, and `python3 -m bridges.orchestrator ...`, prepare `Python >= 3.12`. That is the current minimum version for the packaged Python CLI.
+
+Recommended path: use `mise`.
+
+If `mise` is not installed yet, install and activate it first:
+
+```bash
+# Linux / macOS
+curl https://mise.run | sh
+```
+
+```bash
+# bash
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
+# zsh
+echo 'eval "$(mise activate zsh)"' >> "${ZDOTDIR-$HOME}/.zshrc"
+source "${ZDOTDIR-$HOME}/.zshrc"
+```
+
+```powershell
+# Windows (PowerShell)
+scoop install mise
+```
+
+```powershell
+# Windows alternative
+winget install jdx.mise
+```
+
+```bash
+mise install python@3.12
+mise use -g python@3.12
+python3 --version
+```
+
+If `mise` is not available on the machine yet, preinstall `mise` before running the Python commands above.
+
 ## 1. Pick an Entry Mode
 
 Use one of these stable entrypoints:

@@ -181,13 +181,12 @@ When cutting a release, follow these steps:
 
 - [ ] Confirm all features are merged into `main`.
 - [ ] Ensure CI is passing (Green `ci.yml`).
-- [ ] Run `./scripts/release_ready.sh --version <version>`.
-- [ ] Commit release-prep changes.
+- [ ] Run either `./scripts/release_ready.sh --version <version>` or `./scripts/release_automation.sh publish --version <version>`.
+- [ ] If you used `release_ready.sh`, commit release-prep changes manually.
 - [ ] Run GitHub Actions `Publish to TestPyPI` and validate package installation from TestPyPI.
-- [ ] Create a tag: `git tag v<version>`
-- [ ] Push: `git push origin main --tags`
+- [ ] If you did not use `publish`, create and push the tag manually.
 - [ ] Confirm the `Publish to PyPI` workflow succeeded on GitHub Actions.
-- [ ] Run release postflight: `./scripts/release_automation.sh post --tag v<version>`
+- [ ] If you did not use `publish`, run release postflight: `./scripts/release_automation.sh post --tag v<version> --create-release`
 - [ ] Verify installation: `pipx install research-skills-installer && rsk --help`
 
 ---

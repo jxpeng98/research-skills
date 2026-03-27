@@ -2221,7 +2221,7 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
         for token in (
             "release_preflight.sh",
             "release_postflight.sh",
-            "<pre|post|full>",
+            "<pre|post|publish>",
             "--from-tag",
             "--skip-note-gen",
         ):

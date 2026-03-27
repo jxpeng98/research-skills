@@ -181,13 +181,12 @@ pip install --index-url https://test.pypi.org/simple/ research-skills-installer
 
 - [ ] 确认所有功能已合入 `main`
 - [ ] CI 通过（`ci.yml` 绿色）
-- [ ] 运行 `./scripts/release_ready.sh --version <version>`
-- [ ] Commit release prep 变更
+- [ ] 运行 `./scripts/release_ready.sh --version <version>` 或 `./scripts/release_automation.sh publish --version <version>`
+- [ ] 如果走的是 `release_ready.sh`，手动 commit release prep 变更
 - [ ] 运行 GitHub Actions `Publish to TestPyPI`，并完成 TestPyPI 安装验证
-- [ ] 创建 tag：`git tag v<version>`
-- [ ] Push：`git push origin main --tags`
+- [ ] 如果没有使用 `publish`，手动创建并 push tag
 - [ ] 在 GitHub Actions 确认 `Publish to PyPI` workflow 成功
-- [ ] 运行 release postflight：`./scripts/release_automation.sh post --tag v<version>`
+- [ ] 如果没有使用 `publish`，运行 release postflight：`./scripts/release_automation.sh post --tag v<version> --create-release`
 - [ ] 验证安装：`pipx install research-skills-installer && rsk --help`
 
 ---

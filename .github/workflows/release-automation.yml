@@ -7,14 +7,18 @@ on:
         description: "Run phase"
         required: true
         type: choice
-        default: post
+        default: pre
         options:
           - pre
           - post
-          - full
+          - publish
+      version:
+        description: "Release version for publish mode (for example 0.1.0 or 0.1.1b1)"
+        required: false
+        type: string
       tag:
         description: "Release tag (for example v0.1.0 or v0.1.1-beta.1)"
-        required: true
+        required: false
         type: string
       skip_smoke:
         description: "Skip smoke checks in pre mode"
@@ -49,7 +53,10 @@ on:
         description: "Create GitHub release page in post mode"
         required: false
         type: boolean
-        default: false
+        default: true
+
+permissions:
+  contents: write
 
 jobs:
   release-automation:
@@ -58,11 +65,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Inject packaged upstream defaults
         run: bash scripts/inject_project_toml.sh
@@ -76,7 +90,24 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          args=(--tag "${{ inputs.tag }}")
+          git fetch --force --tags origin
+          mode="${{ inputs.mode }}"
+          args=()
+
+          if [[ "$mode" == "publish" ]]; then
+            if [[ -z "${{ inputs.version }}" ]]; then
+              echo "publish mode requires 'version' input" >&2
+              exit 2
+            fi
+            args+=(--version "${{ inputs.version }}")
+          else
+            if [[ -z "${{ inputs.tag }}" ]]; then
+              echo "${mode} mode requires 'tag' input" >&2
+              exit 2
+            fi
+            args+=(--tag "${{ inputs.tag }}")
+          fi
+
           if [[ "${{ inputs.skip_smoke }}" == "true" ]]; then
             args+=(--skip-smoke)
           fi
@@ -97,8 +128,11 @@ jobs:
           fi
           if [[ "${{ inputs.create_release }}" == "true" ]]; then
             args+=(--create-release)
+          elif [[ "$mode" == "publish" ]]; then
+            args+=(--no-create-release)
           fi
-          ./scripts/release_automation.sh "${{ inputs.mode }}" "${args[@]}"
+
+          ./scripts/release_automation.sh "$mode" "${args[@]}"
 
       - name: Upload release acceptance artifacts
         if: always()

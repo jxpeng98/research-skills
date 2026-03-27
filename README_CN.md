@@ -685,6 +685,10 @@ python3 scripts/validate_project_artifacts.py --cwd ./project  --topic <topic> -
 ### 发版自动化 (Release Automation)
 由 CI 接管或手动拉草稿：
 ```bash
+# 一条命令走完整发版
+./scripts/release_automation.sh publish --version 0.1.0 --from-tag v0.1.0-beta.6
+
+# 需要拆阶段时再手动执行
 ./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
 ./scripts/release_automation.sh post --tag v0.1.0 --create-release
 ```

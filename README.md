@@ -791,7 +791,10 @@ If you wish to test the legacy installation method, the script is located at: `s
 
 ### Release Automation
 ```bash
-# Auto-generate release docs and append validation smoke checks
+# Full end-to-end publish
+./scripts/release_automation.sh publish --version 0.1.0 --from-tag v0.1.0-beta.6
+
+# Manual split phases when needed
 ./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
 ./scripts/release_automation.sh post --tag v0.1.0 --create-release
 ```

@@ -271,16 +271,21 @@ mode 列表：
 ### 4.3 Release 自动化：`./scripts/release_automation.sh`
 
 ```bash
+./scripts/release_automation.sh publish --version 0.1.0 --from-tag v0.1.0-beta.X
 ./scripts/release_automation.sh pre  --tag v0.1.0-beta.X
-./scripts/release_automation.sh post --tag v0.1.0-beta.X
-./scripts/release_automation.sh full --tag v0.1.0-beta.X
+./scripts/release_automation.sh post --tag v0.1.0-beta.X --create-release
 ```
+
+推荐方式：
+
+- 需要完整端到端发版时，用 `publish`
+- 只有在你明确想把 release prep 和 release acceptance 拆开执行时，再用 `pre` / `post`
 
 也可单独运行：
 
 ```bash
 ./scripts/release_preflight.sh [--tag v0.1.0-beta.X] [--skip-smoke] [--no-strict]
-./scripts/release_postflight.sh --tag v0.1.0-beta.X [--skip-remote] [--skip-ci-status]
+./scripts/release_postflight.sh --tag v0.1.0-beta.X [--skip-remote] [--skip-ci-status] [--wait-ci] [--create-release]
 ```
 
 ### 4.4 Beta smoke：`./scripts/run_beta_smoke.sh`

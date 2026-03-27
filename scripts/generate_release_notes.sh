@@ -234,7 +234,7 @@ git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSI
 git commit -m "chore: prepare release ${VERSION_HINT}"
 git tag -a ${TAG} -m "research-skills release"
 git push origin main --tags
-./scripts/release_automation.sh post --tag ${TAG}
+./scripts/release_automation.sh post --tag ${TAG} --create-release
 \`\`\`
 EOF
   echo

@@ -13,6 +13,12 @@ SYSTEM_BASH = Path("/bin/bash")
 
 
 class InstallResearchSkillTests(unittest.TestCase):
+    def test_doctor_command_exports_repo_root_on_pythonpath(self) -> None:
+        content = INSTALL_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn('doctor_cmd() {', content)
+        self.assertIn('PYTHONPATH="$pythonpath" python3 -m bridges.orchestrator "$@"', content)
+
     def test_claude_install_succeeds_under_system_bash(self) -> None:
         if not SYSTEM_BASH.exists():
             self.skipTest("/bin/bash is not available")

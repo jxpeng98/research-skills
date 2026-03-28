@@ -187,6 +187,14 @@ has_python3() {
   command -v python3 >/dev/null 2>&1
 }
 
+doctor_cmd() {
+  local pythonpath="$ROOT_DIR"
+  if [[ -n "${PYTHONPATH:-}" ]]; then
+    pythonpath="$ROOT_DIR:$PYTHONPATH"
+  fi
+  PYTHONPATH="$pythonpath" python3 -m bridges.orchestrator "$@"
+}
+
 cli_name_for_target() {
   case "$1" in
     codex) printf 'codex\n' ;;
@@ -648,7 +656,7 @@ if [[ "$RUN_DOCTOR" -eq 1 ]]; then
   if ! has_python3; then
     warn "Skipping doctor: python3 not found. Install/update still completed."
   else
-    DOCTOR_OUTPUT=$(run_cmd python3 -m bridges.orchestrator doctor --cwd "$PROJECT_DIR" 2>&1) || true
+    DOCTOR_OUTPUT=$(run_cmd doctor_cmd doctor --cwd "$PROJECT_DIR" 2>&1) || true
 
     # Parse JSON output and render human-friendly summary
     python3 -c "

@@ -99,6 +99,8 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("Expand-Archive", content)
         self.assertIn("Install-FromRepo", content)
         self.assertNotIn('bootstrapUrl = "https://raw.githubusercontent.com', content)
+        self.assertNotIn('$content = @"', content)
+        self.assertIn('$env:PYTHONPATH = $RepoRoot', content)
 
 
 if __name__ == "__main__":

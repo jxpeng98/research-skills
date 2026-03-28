@@ -283,10 +283,10 @@ function Copy-InstallItem([string]$Source, [string]$Destination, [string]$Label,
 }
 
 function Write-CmdWrapper([string]$Destination, [string]$BashPath, [string]$ScriptName) {
-    $content = @"
-@echo off
-"$BashPath" "%~dp0$ScriptName" %*
-"@
+    $content = @(
+        '@echo off'
+        ('"{0}" "%~dp0{1}" %*' -f $BashPath, $ScriptName)
+    ) -join "`r`n"
     if ($DryRun) {
         Write-Ok "Wrapper" $Destination
         return
@@ -317,17 +317,17 @@ function Install-ShellCliWindows([string]$RepoRoot, [string]$CliRoot, [string]$B
 }
 
 function Write-QuickstartFallback([string]$QuickstartPath) {
-    $content = @"
-# Research Skills for Gemini Runtime
-
-Use this project through orchestrator for Codex/Claude/Gemini collaboration:
-
-```bash
-python3 -m bridges.orchestrator doctor --cwd .
-python3 -m bridges.orchestrator parallel --prompt "Analyze this study design" --cwd . --summarizer gemini
-python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic your-topic --cwd . --triad
-```
-"@
+    $content = @(
+        '# Research Skills for Gemini Runtime'
+        ''
+        'Use this project through orchestrator for Codex/Claude/Gemini collaboration:'
+        ''
+        '```bash'
+        'python3 -m bridges.orchestrator doctor --cwd .'
+        'python3 -m bridges.orchestrator parallel --prompt "Analyze this study design" --cwd . --summarizer gemini'
+        'python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic your-topic --cwd . --triad'
+        '```'
+    ) -join "`r`n"
     if ($DryRun) {
         Write-Ok "Quickstart" $QuickstartPath
         return
@@ -484,6 +484,13 @@ function Install-FromRepo([string]$RepoRoot, [string]$ProjectRoot, [string]$Inst
         else {
             Push-Location $RepoRoot
             try {
+                $previousPythonPath = $env:PYTHONPATH
+                if ([string]::IsNullOrWhiteSpace($previousPythonPath)) {
+                    $env:PYTHONPATH = $RepoRoot
+                }
+                else {
+                    $env:PYTHONPATH = "$RepoRoot$([System.IO.Path]::PathSeparator)$previousPythonPath"
+                }
                 if ($PythonRuntime.Mode -eq "mise") {
                     & $PythonRuntime.Mise exec python@3.12 -- python -m bridges.orchestrator doctor --cwd $projectRoot
                 }
@@ -492,6 +499,12 @@ function Install-FromRepo([string]$RepoRoot, [string]$ProjectRoot, [string]$Inst
                 }
             }
             finally {
+                if ($null -eq $previousPythonPath) {
+                    Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+                }
+                else {
+                    $env:PYTHONPATH = $previousPythonPath
+                }
                 Pop-Location
             }
         }

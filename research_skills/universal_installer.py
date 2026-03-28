@@ -318,12 +318,17 @@ def _run_doctor(project_dir: Path, dry_run: bool) -> None:
     if dry_run:
         print(f"  [ok]   Doctor       -> dry-run ({project_dir})")
         return
+    repo_root = Path(__file__).resolve().parents[1]
+    env = os.environ.copy()
+    existing_pythonpath = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(repo_root) if not existing_pythonpath else f"{repo_root}{os.pathsep}{existing_pythonpath}"
     result = subprocess.run(
         [sys.executable, "-m", "bridges.orchestrator", "doctor", "--cwd", str(project_dir)],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
         check=False,
+        env=env,
     )
     print(result.stdout.strip() if result.stdout.strip() else "  [warn] doctor produced no output")
     if result.returncode != 0:

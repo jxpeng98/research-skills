@@ -32,7 +32,7 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('ci_json_file="$(mktemp)"', content)
         self.assertNotIn("CI_JSON_PAYLOAD=", content)
         self.assertIn('refs/remotes/origin/$candidate', content)
-        self.assertIn('./scripts/verify_release_tag_version.sh --tag "$TAG"', content)
+        self.assertIn('bash ./scripts/verify_release_tag_version.sh --tag "$TAG"', content)
         self.assertIn("gh release view", content)
         self.assertIn("--prerelease", content)
 

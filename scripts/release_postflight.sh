@@ -225,7 +225,7 @@ if ! LOCAL_TAG_COMMIT="$(git rev-parse "$TAG^{}" 2>/dev/null)"; then
 fi
 echo "[postflight] local tag commit: $LOCAL_TAG_COMMIT"
 
-./scripts/verify_release_tag_version.sh --tag "$TAG"
+bash ./scripts/verify_release_tag_version.sh --tag "$TAG"
 
 if ! primary_branch_record="$(detect_primary_branch)"; then
   echo "[postflight] unable to detect primary branch (expected main or master locally or under origin/)" >&2

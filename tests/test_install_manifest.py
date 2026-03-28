@@ -6,6 +6,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = REPO_ROOT / "install" / "install_manifest.tsv"
+PACKAGED_MANIFEST_PATH = REPO_ROOT / "research_skills" / "install_manifest.tsv"
 
 
 def _read_manifest() -> list[dict[str, str]]:
@@ -28,6 +29,13 @@ def _read_manifest() -> list[dict[str, str]]:
 
 
 class InstallManifestTests(unittest.TestCase):
+    def test_packaged_manifest_matches_repo_manifest(self) -> None:
+        self.assertTrue(PACKAGED_MANIFEST_PATH.exists(), msg="missing packaged install manifest")
+        self.assertEqual(
+            PACKAGED_MANIFEST_PATH.read_text(encoding="utf-8"),
+            MANIFEST_PATH.read_text(encoding="utf-8"),
+        )
+
     def test_manifest_declares_expected_entries(self) -> None:
         entries = _read_manifest()
         expected = {

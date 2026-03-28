@@ -33,4 +33,4 @@ rsw = "research_skills.cli:main"
 packages = ["research_skills"]
 
 [tool.setuptools.package-data]
-research_skills = ["project.toml"]
+research_skills = ["project.toml", "install_manifest.tsv"]

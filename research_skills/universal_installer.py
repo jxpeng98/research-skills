@@ -5,13 +5,14 @@ import shutil
 import stat
 import subprocess
 import sys
+from importlib import resources
 from dataclasses import dataclass
 from pathlib import Path
 
 
 TARGET_CHOICES = ("codex", "claude", "gemini", "antigravity", "all")
 PROFILE_CHOICES = ("partial", "full")
-MANIFEST_PATH = Path(__file__).resolve().parents[1] / "install" / "install_manifest.tsv"
+LEGACY_MANIFEST_PATH = Path(__file__).resolve().parents[1] / "install" / "install_manifest.tsv"
 
 
 @dataclass
@@ -128,7 +129,11 @@ def _copy_path(src: Path, dest: Path, mode: str, overwrite: bool, dry_run: bool)
 
 def _parse_manifest() -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
-    for raw_line in MANIFEST_PATH.read_text(encoding="utf-8").splitlines():
+    try:
+        manifest_text = resources.files("research_skills").joinpath("install_manifest.tsv").read_text(encoding="utf-8")
+    except (FileNotFoundError, ModuleNotFoundError):
+        manifest_text = LEGACY_MANIFEST_PATH.read_text(encoding="utf-8")
+    for raw_line in manifest_text.splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue

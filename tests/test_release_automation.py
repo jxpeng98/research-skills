@@ -8,6 +8,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RELEASE_AUTOMATION = REPO_ROOT / "scripts" / "release_automation.sh"
 RELEASE_POSTFLIGHT = REPO_ROOT / "scripts" / "release_postflight.sh"
 RELEASE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "release-automation.yml"
+PUBLISH_PYPI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "publish-pypi.yml"
+VERIFY_RELEASE_TAG = REPO_ROOT / "scripts" / "verify_release_tag_version.sh"
 
 
 class ReleaseAutomationTests(unittest.TestCase):
@@ -29,6 +31,8 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn("query_ci_status", content)
         self.assertIn('ci_json_file="$(mktemp)"', content)
         self.assertNotIn("CI_JSON_PAYLOAD=", content)
+        self.assertIn('refs/remotes/origin/$candidate', content)
+        self.assertIn('./scripts/verify_release_tag_version.sh --tag "$TAG"', content)
         self.assertIn("gh release view", content)
         self.assertIn("--prerelease", content)
 
@@ -44,7 +48,22 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('if [[ "${{ github.event_name }}" == "push" ]]; then', content)
         self.assertIn('mode="post"', content)
         self.assertIn('args+=(--create-release)', content)
+        self.assertIn('bash scripts/verify_release_tag_version.sh --tag "$tag"', content)
         self.assertIn('git config user.name "github-actions[bot]"', content)
+
+    def test_publish_pypi_workflow_verifies_tag_matches_repo_version(self) -> None:
+        content = PUBLISH_PYPI_WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertIn('bash scripts/verify_release_tag_version.sh --tag "${GITHUB_REF_NAME}"', content)
+
+    def test_verify_release_tag_script_checks_expected_files(self) -> None:
+        content = VERIFY_RELEASE_TAG.read_text(encoding="utf-8")
+
+        self.assertIn('scripts/sync_versions.py "$TAG" --print-field package_version', content)
+        self.assertIn('pyproject.toml', content)
+        self.assertIn('research_skills/__init__.py', content)
+        self.assertIn('skills/registry.yaml', content)
+        self.assertIn('research-paper-workflow/VERSION', content)
 
 
 if __name__ == "__main__":

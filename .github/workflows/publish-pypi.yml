@@ -31,6 +31,9 @@ jobs:
           RESEARCH_SKILLS_REPO_SLUG: jxpeng98/research-skills
         run: bash scripts/inject_project_toml.sh
 
+      - name: Verify tag matches repo version
+        run: bash scripts/verify_release_tag_version.sh --tag "${GITHUB_REF_NAME}"
+
       - name: Install build tools
         run: pip install build twine
 

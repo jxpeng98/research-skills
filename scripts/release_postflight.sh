@@ -52,6 +52,21 @@ derive_repo_slug() {
   return 1
 }
 
+detect_primary_branch() {
+  local candidate
+  for candidate in main master; do
+    if git show-ref --verify --quiet "refs/heads/$candidate"; then
+      printf '%s\t%s\n' "$candidate" "$candidate"
+      return 0
+    fi
+    if git show-ref --verify --quiet "refs/remotes/origin/$candidate"; then
+      printf '%s\trefs/remotes/origin/%s\n' "$candidate" "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
 is_prerelease_tag() {
   [[ "$1" == *beta* || "$1" =~ b[0-9]+ ]]
 }
@@ -210,12 +225,16 @@ if ! LOCAL_TAG_COMMIT="$(git rev-parse "$TAG^{}" 2>/dev/null)"; then
 fi
 echo "[postflight] local tag commit: $LOCAL_TAG_COMMIT"
 
-PRIMARY_BRANCH="main"
-if ! git show-ref --verify --quiet "refs/heads/$PRIMARY_BRANCH"; then
-  PRIMARY_BRANCH="master"
-fi
+./scripts/verify_release_tag_version.sh --tag "$TAG"
 
-if git merge-base --is-ancestor "$LOCAL_TAG_COMMIT" "$PRIMARY_BRANCH"; then
+if ! primary_branch_record="$(detect_primary_branch)"; then
+  echo "[postflight] unable to detect primary branch (expected main or master locally or under origin/)" >&2
+  exit 1
+fi
+PRIMARY_BRANCH="${primary_branch_record%%$'\t'*}"
+PRIMARY_BRANCH_REF="${primary_branch_record#*$'\t'}"
+
+if git merge-base --is-ancestor "$LOCAL_TAG_COMMIT" "$PRIMARY_BRANCH_REF"; then
   echo "[postflight] tag commit is reachable from $PRIMARY_BRANCH"
 else
   echo "[postflight] tag commit is not reachable from $PRIMARY_BRANCH" >&2

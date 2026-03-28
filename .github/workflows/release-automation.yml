@@ -141,6 +141,10 @@ jobs:
             args+=(--no-create-release)
           fi
 
+          if [[ "$mode" != "publish" ]]; then
+            bash scripts/verify_release_tag_version.sh --tag "$tag"
+          fi
+
           ./scripts/release_automation.sh "$mode" "${args[@]}"
 
       - name: Upload release acceptance artifacts

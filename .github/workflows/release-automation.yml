@@ -1,6 +1,9 @@
 name: Release Automation
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       mode:
@@ -91,7 +94,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --force --tags origin
-          mode="${{ inputs.mode }}"
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            mode="post"
+            tag="${{ github.ref_name }}"
+          else
+            mode="${{ inputs.mode }}"
+            tag="${{ inputs.tag }}"
+          fi
           args=()
 
           if [[ "$mode" == "publish" ]]; then
@@ -101,11 +110,11 @@ jobs:
             fi
             args+=(--version "${{ inputs.version }}")
           else
-            if [[ -z "${{ inputs.tag }}" ]]; then
+            if [[ -z "$tag" ]]; then
               echo "${mode} mode requires 'tag' input" >&2
               exit 2
             fi
-            args+=(--tag "${{ inputs.tag }}")
+            args+=(--tag "$tag")
           fi
 
           if [[ "${{ inputs.skip_smoke }}" == "true" ]]; then
@@ -120,13 +129,13 @@ jobs:
           if [[ -n "${{ inputs.from_tag }}" ]]; then
             args+=(--from-tag "${{ inputs.from_tag }}")
           fi
-          if [[ "${{ inputs.skip_remote }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" != "push" && "${{ inputs.skip_remote }}" == "true" ]]; then
             args+=(--skip-remote)
           fi
-          if [[ "${{ inputs.skip_ci_status }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" != "push" && "${{ inputs.skip_ci_status }}" == "true" ]]; then
             args+=(--skip-ci-status)
           fi
-          if [[ "${{ inputs.create_release }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "push" || "${{ inputs.create_release }}" == "true" ]]; then
             args+=(--create-release)
           elif [[ "$mode" == "publish" ]]; then
             args+=(--no-create-release)

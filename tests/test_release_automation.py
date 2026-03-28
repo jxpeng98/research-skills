@@ -27,16 +27,23 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('REQUIRED_WORKFLOWS=("CI" "Install Check")', content)
         self.assertIn("--wait-ci", content)
         self.assertIn("query_ci_status", content)
+        self.assertIn('ci_json_file="$(mktemp)"', content)
+        self.assertNotIn("CI_JSON_PAYLOAD=", content)
         self.assertIn("gh release view", content)
         self.assertIn("--prerelease", content)
 
     def test_release_workflow_exposes_publish_mode(self) -> None:
         content = RELEASE_WORKFLOW.read_text(encoding="utf-8")
 
+        self.assertIn("push:", content)
+        self.assertIn('tags:\n      - "v*"', content)
         self.assertIn("- publish", content)
         self.assertIn("version:", content)
         self.assertIn("fetch-depth: 0", content)
         self.assertIn('git fetch --force --tags origin', content)
+        self.assertIn('if [[ "${{ github.event_name }}" == "push" ]]; then', content)
+        self.assertIn('mode="post"', content)
+        self.assertIn('args+=(--create-release)', content)
         self.assertIn('git config user.name "github-actions[bot]"', content)
 
 

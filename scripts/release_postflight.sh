@@ -60,7 +60,7 @@ query_ci_status() {
   local repo_slug="$1"
   local branch="$2"
   local commit="$3"
-  local api_url ci_json
+  local api_url ci_json ci_json_file
   local -a curl_cmd
 
   if [[ -z "$repo_slug" ]]; then
@@ -79,14 +79,19 @@ query_ci_status() {
     return 0
   fi
 
-  CI_JSON_PAYLOAD="$ci_json" python3 - "$commit" "${REQUIRED_WORKFLOWS[@]}" <<'PY'
+  ci_json_file="$(mktemp)"
+  printf '%s' "$ci_json" >"$ci_json_file"
+
+  set +e
+  python3 - "$ci_json_file" "$commit" "${REQUIRED_WORKFLOWS[@]}" <<'PY'
 import json
-import os
 import sys
 
-commit = sys.argv[1]
-required = sys.argv[2:]
-raw = os.environ.get("CI_JSON_PAYLOAD", "").strip()
+payload_path = sys.argv[1]
+commit = sys.argv[2]
+required = sys.argv[3:]
+with open(payload_path, "r", encoding="utf-8") as fh:
+    raw = fh.read().strip()
 if not raw:
     print("skipped:empty-response")
     raise SystemExit(0)
@@ -134,6 +139,10 @@ if pending or missing:
 print("success:" + "; ".join(results))
 raise SystemExit(0)
 PY
+  local status=$?
+  set -e
+  rm -f "$ci_json_file"
+  return "$status"
 }
 
 while [[ $# -gt 0 ]]; do

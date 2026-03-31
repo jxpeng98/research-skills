@@ -98,9 +98,18 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("install\\install_manifest.tsv", content)
         self.assertIn("Expand-Archive", content)
         self.assertIn("Install-FromRepo", content)
+        self.assertIn("[switch]$Beta", content)
+        self.assertIn("/releases?per_page=20", content)
         self.assertNotIn('bootstrapUrl = "https://raw.githubusercontent.com', content)
         self.assertNotIn('$content = @"', content)
         self.assertIn('$env:PYTHONPATH = $RepoRoot', content)
+
+    def test_shell_bootstrap_documents_beta_channel(self) -> None:
+        content = BOOTSTRAP_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn("--beta", content)
+        self.assertIn("latest beta/prerelease tag", content)
+        self.assertIn("/releases?per_page=20", content)
 
 
 if __name__ == "__main__":

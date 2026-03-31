@@ -11,6 +11,7 @@ DRY_RUN=0
 PROFILE=""
 REF=""
 REF_TYPE="tag"
+INCLUDE_BETA=0
 RAW_REPO="${RESEARCH_SKILLS_REPO:-$DEFAULT_REPO}"
 INSTALL_CLI=1
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
@@ -51,6 +52,7 @@ Options:
   --repo <owner/repo|git-url>          Upstream repo (default: RESEARCH_SKILLS_REPO or jxpeng98/research-skills)
   --ref <tag-or-branch>                Explicit release tag or branch name
   --ref-type <tag|branch>              How to interpret --ref (default: tag)
+  --beta                               Install the latest beta/prerelease tag when --ref is omitted
   --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy>                        Install mode for remote bootstrap (default: copy)
   --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
@@ -308,9 +310,52 @@ download_file() {
 
 resolve_latest_tag() {
   local repo="$1"
+  local require_beta="${2:-0}"
   local payload tag url
+  local -a release_tags=()
+  local -a git_tags=()
 
-  if payload="$(download_text "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null)"; then
+  tag_sort_key() {
+    local raw_tag="$1"
+    local require_beta_local="${2:-0}"
+    local beta_num beta_key
+
+    if [[ ! "$raw_tag" =~ ^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-beta\.([0-9]+)|b([0-9]+))?$ ]]; then
+      return 1
+    fi
+
+    beta_num="${BASH_REMATCH[5]:-${BASH_REMATCH[6]:-}}"
+    if [[ "$require_beta_local" -eq 1 && -z "$beta_num" ]]; then
+      return 1
+    fi
+
+    if [[ -n "$beta_num" ]]; then
+      beta_key="$beta_num"
+    else
+      beta_key=1000000000
+    fi
+
+    printf '%010d.%010d.%010d.%010d\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "$beta_key"
+  }
+
+  choose_best_tag() {
+    local require_beta_local="${1:-0}"
+    local best_tag="" best_key="" candidate candidate_key
+    shift
+
+    for candidate in "$@"; do
+      candidate_key="$(tag_sort_key "$candidate" "$require_beta_local")" || continue
+      if [[ -z "$best_key" || "$candidate_key" > "$best_key" ]]; then
+        best_key="$candidate_key"
+        best_tag="$candidate"
+      fi
+    done
+
+    [[ -n "$best_tag" ]] || return 1
+    printf '%s\n' "$best_tag"
+  }
+
+  if [[ "$require_beta" -eq 0 ]] && payload="$(download_text "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null)"; then
     tag="$(printf '%s\n' "$payload" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
     if [[ -n "$tag" ]]; then
       printf '%s\n' "$tag"
@@ -318,7 +363,31 @@ resolve_latest_tag() {
     fi
   fi
 
-  if have_cmd curl; then
+  if payload="$(download_text "https://api.github.com/repos/$repo/releases?per_page=20" 2>/dev/null)"; then
+    mapfile -t release_tags < <(
+      printf '%s' "$payload" |
+        grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' |
+        sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/'
+    )
+    if tag="$(choose_best_tag "$require_beta" "${release_tags[@]}")"; then
+      printf '%s\n' "$tag"
+      return 0
+    fi
+  fi
+
+  if payload="$(download_text "https://api.github.com/repos/$repo/tags?per_page=50" 2>/dev/null)"; then
+    mapfile -t git_tags < <(
+      printf '%s' "$payload" |
+        grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' |
+        sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/'
+    )
+    if tag="$(choose_best_tag "$require_beta" "${git_tags[@]}")"; then
+      printf '%s\n' "$tag"
+      return 0
+    fi
+  fi
+
+  if [[ "$require_beta" -eq 0 ]] && have_cmd curl; then
     local -a args
     args=(-fsSL -o /dev/null -w '%{url_effective}')
     local token
@@ -359,6 +428,10 @@ while [[ $# -gt 0 ]]; do
       [[ $# -ge 2 ]] || { err "Missing value for --ref-type"; exit 2; }
       REF_TYPE="$2"
       shift 2
+      ;;
+    --beta)
+      INCLUDE_BETA=1
+      shift
       ;;
     --target)
       [[ $# -ge 2 ]] || { err "Missing value for --target"; exit 2; }
@@ -455,11 +528,20 @@ fi
 
 if [[ -z "$REF" ]]; then
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    REF="<latest>"
+    if [[ "$INCLUDE_BETA" -eq 1 ]]; then
+      REF="<latest-beta>"
+    else
+      REF="<latest>"
+    fi
   else
-    if ! REF="$(resolve_latest_tag "$REPO")"; then
-      err "Unable to resolve the latest GitHub release for $REPO."
-      err "Pass --ref <tag> --ref-type tag, or use --ref main --ref-type branch."
+    if ! REF="$(resolve_latest_tag "$REPO" "$INCLUDE_BETA")"; then
+      if [[ "$INCLUDE_BETA" -eq 1 ]]; then
+        err "Unable to resolve the latest beta/prerelease tag for $REPO."
+        err "Pass --ref <beta-tag> --ref-type tag, or use --ref main --ref-type branch."
+      else
+        err "Unable to resolve the latest GitHub release for $REPO."
+        err "Pass --ref <tag> --ref-type tag, or use --ref main --ref-type branch."
+      fi
       exit 1
     fi
   fi

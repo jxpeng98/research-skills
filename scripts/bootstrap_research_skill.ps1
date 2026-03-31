@@ -7,6 +7,8 @@ param(
     [string]$ProjectDir = (Get-Location).Path,
     [string]$Repo = "jxpeng98/research-skills",
     [string]$Ref = "",
+    [Alias("Prerelease")]
+    [switch]$Beta,
 
     [ValidateSet("tag", "branch")]
     [string]$RefType = "tag",
@@ -102,18 +104,87 @@ function Normalize-Repo([string]$RawRepo) {
     throw "unsupported repo spec: $RawRepo"
 }
 
-function Resolve-LatestTag([string]$RepoSpec) {
-    $apiUrl = "https://api.github.com/repos/$RepoSpec/releases/latest"
+function Get-VersionSortKey([string]$Tag, [bool]$RequireBeta = $false) {
+    $match = [regex]::Match($Tag, '^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+)|b(\d+))?$')
+    if (-not $match.Success) {
+        return $null
+    }
+    $betaRaw = ""
+    if ($match.Groups[4].Success) {
+        $betaRaw = $match.Groups[4].Value
+    }
+    elseif ($match.Groups[5].Success) {
+        $betaRaw = $match.Groups[5].Value
+    }
+    if ($RequireBeta -and -not $betaRaw) {
+        return $null
+    }
+    $betaKey = if ($betaRaw) { [int]$betaRaw } else { 1000000000 }
+    return "{0:D10}.{1:D10}.{2:D10}.{3:D10}" -f [int]$match.Groups[1].Value, [int]$match.Groups[2].Value, [int]$match.Groups[3].Value, $betaKey
+}
+
+function Select-LatestVersionTag([object[]]$Tags, [bool]$RequireBeta = $false) {
+    $bestTag = $null
+    $bestKey = $null
+    foreach ($candidate in $Tags) {
+        if ($null -eq $candidate) {
+            continue
+        }
+        $tag = [string]$candidate
+        if (-not $tag) {
+            continue
+        }
+        $key = Get-VersionSortKey $tag $RequireBeta
+        if (-not $key) {
+            continue
+        }
+        if (-not $bestKey -or $key -gt $bestKey) {
+            $bestKey = $key
+            $bestTag = $tag
+        }
+    }
+    return $bestTag
+}
+
+function Resolve-LatestTag([string]$RepoSpec, [switch]$RequireBeta) {
+    if (-not $RequireBeta) {
+        $apiUrl = "https://api.github.com/repos/$RepoSpec/releases/latest"
+        try {
+            $response = Invoke-RestMethod -Uri $apiUrl
+            if ($response.tag_name) {
+                return [string]$response.tag_name
+            }
+        }
+        catch {
+        }
+    }
+
     try {
-        $response = Invoke-RestMethod -Uri $apiUrl
-        if ($response.tag_name) {
-            return [string]$response.tag_name
+        $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoSpec/releases?per_page=20"
+        $releaseTags = @($releases | ForEach-Object { [string]$_.tag_name })
+        $resolved = Select-LatestVersionTag $releaseTags $RequireBeta
+        if ($resolved) {
+            return $resolved
         }
     }
     catch {
-        throw "Unable to resolve latest release tag for $RepoSpec"
     }
-    throw "No tag_name found in latest release response for $RepoSpec"
+
+    try {
+        $tags = Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoSpec/tags?per_page=50"
+        $tagNames = @($tags | ForEach-Object { [string]$_.name })
+        $resolved = Select-LatestVersionTag $tagNames $RequireBeta
+        if ($resolved) {
+            return $resolved
+        }
+    }
+    catch {
+    }
+
+    if ($RequireBeta) {
+        throw "Unable to resolve latest beta/prerelease tag for $RepoSpec"
+    }
+    throw "Unable to resolve latest release tag for $RepoSpec"
 }
 
 function Get-ArchiveUrl([string]$RepoSpec, [string]$ResolvedRef, [string]$ResolvedRefType) {
@@ -545,7 +616,7 @@ if ($Profile -eq "full") {
     $pythonRuntime = Ensure-PythonRuntime
 }
 
-$resolvedRef = if ($Ref) { $Ref } else { Resolve-LatestTag $Repo }
+$resolvedRef = if ($Ref) { $Ref } else { Resolve-LatestTag $Repo -RequireBeta:$Beta }
 $archiveUrl = Get-ArchiveUrl $Repo $resolvedRef $RefType
 
 $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("research-skills-bootstrap-" + [System.Guid]::NewGuid().ToString("N"))

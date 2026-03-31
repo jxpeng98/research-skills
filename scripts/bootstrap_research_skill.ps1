@@ -692,7 +692,14 @@ try {
     if ($DryRun) {
         Write-Host "[dry-run] Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath"
         Write-Host "[dry-run] Expand-Archive -Path $archivePath -DestinationPath $extractRoot"
-        Install-FromRepo "C:\dry-run\research-skills" $ProjectDir $Target $installCliByProfile $runDoctor $pythonRuntime
+        Write-Host "[dry-run] Install workflow assets into client directories for target '$Target'"
+        if ($installCliByProfile) {
+            $cliRoot = if ($CliDir) { $CliDir } else { Join-Path $env:USERPROFILE ".local\bin" }
+            Write-Host "[dry-run] Install shell CLI wrappers into $cliRoot"
+        }
+        if ($runDoctor) {
+            Write-Host "[dry-run] Run orchestrator doctor after install"
+        }
         exit 0
     }
 

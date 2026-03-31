@@ -106,6 +106,8 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("$PSVersionTable.PSVersion.Major -lt 7", content)
         self.assertIn("Microsoft.PowerShell", content)
         self.assertIn("/releases?per_page=20", content)
+        self.assertNotIn('Install-FromRepo "C:\\dry-run\\research-skills"', content)
+        self.assertIn("[dry-run] Install workflow assets into client directories", content)
         self.assertNotIn('bootstrapUrl = "https://raw.githubusercontent.com', content)
         self.assertNotIn('$content = @"', content)
         self.assertIn('$env:PYTHONPATH = $RepoRoot', content)

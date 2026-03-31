@@ -102,8 +102,12 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 
 ```powershell
 # Windows PowerShell
+# Partial profile
 powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+# Full profile
 powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+# Beta profile (latest prerelease tag)
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 This installs:
@@ -382,6 +386,7 @@ Common args:
 | `--repo <owner/repo|git-url>` | Choose the upstream GitHub repo | Defaults to `RESEARCH_SKILLS_REPO`, else `jxpeng98/research-skills` |
 | `--ref <tag-or-branch>` | Install a specific release tag or branch | Defaults to latest release |
 | `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` | Default `tag` |
+| `--beta` | Install the latest beta / prerelease tag when `--ref` is omitted | Off by default; stable latest release remains the default |
 | `--target <codex|claude|gemini|antigravity|all>` | Choose which client targets to write | Default `all` |
 | `--project-dir <path>` | Choose where project integration files are written | Default current directory |
 | `--install-cli` | Install shell CLI commands | Enabled by default |
@@ -402,6 +407,13 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
   --project-dir "$PWD" \
   --target all \
   --overwrite
+
+# Install the latest beta / prerelease
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --profile full \
+  --beta \
+  --project-dir "$PWD" \
+  --target all
 
 # Install workflows only, skip CLI
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \

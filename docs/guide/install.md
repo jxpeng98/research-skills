@@ -49,6 +49,12 @@ Force `full`:
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
 ```
 
+Install the latest beta / prerelease:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --beta --profile full --project-dir "$PWD" --target all
+```
+
 ### Windows PowerShell
 
 Download and prompt for `partial` or `full`:
@@ -68,6 +74,12 @@ Force `full`:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+```
+
+Install the latest beta / prerelease:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 What bootstrap installs:
@@ -159,6 +171,7 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 
 - `--profile partial|full`: choose the install preset explicitly instead of using the prompt.
 - `--target codex|claude|gemini|antigravity|all`: limit installation scope.
+- `--beta`: install the latest beta / prerelease tag when `--ref` is omitted.
 - `--mode copy|link`: copy files or create symlinks. Bootstrap uses `copy`.
 - `--install-cli`: install shell CLI commands even outside `full`.
 - `--no-cli`: skip shell CLI installation even in `full`.

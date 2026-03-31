@@ -100,8 +100,12 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 
 ```powershell
 # Windows PowerShell
+# skills + workflow 资产安装
 powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+# 完整安装（含 shell CLI 和 Python 环境准备）
 powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+# 测试版本
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 这一步会安装：
@@ -383,6 +387,7 @@ pipx install research-skills-installer
 | `--repo <owner/repo|git-url>` | 指定上游 GitHub 仓库 | 默认取 `RESEARCH_SKILLS_REPO`，否则 `jxpeng98/research-skills` |
 | `--ref <tag-or-branch>` | 指定安装的版本或分支 | 默认自动解析 latest release |
 | `--ref-type <tag|branch>` | 指定 `--ref` 是 tag 还是 branch | 默认 `tag` |
+| `--beta` | 在未传 `--ref` 时安装最新 beta / prerelease tag | 默认关闭，默认仍解析稳定版 latest release |
 | `--target <codex|claude|gemini|antigravity|all>` | 指定写入哪些客户端目录 | 默认 `all` |
 | `--project-dir <path>` | 指定项目集成文件的写入目录 | 默认当前目录 |
 | `--install-cli` | 安装 shell CLI | 默认开启 |
@@ -403,6 +408,13 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
   --project-dir "$PWD" \
   --target all \
   --overwrite
+
+# 安装最新 beta / prerelease
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \
+  --profile full \
+  --beta \
+  --project-dir "$PWD" \
+  --target all
 
 # 只装 workflow，不装 CLI
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- \

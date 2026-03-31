@@ -49,6 +49,12 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
 ```
 
+安装最新 beta / prerelease：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --beta --profile full --project-dir "$PWD" --target all
+```
+
 ### Windows PowerShell
 
 下载后交互式选择 `partial` 或 `full`：
@@ -68,6 +74,12 @@ powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+```
+
+安装最新 beta / prerelease：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 Bootstrap 会安装：
@@ -159,6 +171,7 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 
 - `--profile partial|full`：显式指定安装模式，跳过交互提示。
 - `--target codex|claude|gemini|antigravity|all`：限制安装范围。
+- `--beta`：在未传 `--ref` 时安装最新 beta / prerelease tag。
 - `--mode copy|link`：复制文件或创建软链接。bootstrap 固定使用 `copy`。
 - `--install-cli`：即使不是 `full` 也安装 shell CLI。
 - `--no-cli`：即使是 `full` 也跳过 shell CLI。

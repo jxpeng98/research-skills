@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 import unittest
@@ -68,6 +69,47 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("cli:     install ->", result.stdout)
         self.assertIn("--install-cli", result.stdout)
         self.assertIn("--doctor", result.stdout)
+
+    def test_partial_profile_from_source_repo_exits_cleanly(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as temp_root:
+            env = dict(os.environ)
+            env["HOME"] = str(Path(temp_root) / "home")
+            env["CODEX_HOME"] = str(Path(temp_root) / "codex-home")
+            env["CLAUDE_CODE_HOME"] = str(Path(temp_root) / "claude-home")
+            env["GEMINI_HOME"] = str(Path(temp_root) / "gemini-home")
+            env["ANTIGRAVITY_HOME"] = str(Path(temp_root) / "antigravity-home")
+            project_dir = Path(temp_root) / "project"
+            cli_dir = Path(temp_root) / "bin"
+
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(BOOTSTRAP_SCRIPT),
+                    "--profile",
+                    "partial",
+                    "--source-repo",
+                    str(REPO_ROOT),
+                    "--project-dir",
+                    str(project_dir),
+                    "--cli-dir",
+                    str(cli_dir),
+                    "--overwrite",
+                ],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn("source:   local checkout", result.stdout)
+            self.assertTrue((project_dir / ".env").is_file())
+            self.assertFalse((cli_dir / "research-skills").exists())
 
     def test_missing_profile_in_noninteractive_mode_fails_fast(self) -> None:
         if not SYSTEM_BASH.exists():

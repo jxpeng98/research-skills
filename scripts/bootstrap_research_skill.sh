@@ -660,7 +660,10 @@ fi
 
 TMP_DIR=""
 cleanup() {
-  [[ -n "$TMP_DIR" ]] && rm -rf "$TMP_DIR"
+  if [[ -n "$TMP_DIR" ]]; then
+    rm -rf "$TMP_DIR"
+  fi
+  return 0
 }
 trap cleanup EXIT
 

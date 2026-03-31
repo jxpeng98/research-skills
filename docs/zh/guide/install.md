@@ -37,6 +37,8 @@
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
+`full` 模式如果自动安装 `mise`，会同时把 `mise` 和 `mise shims` 目录写入当前会话，以及当前 shell 对应的 rc 文件和 `~/.profile`。
+
 强制 `partial`：
 
 ```bash
@@ -62,6 +64,8 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 ```powershell
 winget install --id Microsoft.PowerShell --source winget
 ```
+
+`full` 模式如果自动安装 `mise`，会同时把 `mise` 的 bin 目录写入当前会话和用户级 `PATH`。
 
 下载后交互式选择 `partial` 或 `full`：
 

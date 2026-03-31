@@ -83,6 +83,9 @@ Linux / macOS：
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
+说明：
+- `full` 模式如果自动安装 `mise`，会同时把 `mise` 和 `mise shims` 目录写入当前会话，以及当前 shell 对应的 rc 文件和 `~/.profile`。
+
 Windows PowerShell 7+：
 
 ```powershell
@@ -90,6 +93,9 @@ winget install --id Microsoft.PowerShell --source winget
 Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
 pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
 ```
+
+说明：
+- `full` 模式如果自动安装 `mise`，会同时把 `mise` 的 bin 目录写入当前会话和用户级 `PATH`。
 
 如果你想跳过交互，直接指定 profile：
 

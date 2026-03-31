@@ -85,6 +85,9 @@ Linux / macOS:
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
+Notes:
+- In `full` mode, if bootstrap installs `mise` automatically, it also adds the `mise` bin directory and `mise shims` to the current session, the active shell rc file, and `~/.profile`.
+
 Windows PowerShell 7+:
 
 ```powershell
@@ -92,6 +95,9 @@ winget install --id Microsoft.PowerShell --source winget
 Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
 pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
 ```
+
+Notes:
+- In `full` mode, if bootstrap installs `mise` automatically, it also adds the `mise` bin directory to the current session and the user PATH.
 
 If you want to skip the prompt and force a profile:
 

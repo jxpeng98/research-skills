@@ -37,6 +37,8 @@ Prompt for `partial` or `full`:
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
+If `full` mode installs `mise` automatically, bootstrap also adds the `mise` bin directory and `mise shims` to the current session, the active shell rc file, and `~/.profile`.
+
 Force `partial`:
 
 ```bash
@@ -62,6 +64,8 @@ If `pwsh` is not installed yet, install it first:
 ```powershell
 winget install --id Microsoft.PowerShell --source winget
 ```
+
+If `full` mode installs `mise` automatically, bootstrap also writes the `mise` bin directory into the current session and the user PATH.
 
 Download and prompt for `partial` or `full`:
 

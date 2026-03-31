@@ -83,11 +83,12 @@ Linux / macOS：
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
 ```
 
-Windows PowerShell：
+Windows PowerShell 7+：
 
 ```powershell
+winget install --id Microsoft.PowerShell --source winget
 Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
 ```
 
 如果你想跳过交互，直接指定 profile：
@@ -99,13 +100,13 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 ```
 
 ```powershell
-# Windows PowerShell
+# Windows PowerShell 7+
 # skills + workflow 资产安装
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
 # 完整安装（含 shell CLI 和 Python 环境准备）
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
 # 测试版本
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 这一步会安装：

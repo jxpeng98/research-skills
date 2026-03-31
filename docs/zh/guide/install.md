@@ -55,31 +55,37 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --beta --profile full --project-dir "$PWD" --target all
 ```
 
-### Windows PowerShell
+### Windows PowerShell 7+
+
+如果机器上还没有 `pwsh`，先安装：
+
+```powershell
+winget install --id Microsoft.PowerShell --source winget
+```
 
 下载后交互式选择 `partial` 或 `full`：
 
 ```powershell
 Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
 ```
 
 强制 `partial`：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
 ```
 
 强制 `full`：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 安装最新 beta / prerelease：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
+pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile full -ProjectDir "$PWD" -Target all
 ```
 
 Bootstrap 会安装：

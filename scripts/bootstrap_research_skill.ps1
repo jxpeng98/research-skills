@@ -24,6 +24,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    throw "bootstrap_research_skill.ps1 requires PowerShell 7+. Install it with: winget install --id Microsoft.PowerShell --source winget, then rerun with pwsh."
+}
+
 function Write-Info([string]$Message) {
     Write-Host "  $Message"
 }
@@ -38,6 +42,14 @@ function Write-Ok([string]$Label, [string]$Message) {
 
 function Write-Skip([string]$Label, [string]$Message) {
     Write-Host ("  [skip] {0,-12} -> {1}" -f $Label, $Message)
+}
+
+function Invoke-NativeChecked([string]$ExePath, [string[]]$Arguments) {
+    & $ExePath @Arguments 2>&1 | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        $argLine = if ($Arguments) { " " + ($Arguments -join " ") } else { "" }
+        throw "Command failed: $ExePath$argLine"
+    }
 }
 
 function Show-ProfileHelp {
@@ -225,7 +237,7 @@ function Ensure-GitBash {
         Write-Host '[dry-run] winget install -e --id Git.Git --source winget'
         return "C:\Program Files\Git\bin\bash.exe"
     }
-    & $winget.Source install -e --id Git.Git --source winget
+    Invoke-NativeChecked $winget.Source @("install", "-e", "--id", "Git.Git", "--source", "winget")
     $bash = Find-Bash
     if (-not $bash) {
         throw "Git for Windows installation completed but bash.exe was not found."
@@ -262,7 +274,7 @@ function Ensure-Mise {
         Write-Host '[dry-run] winget install jdx.mise'
         return "$env:LOCALAPPDATA\mise\bin\mise.exe"
     }
-    & $winget.Source install jdx.mise
+    Invoke-NativeChecked $winget.Source @("install", "jdx.mise")
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     $mise = Find-Mise
     if (-not $mise) {
@@ -305,8 +317,8 @@ function Ensure-PythonRuntime {
         }
     }
 
-    & $mise install python@3.12
-    & $mise use -g python@3.12
+    Invoke-NativeChecked $mise @("install", "python@3.12")
+    Invoke-NativeChecked $mise @("use", "-g", "python@3.12")
     return @{
         Mode = "mise"
         Python = "python"

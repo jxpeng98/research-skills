@@ -105,6 +105,8 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("Out-Host", content)
         self.assertIn("$PSVersionTable.PSVersion.Major -lt 7", content)
         self.assertIn("Microsoft.PowerShell", content)
+        self.assertIn('[string]$SourceRepo = ""', content)
+        self.assertIn("$sourceRepoRoot", content)
         self.assertIn("/releases?per_page=20", content)
         self.assertNotIn('Install-FromRepo "C:\\dry-run\\research-skills"', content)
         self.assertIn("[dry-run] Install workflow assets into client directories", content)
@@ -116,6 +118,8 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         content = BOOTSTRAP_SCRIPT.read_text(encoding="utf-8")
 
         self.assertIn("--beta", content)
+        self.assertIn("--source-repo", content)
+        self.assertIn("source:   local checkout", content)
         self.assertIn("latest beta/prerelease tag", content)
         self.assertIn("/releases?per_page=20", content)
         self.assertIn("persist_shell_path_entries", content)

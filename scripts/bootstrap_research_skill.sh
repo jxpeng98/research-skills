@@ -12,6 +12,7 @@ PROFILE=""
 REF=""
 REF_TYPE="tag"
 INCLUDE_BETA=0
+SOURCE_REPO=""
 RAW_REPO="${RESEARCH_SKILLS_REPO:-$DEFAULT_REPO}"
 INSTALL_CLI=1
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
@@ -53,6 +54,7 @@ Options:
   --ref <tag-or-branch>                Explicit release tag or branch name
   --ref-type <tag|branch>              How to interpret --ref (default: tag)
   --beta                               Install the latest beta/prerelease tag when --ref is omitted
+  --source-repo <path>                 Use a local checkout instead of downloading from GitHub
   --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy>                        Install mode for remote bootstrap (default: copy)
   --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
@@ -217,6 +219,21 @@ resolve_mise_bin() {
     return 0
   fi
   return 1
+}
+
+resolve_abs_path() {
+  local raw="${1:-}"
+  if [[ -z "$raw" ]]; then
+    return 1
+  fi
+  case "$raw" in
+    "~") raw="$HOME" ;;
+    "~/"*) raw="$HOME/${raw#~/}" ;;
+  esac
+  if [[ "$raw" != /* ]]; then
+    raw="$PWD/$raw"
+  fi
+  printf '%s\n' "$(cd "$raw" 2>/dev/null && pwd -P)"
 }
 
 install_mise() {
@@ -503,6 +520,11 @@ while [[ $# -gt 0 ]]; do
       INCLUDE_BETA=1
       shift
       ;;
+    --source-repo)
+      [[ $# -ge 2 ]] || { err "Missing value for --source-repo"; exit 2; }
+      SOURCE_REPO="$2"
+      shift 2
+      ;;
     --target)
       [[ $# -ge 2 ]] || { err "Missing value for --target"; exit 2; }
       TARGET="$2"
@@ -591,52 +613,71 @@ case "$MODE" in
     ;;
 esac
 
-if ! REPO="$(normalize_repo "$RAW_REPO")"; then
-  err "Unsupported repo spec: $RAW_REPO"
-  exit 2
-fi
+if [[ -n "$SOURCE_REPO" ]]; then
+  if ! SOURCE_REPO="$(resolve_abs_path "$SOURCE_REPO")"; then
+    err "Unable to resolve --source-repo: $SOURCE_REPO"
+    exit 2
+  fi
+  if [[ ! -f "$SOURCE_REPO/scripts/install_research_skill.sh" ]]; then
+    err "Local source repo is missing scripts/install_research_skill.sh: $SOURCE_REPO"
+    exit 2
+  fi
+  REPO="<local>"
+  REF="<checkout>"
+  REF_TYPE="local"
+else
+  if ! REPO="$(normalize_repo "$RAW_REPO")"; then
+    err "Unsupported repo spec: $RAW_REPO"
+    exit 2
+  fi
 
-if [[ -z "$REF" ]]; then
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    if [[ "$INCLUDE_BETA" -eq 1 ]]; then
-      REF="<latest-beta>"
-    else
-      REF="<latest>"
-    fi
-  else
-    if ! REF="$(resolve_latest_tag "$REPO" "$INCLUDE_BETA")"; then
+  if [[ -z "$REF" ]]; then
+    if [[ "$DRY_RUN" -eq 1 ]]; then
       if [[ "$INCLUDE_BETA" -eq 1 ]]; then
-        err "Unable to resolve the latest beta/prerelease tag for $REPO."
-        err "Pass --ref <beta-tag> --ref-type tag, or use --ref main --ref-type branch."
+        REF="<latest-beta>"
       else
-        err "Unable to resolve the latest GitHub release for $REPO."
-        err "Pass --ref <tag> --ref-type tag, or use --ref main --ref-type branch."
+        REF="<latest>"
       fi
-      exit 1
+    else
+      if ! REF="$(resolve_latest_tag "$REPO" "$INCLUDE_BETA")"; then
+        if [[ "$INCLUDE_BETA" -eq 1 ]]; then
+          err "Unable to resolve the latest beta/prerelease tag for $REPO."
+          err "Pass --ref <beta-tag> --ref-type tag, or use --ref main --ref-type branch."
+        else
+          err "Unable to resolve the latest GitHub release for $REPO."
+          err "Pass --ref <tag> --ref-type tag, or use --ref main --ref-type branch."
+        fi
+        exit 1
+      fi
     fi
   fi
 fi
 
-if ! have_cmd tar; then
+if [[ -z "$SOURCE_REPO" ]] && ! have_cmd tar; then
   err "Missing required command: tar"
   exit 1
 fi
 
-TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/research-skills-bootstrap.XXXXXX")"
+TMP_DIR=""
 cleanup() {
-  rm -rf "$TMP_DIR"
+  [[ -n "$TMP_DIR" ]] && rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
 
-if [[ "$REF" == "<latest>" ]]; then
-  TARBALL_URL="https://github.com/$REPO/releases/latest"
-elif [[ "$REF_TYPE" == "tag" ]]; then
-  TARBALL_URL="https://github.com/$REPO/archive/refs/tags/$REF.tar.gz"
+if [[ -n "$SOURCE_REPO" ]]; then
+  TARBALL_URL="<local-checkout>"
 else
-  TARBALL_URL="https://github.com/$REPO/archive/refs/heads/$REF.tar.gz"
+  TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/research-skills-bootstrap.XXXXXX")"
+  if [[ "$REF" == "<latest>" ]]; then
+    TARBALL_URL="https://github.com/$REPO/releases/latest"
+  elif [[ "$REF_TYPE" == "tag" ]]; then
+    TARBALL_URL="https://github.com/$REPO/archive/refs/tags/$REF.tar.gz"
+  else
+    TARBALL_URL="https://github.com/$REPO/archive/refs/heads/$REF.tar.gz"
+  fi
 fi
 
-ARCHIVE_PATH="$TMP_DIR/research-skills.tar.gz"
+ARCHIVE_PATH="${TMP_DIR:+$TMP_DIR/research-skills.tar.gz}"
 
 printf "\n${C_BOLD}${C_CYAN}Research Skills Bootstrap${C_RESET}\n"
 info "repo:    $REPO"
@@ -649,14 +690,22 @@ if [[ "$INSTALL_CLI" -eq 1 ]]; then
 else
   info "cli:     skip"
 fi
+if [[ -n "$SOURCE_REPO" ]]; then
+  info "source:  $SOURCE_REPO"
+fi
 
 if [[ "$PROFILE" == "full" ]]; then
   ensure_python_runtime
 fi
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
-  info "download: $TARBALL_URL"
-  printf '[dry-run] bash <downloaded>/scripts/install_research_skill.sh --target %q --mode %q --project-dir %q' "$TARGET" "$MODE" "$PROJECT_DIR"
+  if [[ -n "$SOURCE_REPO" ]]; then
+    info "source:   local checkout"
+    printf '[dry-run] bash %q --target %q --mode %q --project-dir %q' "$SOURCE_REPO/scripts/install_research_skill.sh" "$TARGET" "$MODE" "$PROJECT_DIR"
+  else
+    info "download: $TARBALL_URL"
+    printf '[dry-run] bash <downloaded>/scripts/install_research_skill.sh --target %q --mode %q --project-dir %q' "$TARGET" "$MODE" "$PROJECT_DIR"
+  fi
   if [[ "$OVERWRITE" -eq 1 ]]; then
     printf ' --overwrite'
   fi
@@ -669,23 +718,27 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   printf ' --dry-run\n'
   exit 0
 else
-  info "download: $TARBALL_URL"
-fi
+  if [[ -n "$SOURCE_REPO" ]]; then
+    info "source:   local checkout"
+    EXTRACTED_ROOT="$SOURCE_REPO"
+  else
+    info "download: $TARBALL_URL"
+    download_file "$TARBALL_URL" "$ARCHIVE_PATH"
+    tar -xzf "$ARCHIVE_PATH" -C "$TMP_DIR"
 
-download_file "$TARBALL_URL" "$ARCHIVE_PATH"
-tar -xzf "$ARCHIVE_PATH" -C "$TMP_DIR"
+    EXTRACTED_ROOT=""
+    for candidate in "$TMP_DIR"/*; do
+      if [[ -d "$candidate" && -f "$candidate/scripts/install_research_skill.sh" ]]; then
+        EXTRACTED_ROOT="$candidate"
+        break
+      fi
+    done
 
-EXTRACTED_ROOT=""
-for candidate in "$TMP_DIR"/*; do
-  if [[ -d "$candidate" && -f "$candidate/scripts/install_research_skill.sh" ]]; then
-    EXTRACTED_ROOT="$candidate"
-    break
+    if [[ -z "$EXTRACTED_ROOT" ]]; then
+      err "Failed to locate scripts/install_research_skill.sh in downloaded archive."
+      exit 1
+    fi
   fi
-done
-
-if [[ -z "$EXTRACTED_ROOT" ]]; then
-  err "Failed to locate scripts/install_research_skill.sh in downloaded archive."
-  exit 1
 fi
 
 cmd=(

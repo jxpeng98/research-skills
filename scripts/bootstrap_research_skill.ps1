@@ -6,6 +6,7 @@ param(
 
     [string]$ProjectDir = (Get-Location).Path,
     [string]$Repo = "jxpeng98/research-skills",
+    [string]$SourceRepo = "",
     [string]$Ref = "",
     [Alias("Prerelease")]
     [switch]$Beta,
@@ -155,6 +156,13 @@ function Normalize-Repo([string]$RawRepo) {
         }
     }
     throw "unsupported repo spec: $RawRepo"
+}
+
+function Resolve-LocalPath([string]$RawPath) {
+    if (-not $RawPath) {
+        throw "empty local path"
+    }
+    return [System.IO.Path]::GetFullPath($RawPath)
 }
 
 function Get-VersionSortKey([string]$Tag, [bool]$RequireBeta = $false) {
@@ -645,7 +653,17 @@ function Install-FromRepo([string]$RepoRoot, [string]$ProjectRoot, [string]$Inst
 }
 
 $Profile = Resolve-Profile $Profile
-$Repo = Normalize-Repo $Repo
+$sourceRepoRoot = $null
+if ($SourceRepo) {
+    $sourceRepoRoot = Resolve-LocalPath $SourceRepo
+    if (-not (Test-Path (Join-Path $sourceRepoRoot "scripts\bootstrap_research_skill.ps1"))) {
+        throw "Local source repo is missing scripts\bootstrap_research_skill.ps1: $sourceRepoRoot"
+    }
+    $Repo = "<local>"
+}
+else {
+    $Repo = Normalize-Repo $Repo
+}
 
 $runDoctor = $false
 $installCliByProfile = $false
@@ -671,13 +689,24 @@ if ($Profile -eq "full") {
     $pythonRuntime = Ensure-PythonRuntime
 }
 
-$resolvedRef = if ($Ref) { $Ref } else { Resolve-LatestTag $Repo -RequireBeta:$Beta }
-$archiveUrl = Get-ArchiveUrl $Repo $resolvedRef $RefType
-
-$tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("research-skills-bootstrap-" + [System.Guid]::NewGuid().ToString("N"))
-$archivePath = Join-Path $tmpDir "research-skills.zip"
-$extractRoot = Join-Path $tmpDir "src"
-$null = New-Item -ItemType Directory -Path $extractRoot -Force
+$resolvedRef = ""
+$archiveUrl = ""
+$tmpDir = $null
+$archivePath = $null
+$extractRoot = $null
+if ($sourceRepoRoot) {
+    $resolvedRef = "<checkout>"
+    $RefType = "local"
+    $archiveUrl = "<local-checkout>"
+}
+else {
+    $resolvedRef = if ($Ref) { $Ref } else { Resolve-LatestTag $Repo -RequireBeta:$Beta }
+    $archiveUrl = Get-ArchiveUrl $Repo $resolvedRef $RefType
+    $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("research-skills-bootstrap-" + [System.Guid]::NewGuid().ToString("N"))
+    $archivePath = Join-Path $tmpDir "research-skills.zip"
+    $extractRoot = Join-Path $tmpDir "src"
+    $null = New-Item -ItemType Directory -Path $extractRoot -Force
+}
 
 try {
     Write-Host ""
@@ -688,10 +717,18 @@ try {
     Write-Info "target:  $Target"
     Write-Info "profile: $Profile"
     Write-Info "archive: $archiveUrl"
+    if ($sourceRepoRoot) {
+        Write-Info "source:  $sourceRepoRoot"
+    }
 
     if ($DryRun) {
-        Write-Host "[dry-run] Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath"
-        Write-Host "[dry-run] Expand-Archive -Path $archivePath -DestinationPath $extractRoot"
+        if ($sourceRepoRoot) {
+            Write-Host "[dry-run] Use local checkout at $sourceRepoRoot"
+        }
+        else {
+            Write-Host "[dry-run] Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath"
+            Write-Host "[dry-run] Expand-Archive -Path $archivePath -DestinationPath $extractRoot"
+        }
         Write-Host "[dry-run] Install workflow assets into client directories for target '$Target'"
         if ($installCliByProfile) {
             $cliRoot = if ($CliDir) { $CliDir } else { Join-Path $env:USERPROFILE ".local\bin" }
@@ -703,16 +740,21 @@ try {
         exit 0
     }
 
-    Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
-    Expand-Archive -Path $archivePath -DestinationPath $extractRoot -Force
-    $repoRoot = Get-ChildItem -Path $extractRoot -Directory | Select-Object -First 1
-    if (-not $repoRoot) {
-        throw "Failed to locate extracted repository root."
+    if ($sourceRepoRoot) {
+        $repoRoot = Get-Item -Path $sourceRepoRoot
+    }
+    else {
+        Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
+        Expand-Archive -Path $archivePath -DestinationPath $extractRoot -Force
+        $repoRoot = Get-ChildItem -Path $extractRoot -Directory | Select-Object -First 1
+        if (-not $repoRoot) {
+            throw "Failed to locate extracted repository root."
+        }
     }
     Install-FromRepo $repoRoot.FullName $ProjectDir $Target $installCliByProfile $runDoctor $pythonRuntime
 }
 finally {
-    if (Test-Path $tmpDir) {
+    if ($tmpDir -and (Test-Path $tmpDir)) {
         Remove-Item -Path $tmpDir -Recurse -Force
     }
 }

@@ -11,7 +11,7 @@ param(
     [Alias("Prerelease")]
     [switch]$Beta,
 
-    [ValidateSet("tag", "branch")]
+    [ValidateSet("tag", "branch", "local")]
     [string]$RefType = "tag",
 
     [switch]$Overwrite,

@@ -99,6 +99,7 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("Expand-Archive", content)
         self.assertIn("Install-FromRepo", content)
         self.assertIn("[switch]$Beta", content)
+        self.assertIn('[ValidateSet("tag", "branch", "local")]', content)
         self.assertIn("Invoke-NativeChecked", content)
         self.assertIn("Ensure-PathEntry", content)
         self.assertIn('SetEnvironmentVariable("Path"', content)

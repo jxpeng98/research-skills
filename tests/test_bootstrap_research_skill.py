@@ -100,6 +100,8 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("Install-FromRepo", content)
         self.assertIn("[switch]$Beta", content)
         self.assertIn("Invoke-NativeChecked", content)
+        self.assertIn("Ensure-PathEntry", content)
+        self.assertIn('SetEnvironmentVariable("Path"', content)
         self.assertIn("Out-Host", content)
         self.assertIn("$PSVersionTable.PSVersion.Major -lt 7", content)
         self.assertIn("Microsoft.PowerShell", content)
@@ -114,6 +116,10 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("--beta", content)
         self.assertIn("latest beta/prerelease tag", content)
         self.assertIn("/releases?per_page=20", content)
+        self.assertIn("persist_shell_path_entries", content)
+        self.assertIn(".zshrc", content)
+        self.assertIn(".bashrc", content)
+        self.assertIn(".profile", content)
 
 
 if __name__ == "__main__":

@@ -144,6 +144,69 @@ have_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
 
+path_has_dir() {
+  local target="$1"
+  local entry
+  local -a path_entries=()
+  IFS=':' read -r -a path_entries <<<"${PATH:-}"
+  for entry in "${path_entries[@]}"; do
+    [[ "$entry" == "$target" ]] && return 0
+  done
+  return 1
+}
+
+prepend_path_dir() {
+  local target="$1"
+  [[ -n "$target" ]] || return 0
+  if ! path_has_dir "$target"; then
+    export PATH="$target:$PATH"
+  fi
+}
+
+shell_path_literal() {
+  local target="$1"
+  if [[ "$target" == "$HOME"* ]]; then
+    printf '%s\n' "\$HOME${target#$HOME}"
+    return 0
+  fi
+  printf '%s\n' "$target"
+}
+
+ensure_rc_path_entry() {
+  local rc_file="$1"
+  local target="$2"
+  local marker path_literal
+  [[ -n "$rc_file" && -n "$target" ]] || return 0
+  marker="# research-skills bootstrap path"
+  path_literal="$(shell_path_literal "$target")"
+
+  mkdir -p "$(dirname "$rc_file")"
+  [[ -f "$rc_file" ]] || : >"$rc_file"
+  if grep -Fqs "$path_literal" "$rc_file"; then
+    return 0
+  fi
+  printf '\n%s\nexport PATH="%s:$PATH"\n' "$marker" "$path_literal" >>"$rc_file"
+}
+
+persist_shell_path_entries() {
+  local target shell_name primary_rc
+  shell_name="${SHELL##*/}"
+  primary_rc=""
+  case "$shell_name" in
+    zsh) primary_rc="${ZDOTDIR:-$HOME}/.zshrc" ;;
+    bash) primary_rc="$HOME/.bashrc" ;;
+  esac
+
+  for target in "$@"; do
+    [[ -n "$target" ]] || continue
+    prepend_path_dir "$target"
+    if [[ -n "$primary_rc" ]]; then
+      ensure_rc_path_entry "$primary_rc" "$target"
+    fi
+    ensure_rc_path_entry "$HOME/.profile" "$target"
+  done
+}
+
 resolve_mise_bin() {
   if have_cmd mise; then
     command -v mise
@@ -159,9 +222,13 @@ resolve_mise_bin() {
 install_mise() {
   local installer_url="https://mise.run"
   local mise_path
+  local mise_bin_dir shims_dir
 
   if mise_path="$(resolve_mise_bin)"; then
     MISE_BIN="$mise_path"
+    mise_bin_dir="$(dirname "$MISE_BIN")"
+    shims_dir="${HOME}/.local/share/mise/shims"
+    persist_shell_path_entries "$mise_bin_dir" "$shims_dir"
     info "mise:    $MISE_BIN"
     return 0
   fi
@@ -179,6 +246,9 @@ install_mise() {
     exit 1
   fi
   MISE_BIN="$mise_path"
+  mise_bin_dir="$(dirname "$MISE_BIN")"
+  shims_dir="${HOME}/.local/share/mise/shims"
+  persist_shell_path_entries "$mise_bin_dir" "$shims_dir"
   info "mise:    ready -> $MISE_BIN"
 }
 

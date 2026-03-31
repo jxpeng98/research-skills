@@ -52,6 +52,47 @@ function Invoke-NativeChecked([string]$ExePath, [string[]]$Arguments) {
     }
 }
 
+function Ensure-PathEntry([string]$EntryPath, [switch]$PersistUser) {
+    if (-not $EntryPath) {
+        return
+    }
+
+    $normalizedEntry = [System.IO.Path]::GetFullPath($EntryPath).TrimEnd('\')
+    $pathEntries = @($env:Path -split ';' | Where-Object { $_ })
+    $hasCurrent = $false
+    foreach ($entry in $pathEntries) {
+        try {
+            if ([System.IO.Path]::GetFullPath($entry).TrimEnd('\') -ieq $normalizedEntry) {
+                $hasCurrent = $true
+                break
+            }
+        }
+        catch {
+        }
+    }
+    if (-not $hasCurrent) {
+        $env:Path = if ($env:Path) { "$normalizedEntry;$env:Path" } else { $normalizedEntry }
+    }
+
+    if (-not $PersistUser) {
+        return
+    }
+
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $userEntries = @($userPath -split ';' | Where-Object { $_ })
+    foreach ($entry in $userEntries) {
+        try {
+            if ([System.IO.Path]::GetFullPath($entry).TrimEnd('\') -ieq $normalizedEntry) {
+                return
+            }
+        }
+        catch {
+        }
+    }
+    $newUserPath = if ($userPath) { "$normalizedEntry;$userPath" } else { $normalizedEntry }
+    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+}
+
 function Show-ProfileHelp {
     Write-Host ""
     Write-Host "Choose an install profile:"
@@ -263,6 +304,7 @@ function Find-Mise {
 function Ensure-Mise {
     $mise = Find-Mise
     if ($mise) {
+        Ensure-PathEntry (Split-Path -Parent $mise) -PersistUser
         return $mise
     }
     $winget = Get-Command winget -ErrorAction SilentlyContinue
@@ -280,6 +322,7 @@ function Ensure-Mise {
     if (-not $mise) {
         throw "mise installation completed but mise.exe was not found."
     }
+    Ensure-PathEntry (Split-Path -Parent $mise) -PersistUser
     return $mise
 }
 

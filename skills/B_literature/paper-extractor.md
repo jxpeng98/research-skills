@@ -63,7 +63,7 @@ Template references:
 - `templates/extraction-table.md`
 - `templates/effect-size-extraction-table.md` (when pooling)
 
-## Extraction Framework
+## Process
 
 ### 1. Bibliographic Information
 

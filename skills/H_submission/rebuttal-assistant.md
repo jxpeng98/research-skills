@@ -29,6 +29,10 @@ domain_aware: false
 
 Convert reviewer feedback into a structured revision plan and persuasive response letter that maximizes the chance of acceptance.
 
+## Purpose
+
+Convert reviewer comments into an actionable revision plan, point-by-point response matrix, and formal response letter.
+
 ## Related Task IDs
 
 - `H2` (rebuttal / response)

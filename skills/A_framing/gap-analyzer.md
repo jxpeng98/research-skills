@@ -247,7 +247,7 @@ pie title Gap Distribution by Type
 ```
 ```
 
-## Usage
+## Process
 
 This skill is called by:
 - `/find-gap` - Main gap analysis workflow

@@ -25,6 +25,10 @@ domain_aware: false
 
 Quality-check the response letter for tone, completeness, and precision — ensuring every reviewer feels heard, respected, and satisfied.
 
+## Purpose
+
+Neutralize defensiveness in reviewer responses and ensure each concern is addressed with exact precision.
+
 ## Related Task IDs
 
 - `H2_5` (reviewer empathy check)

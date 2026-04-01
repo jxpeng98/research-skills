@@ -25,6 +25,10 @@ domain_aware: false
 
 Rewrite text into concise, objective academic tone: reduce overclaiming, cut fluff, calibrate hedging, and ensure every sentence earns its place.
 
+## Purpose
+
+Ruthlessly cut fluff, transition words, hedging, and absolute claims to produce concise, objective academic tone.
+
 ## Related Task IDs
 
 - `G4` (tone normalization)

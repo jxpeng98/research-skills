@@ -38,6 +38,10 @@ domain_aware: true
 
 Turn statistical output, qualitative evidence, or synthesis results into manuscript-ready interpretation that is analytically deep, honestly uncertain, and defensible under review.
 
+## Purpose
+
+Translate quantitative, qualitative, or synthesized findings into analytical narratives that preserve uncertainty, surface mechanisms, and narrow claims to defensible scope conditions.
+
 ## Related Task IDs
 
 - `F3` (full manuscript draft — results interpretation component)

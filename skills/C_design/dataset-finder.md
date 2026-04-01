@@ -29,6 +29,10 @@ domain_aware: true
 
 Systematically identify, evaluate, and compare candidate datasets — selecting the best feasible option for the study before implementation begins.
 
+## Purpose
+
+Identify feasible primary or secondary datasets, access routes, and coverage limitations for an empirical design.
+
 ## Related Task IDs
 
 - `C4` (data management and dataset planning)

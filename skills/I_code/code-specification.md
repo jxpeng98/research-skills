@@ -23,6 +23,10 @@ domain_aware: false
 
 Generate a strict, testable constraint set before writing research code.
 
+## Purpose
+
+Generate strict constraint sets and requirement specifications before coding, following OPSX-style methodology.
+
 ## Related Task IDs
 
 - `I5` (code specification)
@@ -38,7 +42,7 @@ Generate a strict, testable constraint set before writing research code.
 - Constraints: runtime, memory, dependency limits, hardware (CPU/GPU)
 - Required validation: unit tests, benchmarks, replication targets
 
-## Procedure (low freedom)
+## Process
 
 1. **Define success criteria**: what counts as “correct” (and what doesn’t).
 2. **Specify I/O contracts**:

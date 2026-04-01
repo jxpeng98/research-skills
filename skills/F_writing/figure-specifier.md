@@ -29,6 +29,10 @@ domain_aware: true
 
 Design publication-quality figures that communicate findings clearly, meet venue standards, and survive black-and-white printing and accessibility checks.
 
+## Purpose
+
+Specify publication-quality figures with exact data mapping, visual encoding, and accessibility compliance.
+
 ## Related Task IDs
 
 - `F5` (tables and figures)

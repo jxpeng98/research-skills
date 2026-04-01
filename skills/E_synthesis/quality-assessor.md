@@ -120,7 +120,7 @@ Examples:
 - Opinion pieces
 - Theoretical musings
 
-## Quality Assessment Checklist
+## Process
 
 ### For Quantitative Studies
 

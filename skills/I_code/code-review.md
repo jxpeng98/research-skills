@@ -26,6 +26,10 @@ domain_aware: true
 
 Independent review of research code for correctness, reproducibility, and statistical validity.
 
+## Purpose
+
+Secondary model reviews code logic, security, statistical validity, and domain-specific correctness.
+
 ## Related Task IDs
 
 - `I8` (code review)
@@ -41,7 +45,7 @@ When `--domain` is specified, load the corresponding `skills/domain-profiles/*.y
 - Domain-specific **stats_diagnostics** as validation checkpoints
 - Domain-specific **method_templates.checklist** for each detected method
 
-## Review Checklist
+## Process
 
 ### Correctness
 - Does the implementation match the method/spec (I5)?

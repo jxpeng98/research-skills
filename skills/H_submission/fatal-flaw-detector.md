@@ -25,6 +25,10 @@ domain_aware: true
 
 Pre-submission desk-reject analysis: identify flaws likely to cause immediate rejection and propose mitigations before a reviewer sees them.
 
+## Purpose
+
+Constructive desk-reject analysis identifying critical flaws that would prevent publication.
+
 ## Related Task IDs
 
 - `H4` (fatal flaw analysis)

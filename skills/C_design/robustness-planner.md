@@ -27,6 +27,10 @@ domain_aware: true
 
 Pre-specify robustness checks so reviewers see that you anticipated threats — not that you searched for favorable results post-hoc.
 
+## Purpose
+
+Pre-specify robustness checks, sensitivity analysis, and bounds scaling linked to specific identification threats.
+
 ## Related Task IDs
 
 - `C3_5` (robustness/sensitivity plan)

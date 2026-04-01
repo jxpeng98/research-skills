@@ -29,6 +29,10 @@ domain_aware: false
 
 Design the content and visual structure of every slide — specifying layout, message, evidence, and speaker notes — in a backend-agnostic format that can be rendered by Slidev, Beamer, or PPTX.
 
+## Purpose
+
+Design individual slide content specs using assertion-evidence format, with layout mapping to Slidev/Beamer/PPTX backends.
+
 ## Related Task IDs
 
 - `K2` (slide design)

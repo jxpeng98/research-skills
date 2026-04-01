@@ -4722,6 +4722,27 @@ Return sections:
                     + "."
                 )
 
+        # --- Validator gate: check required outputs on disk ---
+        validator_gate_result = self._validator_gate(
+            topic=normalized_topic,
+            cwd=cwd,
+            artifact_root=artifact_root,
+            required_outputs=required_outputs,
+        )
+        if validator_gate_result["passed"]:
+            routing_notes.append(
+                f"Validator gate PASSED: {validator_gate_result['checked']}/{validator_gate_result['checked']} required outputs found."
+                + (" / 验证门通过。" if zh_ui else "")
+            )
+        else:
+            routing_notes.append(
+                f"Validator gate INCOMPLETE: {len(validator_gate_result['found'])}/{validator_gate_result['checked']} required outputs found."
+                + (" / 验证门未完全通过。" if zh_ui else "")
+            )
+            routing_notes.append(
+                "Missing outputs: " + ", ".join(validator_gate_result["missing"]) + "."
+            )
+
         merged_parts = [
             plan_result.merged_analysis,
             "",
@@ -4813,6 +4834,10 @@ Return sections:
             confidence = 0.65
         else:
             confidence = 0.0
+        # Adjust confidence based on validator gate
+        if not validator_gate_result["passed"] and confidence > 0:
+            missing_ratio = len(validator_gate_result["missing"]) / max(validator_gate_result["checked"], 1)
+            confidence = max(0.1, confidence * (1.0 - 0.3 * missing_ratio))
 
         return CollaborationResult(
             mode="task-run",
@@ -4835,9 +4860,48 @@ Return sections:
                     "source_artifact": str(packet.get("structured_source_artifact", "")).strip(),
                     "source_path": str(packet.get("structured_source_path", "")).strip(),
                 },
+                "validator_gate": dict(validator_gate_result),
             },
         )
 
+
+    def _validator_gate(
+        self,
+        topic: str,
+        cwd: Path,
+        artifact_root: str,
+        required_outputs: list[str],
+    ) -> dict[str, Any]:
+        """Validate that required output artifacts exist on disk.
+
+        Returns a dict with:
+          - passed: bool — True if all required artifacts exist
+          - found: list[str] — paths that exist
+          - missing: list[str] — paths that are missing
+          - checked: int — total paths checked
+        """
+        resolved_root = cwd / artifact_root.replace("[topic]", topic)
+        found: list[str] = []
+        missing: list[str] = []
+        for output_path in required_outputs:
+            full_path = resolved_root / output_path
+            # Support directory outputs (paths ending with /)
+            if output_path.endswith("/"):
+                if full_path.is_dir() and any(full_path.iterdir()):
+                    found.append(output_path)
+                else:
+                    missing.append(output_path)
+            else:
+                if full_path.is_file():
+                    found.append(output_path)
+                else:
+                    missing.append(output_path)
+        return {
+            "passed": len(missing) == 0,
+            "found": found,
+            "missing": missing,
+            "checked": len(required_outputs),
+        }
 
 
     def code_build(

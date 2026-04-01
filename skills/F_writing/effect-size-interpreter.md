@@ -28,6 +28,10 @@ domain_aware: true
 
 Translate statistical effect sizes into language that communicates practical and theoretical importance, not just p-values.
 
+## Purpose
+
+Translate raw effect sizes into meaningful magnitude language using benchmarks, contextual comparisons, and practical significance framing.
+
 ## Related Task IDs
 
 - `F3` (result interpretation — effect size component)

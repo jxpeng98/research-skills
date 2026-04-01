@@ -26,6 +26,10 @@ domain_aware: false
 
 Prepare a complete ethics/IRB application package: risk classification, informed consent, recruitment materials, data governance, and required disclosure statements.
 
+## Purpose
+
+Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance.
+
 ## Related Task IDs
 
 - `D1` (ethics/IRB pack)

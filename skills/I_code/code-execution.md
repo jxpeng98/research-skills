@@ -23,6 +23,10 @@ domain_aware: false
 
 Execute the plan: implement, test, profile, and document research code with reproducible outputs.
 
+## Purpose
+
+Execute code plans with performance profiling (cProfile/vectorization) and optimization.
+
 ## Related Task IDs
 
 - `I7` (code execution)
@@ -39,7 +43,7 @@ Execute the plan: implement, test, profile, and document research code with repr
 - `code/plan.md`
 - Any required datasets (or a synthetic generator for verification)
 
-## Procedure
+## Process
 
 1. **Implement incrementally** with tests after each unit.
 2. **Validate** against the spec (I/O, invariants, edge cases).

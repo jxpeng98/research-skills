@@ -25,6 +25,10 @@ domain_aware: false
 
 Simulate rigorous, independent peer reviews using distinct reviewer personas — catching weaknesses before real reviewers do.
 
+## Purpose
+
+Simulate parallel, independent cross-reviews using distinct reviewer personas (Methodologist, Domain Expert, Reviewer 2).
+
 ## Related Task IDs
 
 - `H3` (peer review simulation)

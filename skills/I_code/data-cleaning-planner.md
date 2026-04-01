@@ -29,6 +29,10 @@ domain_aware: true
 
 Specify reproducible, documented cleaning rules before execution — ensuring every data transformation is justified, auditable, and pre-specified.
 
+## Purpose
+
+Define executable data-cleaning rules covering validation, missingness, outliers, and harmonization.
+
 ## Related Task IDs
 
 - `I3` (data pipeline)

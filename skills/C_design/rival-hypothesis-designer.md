@@ -27,6 +27,10 @@ domain_aware: false
 
 Proactively construct the alternative explanations reviewers will raise — and design tests to address them.
 
+## Purpose
+
+Construct competing theories and rival explanations to strengthen design by pre-empting reviewer objections.
+
 ## Related Task IDs
 
 - `C1_5` (rival hypothesis design)

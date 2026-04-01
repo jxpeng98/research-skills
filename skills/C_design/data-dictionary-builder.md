@@ -27,6 +27,10 @@ domain_aware: false
 
 Create a comprehensive codebook (data dictionary) that defines every variable in the dataset — serving as the authoritative reference for data cleaning, analysis, and replication.
 
+## Purpose
+
+Create structured data dictionaries defining every variable's name, type, range, coding, and source.
+
 ## Related Task IDs
 
 - `C3` (data management)

@@ -28,6 +28,10 @@ domain_aware: false
 
 Package analysis code, data, and environment for reproducible public release — ensuring that anyone can reproduce your results from the shared materials.
 
+## Purpose
+
+Package code, data, environment, and documentation for reproducible release (Zenodo, GitHub, Dataverse).
+
 ## Related Task IDs
 
 - `I5` (release packaging)

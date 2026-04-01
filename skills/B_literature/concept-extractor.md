@@ -28,6 +28,10 @@ domain_aware: true
 
 Systematically expand your search concepts beyond the initial keywords to ensure comprehensive retrieval and reduce confirmation bias.
 
+## Purpose
+
+Expand search concepts with controlled vocabulary, synonym mapping, and Boolean query drafting to reduce confirmation bias in literature search.
+
 ## Related Task IDs
 
 - `B1_5` (concept/keyword extraction)

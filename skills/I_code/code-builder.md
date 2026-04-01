@@ -62,7 +62,7 @@ To add a new domain: copy `domain-profiles/custom-template.yaml` and fill in the
 
 When the user does not specify a language, infer the best fit from the domain profile. If the domain profile lists Stata or MATLAB libraries, consider those as valid targets.
 
-## Construction Strategy
+## Process
 
 ### Tier 1: Standard (Template Matching)
 

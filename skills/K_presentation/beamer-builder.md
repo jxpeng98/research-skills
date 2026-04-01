@@ -32,6 +32,10 @@ domain_aware: false
 
 Generate a complete LaTeX Beamer presentation from the slide specification — including theme selection, BibLaTeX citation integration, mathematical typesetting, and overlay animations.
 
+## Purpose
+
+Generate a LaTeX Beamer presentation with theme selection, BibLaTeX citations, and math support.
+
 ## Related Task IDs
 
 - `K4` (Beamer presentation generation)

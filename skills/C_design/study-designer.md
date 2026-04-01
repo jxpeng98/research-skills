@@ -35,6 +35,10 @@ domain_aware: true
 
 Design an empirical, qualitative, or mixed-methods study from a research question and constraints, producing a protocol-style design document, analysis plan, instruments skeleton, and optional preregistration draft.
 
+## Purpose
+
+Design empirical, qualitative, or mixed-methods studies including sampling strategy, instruments, procedures, analysis plans, and protocol lock-in.
+
 ## When to Use
 
 - After `/find-gap` and `/build-framework`, when you want to run an empirical, qualitative, or mixed-methods study.

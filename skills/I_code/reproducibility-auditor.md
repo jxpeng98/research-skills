@@ -23,6 +23,10 @@ domain_aware: false
 
 Audit a project for computational reproducibility and document a rerun recipe.
 
+## Purpose
+
+Verify magic numbers, random seeds, containerization instructions, and fail-graceful contingencies for reproducibility.
+
 ## Related Task IDs
 
 - `I4` (reproducibility audit)
@@ -36,7 +40,7 @@ Audit a project for computational reproducibility and document a rerun recipe.
 - Current project under `RESEARCH/[topic]/`
 - Entry commands used to generate results/figures
 
-## Audit checklist
+## Process
 
 - **Environment**: language versions + key dependencies pinned
 - **Randomness**: seeds controlled; nondeterminism documented

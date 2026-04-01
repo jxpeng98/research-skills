@@ -27,6 +27,10 @@ domain_aware: false
 
 Generate a complete Data Management Plan (DMP) following FAIR principles and funder requirements.
 
+## Purpose
+
+Generate FAIR-compliant data management plans specifying storage, backup, retention, sharing, and archival strategy.
+
 ## Related Task IDs
 
 - `C3` (data management planning)
@@ -40,7 +44,7 @@ Generate a complete Data Management Plan (DMP) following FAIR principles and fun
 - **Study design** (`study_design.md`) — data types, expected volume, sensitivity level
 - **Ethics requirements** (optional) — constraints from IRB/GDPR
 
-## Procedure
+## Process
 
 1. **Data Description**
    - Enumerate all data types (survey, experimental, administrative, secondary)

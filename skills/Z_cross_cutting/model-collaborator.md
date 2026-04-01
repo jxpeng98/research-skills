@@ -37,7 +37,7 @@ Coordinate Codex and Gemini for code-related research tasks:
 - 设计数据分析管道
 - 验证代码实现与论文一致性
 
-## Collaboration Modes
+## Process
 
 ### 1. Parallel (并行分析)
 

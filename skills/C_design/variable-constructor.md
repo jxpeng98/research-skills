@@ -32,6 +32,10 @@ domain_aware: true
 
 Build an auditable variable specification that bridges from research design to analysis code — ensuring every variable in the model is explicitly defined, sourced, and validated before any estimation begins.
 
+## Purpose
+
+Translate constructs and hypotheses into an operational variable specification with coding, units, and derivation rules.
+
 ## Related Task IDs
 
 - `C3` (analysis plan and operationalization)

@@ -27,6 +27,10 @@ domain_aware: true
 
 Design tables that communicate findings clearly and meet publication standards — tables should tell the story on their own.
 
+## Purpose
+
+Design and format publication-quality tables following venue standards and APA / journal-specific formatting.
+
 ## Related Task IDs
 
 - `F5` (figures and tables)

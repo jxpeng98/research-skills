@@ -25,6 +25,10 @@ domain_aware: false
 
 Assess whether the meta-analytic evidence base may be distorted by selective publication, reporting, or availability of results.
 
+## Purpose
+
+Evaluate publication bias using funnel plots, fail-safe N, Egger's test, and trim-and-fill correction models.
+
 ## Related Task IDs
 
 - `E3_5` (publication bias assessment)

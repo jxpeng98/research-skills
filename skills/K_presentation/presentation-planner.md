@@ -26,6 +26,10 @@ domain_aware: false
 
 Design the story arc, content budget, and audience strategy for an academic talk — deciding what to show, what to cut, and how to structure the narrative for maximum impact within a time constraint.
 
+## Purpose
+
+Design the story arc, content budget, and audience calibration for an academic presentation.
+
 ## Related Task IDs
 
 - `K1` (presentation planning)

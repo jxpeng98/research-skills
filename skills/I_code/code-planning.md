@@ -23,6 +23,10 @@ domain_aware: false
 
 Transform a specification into a zero-decision execution plan that can be parallelized and audited.
 
+## Purpose
+
+Transform code specifications into parallelizable, zero-decision execution plans.
+
 ## Related Task IDs
 
 - `I6` (code planning)
@@ -36,7 +40,7 @@ Transform a specification into a zero-decision execution plan that can be parall
 - `code/code_specification.md` (or an equivalent spec in the prompt)
 - Current repository/project structure under `RESEARCH/[topic]/`
 
-## Procedure
+## Process
 
 1. **Decompose** into small tasks (≤ 30–60 min each).
 2. **Order** tasks by dependencies and risk (do the riskiest first).

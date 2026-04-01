@@ -28,6 +28,10 @@ domain_aware: true
 
 Assemble a complete, venue-compliant submission package that minimizes administrative desk-rejection risk.
 
+## Purpose
+
+Assemble submission-ready package: cover letter, compliance files, title page, disclosures, and supplementary materials.
+
 ## Related Task IDs
 
 - `H1` (submission packaging)

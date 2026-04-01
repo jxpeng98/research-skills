@@ -25,6 +25,10 @@ domain_aware: false
 
 Build a structured taxonomy/map of the literature that reveals where your work fits and what gaps remain — the foundation for a strong related-work section.
 
+## Purpose
+
+Build a taxonomy or map of the literature to support defensible positioning and non-chronological related work writing.
+
 ## Related Task IDs
 
 - `B6` (literature mapping)

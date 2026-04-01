@@ -27,6 +27,10 @@ domain_aware: true
 
 Check whether a manuscript is complete and aligned with the appropriate reporting guideline, producing a structured "what's missing" action list with specific manuscript locations.
 
+## Purpose
+
+Validate reporting guideline completeness for target study type (CONSORT, STROBE, COREQ, SRQR, TRIPOD, etc.).
+
 ## Related Task IDs
 
 - `G1` (reporting completeness)

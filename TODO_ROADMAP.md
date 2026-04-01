@@ -1,6 +1,6 @@
 # Optimization Roadmap TODO
 
-> Last reorganized: 2026-03-25
+> Last reorganized: 2026-04-01
 > This file now tracks only three things:
 > 1. verified completed milestones
 > 2. active remaining work
@@ -12,16 +12,16 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 11
-- Verified-but-not-fully-accepted items: 4
-- Active TODOs: 35
+- Verified completed workstreams: 13
+- Verified-but-not-fully-accepted items: 2
+- Active TODOs: 24
 - Deferred future bets: 5
 
 ---
 
 ## Verification Basis
 
-Checked against current repository structure on 2026-03-25.
+Checked against current repository structure on 2026-04-01.
 
 Verified from source:
 - `standards/research-workflow-contract.yaml`
@@ -147,14 +147,34 @@ Key facts confirmed from current repo:
 - [x] Integrated `slidev-theme-scholarly` layouts, components, and presets
 - [x] Updated README.md, README_CN.md, and `.gemini/research-skills.md`
 
+### 12. Structure Guardrails and Content Completion
+
+- [x] Deleted `skills/I_code/{build,planning,qa,run}/` alias subdirectories (7 duplicate files)
+- [x] Deleted duplicate `skills/Z_cross_cutting/tone-normalizer.md` (canonical remains in `G_compliance/`)
+- [x] Added `alias_of`/`canonical`/`deprecated` semantic fields to `skills/registry.yaml`
+- [x] Implemented `validate_skill_structure()` in validator — enforces `## Purpose` + `## Process` sections
+- [x] Added metadata drift check — frontmatter `description` vs registry `summary` consistency
+- [x] Registered 5 orphan skills: `data-dictionary-builder`, `data-management-plan`, `prereg-writer`, `variable-operationalizer`, `credit-taxonomy-helper`
+- [x] Created `skills/J_proofread/` with 4 skill files: `ai-fingerprint-scanner`, `human-voice-rewriter`, `similarity-checker`, `final-proofreader`
+- [x] Added 6 new artifact types to `schemas/artifact-types.yaml`
+- [x] Standardized headings in 53 legacy skill files (44 `## Purpose` added, 14 `## Process` renames)
+- [x] Validator: 4408 passed, 0 failed, 83 warnings
+
+### 13. Runtime Validator-Gate
+
+- [x] Implemented `_validator_gate()` in `bridges/orchestrator.py`
+- [x] Checks `required_outputs` existence under `RESEARCH/[topic]/` after task-run
+- [x] Reports found/missing counts in routing notes
+- [x] Adjusts confidence score proportional to missing outputs
+- [x] Returns `validator_gate` dict in `CollaborationResult.data`
+- [x] All 101 unit tests pass
+
 ---
 
 ## Verified but Not Yet Fully Accepted
 
 - [ ] `team-run` still needs real-agent acceptance evidence for `B1`
 - [ ] `team-run` still needs real-agent acceptance evidence for `H3`
-- [ ] `task-run` still does not execute a distinct post-run filesystem `validator-gate`
-- [ ] `skills/Z_cross_cutting/model-collaborator.md` is still code-first rather than research-wide
 
 ---
 
@@ -162,17 +182,10 @@ Key facts confirmed from current repo:
 
 ### P0 Blocking
 
-- [ ] Create Stage J skill directory and skill cards
-  - create `skills/J_proofread/` with 4 skill cards: `ai-fingerprint-scanner.md` (J1), `human-voice-rewriter.md` (J2), `similarity-checker.md` (J3), `final-proofreader.md` (J4)
-  - register all 4 in `skills/registry.yaml`
-  - add `"J_proofread"` to `EXPECTED_SKILL_STAGES` in the validator
-  - these are the only task IDs (J1–J4) with zero backing skill files
+- [x] ~~Create Stage J skill directory and skill cards~~ (Completed in Milestone 12)
 
-- [ ] Implement a real `validator-gate` in `task-run`
-  - add a dedicated post-run validation step
-  - verify `required_outputs` under `RESEARCH/[topic]/`
-  - surface explicit `validation_status` and missing artifact list
-  - add `--skip-validation` with warning output
+- [x] ~~Implement a real `validator-gate` in `task-run`~~ (Completed in Milestone 13)
+  - TODO: add `--skip-validation` CLI flag with warning output
 
 - [ ] Complete real-agent acceptance for `team-run`
   - run one real acceptance path for `B1`
@@ -192,20 +205,11 @@ Key facts confirmed from current repo:
 
 - [ ] Generalize `model-collaborator` from code-only to research-wide collaboration language
 
-- [ ] Collapse duplicate / alias skill layouts into one canonical-file rule
-  - clean up `skills/I_code/build/`, `skills/I_code/planning/`, `skills/I_code/run/`, and `skills/I_code/qa/`
-  - keep only canonical skill paths in `skills/registry.yaml`
-  - add validator checks so registry entries cannot point at alias/stub copies
+- [x] ~~Collapse duplicate / alias skill layouts into one canonical-file rule~~ (Completed in Milestone 12)
 
-- [ ] Make alias semantics explicit in skill metadata
-  - add `canonical`, `alias_of`, and/or `deprecated` fields to `skills/registry.yaml`
-  - stop relying on prose-only notes like "canonical version is ..."
-  - make docs generation and orchestrator rendering understand aliases directly
+- [x] ~~Make alias semantics explicit in skill metadata~~ (Completed in Milestone 12)
 
-- [ ] Standardize a strict skill file skeleton
-  - freeze one canonical frontmatter shape for repo-internal skills
-  - require a shared body outline such as `Purpose`, `When To Use`, `Process`, `Outputs`, `Quality Bar`
-  - add validator checks for missing required sections
+- [x] ~~Standardize a strict skill file skeleton~~ (Completed in Milestone 12)
 
 - [ ] Move more user-facing skill metadata out of markdown prose and into the registry
   - evaluate adding `display_name`, `when_to_use`, `canonical/alias`, and `deprecated` fields
@@ -234,10 +238,12 @@ Key facts confirmed from current repo:
   - structured contribution statement: theoretical + empirical + practical + methodological
   - currently A2 has no dedicated skill file
 
-- [ ] Register 5 unregistered skills in `registry.yaml`
-  - `C_design/data-dictionary-builder.md`, `C_design/data-management-plan.md`, `C_design/prereg-writer.md`, `C_design/variable-operationalizer.md`, `H_submission/credit-taxonomy-helper.md`
-  - these files exist on disk but are not in the registry → invisible to orchestrator and docs generation
-  - remove duplicate `Z_cross_cutting/tone-normalizer.md` (canonical is `G_compliance/tone-normalizer.md`)
+- [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
+
+- [ ] Resolve 83 validator warnings in existing skill files
+  - 36 missing `Common Pitfalls`
+  - 24 missing `Quality Bar`
+  - 23 missing `When to Use`
 
 - [x] ~~Enrich 11 thin skills to match Tier 1 quality standard~~ (Completed in Milestone 10)
 

@@ -26,6 +26,10 @@ domain_aware: true
 
 Bridge from abstract theoretical constructs to concrete, measurable variables — ensuring that what you measure actually captures what you theorize.
 
+## Purpose
+
+Map abstract constructs to concrete, measurable variables with validity/reliability justification.
+
 ## Related Task IDs
 
 - `C1` (study design — operationalization step)

@@ -29,6 +29,10 @@ domain_aware: false
 
 Translate research questions into testable hypotheses, qualitative working propositions, or sensitizing concepts with mechanisms and boundary conditions.
 
+## Purpose
+
+Translate research questions into hypotheses, propositions, or sensitizing concepts with mechanisms, rival explanations, and boundary conditions.
+
 ## Related Task IDs
 
 - `A1_5` (hypothesis generation)

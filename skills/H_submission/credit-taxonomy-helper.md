@@ -27,6 +27,10 @@ domain_aware: false
 
 Generate accurate CRediT author contribution statements, cross-check against ICMJE authorship criteria, and flag common authorship ethics issues.
 
+## Purpose
+
+Generate CRediT (Contributor Roles Taxonomy) author contribution statements with ICMJE cross-check and authorship ethics guidance.
+
 ## Related Task IDs
 
 - `H1` (submission packaging — author contributions component)

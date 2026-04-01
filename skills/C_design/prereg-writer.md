@@ -28,6 +28,10 @@ domain_aware: true
 
 Generate structured preregistration documents that lock in your hypotheses, design, and analysis plan — maximizing transparency and credibility.
 
+## Purpose
+
+Generate preregistration documents for OSF/AsPredicted/ClinicalTrials.gov from study design and analysis plan.
+
 ## Related Task IDs
 
 - `C4` (preregistration)

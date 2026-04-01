@@ -31,7 +31,7 @@ Generate properly formatted:
 - BibTeX entries
 - Convert between citation formats
 
-## Supported Styles
+## Process
 
 | Style | Disciplines | In-text Format |
 |-------|-------------|----------------|

@@ -27,6 +27,10 @@ domain_aware: false
 
 Plan concrete technical de-identification steps for sensitive data, balancing privacy protection against analytical utility.
 
+## Purpose
+
+Design technical privacy measures via k-anonymity, differential privacy, or secure data pipelines for sensitive data.
+
 ## Related Task IDs
 
 - `D3` (de-identification plan)

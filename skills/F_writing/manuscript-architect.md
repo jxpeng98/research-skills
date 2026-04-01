@@ -36,6 +36,10 @@ domain_aware: true
 
 Build and revise a full research paper manuscript across stages: outline → section drafts → coherence pass → compliance checks → submission-ready package.
 
+## Purpose
+
+Build coherent paper structure from outline to section-level drafts with claim-evidence integrity and analysis-depth checking.
+
 ## When to Use
 
 - You want to draft a paper from an existing `RESEARCH/[topic]/` project folder (empirical study or systematic review).

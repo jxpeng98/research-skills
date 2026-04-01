@@ -30,6 +30,10 @@ Synthesize evidence across included studies into PRISMA-ready results. Supports:
 - Qualitative thematic synthesis
 - Quantitative meta-analysis (fixed/random effects)
 
+## Purpose
+
+Synthesize evidence narratively, qualitatively, or quantitatively (meta-analysis) with PRISMA-aligned reporting.
+
 ## When to Use
 
 Use after you have:
@@ -46,7 +50,7 @@ Use after you have:
   - `RESEARCH/[topic]/synthesis_matrix.md` (theme × paper matrix)
   - `RESEARCH/[topic]/effect_size_table.md` (for meta-analysis; use template below)
 
-## Step 0: Choose the Synthesis Strategy (Per Outcome)
+## Process
 
 Many reviews are **mixed**: one outcome may be meta-analyzable while another needs narrative synthesis.
 

@@ -26,6 +26,10 @@ domain_aware: true
 
 Run and report statistical analyses in a way that supports peer review and reproducibility.
 
+## Purpose
+
+Statistical modeling, hypothesis testing, and analytics execution with domain-profile-driven diagnostics.
+
 ## When to Use
 
 - You need to execute modeling/testing for synthesis (`E3/E3_5`) or empirical results (`F` stage) with a clear report of assumptions and uncertainty.
@@ -109,7 +113,7 @@ What is the research goal?
     └── Individual participant data → IPD meta-analysis
 ```
 
-## Procedure
+## Process
 
 1. **Select model(s)** aligned to estimand and data type (use decision tree above).
 2. **Load domain diagnostics** from domain profile if `--domain` is specified.

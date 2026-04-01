@@ -29,6 +29,10 @@ domain_aware: true
 
 Plan how multiple datasets become one analysis-ready file — specifying join keys, cardinality, validation, and provenance at every step.
 
+## Purpose
+
+Define dataset join strategy, key validation, and provenance controls for multi-source empirical workflows.
+
 ## Related Task IDs
 
 - `I3` (data pipeline)

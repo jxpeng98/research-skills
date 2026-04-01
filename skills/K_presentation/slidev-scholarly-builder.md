@@ -32,6 +32,10 @@ domain_aware: false
 
 Generate a complete, ready-to-run Slidev presentation using `slidev-theme-scholarly` — with academic layouts, inline BibTeX citations, visual presets, and export capabilities.
 
+## Purpose
+
+Generate a ready-to-run Slidev presentation using slidev-theme-scholarly with academic layouts, BibTeX citations, and theme presets.
+
 ## Related Task IDs
 
 - `K3` (Slidev presentation generation)

@@ -27,6 +27,10 @@ domain_aware: true
 
 Optimize the title, abstract, keywords, and submission metadata for maximum discoverability while maintaining scientific accuracy.
 
+## Purpose
+
+Optimize title, abstract, keywords, and metadata for discoverability, impact, and venue compliance.
+
 ## Related Task IDs
 
 - `F6` (abstract, title, keyword optimization)

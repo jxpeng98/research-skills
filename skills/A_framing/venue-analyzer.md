@@ -27,6 +27,10 @@ domain_aware: true
 
 Analyze venue fit and constraints so the paper is scoped and written to match reviewer expectations before a word is written.
 
+## Purpose
+
+Analyze venue fit, formatting constraints, and reviewer expectations to scope and position a paper for a target publication.
+
 ## Related Task IDs
 
 - `A5` (venue analysis)

@@ -132,6 +132,13 @@ function Resolve-Profile([string]$CurrentProfile) {
     }
 }
 
+function Refresh-SessionPath {
+    $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $parts = @($env:Path, $machinePath, $userPath) | Where-Object { $_ }
+    $env:Path = ($parts -join ";")
+}
+
 function Normalize-Repo([string]$RawRepo) {
     $value = ""
     if ($null -ne $RawRepo) {
@@ -300,8 +307,11 @@ function Find-Mise {
         return $command.Source
     }
     $candidates = @(
+        "$env:LOCALAPPDATA\Microsoft\WinGet\Links\mise.exe",
+        "$env:LOCALAPPDATA\Programs\mise\bin\mise.exe",
         "$env:LOCALAPPDATA\mise\bin\mise.exe",
-        "$env:USERPROFILE\.local\bin\mise.exe"
+        "$env:USERPROFILE\.local\bin\mise.exe",
+        "$env:ProgramFiles\mise\bin\mise.exe"
     ) | Where-Object { $_ -and (Test-Path $_) }
     if ($candidates.Count -gt 0) {
         return $candidates[0]
@@ -324,40 +334,109 @@ function Ensure-Mise {
         Write-Host '[dry-run] winget install jdx.mise'
         return "$env:LOCALAPPDATA\mise\bin\mise.exe"
     }
-    Invoke-NativeChecked $winget.Source @("install", "jdx.mise")
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    Invoke-NativeChecked $winget.Source @("install", "-e", "--id", "jdx.mise", "--source", "winget")
+    Refresh-SessionPath
     $mise = Find-Mise
     if (-not $mise) {
-        throw "mise installation completed but mise.exe was not found."
+        Write-Warning "mise installation completed but mise.exe was not found in the current session."
+        return $null
     }
     Ensure-PathEntry (Split-Path -Parent $mise) -PersistUser
     return $mise
 }
 
-function Ensure-PythonRuntime {
-    $python = Get-Command python3 -ErrorAction SilentlyContinue
-    if ($python) {
+function Find-UsablePython {
+    $candidates = New-Object System.Collections.Generic.List[string]
+    foreach ($name in @("python3", "python")) {
+        $command = Get-Command $name -ErrorAction SilentlyContinue
+        if ($command -and $command.Source -and -not $candidates.Contains($command.Source)) {
+            $candidates.Add($command.Source)
+        }
+    }
+    foreach ($path in @(
+        "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe",
+        "$env:LOCALAPPDATA\Microsoft\WindowsApps\python3.exe",
+        "$env:LOCALAPPDATA\Microsoft\WindowsApps\python.exe",
+        "$env:ProgramFiles\Python312\python.exe"
+    )) {
+        if ($path -and (Test-Path $path) -and -not $candidates.Contains($path)) {
+            $candidates.Add($path)
+        }
+    }
+
+    foreach ($candidate in $candidates) {
         try {
-            $version = & $python.Source -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
+            $version = & $candidate -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>$null
+            if (-not $version) {
+                continue
+            }
             $parts = $version.Trim().Split(".")
-            if ([int]$parts[0] -gt 3 -or ([int]$parts[0] -eq 3 -and [int]$parts[1] -ge 12)) {
-                Write-Info "python:  $($python.Source) ($version)"
-                return @{
-                    Mode = "direct"
-                    Python = $python.Source
-                    Mise = $null
-                }
+            if ($parts.Count -lt 2) {
+                continue
+            }
+            return @{
+                Path = $candidate
+                Major = [int]$parts[0]
+                Minor = [int]$parts[1]
+                Version = $version.Trim()
             }
         }
         catch {
         }
-        Write-Info "python3 exists but is below 3.12. Installing python@3.12 via mise..."
+    }
+    return $null
+}
+
+function Ensure-NativePython312 {
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if (-not $winget) {
+        throw "Python 3.12 is required for full install, but winget was not found. Install Python 3.12 manually or choose partial."
+    }
+    Write-Info "Installing Python 3.12 via winget..."
+    if ($DryRun) {
+        Write-Host '[dry-run] winget install -e --id Python.Python.3.12 --source winget'
+        return @{
+            Mode = "direct"
+            Python = "python"
+            Mise = $null
+        }
+    }
+
+    Invoke-NativeChecked $winget.Source @("install", "-e", "--id", "Python.Python.3.12", "--source", "winget")
+    Refresh-SessionPath
+    $python = Find-UsablePython
+    if (-not $python -or $python.Major -ne 3 -or $python.Minor -lt 12) {
+        throw "Python 3.12 installation completed but a usable python executable was not found."
+    }
+    Write-Info "python:  $($python.Path) ($($python.Version))"
+    return @{
+        Mode = "direct"
+        Python = $python.Path
+        Mise = $null
+    }
+}
+
+function Ensure-PythonRuntime {
+    $python = Find-UsablePython
+    if ($python) {
+        if ($python.Major -gt 3 -or ($python.Major -eq 3 -and $python.Minor -ge 12)) {
+            Write-Info "python:  $($python.Path) ($($python.Version))"
+            return @{
+                Mode = "direct"
+                Python = $python.Path
+                Mise = $null
+            }
+        }
+        Write-Info "python exists but is below 3.12. Trying mise first, then native Python 3.12 if needed..."
     }
     else {
-        Write-Info "python3 not found. Full install will add python@3.12 via mise..."
+        Write-Info "python not found. Full install will try mise first, then native Python 3.12 if needed..."
     }
 
     $mise = Ensure-Mise
+    if (-not $mise) {
+        return Ensure-NativePython312
+    }
     if ($DryRun) {
         Write-Host '[dry-run] mise install python@3.12'
         Write-Host '[dry-run] mise use -g python@3.12'
@@ -370,6 +449,7 @@ function Ensure-PythonRuntime {
 
     Invoke-NativeChecked $mise @("install", "python@3.12")
     Invoke-NativeChecked $mise @("use", "-g", "python@3.12")
+    Refresh-SessionPath
     return @{
         Mode = "mise"
         Python = "python"

@@ -7,7 +7,7 @@ This repository standardizes release with four scripts:
 - `scripts/release_postflight.sh`
 - `scripts/release_automation.sh`
 
-Draft release note generator:
+Prerelease note draft generator:
 
 - `scripts/generate_release_notes.sh`
 
@@ -42,7 +42,7 @@ This is the recommended local entrypoint. It chains:
 - `scripts/release_automation.sh pre`
 - `scripts/pypi_preflight.sh`
 
-When it succeeds, the repository is in a publish-ready state with synchronized version files, validated release notes, and built package artifacts.
+When it succeeds, the repository is in a publish-ready state with synchronized version files, validated release docs, and built package artifacts.
 
 ## 3) Manual pre-release gates (optional)
 
@@ -50,21 +50,28 @@ When it succeeds, the repository is in a publish-ready state with synchronized v
 ./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
 ```
 
-Runs validator + repository unit tests + release smoke checks, verifies the tag is not already used, and auto-generates `release/<tag>.md` draft if missing.
-After checks pass, preflight auto-fills validation evidence lines in the release note.
+Runs validator + repository unit tests + release smoke checks, verifies the tag is not already used, and then:
 
-Manual draft generation (optional):
+- beta / prerelease tags: auto-generate `release/<tag>.md` draft if missing
+- stable tags: verify the matching version section already exists in `CHANGELOG.md`
+
+After checks pass, preflight auto-fills validation evidence lines in prerelease notes.
+
+Manual prerelease draft generation (optional):
 
 ```bash
 ./scripts/generate_release_notes.sh --tag v0.1.0 --from-tag v0.1.0-beta.6
 ```
 
-The draft generator supports both stable tags such as `v0.1.0` and prerelease tags such as `v0.1.1-beta.1`. Stage label is inferred from the tag unless you pass `--stage`.
+The draft generator remains available, but the default policy is now:
+
+- stable tags publish from `CHANGELOG.md`
+- prerelease tags publish from `release/<tag>.md`
 
 ## 4) Publish tag
 
 ```bash
-git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/v0.1.0.md
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills CHANGELOG.md
 git commit -m "chore: prepare release 0.1.0"
 git tag -a v0.1.0 -m "research-skills release"
 git push origin main --tags
@@ -76,7 +83,7 @@ git push origin main --tags
 ./scripts/release_automation.sh post --tag v0.1.0 --create-release
 ```
 
-Runs local/remote consistency checks, attempts CI status verification, checks release notes + rollback docs, and generates:
+Runs local/remote consistency checks, attempts CI status verification, checks release docs + rollback docs, and generates:
 
 - `release/acceptance/v0.1.0-receipt.md`
 
@@ -84,9 +91,9 @@ Runs local/remote consistency checks, attempts CI status verification, checks re
 
 - `--version <version>`: required by `publish`, accepts stable (`0.2.0`) and beta (`0.2.0b1`) forms.
 - `--skip-smoke`: skip smoke stage during preflight.
-- `--skip-note-gen`: skip draft generation of `release/<tag>.md`.
-- `--note-overwrite`: overwrite existing `release/<tag>.md` when generating draft.
-- `--from-tag <tag>`: choose baseline tag used for draft highlights.
+- `--skip-note-gen`: skip prerelease draft generation of `release/<tag>.md`.
+- `--note-overwrite`: overwrite existing `release/<tag>.md` when generating prerelease draft.
+- `--from-tag <tag>`: choose baseline tag used for prerelease draft highlights.
 - `--skip-bump`: start `release_ready.sh` from preflight/package checks only.
 - `--allow-dirty`: let `release_ready.sh` continue on a dirty worktree.
 - `--commit-message <msg>`: override the release-prep commit message used by `publish`.
@@ -95,7 +102,7 @@ Runs local/remote consistency checks, attempts CI status verification, checks re
 - `--ci-timeout-seconds <n>` / `--ci-poll-interval-seconds <n>`: control publish wait behavior.
 - `--skip-remote`: skip remote ref checks in postflight.
 - `--skip-ci-status`: skip GitHub Actions status checks in postflight.
-- `--create-release`: if `gh auth` is available, create GitHub release page from `release/<tag>.md`.
+- `--create-release`: if `gh auth` is available, create GitHub release page from the prerelease note file or the matching `CHANGELOG.md` section for stable tags.
 
 ## GitHub workflow entrypoint
 

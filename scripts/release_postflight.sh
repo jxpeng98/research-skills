@@ -13,6 +13,15 @@ REQUIRED_WORKFLOWS=("CI" "Install Check")
 WAIT_CI=0
 CI_TIMEOUT_SECONDS=1800
 CI_POLL_INTERVAL_SECONDS=30
+TEMP_RELEASE_NOTES=""
+
+cleanup() {
+  if [[ -n "$TEMP_RELEASE_NOTES" && -f "$TEMP_RELEASE_NOTES" ]]; then
+    rm -f "$TEMP_RELEASE_NOTES"
+  fi
+}
+
+trap cleanup EXIT
 
 usage() {
   cat <<'EOF'
@@ -22,7 +31,7 @@ Usage:
 Description:
   Run standardized post-release checks:
     1) verify local/remote tag consistency
-    2) verify release notes + rollback docs
+    2) verify release docs (stable uses CHANGELOG.md, prerelease uses release/<tag>.md) + rollback docs
     3) optionally check CI status on GitHub Actions
     4) generate release acceptance receipt from template
 
@@ -91,6 +100,31 @@ refresh_primary_branch_ref() {
 
 is_prerelease_tag() {
   [[ "$1" == *beta* || "$1" =~ b[0-9]+ ]]
+}
+
+prepare_release_notes_file() {
+  local tag="$1"
+  local version="${tag#v}"
+
+  if is_prerelease_tag "$tag"; then
+    RELEASE_NOTES_FILE="release/${tag}.md"
+    RELEASE_NOTES_LABEL="$RELEASE_NOTES_FILE"
+    [[ -f "$RELEASE_NOTES_FILE" ]] || {
+      echo "[postflight] missing prerelease notes: $RELEASE_NOTES_FILE" >&2
+      exit 1
+    }
+    return 0
+  fi
+
+  [[ -f "CHANGELOG.md" ]] || {
+    echo "[postflight] missing stable release changelog: CHANGELOG.md" >&2
+    exit 1
+  }
+
+  TEMP_RELEASE_NOTES="$(mktemp -t research-skills-release-notes.XXXXXX.md)"
+  python3 scripts/changelog_section.py --version "$version" --output "$TEMP_RELEASE_NOTES"
+  RELEASE_NOTES_FILE="$TEMP_RELEASE_NOTES"
+  RELEASE_NOTES_LABEL="CHANGELOG.md [${version}]"
 }
 
 query_ci_status() {
@@ -265,14 +299,13 @@ else
   exit 1
 fi
 
-RELEASE_NOTE_PATH="release/${TAG}.md"
 ROLLBACK_PATH="release/rollback.md"
 TEMPLATE_PATH="release/templates/beta-acceptance-template.md"
 
-[[ -f "$RELEASE_NOTE_PATH" ]] || { echo "[postflight] missing release notes: $RELEASE_NOTE_PATH" >&2; exit 1; }
 [[ -f "$ROLLBACK_PATH" ]] || { echo "[postflight] missing rollback doc: $ROLLBACK_PATH" >&2; exit 1; }
 [[ -f "$TEMPLATE_PATH" ]] || { echo "[postflight] missing acceptance template: $TEMPLATE_PATH" >&2; exit 1; }
-echo "[postflight] release docs present"
+prepare_release_notes_file "$TAG"
+echo "[postflight] release docs present: $RELEASE_NOTES_LABEL"
 
 if [[ "$SKIP_REMOTE" -eq 0 ]]; then
   if REMOTE_MAIN="$(git ls-remote --heads origin "$PRIMARY_BRANCH" 2>/dev/null | awk '{print $1}' | head -n 1)" \
@@ -418,7 +451,7 @@ elif [[ "$CREATE_RELEASE" -eq 1 ]]; then
     "$TAG"
     --repo "$REPO_SLUG"
     --title "$TAG"
-    --notes-file "$RELEASE_NOTE_PATH"
+    --notes-file "$RELEASE_NOTES_FILE"
   )
   if [[ "$IS_PRERELEASE" -eq 1 ]]; then
     release_args+=(--prerelease)

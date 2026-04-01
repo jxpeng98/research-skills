@@ -29,17 +29,17 @@ on:
         type: boolean
         default: false
       skip_note_gen:
-        description: "Skip auto draft generation for release notes in pre mode"
+        description: "Skip prerelease release-note draft generation in pre mode"
         required: false
         type: boolean
         default: false
       note_overwrite:
-        description: "Overwrite existing release note draft in pre mode"
+        description: "Overwrite existing prerelease release-note draft in pre mode"
         required: false
         type: boolean
         default: false
       from_tag:
-        description: "Optional baseline tag for release note draft highlights"
+        description: "Optional baseline tag for prerelease release-note draft highlights"
         required: false
         type: string
       skip_remote:

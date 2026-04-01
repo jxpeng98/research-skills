@@ -9,6 +9,10 @@ SKIP_NOTE_GEN=0
 NOTE_OVERWRITE=0
 FROM_TAG=""
 
+is_prerelease_tag() {
+  [[ "$1" == *beta* || "$1" =~ b[0-9]+ ]]
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -16,7 +20,8 @@ Usage:
 
 Description:
   Run standardized pre-release gates:
-    0) auto-generate release note draft (when --tag is provided)
+    0) prerelease: auto-generate release/<tag>.md draft
+       stable: verify matching CHANGELOG.md section exists
     1) strict standard validator
     2) repository unit tests
     3) release smoke script (literature pipeline + doctor + parallel + task-run)
@@ -24,9 +29,9 @@ Description:
 Options:
   --tag <tag>     Optional release tag to pre-check. If provided, script verifies
                   the tag does not already exist locally.
-  --from-tag <t>  Optional baseline tag passed to release-note generator.
-  --skip-note-gen Skip auto generation of release/<tag>.md draft.
-  --note-overwrite  Overwrite release/<tag>.md when auto-generating.
+  --from-tag <t>  Optional baseline tag passed to prerelease note generator.
+  --skip-note-gen Skip auto generation of release/<tag>.md draft for prerelease tags.
+  --note-overwrite  Overwrite release/<tag>.md when auto-generating prerelease draft.
   --skip-smoke    Skip smoke test stage.
   --no-strict     Run validator without --strict.
   -h, --help      Show this message.
@@ -82,23 +87,28 @@ if [[ -n "$TAG" ]]; then
   fi
   echo "[preflight] tag pre-check passed: $TAG is available"
 
-  if [[ "$SKIP_NOTE_GEN" -eq 0 ]]; then
-    note_cmd=(./scripts/generate_release_notes.sh --tag "$TAG")
-    if [[ -n "$FROM_TAG" ]]; then
-      note_cmd+=(--from-tag "$FROM_TAG")
+  if is_prerelease_tag "$TAG"; then
+    if [[ "$SKIP_NOTE_GEN" -eq 0 ]]; then
+      note_cmd=(./scripts/generate_release_notes.sh --tag "$TAG")
+      if [[ -n "$FROM_TAG" ]]; then
+        note_cmd+=(--from-tag "$FROM_TAG")
+      fi
+      if [[ "$NOTE_OVERWRITE" -eq 1 ]]; then
+        note_cmd+=(--overwrite)
+      fi
+      echo "[preflight] prerelease note draft"
+      "${note_cmd[@]}"
+    else
+      echo "[preflight] prerelease note generation skipped"
     fi
-    if [[ "$NOTE_OVERWRITE" -eq 1 ]]; then
-      note_cmd+=(--overwrite)
-    fi
-    echo "[preflight] release note draft"
-    "${note_cmd[@]}"
-  else
-    echo "[preflight] release note generation skipped"
-  fi
 
-  if [[ ! -f "release/${TAG}.md" ]]; then
-    echo "[preflight] missing release notes file: release/${TAG}.md" >&2
-    exit 1
+    if [[ ! -f "release/${TAG}.md" ]]; then
+      echo "[preflight] missing prerelease notes file: release/${TAG}.md" >&2
+      exit 1
+    fi
+  else
+    echo "[preflight] validating stable release changelog entry"
+    python3 scripts/changelog_section.py --version "${TAG#v}" --check
   fi
 fi
 
@@ -145,7 +155,7 @@ else
   smoke_summary="skipped"
 fi
 
-if [[ -n "$TAG" && "$SKIP_NOTE_GEN" -eq 0 ]]; then
+if [[ -n "$TAG" && "$SKIP_NOTE_GEN" -eq 0 ]] && is_prerelease_tag "$TAG"; then
   update_note_cmd=(
     ./scripts/generate_release_notes.sh
     --tag "$TAG"

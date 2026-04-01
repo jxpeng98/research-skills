@@ -10,6 +10,7 @@ RELEASE_POSTFLIGHT = REPO_ROOT / "scripts" / "release_postflight.sh"
 RELEASE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "release-automation.yml"
 PUBLISH_PYPI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "publish-pypi.yml"
 VERIFY_RELEASE_TAG = REPO_ROOT / "scripts" / "verify_release_tag_version.sh"
+CHANGELOG_SECTION = REPO_ROOT / "scripts" / "changelog_section.py"
 
 
 class ReleaseAutomationTests(unittest.TestCase):
@@ -19,6 +20,8 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn("<pre|post|publish>", content)
         self.assertIn("publish --version 0.1.0", content)
         self.assertIn("./scripts/release_ready.sh --version", content)
+        self.assertIn("git add CHANGELOG.md", content)
+        self.assertIn('git add "release/${repo_tag}.md"', content)
         self.assertIn('git tag -a "$repo_tag"', content)
         self.assertIn('git push "$push_remote" "$push_branch" "$repo_tag"', content)
         self.assertIn('./scripts/release_postflight.sh --tag "$repo_tag"', content)
@@ -34,9 +37,19 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('refs/remotes/origin/$candidate', content)
         self.assertIn('refresh_primary_branch_ref "$PRIMARY_BRANCH" "$PRIMARY_BRANCH_REF"', content)
         self.assertIn('git fetch --force --no-tags origin "$fetch_ref"', content)
+        self.assertIn('python3 scripts/changelog_section.py --version "$version" --output "$TEMP_RELEASE_NOTES"', content)
+        self.assertIn('RELEASE_NOTES_LABEL="CHANGELOG.md [${version}]"', content)
         self.assertIn('bash ./scripts/verify_release_tag_version.sh --tag "$TAG"', content)
         self.assertIn("gh release view", content)
         self.assertIn("--prerelease", content)
+
+    def test_changelog_section_script_extracts_versioned_sections(self) -> None:
+        content = CHANGELOG_SECTION.read_text(encoding="utf-8")
+
+        self.assertIn('HEADING_RE = re.compile(r"^## \\[(?P<version>[^\\]]+)\\](?P<suffix>.*)$")', content)
+        self.assertIn('parser.add_argument("--version", required=True', content)
+        self.assertIn('print(f"[changelog] missing version section: {args.version}"', content)
+        self.assertIn('Path(args.output).write_text(section, encoding="utf-8")', content)
 
     def test_release_workflow_exposes_publish_mode(self) -> None:
         content = RELEASE_WORKFLOW.read_text(encoding="utf-8")

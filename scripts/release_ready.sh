@@ -12,6 +12,10 @@ REPO_TAG=""
 PRE_ARGS=()
 PYPI_ARGS=()
 
+is_prerelease_tag() {
+  [[ "$1" == *beta* || "$1" =~ b[0-9]+ ]]
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -20,7 +24,7 @@ Usage:
 Description:
   Prepare a local publish-ready release state by chaining:
     1) version bump + metadata sync
-    2) release preflight (validator + tests + smoke + release note draft)
+    2) release preflight (validator + tests + smoke + beta note draft or stable changelog check)
     3) package preflight (build + twine + install smoke)
 
 Options:
@@ -62,10 +66,12 @@ is_expected_release_path() {
     skills/*)
       return 0
       ;;
-    "release/${REPO_TAG}.md")
-      return 0
-      ;;
   esac
+  if is_prerelease_tag "$REPO_TAG"; then
+    [[ "$path" == "release/${REPO_TAG}.md" ]] && return 0
+  else
+    [[ "$path" == "CHANGELOG.md" ]] && return 0
+  fi
   return 1
 }
 
@@ -187,7 +193,11 @@ if [[ -n "$status_snapshot" ]]; then
 fi
 
 echo "[release-ready] next steps"
-echo "  git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/${REPO_TAG}.md"
+if is_prerelease_tag "$REPO_TAG"; then
+  echo "  git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/${REPO_TAG}.md"
+else
+  echo "  git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills CHANGELOG.md"
+fi
 echo "  git commit -m 'chore: prepare release ${PACKAGE_VERSION}'"
 echo "  # optional: run the 'Publish to TestPyPI' workflow and validate install before tagging"
 echo "  git tag -a ${REPO_TAG} -m \"research-skills release\""

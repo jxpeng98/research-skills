@@ -22,6 +22,8 @@ Usage:
 
 Description:
   Generate a draft release notes file at release/<tag>.md.
+  This is primarily for beta / prerelease release notes. Stable releases should
+  be documented in CHANGELOG.md and published from the matching changelog section.
 
 Options:
   --tag <tag>           Required release tag (for example v0.1.0 or v0.1.1-beta.1)

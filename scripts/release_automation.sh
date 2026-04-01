@@ -11,6 +11,10 @@ normalize_field() {
   python3 "${ROOT_DIR}/scripts/sync_versions.py" "$version" --print-field "$field"
 }
 
+is_prerelease_tag() {
+  [[ "$1" == *beta* || "$1" =~ b[0-9]+ ]]
+}
+
 detect_primary_branch() {
   if git show-ref --verify --quiet "refs/heads/main"; then
     printf 'main\n'
@@ -198,7 +202,12 @@ case "$MODE" in
 
     ensure_git_identity
 
-    git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills "release/${repo_tag}.md"
+    git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills
+    if is_prerelease_tag "$repo_tag"; then
+      git add "release/${repo_tag}.md"
+    else
+      git add CHANGELOG.md
+    fi
     if ! git diff --cached --quiet; then
       git commit -m "$commit_message"
     else

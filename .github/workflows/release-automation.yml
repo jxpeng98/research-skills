@@ -93,7 +93,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git fetch --force --tags origin
+          git fetch --force --prune origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
           if [[ "${{ github.event_name }}" == "push" ]]; then
             mode="post"
             tag="${{ github.ref_name }}"

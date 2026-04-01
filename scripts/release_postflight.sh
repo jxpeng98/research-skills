@@ -67,6 +67,28 @@ detect_primary_branch() {
   return 1
 }
 
+refresh_primary_branch_ref() {
+  local branch="$1"
+  local ref="$2"
+  local fetch_ref=""
+
+  if [[ "$ref" == refs/remotes/origin/* ]]; then
+    fetch_ref="+refs/heads/${branch}:refs/remotes/origin/${branch}"
+  elif [[ "$ref" == "$branch" ]]; then
+    fetch_ref="+refs/heads/${branch}:refs/heads/${branch}"
+  else
+    return 0
+  fi
+
+  if git fetch --force --no-tags origin "$fetch_ref" >/dev/null 2>&1; then
+    echo "[postflight] refreshed $branch ref from origin"
+    return 0
+  fi
+
+  echo "[postflight] warning: unable to refresh $branch ref from origin; using existing local ref"
+  return 0
+}
+
 is_prerelease_tag() {
   [[ "$1" == *beta* || "$1" =~ b[0-9]+ ]]
 }
@@ -233,6 +255,8 @@ if ! primary_branch_record="$(detect_primary_branch)"; then
 fi
 PRIMARY_BRANCH="${primary_branch_record%%$'\t'*}"
 PRIMARY_BRANCH_REF="${primary_branch_record#*$'\t'}"
+
+refresh_primary_branch_ref "$PRIMARY_BRANCH" "$PRIMARY_BRANCH_REF"
 
 if git merge-base --is-ancestor "$LOCAL_TAG_COMMIT" "$PRIMARY_BRANCH_REF"; then
   echo "[postflight] tag commit is reachable from $PRIMARY_BRANCH"

@@ -469,3 +469,40 @@ artifact_types:
     format: markdown
     produced_by: []
     consumed_by: [code-builder, code-review]
+
+  - name: OperationalizationMap
+    description: "Construct-to-variable mapping with instrument selection, validity evidence, and traceability"
+    format: markdown
+    produced_by: [variable-operationalizer]
+    consumed_by: [variable-constructor, data-dictionary-builder, study-designer]
+
+  - name: CRediTStatement
+    description: "CRediT author contribution statement with ICMJE cross-check"
+    format: markdown
+    produced_by: [credit-taxonomy-helper]
+    consumed_by: [submission-packager]
+
+  # ── J_proofread outputs ──
+  - name: AIDetectionReport
+    description: "AI fingerprint detection report with flagged passages, pattern types, and severity"
+    format: markdown
+    produced_by: [ai-fingerprint-scanner]
+    consumed_by: [human-voice-rewriter]
+
+  - name: HumanizedManuscript
+    description: "Manuscript with AI-flagged passages rewritten to sound authentically human-authored"
+    format: markdown
+    produced_by: [human-voice-rewriter]
+    consumed_by: [similarity-checker, final-proofreader]
+
+  - name: SimilarityReport
+    description: "Text overlap and originality analysis with flagged passages and rewrite suggestions"
+    format: markdown
+    produced_by: [similarity-checker]
+    consumed_by: [final-proofreader]
+
+  - name: ProofreadChecklist
+    description: "Final proofread checklist covering grammar, consistency, formatting, and cross-references"
+    format: markdown
+    produced_by: [final-proofreader]
+    consumed_by: [submission-packager]

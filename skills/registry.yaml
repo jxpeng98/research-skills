@@ -319,6 +319,70 @@ skills:
     tooling_requirements: [filesystem, metadata-registry]
     domain_aware: true
 
+  - id: data-dictionary-builder
+    stage: C_design
+    version: "0.4.0"
+    file: skills/C_design/data-dictionary-builder.md
+    summary: "Create structured data dictionaries defining every variable's name, type, range, coding, and source."
+    summary_zh: "创建结构化数据字典，定义每个变量的名称、类型、范围、编码和来源。"
+    display_name_zh: "数据字典构建"
+    when_to_use_zh: "当需要为数据集建立权威的变量定义和编码手册时使用。"
+    inputs: [DesignSpec, Instruments]
+    outputs: [DataDictionary]
+    tags: [design, data-dictionary, codebook, variables, metadata]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: data-management-plan
+    stage: C_design
+    version: "0.4.0"
+    file: skills/C_design/data-management-plan.md
+    summary: "Generate FAIR-compliant data management plans specifying storage, backup, retention, sharing, and archival."
+    summary_zh: "生成符合 FAIR 原则的数据管理计划，涵盖存储、备份、保留、共享和归档。"
+    display_name_zh: "数据管理计划"
+    when_to_use_zh: "当需要按资助方或机构要求编写 DMP 时使用。"
+    inputs: [DesignSpec, EthicsPackage]
+    outputs: [DataManagementPlan]
+    tags: [design, data-management, FAIR, storage, archival]
+    depends_on: [study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: prereg-writer
+    stage: C_design
+    version: "0.4.0"
+    file: skills/C_design/prereg-writer.md
+    summary: "Generate preregistration documents for OSF/AsPredicted/ClinicalTrials.gov from study design and analysis plan."
+    summary_zh: "根据研究设计和分析计划生成 OSF、AsPredicted 等平台的预注册文档。"
+    display_name_zh: "预注册撰写"
+    when_to_use_zh: "当需要在数据收集前锁定假设、设计和分析计划时使用。"
+    inputs: [DesignSpec, AnalysisPlan, HypothesisSet]
+    outputs: [Preregistration]
+    tags: [design, preregistration, OSF, AsPredicted, transparency]
+    depends_on: [study-designer, hypothesis-generator]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: variable-operationalizer
+    stage: C_design
+    version: "0.4.0"
+    file: skills/C_design/variable-operationalizer.md
+    summary: "Map abstract constructs to concrete, measurable variables with validity/reliability justification."
+    summary_zh: "将抽象构念映射到具体可测量变量，并提供效度与信度依据。"
+    display_name_zh: "变量操作化"
+    when_to_use_zh: "当需要选择或设计测量工具、从构念到变量做 traceability 时使用。"
+    inputs: [TheoreticalFramework, DesignSpec]
+    outputs: [OperationalizationMap]
+    tags: [design, operationalization, constructs, measurement, validity]
+    depends_on: [theory-mapper, study-designer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, scholarly-search]
+    domain_aware: true
+
   # ══════════════════════════════════════════════════════════
   # D_ethics — IRB, privacy, deidentification
   # ══════════════════════════════════════════════════════════
@@ -638,6 +702,22 @@ skills:
     tooling_requirements: [filesystem]
     domain_aware: false
 
+  - id: credit-taxonomy-helper
+    stage: H_submission
+    version: "0.4.0"
+    file: skills/H_submission/credit-taxonomy-helper.md
+    summary: "Generate CRediT author contribution statements with ICMJE cross-check and authorship ethics guidance."
+    summary_zh: "生成 CRediT 作者贡献声明，并做 ICMJE 交叉检查和署名伦理指导。"
+    display_name_zh: "CRediT贡献声明"
+    when_to_use_zh: "当投稿需要 CRediT 作者贡献声明或需理清署名伦理时使用。"
+    inputs: [Manuscript, UserQuery]
+    outputs: [CRediTStatement]
+    tags: [submission, CRediT, authorship, contributions, taxonomy, ICMJE]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
   # ══════════════════════════════════════════════════════════
   # I_code — Specification, build, execution, review
   # ══════════════════════════════════════════════════════════
@@ -850,6 +930,73 @@ skills:
     depends_on: [slide-architect]
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem, code-runtime]
+    domain_aware: false
+
+  # ══════════════════════════════════════════════════════════
+  # J_proofread — AI detection, humanization, similarity, final polish
+  # ══════════════════════════════════════════════════════════
+  - id: ai-fingerprint-scanner
+    stage: J_proofread
+    version: "0.4.0"
+    file: skills/J_proofread/ai-fingerprint-scanner.md
+    summary: "Scan manuscript for AI-generation fingerprints including formulaic transitions, uniform rhythm, and generic hedging."
+    summary_zh: "扫描稿件中的 AI 生成指纹，包括公式化过渡词、均匀节奏和笼统 hedging。"
+    display_name_zh: "AI指纹扫描"
+    when_to_use_zh: "当需要识别稿件中可能被 AI 检测器标记的段落时使用。"
+    inputs: [Manuscript]
+    outputs: [AIDetectionReport]
+    tags: [proofread, ai-detection, fingerprint, writing-patterns]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: human-voice-rewriter
+    stage: J_proofread
+    version: "0.4.0"
+    file: skills/J_proofread/human-voice-rewriter.md
+    summary: "Rewrite AI-flagged passages to sound authentically human-authored while preserving scientific accuracy."
+    summary_zh: "改写被标记的 AI 段落，使其具有真实人类写作风格，同时保持科学准确性。"
+    display_name_zh: "人类风格改写"
+    when_to_use_zh: "当 AI 检测报告中有高严重度段落需要改写时使用。"
+    inputs: [Manuscript, AIDetectionReport]
+    outputs: [HumanizedManuscript]
+    tags: [proofread, humanization, rewriting, voice, style]
+    depends_on: [ai-fingerprint-scanner]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: similarity-checker
+    stage: J_proofread
+    version: "0.4.0"
+    file: skills/J_proofread/similarity-checker.md
+    summary: "Identify text overlap including self-plagiarism, close paraphrasing, and boilerplate passages."
+    summary_zh: "识别文本重叠，包括自我抄袭、过近释义和模板化段落。"
+    display_name_zh: "相似度检查"
+    when_to_use_zh: "当需要在投稿前检查文本原创性和引用充分性时使用。"
+    inputs: [HumanizedManuscript]
+    outputs: [SimilarityReport]
+    tags: [proofread, similarity, plagiarism, originality, paraphrase]
+    depends_on: [human-voice-rewriter]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: final-proofreader
+    stage: J_proofread
+    version: "0.4.0"
+    file: skills/J_proofread/final-proofreader.md
+    summary: "Language-level polish covering grammar, tense, acronyms, cross-references, and venue-specific formatting."
+    summary_zh: "语言层面终审校对，覆盖语法、时态、缩写、交叉引用和期刊格式要求。"
+    display_name_zh: "终审校对"
+    when_to_use_zh: "当稿件内容已定稿，需要做投稿前最后一遍语言校对时使用。"
+    inputs: [HumanizedManuscript, SimilarityReport]
+    outputs: [ProofreadChecklist]
+    tags: [proofread, grammar, formatting, consistency, final-polish]
+    depends_on: [similarity-checker]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
     domain_aware: false
 
   # ══════════════════════════════════════════════════════════

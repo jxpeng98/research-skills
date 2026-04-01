@@ -49,6 +49,7 @@ EXPECTED_SKILL_STAGES = {
     "G_compliance",
     "H_submission",
     "I_code",
+    "J_proofread",
     "K_presentation",
     "Z_cross_cutting",
 }
@@ -92,19 +93,7 @@ STAGE_I_TEMPLATE_EXPECTATIONS = {
         '"primary_artifact": "code/code_specification.md"',
         "```json",
     ],
-    "skills/I_code/planning/code-specification.md": [
-        "template_type: code_specification",
-        '"task_id": "I5"',
-        '"primary_artifact": "code/code_specification.md"',
-        "```json",
-    ],
     "skills/I_code/code-planning.md": [
-        "template_type: code_plan",
-        '"task_id": "I6"',
-        '"plan_artifact": "code/plan.md"',
-        "```json",
-    ],
-    "skills/I_code/planning/code-planning.md": [
         "template_type: code_plan",
         '"task_id": "I6"',
         '"plan_artifact": "code/plan.md"',
@@ -116,31 +105,13 @@ STAGE_I_TEMPLATE_EXPECTATIONS = {
         '"performance_artifact": "code/performance_profile.md"',
         "```json",
     ],
-    "skills/I_code/run/code-execution.md": [
-        "template_type: performance_profile",
-        '"task_id": "I7"',
-        '"performance_artifact": "code/performance_profile.md"',
-        "```json",
-    ],
     "skills/I_code/reproducibility-auditor.md": [
         "template_type: reproducibility_audit",
         '"task_id": "I4"',
         '"audit_artifact": "code/reproducibility_audit.md"',
         "```json",
     ],
-    "skills/I_code/qa/reproducibility-auditor.md": [
-        "template_type: reproducibility_audit",
-        '"task_id": "I4"',
-        '"audit_artifact": "code/reproducibility_audit.md"',
-        "```json",
-    ],
     "skills/I_code/code-review.md": [
-        "template_type: code_review",
-        '"task_id": "I8"',
-        '"review_artifact": "code/code_review.md"',
-        "```json",
-    ],
-    "skills/I_code/qa/code-review.md": [
         "template_type: code_review",
         '"task_id": "I8"',
         '"review_artifact": "code/code_review.md"',
@@ -866,6 +837,39 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
             f"Skill frontmatter omits deprecated version field for {skill_id}",
             f"{entry.file} should not define a frontmatter version; use skills/registry.yaml as the only skill version source",
         )
+
+
+REQUIRED_SKILL_SECTIONS = {"Purpose", "Process"}
+RECOMMENDED_SKILL_SECTIONS = {"When to Use", "Quality Bar", "Common Pitfalls"}
+
+
+def validate_skill_structure(root: Path, report: ValidationReport) -> None:
+    """Validate that every registered skill file follows the canonical skeleton."""
+    registry_content = read_text(root, "skills/registry.yaml", report)
+    if not registry_content:
+        return
+    entries = parse_skill_registry_entries(registry_content)
+    for skill_id in sorted(entries):
+        entry = entries[skill_id]
+        skill_path = root / entry.file
+        if not skill_path.exists():
+            continue
+        content = skill_path.read_text(encoding="utf-8")
+        headings = set(
+            re.findall(r"^##\s+(.+?)(?:\s*\(.+\))?\s*$", content, flags=re.MULTILINE)
+        )
+        for section in REQUIRED_SKILL_SECTIONS:
+            report.check(
+                section in headings,
+                f"Skill {skill_id} contains required section '{section}'",
+                f"{entry.file} missing required section: '{section}'",
+            )
+        for section in RECOMMENDED_SKILL_SECTIONS:
+            report.warn(
+                section in headings,
+                f"Skill {skill_id} contains recommended section '{section}'",
+                f"{entry.file} missing recommended section: '{section}'",
+            )
 
 
 def validate_generated_skill_docs(root: Path, report: ValidationReport) -> None:
@@ -2349,6 +2353,7 @@ def main() -> int:
     print(f"Validating research standard in: {root}")
     validate_contract(root, report)
     validate_skill_registry(root, report)
+    validate_skill_structure(root, report)
     validate_generated_skill_docs(root, report)
     validate_single_skill_source_of_truth(root, report)
     validate_mcp_agent_map(root, report)

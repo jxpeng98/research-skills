@@ -282,6 +282,15 @@ skill_registry:
   - "slide-architect"
   - "slidev-scholarly-builder"
   - "beamer-builder"
+  - "data-dictionary-builder"
+  - "data-management-plan"
+  - "prereg-writer"
+  - "variable-operationalizer"
+  - "credit-taxonomy-helper"
+  - "ai-fingerprint-scanner"
+  - "human-voice-rewriter"
+  - "similarity-checker"
+  - "final-proofreader"
 
 skill_catalog:
   question-refiner:
@@ -643,6 +652,60 @@ skill_catalog:
     default_outputs:
       - "presentation/beamer/"
       - "presentation/slides.bib"
+  data-dictionary-builder:
+    file: "skills/C_design/data-dictionary-builder.md"
+    category: "study-design"
+    focus: "Create structured data dictionaries defining variables, types, ranges, and coding."
+    default_outputs:
+      - "design/data_dictionary.md"
+  data-management-plan:
+    file: "skills/C_design/data-management-plan.md"
+    category: "study-design"
+    focus: "Generate FAIR-compliant data management plans with storage and sharing strategy."
+    default_outputs:
+      - "data_management_plan.md"
+  prereg-writer:
+    file: "skills/C_design/prereg-writer.md"
+    category: "study-design"
+    focus: "Generate preregistration documents for OSF/AsPredicted platforms."
+    default_outputs:
+      - "preregistration.md"
+  variable-operationalizer:
+    file: "skills/C_design/variable-operationalizer.md"
+    category: "study-design"
+    focus: "Map constructs to measurable variables with validity/reliability justification."
+    default_outputs:
+      - "design/operationalization.md"
+  credit-taxonomy-helper:
+    file: "skills/H_submission/credit-taxonomy-helper.md"
+    category: "submission-readiness"
+    focus: "Generate CRediT author contribution statements with ICMJE cross-check."
+    default_outputs:
+      - "submission/credit_statement.md"
+  ai-fingerprint-scanner:
+    file: "skills/J_proofread/ai-fingerprint-scanner.md"
+    category: "proofread"
+    focus: "Scan manuscript for AI-generation fingerprints and formulaic patterns."
+    default_outputs:
+      - "proofread/ai_detection_report.md"
+  human-voice-rewriter:
+    file: "skills/J_proofread/human-voice-rewriter.md"
+    category: "proofread"
+    focus: "Rewrite AI-flagged passages to sound authentically human-authored."
+    default_outputs:
+      - "proofread/humanized_manuscript.md"
+  similarity-checker:
+    file: "skills/J_proofread/similarity-checker.md"
+    category: "proofread"
+    focus: "Identify text overlap, self-plagiarism, and boilerplate passages."
+    default_outputs:
+      - "proofread/similarity_report.md"
+  final-proofreader:
+    file: "skills/J_proofread/final-proofreader.md"
+    category: "proofread"
+    focus: "Final language-level polish covering grammar, tense, and cross-references."
+    default_outputs:
+      - "proofread/proofread_checklist.md"
 
 skill_boundary_notes:
   academic-searcher:

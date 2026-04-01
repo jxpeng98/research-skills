@@ -280,6 +280,8 @@ Recommended:
 
 - use `publish` for the full end-to-end release path
 - use `pre` / `post` only when you need to split release prep and release acceptance into separate phases manually
+- stable releases publish from the matching `CHANGELOG.md` section
+- beta / prerelease releases publish from `release/<tag>.md`
 
 Also executable individually:
 

@@ -280,6 +280,8 @@ mode 列表：
 
 - 需要完整端到端发版时，用 `publish`
 - 只有在你明确想把 release prep 和 release acceptance 拆开执行时，再用 `pre` / `post`
+- stable 正式版从 `CHANGELOG.md` 对应章节发布
+- beta / prerelease 继续从 `release/<tag>.md` 发布
 
 也可单独运行：
 

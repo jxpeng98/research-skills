@@ -59,8 +59,13 @@
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
 
-- `release_automation.sh pre`：运行 strict validator、仓库单元测试、release smoke，并自动生成 / 更新 release note draft
+- `release_automation.sh pre`：运行 strict validator、仓库单元测试、release smoke，并校验 release 文档
 - `pypi_preflight.sh`：构建包、执行 `twine check`，并对生成 wheel 做安装 smoke
+
+当前 release 文档策略：
+
+- stable 正式版统一维护在 `CHANGELOG.md`
+- beta / prerelease 继续使用 `release/<tag>.md`
 
 你可以传入稳定版 `0.2.0`，也可以传入 beta 版 `0.2.0b1`。
 版本同步阶段会自动规范成三种表示：
@@ -86,7 +91,7 @@ bash scripts/pypi_preflight.sh
 ### 1.2 Commit + TestPyPI 验证
 
 ```bash
-git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/v0.2.0.md
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills CHANGELOG.md
 git commit -m "chore: prepare release 0.2.0"
 ```
 

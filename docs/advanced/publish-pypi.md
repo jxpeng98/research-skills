@@ -59,8 +59,13 @@ Recommended one-command local flow:
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
 
-- `release_automation.sh pre` to run strict validator, repository unit tests, release smoke, and release note draft generation
+- `release_automation.sh pre` to run strict validator, repository unit tests, release smoke, and release doc checks
 - `pypi_preflight.sh` to build the package, run `twine check`, and install-smoke the generated wheel
+
+Release doc policy:
+
+- stable releases must be summarized in `CHANGELOG.md`
+- beta / prerelease releases continue to use `release/<tag>.md`
 
 Pass either a stable version such as `0.2.0` or a beta version such as `0.2.0b1`.
 The version sync step normalizes it into three synchronized forms:
@@ -86,7 +91,7 @@ bash scripts/pypi_preflight.sh
 ### 1.2 Commit + TestPyPI Validation
 
 ```bash
-git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills release/v0.2.0.md
+git add pyproject.toml research_skills/__init__.py research-paper-workflow/VERSION skills/registry.yaml skills CHANGELOG.md
 git commit -m "chore: prepare release 0.2.0"
 ```
 

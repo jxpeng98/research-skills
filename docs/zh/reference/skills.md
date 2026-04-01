@@ -47,12 +47,12 @@
 |---|---|---:|---|
 | `A_framing` | 选题、问题、理论、gap、期刊定位 | 5 | “我的研究问题和贡献到底是什么？” |
 | `B_literature` | 检索、筛选、提取、引文、文献地图 | 9 | “文献怎么系统找、系统筛、系统整理？” |
-| `C_design` | 研究设计、变量、稳健性、数据可得性 | 5 | “这个研究该怎么设计和 operationalize？” |
+| `C_design` | 研究设计、变量、稳健性、数据可得性 | 9 | “这个研究该怎么设计和 operationalize？” |
 | `D_ethics` | IRB、隐私、治理 | 2 | “伦理与数据合规材料要怎么准备？” |
 | `E_synthesis` | 证据综合、质量评估、发表偏倚 | 3 | “已有证据要怎么整合和评级？” |
 | `F_writing` | 结构、结果解释、表格、图、摘要 | 6 | “如何把分析结果写成论文？” |
 | `G_compliance` | PRISMA、报告规范、学术语气 | 3 | “论文是否已经满足提交前规范？” |
-| `H_submission` | 投稿包、回复审稿、模拟评审 | 5 | “投稿前后怎么打包和应对审稿？” |
+| `H_submission` | 投稿包、回复审稿、模拟评审 | 6 | “投稿前后怎么打包和应对审稿？” |
 | `I_code` | 学术代码、统计、可复现性 | 9 | “研究代码如何实现、审查、复现？” |
 | `K_presentation` | 学术报告、幻灯片规划、Slidev、Beamer | 4 | “怎么把论文变成一个可讲、可答辩的学术报告？” |
 | `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 3 | “哪些能力是跨阶段通用的？” |
@@ -98,6 +98,10 @@
 | `robustness-planner` | 稳健性规划 | 当经验设计需要预先规定稳健性和敏感性分析时使用。 | `RobustnessPlan` |
 | `dataset-finder` | 数据集搜寻 | 当你不确定有哪些可行数据源和获取路径时使用。 | `DatasetPlan` |
 | `variable-constructor` | 变量构造 | 当你需要把抽象构念落成可审计变量和编码规则时使用。 | `VariableSpec` |
+| `data-dictionary-builder` | 数据字典构建 | 当需要为数据集建立权威的变量定义和编码手册时使用。 | `DataDictionary` |
+| `data-management-plan` | 数据管理计划 | 当需要按资助方或机构要求编写 DMP 时使用。 | `DataManagementPlan` |
+| `prereg-writer` | 预注册撰写 | 当需要在数据收集前锁定假设、设计和分析计划时使用。 | `Preregistration` |
+| `variable-operationalizer` | 变量操作化 | 当需要选择或设计测量工具、从构念到变量做 traceability 时使用。 | `OperationalizationMap` |
 
 ### D. Ethics
 
@@ -152,6 +156,7 @@
 | `peer-review-simulation` | 同行评审模拟 | 当你想在投稿前做多 persona 压力测试时使用。 | `PeerReviewSimulation` |
 | `fatal-flaw-detector` | 致命缺陷检测 | 当你想先做一轮 desk-reject 风险扫描时使用。 | `FatalFlawAnalysis` |
 | `reviewer-empathy-checker` | 审稿沟通校准 | 当回复内容技术上正确，但语气可能过硬或防御性过强时使用。 | `EmpathyCheck` |
+| `credit-taxonomy-helper` | CRediT贡献声明 | 当投稿需要 CRediT 作者贡献声明或需理清署名伦理时使用。 | `CRediTStatement` |
 
 ### I. Code
 

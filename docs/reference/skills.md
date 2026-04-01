@@ -47,12 +47,12 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 |---|---|---:|---|
 | `A_framing` | topic framing, questions, theory, gap, venue | 5 | "What exactly is my contribution?" |
 | `B_literature` | search, screen, extract, cite, map | 9 | "What does the literature say, and how do I build a corpus?" |
-| `C_design` | design, variables, robustness, datasets | 5 | "How should this study be designed and operationalized?" |
+| `C_design` | design, variables, robustness, datasets | 9 | "How should this study be designed and operationalized?" |
 | `D_ethics` | IRB, privacy, governance | 2 | "What ethics and data-protection materials do I need?" |
 | `E_synthesis` | evidence synthesis, quality, bias | 3 | "How do I combine and rate evidence?" |
 | `F_writing` | manuscript building, tables, figures, results writing | 6 | "How do I turn analysis into publishable text?" |
 | `G_compliance` | reporting checklists, tone, PRISMA | 3 | "Is this compliant and submission-ready?" |
-| `H_submission` | submission package, rebuttal, review simulation | 5 | "How do I package, defend, and stress-test the paper?" |
+| `H_submission` | submission package, rebuttal, review simulation | 6 | "How do I package, defend, and stress-test the paper?" |
 | `I_code` | academic code, stats, reproducibility | 9 | "How do I implement and verify research code?" |
 | `K_presentation` | academic talks, slide planning, Slidev, Beamer | 4 | "How do I turn the paper into a defensible talk?" |
 | `Z_cross_cutting` | metadata, model collaboration, self-critique | 3 | "How do I improve quality across stages?" |
@@ -98,6 +98,10 @@ Use Stage C when the question is already clear and the next problem is design va
 | `robustness-planner` | Pre-specify robustness checks, sensitivity analysis, and bounds scaling. | `RobustnessPlan` |
 | `dataset-finder` | Identify feasible datasets, access routes, and coverage risks before implementation. | `DatasetPlan` |
 | `variable-constructor` | Operationalize constructs into auditable variables, coding rules, and transformations. | `VariableSpec` |
+| `data-dictionary-builder` | Create structured data dictionaries defining every variable's name, type, range, coding, and source. | `DataDictionary` |
+| `data-management-plan` | Generate FAIR-compliant data management plans specifying storage, backup, retention, sharing, and archival. | `DataManagementPlan` |
+| `prereg-writer` | Generate preregistration documents for OSF/AsPredicted/ClinicalTrials.gov from study design and analysis plan. | `Preregistration` |
+| `variable-operationalizer` | Map abstract constructs to concrete, measurable variables with validity/reliability justification. | `OperationalizationMap` |
 
 ### D. Ethics
 
@@ -152,6 +156,7 @@ Use Stage H when the manuscript is near submission or already under review.
 | `peer-review-simulation` | Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2). | `PeerReviewSimulation` |
 | `fatal-flaw-detector` | Desk-reject analysis identifying critical flaws blocking publication. | `FatalFlawAnalysis` |
 | `reviewer-empathy-checker` | Neutralize defensiveness in reviewer responses and verify exact addressing. | `EmpathyCheck` |
+| `credit-taxonomy-helper` | Generate CRediT author contribution statements with ICMJE cross-check and authorship ethics guidance. | `CRediTStatement` |
 
 ### I. Code
 

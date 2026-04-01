@@ -139,6 +139,11 @@ function Refresh-SessionPath {
     $env:Path = ($parts -join ";")
 }
 
+function Get-AddPathCommand([string]$EntryPath) {
+    $escaped = $EntryPath.Replace("'", "''")
+    return "pwsh -NoProfile -Command `"& { `$p = '$escaped'; `$userPath = [Environment]::GetEnvironmentVariable('Path','User'); if ([string]::IsNullOrWhiteSpace(`$userPath)) { `$userPath = '' }; `$segments = @(`$userPath -split ';') | Where-Object { `$_ }; if (`$segments -notcontains `$p) { [Environment]::SetEnvironmentVariable('Path', ((@(`$p) + `$segments) -join ';'), 'User') }; if ((@(`$env:Path -split ';') | Where-Object { `$_ }) -notcontains `$p) { `$env:Path = `$p + ';' + `$env:Path } }`""
+}
+
 function Normalize-Repo([string]$RawRepo) {
     $value = ""
     if ($null -ne $RawRepo) {
@@ -728,6 +733,8 @@ function Install-FromRepo([string]$RepoRoot, [string]$ProjectRoot, [string]$Inst
     Write-Host "[done] Installation complete"
     if ($DoInstallCli) {
         Write-Host "       Add $cliRoot to PATH to use research-skills / rsk / rsw on Windows."
+        Write-Host "       Copy/paste this command to add it now:"
+        Write-Host "       $(Get-AddPathCommand $cliRoot)"
     }
     Write-Host "       Restart Codex / Claude Code / Gemini CLI to activate changes."
 }

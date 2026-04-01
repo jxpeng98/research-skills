@@ -11,7 +11,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: question-refiner
     stage: A_framing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/A_framing/question-refiner.md
     summary: "Transform vague topics into structured RQs via PICO/PEO + FINER evaluation."
     summary_zh: "将模糊选题转成经过 PICO/PEO + FINER 评估的结构化研究问题。"
@@ -27,7 +27,7 @@ skills:
 
   - id: hypothesis-generator
     stage: A_framing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/A_framing/hypothesis-generator.md
     summary: "Translate RQs into testable hypotheses with mechanisms and boundary conditions."
     summary_zh: "把研究问题转成带机制和边界条件的可检验假设。"
@@ -43,7 +43,7 @@ skills:
 
   - id: theory-mapper
     stage: A_framing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/A_framing/theory-mapper.md
     summary: "Map theoretical concepts, relationships, and frameworks with Mermaid diagrams."
     summary_zh: "用 Mermaid 梳理理论概念、关系和框架。"
@@ -59,7 +59,7 @@ skills:
 
   - id: gap-analyzer
     stage: A_framing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/A_framing/gap-analyzer.md
     summary: "Identify and categorize research gaps using 5-type taxonomy with FINER prioritization."
     summary_zh: "用五类 gap taxonomy 与 FINER 优先级识别并分类研究空白。"
@@ -75,7 +75,7 @@ skills:
 
   - id: venue-analyzer
     stage: A_framing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/A_framing/venue-analyzer.md
     summary: "Analyze venue fit, formatting constraints, and reviewer expectations."
     summary_zh: "分析目标期刊或会议的匹配度、格式约束和审稿预期。"
@@ -94,7 +94,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: academic-searcher
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/academic-searcher.md
     summary: "Own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill."
     summary_zh: "统一负责检索式设计、数据库检索和去重后的搜索产物。"
@@ -110,7 +110,7 @@ skills:
 
   - id: paper-screener
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/paper-screener.md
     summary: "Two-stage PRISMA-compliant systematic screening with decision logging."
     summary_zh: "按 PRISMA 做两阶段系统筛选，并记录每一步决策依据。"
@@ -126,7 +126,7 @@ skills:
 
   - id: paper-extractor
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/paper-extractor.md
     summary: "Extract structured theory, method, data, findings, and limitation slots into notes and rollups."
     summary_zh: "将论文中的理论、方法、数据、发现和局限提取为结构化笔记与汇总。"
@@ -142,7 +142,7 @@ skills:
 
   - id: citation-snowballer
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/citation-snowballer.md
     summary: "Forward/backward citation tracing to expand corpus and find seminal works."
     summary_zh: "通过前向与后向引文追踪扩展语料，并发现奠基性文献。"
@@ -158,7 +158,7 @@ skills:
 
   - id: fulltext-fetcher
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/fulltext-fetcher.md
     summary: "Retrieve full-text PDFs via OA channels with PRISMA-compliant status tracking."
     summary_zh: "通过开放获取渠道获取全文 PDF，并记录符合 PRISMA 的状态轨迹。"
@@ -174,7 +174,7 @@ skills:
 
   - id: citation-formatter
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/citation-formatter.md
     summary: "Format citations in APA/MLA/Chicago/IEEE/BibTeX with consistent citekeys."
     summary_zh: "用统一 citekey 生成 APA、MLA、Chicago、IEEE 与 BibTeX 引文。"
@@ -190,7 +190,7 @@ skills:
 
   - id: concept-extractor
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/concept-extractor.md
     summary: "Expand search concepts with controlled vocabulary and Boolean query drafting."
     summary_zh: "借助 controlled vocabulary 扩展检索概念，并起草 Boolean 检索式。"
@@ -206,7 +206,7 @@ skills:
 
   - id: literature-mapper
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/literature-mapper.md
     summary: "Build literature taxonomy with mechanism-based cluster labels and open problems."
     summary_zh: "用机制导向的簇标签和开放问题构建文献地图。"
@@ -222,7 +222,7 @@ skills:
 
   - id: reference-manager-bridge
     stage: B_literature
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/B_literature/reference-manager-bridge.md
     summary: "Export/import references between research system and Zotero/Mendeley/EndNote."
     summary_zh: "在研究系统与 Zotero、Mendeley、EndNote 之间导入导出文献。"
@@ -241,7 +241,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: study-designer
     stage: C_design
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/C_design/study-designer.md
     summary: "Own study design rationale, measures, analysis summary, and design handoff artifacts in one package."
     summary_zh: "将研究设计依据、测量、分析概要和设计交接产物整合成一个设计包。"
@@ -257,7 +257,7 @@ skills:
 
   - id: rival-hypothesis-designer
     stage: C_design
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/C_design/rival-hypothesis-designer.md
     summary: "Construct competing theories and rival explanations to strengthen design."
     summary_zh: "构造竞争性理论和替代解释，强化研究设计。"
@@ -273,7 +273,7 @@ skills:
 
   - id: robustness-planner
     stage: C_design
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/C_design/robustness-planner.md
     summary: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
     summary_zh: "预先规定稳健性检验、敏感性分析和 bounds scaling。"
@@ -289,7 +289,7 @@ skills:
 
   - id: dataset-finder
     stage: C_design
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/C_design/dataset-finder.md
     summary: "Identify feasible datasets, access routes, and coverage risks before implementation."
     summary_zh: "在实施前识别可行数据集、获取路径和覆盖风险。"
@@ -305,7 +305,7 @@ skills:
 
   - id: variable-constructor
     stage: C_design
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/C_design/variable-constructor.md
     summary: "Operationalize constructs into auditable variables, coding rules, and transformations."
     summary_zh: "将构念 operationalize 为可审计变量、编码规则和变换。"
@@ -324,7 +324,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: ethics-irb-helper
     stage: D_ethics
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/D_ethics/ethics-irb-helper.md
     summary: "Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance."
     summary_zh: "准备可直接用于 IRB 的风险评估、知情同意、招募和数据治理材料。"
@@ -340,7 +340,7 @@ skills:
 
   - id: deidentification-planner
     stage: D_ethics
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/D_ethics/deidentification-planner.md
     summary: "Design technical privacy measures via k-anonymity or differential privacy."
     summary_zh: "用 k-匿名或差分隐私设计技术性的隐私保护方案。"
@@ -359,7 +359,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: evidence-synthesizer
     stage: E_synthesis
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/E_synthesis/evidence-synthesizer.md
     summary: "Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting."
     summary_zh: "以符合 PRISMA 的方式进行叙事性或定量证据综合。"
@@ -375,7 +375,7 @@ skills:
 
   - id: quality-assessor
     stage: E_synthesis
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/E_synthesis/quality-assessor.md
     summary: "Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE."
     summary_zh: "使用 RoB 2、ROBINS-I、GRADE 评估偏倚风险和证据确定性。"
@@ -391,7 +391,7 @@ skills:
 
   - id: publication-bias-checker
     stage: E_synthesis
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/E_synthesis/publication-bias-checker.md
     summary: "Evaluate publication bias via funnel plots, Egger's test, trim-and-fill."
     summary_zh: "用漏斗图、Egger 检验和 trim-and-fill 评估发表偏倚。"
@@ -410,7 +410,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: manuscript-architect
     stage: F_writing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/F_writing/manuscript-architect.md
     summary: "Own story spine, section drafting, and deep analytical framing as one manuscript package."
     summary_zh: "统一负责论文叙事主线、章节起草和深度分析框架。"
@@ -426,7 +426,7 @@ skills:
 
   - id: analysis-interpreter
     stage: F_writing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/F_writing/analysis-interpreter.md
     summary: "Translate findings into analytical prose with uncertainty, mechanisms, rivals, and boundary conditions."
     summary_zh: "将结果写成包含不确定性、机制、竞争解释和边界条件的分析性文本。"
@@ -442,7 +442,7 @@ skills:
 
   - id: effect-size-interpreter
     stage: F_writing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/F_writing/effect-size-interpreter.md
     summary: "Explain the substantive magnitude of estimates in interpretable units."
     summary_zh: "用可解释单位说明估计量的实质性大小。"
@@ -458,7 +458,7 @@ skills:
 
   - id: table-generator
     stage: F_writing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/F_writing/table-generator.md
     summary: "Generate publication-ready tables from statistical output with venue-aware formatting."
     summary_zh: "按期刊规范把统计输出整理成可投稿表格。"
@@ -474,7 +474,7 @@ skills:
 
   - id: figure-specifier
     stage: F_writing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/F_writing/figure-specifier.md
     summary: "Specify publication-quality figures with reproducible code and accessibility guidance."
     summary_zh: "定义带复现代码和可及性说明的论文级图形。"
@@ -490,7 +490,7 @@ skills:
 
   - id: meta-optimizer
     stage: F_writing
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/F_writing/meta-optimizer.md
     summary: "Optimize abstract, title, keywords for indexing and discoverability."
     summary_zh: "优化标题、摘要和关键词的索引表现与可发现性。"
@@ -509,7 +509,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: prisma-checker
     stage: G_compliance
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/G_compliance/prisma-checker.md
     summary: "Verify PRISMA 2020 flow diagram and all 27 checklist items."
     summary_zh: "核验 PRISMA 2020 流程图和 27 项清单。"
@@ -525,7 +525,7 @@ skills:
 
   - id: reporting-checker
     stage: G_compliance
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/G_compliance/reporting-checker.md
     summary: "Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness."
     summary_zh: "检查 CONSORT、STROBE、COREQ、SRQR、TRIPOD 等报告规范的完整性。"
@@ -541,7 +541,7 @@ skills:
 
   - id: tone-normalizer
     stage: G_compliance
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/G_compliance/tone-normalizer.md
     summary: "Cut fluff, hedge words, and absolute claims for concise academic tone."
     summary_zh: "删除废话、模糊 hedge 和绝对化表述，收敛为简洁学术语气。"
@@ -560,7 +560,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: submission-packager
     stage: H_submission
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/H_submission/submission-packager.md
     summary: "Assemble submission package: cover letter, disclosures, supplementary materials."
     summary_zh: "组装 cover letter、披露声明和补充材料等投稿包。"
@@ -576,7 +576,7 @@ skills:
 
   - id: rebuttal-assistant
     stage: H_submission
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/H_submission/rebuttal-assistant.md
     summary: "Generate point-by-point response matrix from reviewer comments."
     summary_zh: "根据审稿意见生成逐点回复矩阵。"
@@ -592,7 +592,7 @@ skills:
 
   - id: peer-review-simulation
     stage: H_submission
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/H_submission/peer-review-simulation.md
     summary: "Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2)."
     summary_zh: "模拟多 persona 并行交叉评审，如方法学者、领域专家和 Reviewer 2。"
@@ -608,7 +608,7 @@ skills:
 
   - id: fatal-flaw-detector
     stage: H_submission
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/H_submission/fatal-flaw-detector.md
     summary: "Desk-reject analysis identifying critical flaws blocking publication."
     summary_zh: "做 desk-reject 风险分析，识别阻断发表的致命缺陷。"
@@ -624,7 +624,7 @@ skills:
 
   - id: reviewer-empathy-checker
     stage: H_submission
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/H_submission/reviewer-empathy-checker.md
     summary: "Neutralize defensiveness in reviewer responses and verify exact addressing."
     summary_zh: "消解回复中的防御性语气，并检查是否逐点准确回应。"
@@ -643,7 +643,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: code-builder
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/code-builder.md
     summary: "Convert academic methods into executable code with domain-profile library selection."
     summary_zh: "结合 domain profile 的库选择，把学术方法转成可执行代码。"
@@ -659,7 +659,7 @@ skills:
 
   - id: data-cleaning-planner
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/data-cleaning-planner.md
     summary: "Define reproducible cleaning rules for validation, missingness, and harmonization."
     summary_zh: "定义可复现的数据清洗规则，覆盖校验、缺失和 harmonization。"
@@ -675,7 +675,7 @@ skills:
 
   - id: data-merge-planner
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/data-merge-planner.md
     summary: "Define join logic, key validation, and provenance controls for multi-source data."
     summary_zh: "定义多源数据的 join 逻辑、主键校验和 provenance 控制。"
@@ -691,7 +691,7 @@ skills:
 
   - id: code-specification
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/code-specification.md
     summary: "Generate strict OPSX-style constraint sets before coding."
     summary_zh: "在编码前生成严格的 OPSX 风格约束集。"
@@ -707,7 +707,7 @@ skills:
 
   - id: code-planning
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/code-planning.md
     summary: "Transform specs into parallelizable, zero-decision execution plans."
     summary_zh: "把规范转成可并行、零自由裁量的执行计划。"
@@ -723,7 +723,7 @@ skills:
 
   - id: code-execution
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/code-execution.md
     summary: "Execute code plans with cProfile performance profiling and optimization."
     summary_zh: "按计划执行代码，并输出 cProfile 性能分析与优化记录。"
@@ -739,7 +739,7 @@ skills:
 
   - id: code-review
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/code-review.md
     summary: "Secondary model reviews code logic, security, and statistical validity."
     summary_zh: "由第二模型审查代码逻辑、安全性和统计有效性。"
@@ -755,7 +755,7 @@ skills:
 
   - id: reproducibility-auditor
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/reproducibility-auditor.md
     summary: "Verify seeds, containerization, and fail-graceful contingencies."
     summary_zh: "核验随机种子、容器化和失败时的 graceful contingency。"
@@ -771,7 +771,7 @@ skills:
 
   - id: stats-engine
     stage: I_code
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/I_code/stats-engine.md
     summary: "Statistical modeling and hypothesis testing with domain-driven diagnostics."
     summary_zh: "提供带领域诊断逻辑的统计建模与假设检验。"
@@ -790,7 +790,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: presentation-planner
     stage: K_presentation
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/K_presentation/presentation-planner.md
     summary: "Design story arc, content budget, and audience calibration for academic talks."
     summary_zh: "设计学术报告的叙事弧线、内容预算和观众校准策略。"
@@ -806,7 +806,7 @@ skills:
 
   - id: slide-architect
     stage: K_presentation
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/K_presentation/slide-architect.md
     summary: "Design slide content specs with assertion-evidence format and multi-backend layout mapping."
     summary_zh: "用 assertion-evidence 格式设计每页幻灯片内容，并映射到多个渲染后端。"
@@ -822,7 +822,7 @@ skills:
 
   - id: slidev-scholarly-builder
     stage: K_presentation
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/K_presentation/slidev-scholarly-builder.md
     summary: "Generate Slidev deck with slidev-theme-scholarly layouts, BibTeX citations, and visual presets."
     summary_zh: "用 slidev-theme-scholarly 生成带学术布局、BibTeX 引文和视觉预设的演示文稿。"
@@ -838,7 +838,7 @@ skills:
 
   - id: beamer-builder
     stage: K_presentation
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/K_presentation/beamer-builder.md
     summary: "Generate LaTeX Beamer presentation with theme selection, BibLaTeX citations, and math support."
     summary_zh: "生成带主题选择、BibLaTeX 引文和数学支持的 LaTeX Beamer 演示文稿。"
@@ -857,7 +857,7 @@ skills:
   # ══════════════════════════════════════════════════════════
   - id: metadata-enricher
     stage: Z_cross_cutting
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/Z_cross_cutting/metadata-enricher.md
     summary: "Normalize and enrich DOI, venue, year, author metadata across artifacts."
     summary_zh: "在各类产物之间标准化并补全 DOI、期刊、年份和作者元数据。"
@@ -873,7 +873,7 @@ skills:
 
   - id: model-collaborator
     stage: Z_cross_cutting
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/Z_cross_cutting/model-collaborator.md
     summary: "Coordinate multi-agent execution and cross-review across model runtimes."
     summary_zh: "协调多模型运行时的协作执行与交叉复核。"
@@ -889,7 +889,7 @@ skills:
 
   - id: self-critique
     stage: Z_cross_cutting
-    version: "0.4.0-beta.10"
+    version: "0.4.0-beta.11"
     file: skills/Z_cross_cutting/self-critique.md
     summary: "Iterative red teaming against superficial reasoning, contradictions, and overclaiming."
     summary_zh: "通过迭代式 red teaming 打击浅层推理、矛盾和过度主张。"

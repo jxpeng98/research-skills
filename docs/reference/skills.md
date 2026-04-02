@@ -55,7 +55,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 | `H_submission` | submission package, rebuttal, review simulation | 7 | "How do I package, defend, and stress-test the paper?" |
 | `I_code` | academic code, stats, reproducibility | 10 | "How do I implement and verify research code?" |
 | `K_presentation` | academic talks, slide planning, Slidev, Beamer | 4 | "How do I turn the paper into a defensible talk?" |
-| `Z_cross_cutting` | metadata, model collaboration, self-critique | 3 | "How do I improve quality across stages?" |
+| `Z_cross_cutting` | metadata, model collaboration, self-critique | 4 | "How do I improve quality across stages?" |
 
 ## Canonical Skills By Stage
 
@@ -220,6 +220,7 @@ Use Stage Z when the need cuts across stages rather than belonging to one paper 
 | Skill | Display Name | When to use | Produces |
 |---|---|---|---|
 | `metadata-enricher` | Metadata Enricher | Use when you need to normalize and enrich doi, venue, year, author metadata across artifacts. | `Bibliography` |
+| `academic-context-maintainer` | Academic Context Maintainer | Use when you need a stage-aware academic state summary that preserves research question scope, locked methodological choices, stable findings, unresolved disputes, and decision rationale across long-running paper workflows. | `ResearchStateSnapshot`, `ResearchDecisionLog` |
 | `model-collaborator` | Model Collaborator | Use when literature screening, peer review simulation, rebuttal drafting, qualitative coding, or code/statistics validation benefits from independent multi-model passes before synthesis. | `CollaborationTrace` |
 | `self-critique` | Self-Critique | Use when you need to iterative red teaming against superficial reasoning, contradictions, and overclaiming. | `CritiqueLog` |
 

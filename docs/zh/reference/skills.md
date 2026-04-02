@@ -55,7 +55,7 @@
 | `H_submission` | 投稿包、回复审稿、模拟评审 | 7 | “投稿前后怎么打包和应对审稿？” |
 | `I_code` | 学术代码、统计、可复现性 | 10 | “研究代码如何实现、审查、复现？” |
 | `K_presentation` | 学术报告、幻灯片规划、Slidev、Beamer | 4 | “怎么把论文变成一个可讲、可答辩的学术报告？” |
-| `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 3 | “哪些能力是跨阶段通用的？” |
+| `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 4 | “哪些能力是跨阶段通用的？” |
 
 ## 按 Stage 看 Canonical Skills
 
@@ -220,6 +220,7 @@
 | Skill | 中文名 | 适用场景 | 产出类型 |
 |---|---|---|---|
 | `metadata-enricher` | 元数据补全 | 当 DOI、作者、年份或 venue 元数据在不同产物之间不一致时使用。 | `Bibliography` |
+| `academic-context-maintainer` | 学术上下文维护 | 当你需要在长周期论文流程中持续保留研究问题边界、已锁定方法决策、稳定结论和未解决争议时使用。 | `ResearchStateSnapshot`, `ResearchDecisionLog` |
 | `model-collaborator` | 多模型协作 | 当你需要 Codex、Claude 和 Gemini 分工协作或交叉复核时使用。 | `CollaborationTrace` |
 | `self-critique` | 自我批判 | 当你想主动提高 red-teaming 强度、压制浅层推理和过度主张时使用。 | `CritiqueLog` |
 

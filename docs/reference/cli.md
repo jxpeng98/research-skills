@@ -140,6 +140,7 @@ Available modes:
   - `--research-depth standard|deep` + `--max-rounds <n>`: increase evidence-expansion pressure and enforce a deeper review/revision loop
   - `--only-target <id>` (repeatable): for structured Stage-I tasks `I4`-`I8`, reload the existing artifact under `RESEARCH/[topic]/code/` and rerun only the named actionable targets
   - `--skip-validation`: disable strict MCP/skill availability checks and skip the artifact validator gate for fast iteration; the run will emit an explicit warning and mark `validator_gate.skipped=true`
+  - `--update-academic-context`: for supported stage-close tasks (`A5`, `B6`, `C5`, `D3`, `E5`, `F6`, `H4`), append `context/research_state.md` and `context/decision_log.md` to this run's active outputs and inject stage-specific academic continuity guidance into the draft prompt
   - Built-in profiles now include `focused-delivery` and `deep-research` in addition to `default`, `rapid-draft`, and `strict-review`
 
   Example: reduce artifact sprawl but keep stronger review pressure
@@ -165,6 +166,15 @@ Available modes:
     --topic llm-bias \
     --cwd . \
     --only-target S1
+  ```
+  Example: force a stage-close run to refresh project-level academic continuity artifacts
+  ```bash
+  python3 -m bridges.orchestrator task-run \
+    --task-id F6 \
+    --paper-type empirical \
+    --topic your-topic \
+    --cwd . \
+    --update-academic-context
   ```
 - `task-plan`: Renders the dependency execution order based on the contract
   ```bash

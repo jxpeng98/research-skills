@@ -140,6 +140,7 @@ mode 列表：
   - `--research-depth standard|deep` + `--max-rounds <n>`：提高证据扩展强度，并把 review/revision loop 拉深
   - `--only-target <id>`（可重复）：针对结构化 Stage-I 任务 `I4`-`I8`，回读 `RESEARCH/[topic]/code/` 下的现有 artifact，并且只重跑指定 actionable target
   - `--skip-validation`：关闭严格的 MCP/skill 可用性校验，并跳过 artifact validator gate；运行结果会明确给出 warning，同时把 `validator_gate.skipped=true` 写进结果数据
+  - `--update-academic-context`：对支持的阶段收口任务（`A5`、`B6`、`C5`、`D3`、`E5`、`F6`、`H4`），把 `context/research_state.md` 和 `context/decision_log.md` 追加进本次 active outputs，并向 draft prompt 注入阶段化的 academic continuity 更新约束
   - 内置 profile 新增 `focused-delivery`、`deep-research`；原有 `default`、`rapid-draft`、`strict-review` 仍可用
 
   示例：减少辅助文件，但保持更强的深度审查
@@ -165,6 +166,15 @@ mode 列表：
     --topic llm-bias \
     --cwd . \
     --only-target S1
+  ```
+  示例：在阶段收口任务中强制刷新项目级学术上下文连续性产物
+  ```bash
+  python3 -m bridges.orchestrator task-run \
+    --task-id F6 \
+    --paper-type empirical \
+    --topic your-topic \
+    --cwd . \
+    --update-academic-context
   ```
 - `task-plan`：从合同渲染依赖任务顺序（用于“从哪一步开始做”）
   ```bash

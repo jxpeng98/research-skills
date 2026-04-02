@@ -282,6 +282,12 @@ class ModelOrchestrator:
             "review_coverage",
         ],
     }
+    ACADEMIC_CONTEXT_SKILL = "academic-context-maintainer"
+    ACADEMIC_CONTEXT_TASK_IDS = {"A5", "B6", "C5", "D3", "E5", "F6", "H4"}
+    ACADEMIC_CONTEXT_ARTIFACTS = [
+        "context/research_state.md",
+        "context/decision_log.md",
+    ]
     STAGE_I_FRONTMATTER_KEYS = [
         "task_id",
         "template_type",
@@ -1109,6 +1115,80 @@ Provide your verification assessment.
 
     def _project_root_for_topic(self, cwd: Path, artifact_root: str, topic: str) -> Path:
         return cwd / artifact_root.replace("[topic]", topic)
+
+    def _build_academic_context_update(
+        self,
+        task_id: str,
+        required_skills: list[str],
+        requested: bool,
+    ) -> dict[str, Any]:
+        update: dict[str, Any] = {
+            "requested": requested,
+            "enabled": False,
+            "supported": False,
+            "artifacts": [],
+            "refresh_focus": "",
+            "research_state_required_sections": [],
+            "decision_log_required_fields": [],
+            "reason": "",
+        }
+        if not requested:
+            return update
+
+        if task_id not in self.ACADEMIC_CONTEXT_TASK_IDS or self.ACADEMIC_CONTEXT_SKILL not in required_skills:
+            update["reason"] = (
+                f"{task_id} does not expose the academic continuity hook; "
+                "use one of A5, B6, C5, D3, E5, F6, or H4."
+            )
+            return update
+
+        contract = self._load_yaml("research-workflow-contract.yaml")
+        continuity = contract.get("academic_context_continuity", {}) or {}
+        refresh_points = continuity.get("refresh_points", {}) or {}
+        stage_id = task_id[:1]
+        artifacts = [
+            str(item).strip()
+            for item in continuity.get("artifacts", self.ACADEMIC_CONTEXT_ARTIFACTS)
+            if str(item).strip()
+        ]
+        update.update(
+            {
+                "enabled": True,
+                "supported": True,
+                "artifacts": artifacts,
+                "refresh_focus": str(refresh_points.get(stage_id, "")).strip(),
+                "research_state_required_sections": [
+                    str(item).strip()
+                    for item in continuity.get("research_state_required_sections", [])
+                    if str(item).strip()
+                ],
+                "decision_log_required_fields": [
+                    str(item).strip()
+                    for item in continuity.get("decision_log_required_fields", [])
+                    if str(item).strip()
+                ],
+                "stage": stage_id,
+                "skill": self.ACADEMIC_CONTEXT_SKILL,
+            }
+        )
+        return update
+
+    def _append_optional_outputs(
+        self,
+        contract_outputs: list[str],
+        required_outputs: list[str],
+        deferred_outputs: list[str],
+        extra_outputs: list[str],
+    ) -> tuple[list[str], list[str], list[str]]:
+        merged_contract = list(contract_outputs)
+        merged_required = list(required_outputs)
+        merged_deferred = [item for item in deferred_outputs if item not in extra_outputs]
+        for output_path in extra_outputs:
+            if output_path not in merged_contract:
+                merged_contract.append(output_path)
+            if output_path not in merged_required:
+                merged_required.append(output_path)
+        return merged_contract, merged_required, merged_deferred
 
     def _check_task_completion(self, cwd: Path, artifact_root: str, topic: str, task_id: str) -> bool:
         _, outputs = self._load_task_outputs(task_id)
@@ -2772,6 +2852,7 @@ Stage-I structure checks:
         artifact_policy: str,
         research_depth: str,
         evidence_expansion_rounds: int,
+        academic_context_update: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         return {
             "task_id": task_id,
@@ -2789,6 +2870,7 @@ Stage-I structure checks:
             "artifact_policy": artifact_policy,
             "research_depth": research_depth,
             "evidence_expansion_rounds": evidence_expansion_rounds,
+            "academic_context_update": dict(academic_context_update or {}),
         }
 
     def _select_task_outputs(
@@ -3098,6 +3180,46 @@ Targeted follow-up context:
 13. Targeted follow-up mode is active. Revise only the selected actionable targets and keep unrelated sections stable.
 14. Reuse the existing structured artifact as the authority for non-selected targets unless you explicitly mark a dependency.
 """
+        academic_context = task_packet.get("academic_context_update", {})
+        academic_context_section = ""
+        academic_context_rules = ""
+        if bool(academic_context.get("enabled")):
+            continuity_artifacts = [
+                str(item) for item in academic_context.get("artifacts", []) if str(item).strip()
+            ]
+            refresh_focus = str(academic_context.get("refresh_focus", "")).strip()
+            research_state_sections = [
+                str(item)
+                for item in academic_context.get("research_state_required_sections", [])
+                if str(item).strip()
+            ]
+            decision_log_fields = [
+                str(item)
+                for item in academic_context.get("decision_log_required_fields", [])
+                if str(item).strip()
+            ]
+            return_sections.append("- Academic Context Update")
+            academic_context_rules = """
+15. Academic context continuity update is active for this run.
+16. Update the continuity artifacts as project-level academic state, not as a runtime log or chat recap.
+17. Revise existing continuity files if they already exist; preserve still-valid state, explicitly mark changed assumptions, and record only decisions with downstream academic consequences.
+18. Distinguish stable findings from tentative leads, and keep unresolved disputes visible instead of flattening them away.
+"""
+            continuity_lines = [
+                "Academic context continuity update:",
+                "- target_artifacts: " + ", ".join(continuity_artifacts),
+            ]
+            if refresh_focus:
+                continuity_lines.append("- stage_refresh_focus: " + refresh_focus)
+            if research_state_sections:
+                continuity_lines.append(
+                    "- research_state_sections: " + " | ".join(research_state_sections)
+                )
+            if decision_log_fields:
+                continuity_lines.append(
+                    "- decision_log_fields: " + ", ".join(decision_log_fields)
+                )
+            academic_context_section = "\n".join(continuity_lines) + "\n"
         return f"""You are executing one canonical research workflow task.
 
 Task packet (JSON):
@@ -3117,6 +3239,7 @@ Execution rules:
 8. If required input is missing, list it under "Missing Inputs" and continue with placeholders.
 {depth_rules}
 {targeted_rules}
+{academic_context_rules}
 
 Output control:
 {chr(10).join(output_control_lines)}
@@ -3126,7 +3249,7 @@ MCP evidence snapshot:
 
 Required skill cards:
 {self._format_skill_context(skill_cards)}
-{domain_section}{code_lane_section}{code_lane_template_section}{targeted_section}
+{domain_section}{code_lane_section}{code_lane_template_section}{targeted_section}{academic_context_section}
 
 Additional context:
 {extra_context or "No additional context."}
@@ -4130,6 +4253,7 @@ Return sections:
         research_depth: str = "standard",
         only_targets: list[str] | None = None,
         skip_validation: bool = False,
+        update_academic_context: bool = False,
     ) -> CollaborationResult:
         """Run task-level orchestration using capability map and contract."""
         normalized_task = task_id.strip().upper()
@@ -4158,6 +4282,18 @@ Return sections:
             focus_outputs=focus_outputs,
             output_budget=output_budget,
         )
+        academic_context_update = self._build_academic_context_update(
+            normalized_task,
+            agent_plan["required_skills"],
+            requested=update_academic_context,
+        )
+        if academic_context_update.get("enabled"):
+            contract_outputs, required_outputs, deferred_outputs = self._append_optional_outputs(
+                contract_outputs,
+                required_outputs,
+                deferred_outputs,
+                list(academic_context_update.get("artifacts", [])),
+            )
         evidence_expansion_rounds = 2 if depth_mode == "deep" else 1
 
         try:
@@ -4212,6 +4348,7 @@ Return sections:
             artifact_policy=artifact_policy,
             research_depth=depth_mode,
             evidence_expansion_rounds=evidence_expansion_rounds,
+            academic_context_update=academic_context_update,
         )
         packet.update(self._build_domain_packet_fields(domain_context))
         if plan_result.data:
@@ -4302,6 +4439,25 @@ Return sections:
             f"Research depth: {depth_mode} (evidence_expansion_rounds={evidence_expansion_rounds})."
             + (" / 研究深度设置。" if zh_ui else "")
         )
+        if academic_context_update.get("enabled"):
+            routing_notes.append(
+                "Academic context continuity hook ACTIVE: "
+                + ", ".join(str(item) for item in academic_context_update.get("artifacts", []))
+                + "."
+                + (" / 学术上下文连续性钩子已启用。" if zh_ui else "")
+            )
+            if academic_context_update.get("refresh_focus"):
+                routing_notes.append(
+                    "Academic context refresh focus: "
+                    + str(academic_context_update["refresh_focus"])
+                    + "."
+                )
+        elif academic_context_update.get("requested"):
+            routing_notes.append(
+                "Academic context continuity hook IGNORED: "
+                + str(academic_context_update.get("reason", "unsupported task"))
+                + "."
+            )
         targeted_follow_up_data: dict[str, Any] = {}
         if only_targets:
             try:
@@ -5216,6 +5372,11 @@ def main():
         action="store_true",
         help="Skip strict validation protocols for rapid research iteration.",
     )
+    task_run.add_argument(
+        "--update-academic-context",
+        action="store_true",
+        help="Append context/research_state.md and context/decision_log.md for supported stage-close tasks.",
+    )
 
     team_run_parser = subparsers.add_parser(
         "team-run",
@@ -5326,6 +5487,7 @@ def main():
             research_depth=getattr(args, "research_depth", "standard"),
             only_targets=getattr(args, "only_targets", None),
             skip_validation=getattr(args, "skip_validation", False),
+            update_academic_context=getattr(args, "update_academic_context", False),
         )
     elif args.mode == "team-run":
         result = orchestrator.team_run(

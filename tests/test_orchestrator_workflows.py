@@ -592,6 +592,48 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("4-6 highly specific, critical questions", review_prompt)
         self.assertIn("Evidence Depth Assessment", review_prompt)
 
+    def test_build_task_prompt_includes_academic_context_continuity_requirements(self) -> None:
+        orchestrator = MockOrchestrator()
+        task_packet = {
+            "task_id": "F6",
+            "required_outputs": [
+                "manuscript/meta_optimization.md",
+                "context/research_state.md",
+                "context/decision_log.md",
+            ],
+            "academic_context_update": {
+                "enabled": True,
+                "artifacts": [
+                    "context/research_state.md",
+                    "context/decision_log.md",
+                ],
+                "refresh_focus": "Carry forward the manuscript thesis, claims-evidence alignment status, interpretation boundaries, and remaining narrative or analytical fragilities.",
+                "research_state_required_sections": [
+                    "Current research question, thesis, or contribution claim",
+                    "Stable findings or current evidence position",
+                ],
+                "decision_log_required_fields": [
+                    "decision_id",
+                    "rationale",
+                    "revisit_trigger",
+                ],
+            },
+        }
+
+        draft_prompt = orchestrator._build_task_draft_prompt(
+            task_packet=task_packet,
+            mcp_evidence=[],
+            skill_cards=[],
+            extra_context=None,
+        )
+
+        self.assertIn("Academic context continuity update is active for this run.", draft_prompt)
+        self.assertIn("- target_artifacts: context/research_state.md, context/decision_log.md", draft_prompt)
+        self.assertIn("stage_refresh_focus: Carry forward the manuscript thesis", draft_prompt)
+        self.assertIn("research_state_sections:", draft_prompt)
+        self.assertIn("decision_log_fields: decision_id, rationale, revisit_trigger", draft_prompt)
+        self.assertIn("Academic Context Update", draft_prompt)
+
     def test_stage_i_prompt_templates_are_structured(self) -> None:
         orchestrator = MockOrchestrator()
 
@@ -1021,6 +1063,46 @@ primary_artifact: code/plan.md
         self.assertTrue(targeted["enabled"])
         self.assertEqual(targeted["selected_targets"], ["S1"])
         self.assertEqual(targeted["source_artifact"], "code/plan.md")
+
+    def test_task_run_update_academic_context_appends_context_outputs_for_supported_task(self) -> None:
+        orchestrator = MockOrchestrator()
+        result = orchestrator.task_run(
+            task_id="F6",
+            paper_type="empirical",
+            topic="ai-in-education",
+            cwd=REPO_ROOT,
+            update_academic_context=True,
+        )
+
+        packet = result.data["task_packet"]
+        self.assertTrue(packet["academic_context_update"]["enabled"])
+        self.assertIn("context/research_state.md", packet["required_outputs"])
+        self.assertIn("context/decision_log.md", packet["required_outputs"])
+        self.assertIn("Academic context continuity hook ACTIVE", result.merged_analysis)
+        self.assertIn('"academic_context_update": {', result.merged_analysis)
+
+        draft_prompts = [
+            call["prompt"]
+            for call in orchestrator.runtime_calls
+            if "You are executing one canonical research workflow task." in call["prompt"]
+        ]
+        self.assertTrue(draft_prompts)
+        self.assertIn("Academic context continuity update is active for this run.", draft_prompts[0])
+
+    def test_task_run_update_academic_context_ignores_unsupported_task(self) -> None:
+        orchestrator = MockOrchestrator()
+        result = orchestrator.task_run(
+            task_id="F3",
+            paper_type="empirical",
+            topic="ai-in-education",
+            cwd=REPO_ROOT,
+            update_academic_context=True,
+        )
+
+        packet = result.data["task_packet"]
+        self.assertFalse(packet["academic_context_update"]["enabled"])
+        self.assertTrue(packet["academic_context_update"]["requested"])
+        self.assertIn("Academic context continuity hook IGNORED", result.merged_analysis)
 
     def test_code_build_focus_maps_to_stage_i_task(self) -> None:
         class CapturingCodeBuildOrchestrator(MockOrchestrator):

@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 26
+- Verified completed workstreams: 27
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 7
+- Active TODOs: 6
 - Deferred future bets: 5
 
 ---
@@ -61,7 +61,7 @@ Key facts confirmed from current repo:
 - standalone `/compliance-check` workflow already exists under `.agent/workflows/`
 - `contribution-crafter`, `statement-generator`, `effect-size-calculator`, `qualitative-coding`, `discussion-writer`, and `limitation-auditor` already exist in the skill corpus
 - newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation decisions
-- the repo now has handoff traces and literature resume checkpoints, but still lacks a project-level academic context continuity artifact that summarizes the research state across stages
+- the repo now includes a project-level academic context continuity layer with explicit artifacts, templates, stage refresh points, and an optional `task-run` update hook
 
 ---
 
@@ -260,6 +260,13 @@ Key facts confirmed from current repo:
 - [x] Added registry-summary duplication linting for canonical skill markdown bodies
 - [x] Enforced thin-stub budgets and canonical-pointer checks for `alias_of` skill files
 
+### 27. Academic Context Continuity Layer
+
+- [x] Added canonical continuity artifacts: `context/research_state.md` and `context/decision_log.md`
+- [x] Added `academic-context-maintainer` as a cross-cutting skill with stage-specific refresh semantics
+- [x] Added templates, workflow-contract generation, and validator-covered docs for academic continuity
+- [x] Added an optional `task-run --update-academic-context` hook for stage-close tasks `A5/B6/C5/D3/E5/F6/H4`
+
 ---
 
 ---
@@ -277,13 +284,7 @@ Key facts confirmed from current repo:
 
 ### P1 Near-Term
 
-- [ ] Add an academic context continuity layer
-  - [x] define project-level artifacts such as `context/research_state.md` and `context/decision_log.md`
-  - [x] distinguish academic-state continuity from runtime `compact`, `handoff trace`, and literature-only `resume_state`
-  - [x] summarize research question, scope boundaries, locked decisions, stable findings, unresolved disputes, and next-stage priorities in an academic frame
-  - [x] refresh the context layer at major stage transitions (`A`, `B`, `C/D`, `E`, `F/H`) instead of treating it as a raw execution log
-  - [x] land the first implementation as a standalone cross-cutting skill plus contract artifacts, templates, and validator-covered docs
-  - [ ] decide whether to add an optional orchestrator update hook after the artifact shape stabilizes
+- [x] ~~Add an academic context continuity layer~~ (Completed in Milestone 27)
 
 - [x] ~~Replace regex-style YAML parsing in `bridges/orchestrator.py`~~ (Completed in Milestone 17)
 

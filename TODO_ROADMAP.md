@@ -254,9 +254,9 @@ Key facts confirmed from current repo:
 ### P2 Mid-Term
 
 - [ ] Finish MCP/provider hardening
-  - make the builtin-vs-external matrix explicit for every MCP slot, not just literature search
-  - document when users should wire an external MCP directly versus dropping in a thin local wrapper/stub
-  - remove stale `search_web` / `read_url_content` wording from literature skills and fully align prose with provider-layer terminology
+  - [x] make the builtin-vs-external matrix explicit for every MCP slot, not just literature search
+  - [x] document when users should wire an external MCP directly versus dropping in a thin local wrapper/stub
+  - [x] remove stale `search_web` / `read_url_content` wording from literature skills and fully align prose with provider-layer terminology
 
 - [ ] Consolidate MCP integration for literature search
   - add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment

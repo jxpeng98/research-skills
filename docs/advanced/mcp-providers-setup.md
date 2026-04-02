@@ -19,10 +19,38 @@ If your goal is a review-grade or highly reproducible academic literature search
 Each MCP maps to an environment variable (`RESEARCH_MCP_<NAME>_CMD`).  
 When executing a task, the system spawns a subprocess from this command, pipes in a JSON payload, and reads the JSON response from stdout.
 
-**Resolution priority (highest to lowest):**
-1. Environment variable → uses your specified external command
-2. Built-in Python script (`scripts/mcp_<name>.py`) → auto-discovered, no config needed
-3. Neither → shows ⚠ warning; task still runs without external tool assistance
+There are three execution patterns in this repo:
+
+1. **Full external override**
+   Set `RESEARCH_MCP_<NAME>_CMD` when you want one external command to fully replace the builtin/provider slot.
+2. **Builtin baseline + external overlay**
+   For selected literature MCPs, keep the builtin provider and layer external enrichment or resolution on top:
+   - `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`
+   - `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`
+3. **Builtin or auto-discovered stub fallback**
+   If no environment variable is set, the runtime will use `scripts/mcp_<name>.py` when present. If neither an env var nor a builtin/stub script exists, you get a ⚠ warning and the task continues with reduced assistance.
+
+## MCP Capability Matrix
+
+Use this table first. It tells you whether each MCP already has a meaningful builtin baseline, when an external provider is worth wiring, and when a stub is enough.
+
+| MCP | Builtin baseline in repo | Recommended external pattern | Configure external when | Stub is enough when | Primary env knobs |
+|---|---|---|---|---|---|
+| `metadata-registry` | Yes. Local normalization, merge, citekey generation, local artifact ingest. | Usually **overlay**, not replace. | You want authoritative enrichment from OpenAlex/Crossref on top of local reference state. | Rarely needed; builtin is already useful. | `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`, `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
+| `fulltext-retrieval` | Yes, but planning-only. Drafts manifest + full-text tracking. | Usually **overlay resolver**, not replace. | You want actual PDF/full-text resolution rather than only manifest planning. | Acceptable only if planning/audit is enough for now. | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`, `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` |
+| `screening-tracker` | No builtin provider. | Direct external MCP or local stub. | You need PRISMA decision persistence, dual screening, or blinded reviewer workflows. | Fine for solo/non-review work or when screening happens outside the repo. | `RESEARCH_MCP_SCREENING_TRACKER_CMD` |
+| `extraction-store` | No builtin provider. | Direct external MCP or local stub. | You need structured extraction storage shared across B/E tasks or reviewers. | Fine when extraction lives in markdown/CSV artifacts only. | `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
+| `stats-engine` | No builtin provider. | Direct external MCP. | You need real model execution, meta-analysis, Bayesian computation, or numeric diagnostics. | Only if you are drafting plans/specs without executing models yet. | `RESEARCH_MCP_STATS_ENGINE_CMD` |
+| `code-runtime` | No builtin provider. | Direct external MCP. | You need sandboxed Python/R execution instead of planning-only code generation. | Only if the task is limited to design/specification or offline execution outside this framework. | `RESEARCH_MCP_CODE_RUNTIME_CMD` |
+| `reporting-guidelines` | No builtin MCP, but strong skill-level fallback via `reporting-checker`. | Direct external MCP or local checklist stub. | You want externalized guideline lookup, richer checklist coverage, or centralized audit outside the skill cards. | Usually yes, because core guideline logic already exists in repo skills. | `RESEARCH_MCP_REPORTING_GUIDELINES_CMD` |
+| `submission-kit` | No builtin MCP, but strong skill-level fallback via `submission-packager`. | Direct external MCP. | You need downstream journal-system or Overleaf integration, not just file generation. | Usually yes, if local artifact generation is enough. | `RESEARCH_MCP_SUBMISSION_KIT_CMD` |
+
+## Quick Decision Rules
+
+- Choose **builtin only** when the repo already produces the artifacts you need and you mainly care about contract completeness.
+- Choose **builtin + overlay** for `metadata-registry` and `fulltext-retrieval` when local artifact ownership should stay in-repo but authority should come from an external resolver or enrichment source.
+- Choose **full external override** only when your external MCP owns the slot better than the builtin implementation and you are comfortable replacing the default behavior.
+- Choose a **thin local stub** when you only want to silence warnings or satisfy orchestration contracts for a capability you are not actively using yet.
 
 ---
 

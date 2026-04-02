@@ -19,10 +19,38 @@
 每个 MCP 对应一个环境变量（`RESEARCH_MCP_<NAME>_CMD`）。  
 系统在执行任务时，会通过这个命令启动一个子进程，传入 JSON 数据包，并读取 JSON 格式的响应。
 
-**查找逻辑（优先级从高到低）：**
-1. 环境变量 → 使用你指定的外部命令
-2. 内置 Python 脚本（`scripts/mcp_<name>.py`）→ 自动使用内置实现
-3. 均无 → 显示 ⚠ 警告，任务仍可运行（无外部工具辅助）
+这个仓库里实际有三种接入模式：
+
+1. **完整外部替换**
+   设置 `RESEARCH_MCP_<NAME>_CMD`，让某个外部命令完整接管这个 provider slot。
+2. **builtin baseline + 外部 overlay**
+   对部分 literature MCP，推荐保留 builtin provider，再在其上叠加外部 enrichment / resolver：
+   - `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`
+   - `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`
+3. **builtin 或 auto-discovered stub fallback**
+   如果没有环境变量，运行时会优先寻找 `scripts/mcp_<name>.py`。如果 env var 和 builtin/stub 都不存在，就显示 ⚠ 提示，并以降级模式继续执行。
+
+## MCP 能力矩阵
+
+先看这张表。它回答的是：仓库里默认已经有什么、什么时候值得接外部 provider、什么时候 stub 就够。
+
+| MCP | 仓库内 builtin baseline | 推荐外接模式 | 什么时候该接外部 provider | 什么时候 stub 就够 | 主要环境变量 |
+|---|---|---|---|---|---|
+| `metadata-registry` | 有。本地规范化、合并、citekey 生成、本地文献产物摄取。 | 通常是 **overlay**，不是 replace。 | 当你要在本地 reference state 之上叠加 OpenAlex/Crossref 这类权威 enrichment。 | 基本不需要；builtin 已经有实际价值。 | `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`, `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
+| `fulltext-retrieval` | 有，但只是 planning。能草拟 manifest 和全文追踪。 | 通常是 **overlay resolver**，不是 replace。 | 当你需要真实 PDF/全文解析，而不只是 manifest planning。 | 仅当当前阶段只关心 planning / audit，不急着真实下载全文。 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`, `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` |
+| `screening-tracker` | 没有 builtin provider。 | 直接接外部 MCP 或本地 stub。 | 当你需要 PRISMA 决策持久化、双人筛选或盲筛流程。 | 单人使用、非系统综述、或筛选状态在仓库外部管理时够用。 | `RESEARCH_MCP_SCREENING_TRACKER_CMD` |
+| `extraction-store` | 没有 builtin provider。 | 直接接外部 MCP 或本地 stub。 | 当你需要跨 B/E 阶段共享结构化 extraction store，或多人维护提取结果。 | 当提取仍然主要落在 markdown / CSV 产物里时够用。 | `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
+| `stats-engine` | 没有 builtin provider。 | 直接接外部 MCP。 | 当你要真实执行模型、meta-analysis、Bayesian 计算或数值诊断。 | 只有在你现在还停留在 plan/spec 阶段，不做真实计算时才够。 | `RESEARCH_MCP_STATS_ENGINE_CMD` |
+| `code-runtime` | 没有 builtin provider。 | 直接接外部 MCP。 | 当你要在框架内安全执行 Python/R 研究代码，而不是只写代码计划。 | 只有当任务只是设计/规范化，或代码会在框架外独立运行时才够。 | `RESEARCH_MCP_CODE_RUNTIME_CMD` |
+| `reporting-guidelines` | 没有 builtin MCP，但 `reporting-checker` skill 已经提供强 fallback。 | 直接接外部 MCP 或本地 checklist stub。 | 当你要把 guideline lookup、清单覆盖和审计外部化。 | 通常够用，因为 repo 内 skill 已带核心规范逻辑。 | `RESEARCH_MCP_REPORTING_GUIDELINES_CMD` |
+| `submission-kit` | 没有 builtin MCP，但 `submission-packager` skill 已经提供强 fallback。 | 直接接外部 MCP。 | 当你需要和期刊系统、Overleaf 等下游系统直接联动。 | 通常够用，只要你现在需要的是本地 artifact 生成。 | `RESEARCH_MCP_SUBMISSION_KIT_CMD` |
+
+## 快速决策规则
+
+- 如果仓库默认已经能产出你需要的 artifact，而且你关心的是 contract 完整性，优先选 **builtin only**。
+- 对 `metadata-registry` 和 `fulltext-retrieval`，如果你希望 artifact ownership 继续留在仓库内，但权威来源来自外部系统，优先选 **builtin + overlay**。
+- 只有当外部 MCP 明显比 builtin 更适合完全接管该 slot 时，才选 **full external override**。
+- 如果你只是想消除 warning，或者先满足 orchestration contract，但暂时并不真正使用这项能力，就选 **thin local stub**。
 
 ---
 

@@ -26,6 +26,7 @@ FULLTEXT_PROVIDER_PRIORITIES = {
     "search_result_locator": 40,
     "builtin_fulltext_stub": 20,
 }
+FULLTEXT_RESOLUTION_CONTRACT_VERSION = "resolver_manifest_overlay_v1"
 
 
 def run_fulltext_retrieval(
@@ -174,7 +175,7 @@ def merge_external_resolution_payload(
             "provenance": _normalize_resolution_provenance(payload.get("provenance")),
         }
 
-    merged_rows, applied_count = _merge_external_manifest_rows(manifest_rows, external_rows)
+    merged_rows, applied_count, merge_trace = _merge_external_manifest_rows(manifest_rows, external_rows)
     status = str(payload.get("status", "ok")).strip().lower() or "ok"
     if status not in {"ok", "warning", "error"}:
         status = "warning"
@@ -184,6 +185,8 @@ def merge_external_resolution_payload(
         "provenance": _normalize_resolution_provenance(payload.get("provenance")),
         "record_count": len(external_rows),
         "applied_count": applied_count,
+        "contract_version": FULLTEXT_RESOLUTION_CONTRACT_VERSION,
+        "merge_trace": merge_trace[:100],
     }
 
 
@@ -315,7 +318,7 @@ def _build_manifest_rows(
 def _merge_external_manifest_rows(
     manifest_rows: list[dict[str, str]],
     external_rows: list[dict[str, str]],
-) -> tuple[list[dict[str, str]], int]:
+) -> tuple[list[dict[str, str]], int, list[dict[str, str]]]:
     existing = [dict(row) for row in manifest_rows]
     index_by_key: dict[str, int] = {}
     for index, row in enumerate(existing):
@@ -323,6 +326,7 @@ def _merge_external_manifest_rows(
             index_by_key.setdefault(key, index)
 
     applied = 0
+    merge_trace: list[dict[str, str]] = []
     for candidate in external_rows:
         matched_index = None
         for key in _manifest_lookup_keys(candidate):
@@ -335,19 +339,41 @@ def _merge_external_manifest_rows(
             for key in _manifest_lookup_keys(candidate):
                 index_by_key.setdefault(key, matched_index)
             applied += 1
+            merge_trace.append(
+                {
+                    "record_id": candidate.get("record_id", ""),
+                    "decision": "append_row",
+                    "candidate_provider": candidate.get("source_provider", ""),
+                }
+            )
             continue
 
-        merged = _merge_manifest_row(existing[matched_index], candidate)
+        merged = _merge_manifest_row(existing[matched_index], candidate, merge_trace)
         if merged != existing[matched_index]:
             applied += 1
         existing[matched_index] = merged
         for key in _manifest_lookup_keys(merged):
             index_by_key.setdefault(key, matched_index)
 
-    return sorted(existing, key=lambda item: (_status_sort_key(item.get("retrieval_status", "")), item.get("citekey", ""), item.get("record_id", ""))), applied
+    return (
+        sorted(
+            existing,
+            key=lambda item: (
+                _status_sort_key(item.get("retrieval_status", "")),
+                item.get("citekey", ""),
+                item.get("record_id", ""),
+            ),
+        ),
+        applied,
+        merge_trace,
+    )
 
 
-def _merge_manifest_row(existing: dict[str, str], candidate: dict[str, str]) -> dict[str, str]:
+def _merge_manifest_row(
+    existing: dict[str, str],
+    candidate: dict[str, str],
+    merge_trace: list[dict[str, str]] | None = None,
+) -> dict[str, str]:
     merged = dict(existing)
     for field in (
         "record_id",
@@ -365,13 +391,47 @@ def _merge_manifest_row(existing: dict[str, str], candidate: dict[str, str]) -> 
         incoming = str(candidate.get(field, "") or "").strip()
         if not incoming:
             continue
-        if not current or _should_prefer_manifest_candidate(existing, candidate, field):
+        if not current:
             merged[field] = incoming
+            _append_manifest_merge_trace(
+                merge_trace,
+                existing=existing,
+                candidate=candidate,
+                field=field,
+                decision="fill_missing",
+            )
+            continue
+        if _should_prefer_manifest_candidate(existing, candidate, field):
+            merged[field] = incoming
+            _append_manifest_merge_trace(
+                merge_trace,
+                existing=existing,
+                candidate=candidate,
+                field=field,
+                decision="prefer_candidate",
+            )
+            continue
+        _append_manifest_merge_trace(
+            merge_trace,
+            existing=existing,
+            candidate=candidate,
+            field=field,
+            decision="keep_existing",
+        )
 
-    merged["notes"] = _merge_notes(
+    notes = _merge_notes(
         str(existing.get("notes", "") or "").strip(),
         str(candidate.get("notes", "") or "").strip(),
     )
+    if notes != str(existing.get("notes", "") or "").strip():
+        _append_manifest_merge_trace(
+            merge_trace,
+            existing=existing,
+            candidate=candidate,
+            field="notes",
+            decision="append_notes",
+        )
+    merged["notes"] = notes
     return merged
 
 
@@ -590,16 +650,16 @@ def _normalize_external_manifest_row(item: dict[str, Any], index: int) -> dict[s
     ) or "external_resolver"
     doi = _clean(item.get("doi")).lower()
     return {
-        "record_id": _clean(item.get("record_id")) or f"resolver:{index}",
+        "record_id": _clean(item.get("record_id") or item.get("reference_id") or item.get("id")) or f"resolver:{index}",
         "citekey": _clean(item.get("citekey")),
         "doi": doi,
-        "retrieval_status": _clean(item.get("retrieval_status")),
-        "version_label": _clean(item.get("version_label")),
+        "retrieval_status": _clean(item.get("retrieval_status") or item.get("status")),
+        "version_label": _clean(item.get("version_label") or item.get("version")),
         "source_provider": source_provider,
         "retrieved_at": _clean(item.get("retrieved_at")),
-        "fulltext_path": _clean(item.get("fulltext_path")),
-        "access_url": _clean(item.get("access_url") or item.get("resolved_url")),
-        "license": _clean(item.get("license")),
+        "fulltext_path": _clean(item.get("fulltext_path") or item.get("pdf_path") or item.get("file_path")),
+        "access_url": _clean(item.get("access_url") or item.get("resolved_url") or item.get("url")),
+        "license": _clean(item.get("license") or item.get("rights")),
         "notes": _clean(item.get("notes")),
     }
 
@@ -690,3 +750,24 @@ def _status_sort_key(status: str) -> tuple[int, str]:
     if status == "not_retrieved:oa_candidate":
         return (1, status)
     return (2, status)
+
+
+def _append_manifest_merge_trace(
+    merge_trace: list[dict[str, str]] | None,
+    *,
+    existing: dict[str, str],
+    candidate: dict[str, str],
+    field: str,
+    decision: str,
+) -> None:
+    if merge_trace is None:
+        return
+    merge_trace.append(
+        {
+            "record_id": existing.get("record_id", "") or candidate.get("record_id", ""),
+            "field": field,
+            "decision": decision,
+            "existing_provider": _normalize_provider_name(existing.get("source_provider")),
+            "candidate_provider": _normalize_provider_name(candidate.get("source_provider")),
+        }
+    )

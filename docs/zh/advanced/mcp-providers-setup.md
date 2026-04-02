@@ -102,6 +102,11 @@ resolver handoff 现在按分层合同处理：
 - resolver 提供的 `fulltext_path`、`license`、`version_label` 会在优先级相同或更高时替换 builtin 占位值
 - builtin planning notes 会保留，resolver notes 会追加进去，方便审计
 
+当前 resolver handoff contract 是 `resolver_manifest_overlay_v1`：
+- wrapper 可以返回 `data.retrieval_manifest` 或 `data.manifest_rows`
+- 为了兼容 bridge-friendly wrapper，行级字段别名也会被接受：`reference_id`/`id`、`status`、`pdf_path`/`file_path`、`url`/`resolved_url`、`rights`、`version`
+- builtin merge 结果现在会暴露 `external_resolution.contract_version` 和 `external_resolution.merge_trace`，方便 wrapper 和维护者审计哪些字段真正被 resolver 接管
+
 **推荐工具：**
 
 | 工具 | 类型 | 地址 |

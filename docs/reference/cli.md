@@ -139,6 +139,7 @@ Available modes:
   - `--focus-output <path>` (repeatable) + `--output-budget <n>`: narrow this run to a smaller active output set and defer the rest of the contract outputs explicitly
   - `--research-depth standard|deep` + `--max-rounds <n>`: increase evidence-expansion pressure and enforce a deeper review/revision loop
   - `--only-target <id>` (repeatable): for structured Stage-I tasks `I4`-`I8`, reload the existing artifact under `RESEARCH/[topic]/code/` and rerun only the named actionable targets
+  - `--skip-validation`: disable strict MCP/skill availability checks and skip the artifact validator gate for fast iteration; the run will emit an explicit warning and mark `validator_gate.skipped=true`
   - Built-in profiles now include `focused-delivery` and `deep-research` in addition to `default`, `rapid-draft`, and `strict-review`
 
   Example: reduce artifact sprawl but keep stronger review pressure

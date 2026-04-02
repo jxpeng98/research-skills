@@ -95,6 +95,67 @@ class MetadataRegistryTests(unittest.TestCase):
         self.assertEqual(record["field_provenance"]["pages"]["provider"], "crossref")
         self.assertEqual(record["field_provenance"]["doi"]["provider"], "search_results")
 
+    def test_external_enrichment_exposes_field_policy_and_merge_trace(self) -> None:
+        local_records = [
+            {
+                "record_id": "s2:1",
+                "source_format": "search_results.csv",
+                "source_provider": "search_results",
+                "source_paths": ["search_results.csv"],
+                "title": "Platform Governance Practice",
+                "authors": ["Smith, Alex"],
+                "year": 2024,
+                "venue": "Org Science",
+                "doi": "10.1000/platform-governance",
+                "url": "https://example.com/platform-governance",
+                "abstract": "",
+                "citekey": "",
+                "field_provenance": {
+                    "title": {"provider": "search_results", "source_format": "search_results.csv", "source_path": "search_results.csv"},
+                    "authors": {"provider": "search_results", "source_format": "search_results.csv", "source_path": "search_results.csv"},
+                    "year": {"provider": "search_results", "source_format": "search_results.csv", "source_path": "search_results.csv"},
+                    "venue": {"provider": "search_results", "source_format": "search_results.csv", "source_path": "search_results.csv"},
+                    "doi": {"provider": "search_results", "source_format": "search_results.csv", "source_path": "search_results.csv"},
+                    "url": {"provider": "search_results", "source_format": "search_results.csv", "source_path": "search_results.csv"},
+                },
+            }
+        ]
+        openalex_payload = json.loads((FIXTURES_DIR / "metadata_enrichment_openalex.json").read_text(encoding="utf-8"))
+        crossref_payload = json.loads((FIXTURES_DIR / "metadata_enrichment_crossref.json").read_text(encoding="utf-8"))
+
+        merged_records, _ = merge_external_enrichment_payload(local_records, openalex_payload)
+        merged_records, enrichment_info = merge_external_enrichment_payload(merged_records, crossref_payload)
+
+        self.assertEqual(enrichment_info["field_policy_version"], "openalex_core_crossref_structural_v1")
+        self.assertTrue(enrichment_info["merge_trace"])
+        record = merged_records[0]
+        self.assertEqual(record["title"], "Platform Governance in Practice")
+        self.assertEqual(record["venue"], "Organization Science")
+        self.assertEqual(record["url"], "https://doi.org/10.1000/platform-governance")
+        self.assertEqual(record["publisher"], "INFORMS")
+        self.assertEqual(record["field_provenance"]["title"]["provider"], "openalex")
+        self.assertEqual(record["field_provenance"]["url"]["provider"], "crossref")
+        self.assertEqual(record["field_provenance"]["publisher"]["provider"], "crossref")
+
+        self.assertTrue(
+            any(
+                item["field"] == "title"
+                and item["decision"] == "keep_existing"
+                and item["existing_provider"] == "openalex"
+                and item["candidate_provider"] == "crossref"
+                for item in enrichment_info["merge_trace"]
+            )
+        )
+        self.assertTrue(
+            any(
+                item["field"] == "url"
+                and item["decision"] == "prefer_candidate"
+                and item["existing_provider"] == "openalex"
+                and item["candidate_provider"] == "crossref"
+                for item in enrichment_info["merge_trace"]
+            )
+        )
+
     def test_external_enrichment_keeps_existing_doi_and_exposes_fixture_provenance(self) -> None:
         local_records = [
             {

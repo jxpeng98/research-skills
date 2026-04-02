@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 14
+- Verified completed workstreams: 23
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 18
+- Active TODOs: 9
 - Deferred future bets: 5
 
 ---
@@ -60,7 +60,7 @@ Key facts confirmed from current repo:
 - the literature pipeline now has a dedicated integration smoke wired into the main smoke entrypoint
 - standalone `/compliance-check` workflow already exists under `.agent/workflows/`
 - `contribution-crafter`, `statement-generator`, `effect-size-calculator`, `qualitative-coding`, `discussion-writer`, and `limitation-auditor` already exist in the skill corpus
-- some of those newly added skills still need stronger contract-path alignment before they count as fully integrated workflow outputs
+- newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation and resume/checkpoint support
 
 ---
 
@@ -161,7 +161,7 @@ Key facts confirmed from current repo:
 - [x] Created `skills/J_proofread/` with 4 skill files: `ai-fingerprint-scanner`, `human-voice-rewriter`, `similarity-checker`, `final-proofreader`
 - [x] Added 6 new artifact types to `schemas/artifact-types.yaml`
 - [x] Standardized headings in 53 legacy skill files (44 `## Purpose` added, 14 `## Process` renames)
-- [x] Validator: 4408 passed, 0 failed, 83 warnings
+- [x] Validator now runs cleanly at `5174 passed, 0 failed, 0 warnings`
 
 ### 13. Runtime Validator-Gate
 
@@ -220,6 +220,27 @@ Key facts confirmed from current repo:
 - [x] Added Python `rsk doctor` and `rsk init` entrypoints for project bootstrap and environment checks
 - [x] Added installer/CLI regression coverage for selective install surfaces and new subcommands
 
+### 21. Literature Metadata Merge Hardening
+
+- [x] Added field-aware merge policy for `OpenAlex` / `Crossref` metadata enrichment
+- [x] Exposed enrichment merge traces and policy version in `reference_state.external_enrichment`
+- [x] Added regression coverage for provider-specific field precedence and provenance outcomes
+
+### 22. Provider and Release Gating Hardening
+
+- [x] Made the builtin-vs-external matrix explicit for every MCP slot
+- [x] Documented when to wire an external MCP versus using builtin/stub overlays
+- [x] Removed stale `search_web` / `read_url_content` wording from literature skills
+- [x] Added real bridge command construction checks
+- [x] Added recorded external-provider output parsing checks
+- [x] Split release smoke into release-tier versus maintainer-tier checks
+
+### 23. Fulltext Resolver Handoff Contract
+
+- [x] Added a versioned resolver handoff contract for `fulltext-retrieval`
+- [x] Accepted bridge-friendly row aliases such as `reference_id`, `status`, `pdf_path`, `rights`, and `version`
+- [x] Exposed `external_resolution.merge_trace` for resolver merge auditing
+
 ---
 
 ---
@@ -231,7 +252,7 @@ Key facts confirmed from current repo:
 - [x] ~~Create Stage J skill directory and skill cards~~ (Completed in Milestone 12)
 
 - [x] ~~Implement a real `validator-gate` in `task-run`~~ (Completed in Milestone 13)
-  - TODO: add `--skip-validation` CLI flag with warning output
+  - Follow-through: `--skip-validation` now disables strict MCP/skill checks early and marks the validator gate as skipped with explicit warning output
 
 - [x] ~~Complete real-agent acceptance for `team-run`~~ (Completed in Milestone 16)
 
@@ -255,24 +276,14 @@ Key facts confirmed from current repo:
 
 - [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
 
-- [ ] Resolve 83 validator warnings in existing skill files
-  - 36 missing `Common Pitfalls`
-  - 24 missing `Quality Bar`
-  - 23 missing `When to Use`
-
 - [x] ~~Enrich 11 thin skills to match Tier 1 quality standard~~ (Completed in Milestone 10)
 
 ### P2 Mid-Term
 
-- [ ] Finish MCP/provider hardening
-  - [x] make the builtin-vs-external matrix explicit for every MCP slot, not just literature search
-  - [x] document when users should wire an external MCP directly versus dropping in a thin local wrapper/stub
-  - [x] remove stale `search_web` / `read_url_content` wording from literature skills and fully align prose with provider-layer terminology
-
 - [ ] Consolidate MCP integration for literature search
-  - add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment
+  - [x] add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment
   - decide whether `fulltext-retrieval` should remain a planning stub by default or grow a stronger resolver abstraction
-  - tighten external-provider handoff contracts so builtin literature artifacts can be consumed cleanly by bridge-level wrappers
+  - [x] tighten external-provider handoff contracts so builtin literature artifacts can be consumed cleanly by bridge-level wrappers
 
 - [ ] Add resume/checkpoint support for long literature flows
   - `paper-screener`
@@ -282,11 +293,6 @@ Key facts confirmed from current repo:
 - [x] Close the YAML <-> portable markdown contract gap
   - [x] auto-generate `research-paper-workflow/references/workflow-contract.md`
   - [x] enforce stronger YAML/MD equivalence validation
-
-- [ ] Expand integration smoke beyond the builtin literature baseline
-  - [x] add real bridge command construction checks
-  - [x] add recorded external-provider output parsing checks
-  - [x] decide which smoke stages should be part of release gating versus optional maintainers' checks
 
 - [ ] Add a skill-structure lint layer
   - enforce maximum size / section-count heuristics for repo-internal skill files

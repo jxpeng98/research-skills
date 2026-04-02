@@ -3878,6 +3878,9 @@ Return sections:
         if skip_validation:
             mcp_strict = False
             skills_strict = False
+            routing_notes.append(
+                "Validation warning: --skip-validation disabled strict MCP/skill checks for this team-run."
+            )
 
         try:
             team_config = self._load_team_run_config(normalized_task)
@@ -4135,6 +4138,12 @@ Return sections:
         depth_mode = research_depth.strip().lower()
         if depth_mode not in {"standard", "deep"}:
             raise ValueError("research_depth must be 'standard' or 'deep'.")
+        if skip_validation:
+            mcp_strict = False
+            skills_strict = False
+            routing_notes.append(
+                "Validation warning: --skip-validation disabled strict MCP/skill checks and skipped the artifact validator gate for this task-run."
+            )
         domain_context = self._load_domain_profile_context(domain)
 
         try:
@@ -4361,11 +4370,6 @@ Return sections:
         )
         routing_notes.extend(primary_notes)
 
-        # Skip validations if requested
-        if skip_validation:
-            mcp_strict = False
-            skills_strict = False
-
         draft_prompt = self._build_task_draft_prompt(
             packet,
             mcp_evidence,
@@ -4581,13 +4585,29 @@ Return sections:
                 )
 
         # --- Validator gate: check required outputs on disk ---
-        validator_gate_result = self._validator_gate(
-            topic=normalized_topic,
-            cwd=cwd,
-            artifact_root=artifact_root,
-            required_outputs=required_outputs,
-        )
-        if validator_gate_result["passed"]:
+        if skip_validation:
+            validator_gate_result = {
+                "passed": True,
+                "skipped": True,
+                "reason": "--skip-validation requested",
+                "found": [],
+                "missing": [],
+                "checked": len(required_outputs),
+                "expected_outputs": list(required_outputs),
+            }
+            routing_notes.append(
+                "Validator gate SKIPPED: required outputs were not checked on disk because --skip-validation was set."
+            )
+        else:
+            validator_gate_result = self._validator_gate(
+                topic=normalized_topic,
+                cwd=cwd,
+                artifact_root=artifact_root,
+                required_outputs=required_outputs,
+            )
+        if validator_gate_result.get("skipped"):
+            pass
+        elif validator_gate_result["passed"]:
             routing_notes.append(
                 f"Validator gate PASSED: {validator_gate_result['checked']}/{validator_gate_result['checked']} required outputs found."
                 + (" / 验证门通过。" if zh_ui else "")

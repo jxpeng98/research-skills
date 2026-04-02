@@ -46,6 +46,20 @@ SOURCE_PROVIDER_PRIORITIES = {
     "retrieval_manifest": 30,
     "external_enrichment": 35,
 }
+FIELD_PROVIDER_PRIORITIES = {
+    "title": {"openalex": 95, "crossref": 82},
+    "authors": {"openalex": 95, "crossref": 78},
+    "year": {"openalex": 92, "crossref": 82},
+    "venue": {"openalex": 95, "crossref": 82},
+    "url": {"crossref": 88, "openalex": 72},
+    "publisher": {"crossref": 94, "openalex": 74},
+    "volume": {"crossref": 94},
+    "issue": {"crossref": 94},
+    "pages": {"crossref": 94},
+    "oa_url": {"openalex": 96},
+    "openalex_id": {"openalex": 99},
+}
+FIELD_POLICY_VERSION = "openalex_core_crossref_structural_v1"
 FILL_ONLY_FIELDS = {"doi", "citekey", "openalex_id"}
 PROVENANCE_TRACKED_FIELDS = {
     "title",
@@ -359,7 +373,7 @@ def merge_external_enrichment_payload(
             "provenance": _normalize_provenance(payload.get("provenance")),
         }
 
-    merged_records, applied_count = _merge_external_records(records, external_records)
+    merged_records, applied_count, merge_trace = _merge_external_records(records, external_records)
     status = str(payload.get("status", "ok")).strip().lower() or "ok"
     if status not in {"ok", "warning", "error"}:
         status = "warning"
@@ -369,6 +383,8 @@ def merge_external_enrichment_payload(
         "provenance": _normalize_provenance(payload.get("provenance")),
         "record_count": len(external_records),
         "applied_count": applied_count,
+        "field_policy_version": FIELD_POLICY_VERSION,
+        "merge_trace": merge_trace[:100],
     }
 
 
@@ -605,7 +621,11 @@ def _base_record(
     return record
 
 
-def _merge_record(existing: dict[str, Any], candidate: dict[str, Any]) -> None:
+def _merge_record(
+    existing: dict[str, Any],
+    candidate: dict[str, Any],
+    merge_trace: list[dict[str, Any]] | None = None,
+) -> None:
     for field in (
         "title",
         "authors",
@@ -622,7 +642,7 @@ def _merge_record(existing: dict[str, Any], candidate: dict[str, Any]) -> None:
         "oa_url",
         "openalex_id",
     ):
-        _merge_field(existing, candidate, field)
+        _merge_field(existing, candidate, field, merge_trace)
     existing_paths = set(existing.get("source_paths", []))
     existing_paths.update(candidate.get("source_paths", []))
     existing["source_paths"] = sorted(existing_paths)
@@ -782,10 +802,11 @@ def _normalize_external_record(item: dict[str, Any], index: int) -> dict[str, An
 def _merge_external_records(
     records: list[dict[str, Any]],
     external_records: list[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], int]:
+) -> tuple[list[dict[str, Any]], int, list[dict[str, Any]]]:
     merged = [dict(record) for record in records]
-    index = { _record_merge_key(record)[0]: record for record in merged }
+    index = {_record_merge_key(record)[0]: record for record in merged}
     applied_count = 0
+    merge_trace: list[dict[str, Any]] = []
     for external in external_records:
         key, _ = _record_merge_key(external)
         existing = index.get(key)
@@ -793,11 +814,19 @@ def _merge_external_records(
             merged.append(external)
             index[key] = external
             applied_count += 1
+            merge_trace.append(
+                {
+                    "record_id": str(external.get("record_id", "")),
+                    "decision": "append_record",
+                    "provider": str(external.get("source_provider", "")),
+                    "match_key": key,
+                }
+            )
             continue
-        _merge_record(existing, external)
+        _merge_record(existing, external, merge_trace)
         applied_count += 1
     assign_citekeys(merged)
-    return merged, applied_count
+    return merged, applied_count, merge_trace
 
 
 def _normalize_provenance(raw: Any) -> list[str]:
@@ -808,25 +837,64 @@ def _normalize_provenance(raw: Any) -> list[str]:
     return [METADATA_ENRICH_ENV]
 
 
-def _merge_field(existing: dict[str, Any], candidate: dict[str, Any], field: str) -> None:
+def _merge_field(
+    existing: dict[str, Any],
+    candidate: dict[str, Any],
+    field: str,
+    merge_trace: list[dict[str, Any]] | None = None,
+) -> None:
     candidate_value = candidate.get(field)
     if candidate_value in ("", None, []):
         return
 
     existing_value = existing.get(field)
+    candidate_provider = _normalize_source_provider(candidate.get("source_provider") or candidate.get("source_format"))
+    existing_provider = _normalize_source_provider(existing.get("source_provider") or existing.get("source_format"))
     if existing_value in ("", None, []):
         existing[field] = candidate_value
         _set_field_provenance(existing, field, candidate)
+        _append_merge_trace(
+            merge_trace,
+            existing=existing,
+            field=field,
+            decision="fill_missing",
+            existing_provider=existing_provider,
+            candidate_provider=candidate_provider,
+        )
         return
 
     if field in FILL_ONLY_FIELDS:
+        _append_merge_trace(
+            merge_trace,
+            existing=existing,
+            field=field,
+            decision="keep_existing_fill_only",
+            existing_provider=existing_provider,
+            candidate_provider=candidate_provider,
+        )
         return
 
     if not _should_prefer_candidate(existing, candidate, field):
+        _append_merge_trace(
+            merge_trace,
+            existing=existing,
+            field=field,
+            decision="keep_existing",
+            existing_provider=existing_provider,
+            candidate_provider=candidate_provider,
+        )
         return
 
     existing[field] = candidate_value
     _set_field_provenance(existing, field, candidate)
+    _append_merge_trace(
+        merge_trace,
+        existing=existing,
+        field=field,
+        decision="prefer_candidate",
+        existing_provider=existing_provider,
+        candidate_provider=candidate_provider,
+    )
 
 
 def _should_prefer_candidate(existing: dict[str, Any], candidate: dict[str, Any], field: str) -> bool:
@@ -867,9 +935,15 @@ def _field_priority(record: dict[str, Any], field: str) -> int:
     if isinstance(meta, dict):
         provider = _normalize_source_provider(meta.get("provider") or meta.get("source_format"))
         if provider:
-            return SOURCE_PROVIDER_PRIORITIES.get(provider, 20)
+            return FIELD_PROVIDER_PRIORITIES.get(field, {}).get(
+                provider,
+                SOURCE_PROVIDER_PRIORITIES.get(provider, 20),
+            )
     provider = _normalize_source_provider(record.get("source_provider") or record.get("source_format"))
-    return SOURCE_PROVIDER_PRIORITIES.get(provider, 20)
+    return FIELD_PROVIDER_PRIORITIES.get(field, {}).get(
+        provider,
+        SOURCE_PROVIDER_PRIORITIES.get(provider, 20),
+    )
 
 
 def _build_field_provenance(record: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -896,6 +970,28 @@ def _set_field_provenance(existing: dict[str, Any], field: str, candidate: dict[
     provenance = existing.setdefault("field_provenance", {})
     if isinstance(provenance, dict):
         provenance[field] = _field_provenance_meta(candidate)
+
+
+def _append_merge_trace(
+    merge_trace: list[dict[str, Any]] | None,
+    *,
+    existing: dict[str, Any],
+    field: str,
+    decision: str,
+    existing_provider: str,
+    candidate_provider: str,
+) -> None:
+    if merge_trace is None:
+        return
+    merge_trace.append(
+        {
+            "record_id": str(existing.get("record_id", "")),
+            "field": field,
+            "decision": decision,
+            "existing_provider": existing_provider or "-",
+            "candidate_provider": candidate_provider or "-",
+        }
+    )
 
 
 def _merge_record_provenance(existing: dict[str, Any], candidate: dict[str, Any]) -> None:

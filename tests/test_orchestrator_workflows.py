@@ -353,6 +353,43 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("\"functional_owner\": \"writing-agent\"", result.merged_analysis)
         self.assertIn("\"runtime_plan\": {", result.merged_analysis)
 
+    def test_task_run_skip_validation_disables_strict_checks_before_collection(self) -> None:
+        class SkipValidationOrchestrator(MockOrchestrator):
+            def _collect_skill_context(
+                self,
+                task_packet: dict[str, Any],
+                strict: bool = False,
+            ) -> tuple[list[dict[str, Any]], list[str]]:
+                if strict:
+                    raise AssertionError("skip_validation should disable strict skill checks before collection")
+                return [], []
+
+            def _collect_mcp_evidence(
+                self,
+                task_packet: dict[str, Any],
+                cwd: Path,
+                strict: bool = False,
+            ) -> tuple[list[MCPEvidence], list[str]]:
+                if strict:
+                    raise AssertionError("skip_validation should disable strict MCP checks before collection")
+                return [], []
+
+        orchestrator = SkipValidationOrchestrator()
+        result = orchestrator.task_run(
+            task_id="F3",
+            paper_type="empirical",
+            topic="ai-in-education",
+            cwd=REPO_ROOT,
+            mcp_strict=True,
+            skills_strict=True,
+            skip_validation=True,
+        )
+
+        self.assertEqual(result.mode, "task-run")
+        self.assertTrue(result.data["validator_gate"]["skipped"])
+        self.assertIn("Validation warning: --skip-validation disabled strict MCP/skill checks", result.merged_analysis)
+        self.assertIn("Validator gate SKIPPED", result.merged_analysis)
+
     def test_task_plan_skill_cards_include_registry_localized_summary(self) -> None:
         orchestrator = MockOrchestrator()
         agent_plan = orchestrator._load_task_agent_plan("F3")

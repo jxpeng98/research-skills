@@ -317,6 +317,11 @@ class MCPConnectorTests(unittest.TestCase):
             evidence.data["reference_state"]["external_enrichment"]["applied_count"],
             1,
         )
+        self.assertEqual(
+            evidence.data["reference_state"]["external_enrichment"]["field_policy_version"],
+            "openalex_core_crossref_structural_v1",
+        )
+        self.assertTrue(evidence.data["reference_state"]["external_enrichment"]["merge_trace"])
         record = evidence.data["records"][0]
         self.assertEqual(record["source_provider"], "crossref")
         self.assertEqual(record["volume"], "35")
@@ -404,6 +409,11 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(evidence.status, "ok")
         self.assertEqual(evidence.data["provider_mode"], "builtin_fulltext_manifest_overlay")
         self.assertTrue(evidence.data["external_resolution"]["configured"])
+        self.assertEqual(
+            evidence.data["external_resolution"]["contract_version"],
+            "resolver_manifest_overlay_v1",
+        )
+        self.assertTrue(evidence.data["external_resolution"]["merge_trace"])
         row = evidence.data["retrieval_manifest"][0]
         self.assertEqual(row["retrieval_status"], "retrieved_oa")
         self.assertEqual(row["source_provider"], "zotero")

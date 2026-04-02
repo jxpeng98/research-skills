@@ -102,6 +102,11 @@ Current resolver merge policy is source-aware rather than last-write-wins:
 - resolver `fulltext_path`, `license`, and `version_label` values replace builtin placeholders when the resolver has equal or higher priority
 - builtin planning notes are preserved and resolver notes are appended for auditability
 
+The current resolver handoff contract is `resolver_manifest_overlay_v1`:
+- wrappers can return either `data.retrieval_manifest` or `data.manifest_rows`
+- row aliases are accepted for bridge-friendly wrappers: `reference_id`/`id`, `status`, `pdf_path`/`file_path`, `url`/`resolved_url`, `rights`, `version`
+- builtin merge results now expose `external_resolution.contract_version` and `external_resolution.merge_trace` so wrappers and maintainers can audit how resolver fields were applied
+
 **Recommended tools:**
 
 | Tool | Type | Link |

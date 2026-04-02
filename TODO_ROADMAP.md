@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 23
+- Verified completed workstreams: 24
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 9
+- Active TODOs: 8
 - Deferred future bets: 5
 
 ---
@@ -60,7 +60,7 @@ Key facts confirmed from current repo:
 - the literature pipeline now has a dedicated integration smoke wired into the main smoke entrypoint
 - standalone `/compliance-check` workflow already exists under `.agent/workflows/`
 - `contribution-crafter`, `statement-generator`, `effect-size-calculator`, `qualitative-coding`, `discussion-writer`, and `limitation-auditor` already exist in the skill corpus
-- newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation and resume/checkpoint support
+- newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation decisions
 
 ---
 
@@ -241,6 +241,12 @@ Key facts confirmed from current repo:
 - [x] Accepted bridge-friendly row aliases such as `reference_id`, `status`, `pdf_path`, `rights`, and `version`
 - [x] Exposed `external_resolution.merge_trace` for resolver merge auditing
 
+### 24. Literature Resume Checkpoints
+
+- [x] Added builtin `screening-tracker` checkpoint stub at `scripts/mcp_screening_tracker.py`
+- [x] Derived repo-local resume checkpoints from `screening/*.md` and `retrieval_manifest.csv`
+- [x] Documented when builtin screening checkpoints are enough versus when an external reviewer tracker is still required
+
 ---
 
 ---
@@ -284,11 +290,6 @@ Key facts confirmed from current repo:
   - [x] add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment
   - decide whether `fulltext-retrieval` should remain a planning stub by default or grow a stronger resolver abstraction
   - [x] tighten external-provider handoff contracts so builtin literature artifacts can be consumed cleanly by bridge-level wrappers
-
-- [ ] Add resume/checkpoint support for long literature flows
-  - `paper-screener`
-  - `fulltext-fetcher`
-  - related workflow and user docs
 
 - [x] Close the YAML <-> portable markdown contract gap
   - [x] auto-generate `research-paper-workflow/references/workflow-contract.md`

@@ -3,7 +3,7 @@
 After running `rsk upgrade`, you may see warnings like:
 
 ```
-⚠  MCP screening-tracker: RESEARCH_MCP_SCREENING_TRACKER_CMD not configured
+ℹ  MCP screening-tracker: builtin checkpoint stub available; set RESEARCH_MCP_SCREENING_TRACKER_CMD for multi-reviewer persistence
 ⚠  MCP extraction-store: RESEARCH_MCP_EXTRACTION_STORE_CMD not configured
 ...
 ```
@@ -38,7 +38,7 @@ Use this table first. It tells you whether each MCP already has a meaningful bui
 |---|---|---|---|---|---|
 | `metadata-registry` | Yes. Local normalization, merge, citekey generation, local artifact ingest. | Usually **overlay**, not replace. | You want authoritative enrichment from OpenAlex/Crossref on top of local reference state. | Rarely needed; builtin is already useful. | `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`, `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
 | `fulltext-retrieval` | Yes, but planning-only. Drafts manifest + full-text tracking. | Usually **overlay resolver**, not replace. | You want actual PDF/full-text resolution rather than only manifest planning. | Acceptable only if planning/audit is enough for now. | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`, `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` |
-| `screening-tracker` | No builtin provider. | Direct external MCP or local stub. | You need PRISMA decision persistence, dual screening, or blinded reviewer workflows. | Fine for solo/non-review work or when screening happens outside the repo. | `RESEARCH_MCP_SCREENING_TRACKER_CMD` |
+| `screening-tracker` | Yes, checkpoint stub only. Reads local screening artifacts and resume state. | Builtin baseline + external tracker. | You need PRISMA decision persistence, dual screening, or blinded reviewer workflows. | Fine for solo/non-review work when repo-local artifacts are the source of truth. | `RESEARCH_MCP_SCREENING_TRACKER_CMD` |
 | `extraction-store` | No builtin provider. | Direct external MCP or local stub. | You need structured extraction storage shared across B/E tasks or reviewers. | Fine when extraction lives in markdown/CSV artifacts only. | `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
 | `stats-engine` | No builtin provider. | Direct external MCP. | You need real model execution, meta-analysis, Bayesian computation, or numeric diagnostics. | Only if you are drafting plans/specs without executing models yet. | `RESEARCH_MCP_STATS_ENGINE_CMD` |
 | `code-runtime` | No builtin provider. | Direct external MCP. | You need sandboxed Python/R execution instead of planning-only code generation. | Only if the task is limited to design/specification or offline execution outside this framework. | `RESEARCH_MCP_CODE_RUNTIME_CMD` |
@@ -132,6 +132,11 @@ Set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` only when you want to replace the buil
 **Purpose:** Track inclusion/exclusion decisions for each record in a PRISMA screening workflow.  
 **Used in:** B1 systematic review tasks.
 
+The repository now ships a builtin checkpoint stub at `scripts/mcp_screening_tracker.py`. It does not replace Rayyan/Covidence-style reviewer management, but it can:
+- inspect `screening/title_abstract.md`, `screening/full_text.md`, `screening/prisma_flow.md`, and `retrieval_manifest.csv`
+- derive repo-local checkpoint status for title/abstract screening, full-text retrieval, full-text decision completion, and PRISMA refresh
+- emit `resume_state.next_actions` so long literature workflows can resume from the next incomplete step instead of restarting blindly
+
 **Recommended tools:**
 
 | Tool | Type | Link |
@@ -139,7 +144,7 @@ Set `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` only when you want to replace the buil
 | Rayyan MCP (experimental) | Connects to Rayyan platform API | See [rayyan.ai](https://www.rayyan.ai) developer docs |
 | Custom SQLite tracker | Local file | See "Building a Stub" section below |
 
-Rayyan is the most popular systematic review screening platform (supports multi-user blinded screening). If no MCP exists yet, use a lightweight stub script as a placeholder (see below).
+Rayyan is the most popular systematic review screening platform (supports multi-user blinded screening). Use the builtin checkpoint stub for solo/repo-local workflows, and switch to an external tracker when you need blinded review, adjudication, or persistent reviewer assignments.
 
 ---
 

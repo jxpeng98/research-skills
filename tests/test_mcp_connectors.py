@@ -42,10 +42,17 @@ class MCPConnectorTests(unittest.TestCase):
 
     def test_resolve_provider_detects_external_slot(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):
-            resolution = self.connector.resolve_provider("screening-tracker")
+            resolution = self.connector.resolve_provider("extraction-store")
 
         self.assertEqual(resolution.source, "external_slot")
         self.assertEqual(resolution.command, None)
+
+    def test_resolve_provider_detects_builtin_screening_tracker_stub(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=False):
+            resolution = self.connector.resolve_provider("screening-tracker")
+
+        self.assertEqual(resolution.source, "builtin")
+        self.assertTrue((resolution.native_script or "").endswith("mcp_screening_tracker.py"))
 
     def test_resolve_provider_detects_builtin_fulltext_stub(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):
@@ -179,6 +186,43 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(evidence.data["reference_state"]["preferred_input_mode"], "references.json")
         self.assertEqual(evidence.data["records"][0]["citekey"], "smith2024platform")
         self.assertIn("csl_json", evidence.data["reference_state"]["source_formats"])
+
+    def test_builtin_screening_tracker_derives_resume_checkpoints(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            screening_dir = project_root / "screening"
+            screening_dir.mkdir(parents=True)
+            (screening_dir / "title_abstract.md").write_text(
+                "# Title/Abstract Screening\n\n"
+                "| ID | Title | Include |\n"
+                "|---|---|---|\n"
+                "| 1 | Platform Governance in Practice | ✓ |\n",
+                encoding="utf-8",
+            )
+            (project_root / "retrieval_manifest.csv").write_text(
+                "record_id,citekey,doi,retrieval_status,version_label,source_provider,retrieved_at,fulltext_path,access_url,license,notes\n"
+                "s2:1,smith2024platform,10.1000/platform-governance,not_retrieved:oa_candidate,,builtin_fulltext_stub,2026-03-25T00:00:00+00:00,,https://example.com/platform-governance.pdf,,Needs resolver\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["screening/title_abstract.md", "retrieval_manifest.csv"],
+            }
+
+            evidence = self.connector.collect("screening-tracker", packet, root)
+
+        self.assertEqual(evidence.provider, "screening-tracker")
+        self.assertEqual(evidence.data["provider_mode"], "builtin_screening_checkpoint_stub")
+        self.assertEqual(evidence.data["resume_state"]["bundle_status"], "in_progress")
+        self.assertEqual(evidence.data["resume_state"]["pending_retrieval_records"], 1)
+        self.assertTrue(
+            any(
+                item["step"] == "fulltext_retrieval"
+                for item in evidence.data["resume_state"]["next_actions"]
+            )
+        )
 
     def test_builtin_metadata_registry_applies_external_enrichment_overlay(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

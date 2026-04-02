@@ -24,7 +24,7 @@ The current repository ships these built-in literature providers:
 
 The other layers are external-provider slots:
 
-- `screening-tracker`
+- `screening-tracker` → builtin checkpoint stub for repo-local resume state; external tracker still recommended for blinded or multi-reviewer screening
 - `extraction-store`
 
 So the strictest practical baseline today is:
@@ -57,7 +57,7 @@ Use this table to decide what you actually need to configure:
 | `citation-graph` | yes, via built-in Semantic Scholar graph | no | optional | useful for snowballing even before you add external MCPs; builtin mode can resolve seeds from local artifacts |
 | `metadata-registry` | yes, via built-in local reference provider | no for local mode | optional | built-in mode can merge local references from BibTeX, RIS, CSL-JSON, notes, and search results; connect OpenAlex or another metadata MCP for authoritative enrichment |
 | `fulltext-retrieval` | yes, via built-in retrieval-manifest stub | no for stub mode | optional, but recommended for real downloads | builtin mode drafts retrieval status + provenance rows; connect Zotero or another resolver for actual PDF/full-text acquisition |
-| `screening-tracker` | no | depends on provider | yes | mostly relevant for systematic review workflows |
+| `screening-tracker` | yes, checkpoint stub only | no for builtin stub | optional, but recommended for real multi-reviewer screening | builtin mode derives resume checkpoints from local screening artifacts |
 | `extraction-store` | no | depends on provider | yes | mostly relevant for systematic review workflows |
 
 ## What Happens If You Configure Nothing
@@ -68,6 +68,7 @@ If you configure nothing at all:
 - `citation-graph` still attempts to use the built-in Semantic Scholar graph adapter
 - `metadata-registry` still attempts to use the built-in local reference provider
 - `fulltext-retrieval` still prepares a local retrieval manifest and screening draft
+- `screening-tracker` can still derive repo-local resume checkpoints from those artifacts even when no external tracker is configured
 - tasks can still run unless you explicitly require strict MCP enforcement
 
 This is enough for exploratory work, but not ideal for rigorous review-grade search.
@@ -204,6 +205,8 @@ Artifacts to keep under `RESEARCH/[topic]/`:
 - `bibliography.bib`
 - `screening_decisions.csv`
 - `retrieval_manifest.csv`
+- `screening/title_abstract.md`
+- `screening/full_text.md`
 
 ## Engine Roles
 

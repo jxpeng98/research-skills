@@ -20,6 +20,7 @@ class MCPProviderDocsTests(unittest.TestCase):
             "Builtin baseline + external overlay",
             "`RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`",
             "`RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`",
+            "| `screening-tracker` | Yes, checkpoint stub only. Reads local screening artifacts and resume state. |",
             "| `reporting-guidelines` | No builtin MCP, but strong skill-level fallback via `reporting-checker`. |",
             "| `submission-kit` | No builtin MCP, but strong skill-level fallback via `submission-packager`. |",
         ):
@@ -37,6 +38,7 @@ class MCPProviderDocsTests(unittest.TestCase):
             "builtin baseline + 外部 overlay",
             "`RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`",
             "`RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`",
+            "| `screening-tracker` | 有，但只提供 checkpoint stub。读取本地 screening artifacts 和 resume state。 |",
             "| `reporting-guidelines` | 没有 builtin MCP，但 `reporting-checker` skill 已经提供强 fallback。 |",
             "| `submission-kit` | 没有 builtin MCP，但 `submission-packager` skill 已经提供强 fallback。 |",
         ):

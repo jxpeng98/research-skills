@@ -3,7 +3,7 @@
 运行 `rsk upgrade` 后，你可能会看到类似以下的提示信息：
 
 ```
-⚠  MCP screening-tracker: RESEARCH_MCP_SCREENING_TRACKER_CMD not configured
+ℹ  MCP screening-tracker: 已有 builtin checkpoint stub；如需多人筛选持久化再设置 RESEARCH_MCP_SCREENING_TRACKER_CMD
 ⚠  MCP extraction-store: RESEARCH_MCP_EXTRACTION_STORE_CMD not configured
 ...
 ```
@@ -38,7 +38,7 @@
 |---|---|---|---|---|---|
 | `metadata-registry` | 有。本地规范化、合并、citekey 生成、本地文献产物摄取。 | 通常是 **overlay**，不是 replace。 | 当你要在本地 reference state 之上叠加 OpenAlex/Crossref 这类权威 enrichment。 | 基本不需要；builtin 已经有实际价值。 | `RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD`, `RESEARCH_MCP_METADATA_REGISTRY_CMD` |
 | `fulltext-retrieval` | 有，但只是 planning。能草拟 manifest 和全文追踪。 | 通常是 **overlay resolver**，不是 replace。 | 当你需要真实 PDF/全文解析，而不只是 manifest planning。 | 仅当当前阶段只关心 planning / audit，不急着真实下载全文。 | `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`, `RESEARCH_MCP_FULLTEXT_RETRIEVAL_CMD` |
-| `screening-tracker` | 没有 builtin provider。 | 直接接外部 MCP 或本地 stub。 | 当你需要 PRISMA 决策持久化、双人筛选或盲筛流程。 | 单人使用、非系统综述、或筛选状态在仓库外部管理时够用。 | `RESEARCH_MCP_SCREENING_TRACKER_CMD` |
+| `screening-tracker` | 有，但只提供 checkpoint stub。读取本地 screening artifacts 和 resume state。 | builtin baseline + 外部 tracker。 | 当你需要 PRISMA 决策持久化、双人筛选或盲筛流程。 | 当 repo 内产物就是唯一事实来源、且主要是单人 workflow 时够用。 | `RESEARCH_MCP_SCREENING_TRACKER_CMD` |
 | `extraction-store` | 没有 builtin provider。 | 直接接外部 MCP 或本地 stub。 | 当你需要跨 B/E 阶段共享结构化 extraction store，或多人维护提取结果。 | 当提取仍然主要落在 markdown / CSV 产物里时够用。 | `RESEARCH_MCP_EXTRACTION_STORE_CMD` |
 | `stats-engine` | 没有 builtin provider。 | 直接接外部 MCP。 | 当你要真实执行模型、meta-analysis、Bayesian 计算或数值诊断。 | 只有在你现在还停留在 plan/spec 阶段，不做真实计算时才够。 | `RESEARCH_MCP_STATS_ENGINE_CMD` |
 | `code-runtime` | 没有 builtin provider。 | 直接接外部 MCP。 | 当你要在框架内安全执行 Python/R 研究代码，而不是只写代码计划。 | 只有当任务只是设计/规范化，或代码会在框架外独立运行时才够。 | `RESEARCH_MCP_CODE_RUNTIME_CMD` |
@@ -132,6 +132,11 @@ export RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-
 **作用：** 跟踪 PRISMA 流程中每篇文献的纳入/排除决策状态。  
 **使用场景：** B1 系统综述任务。
 
+仓库现在内置了 `scripts/mcp_screening_tracker.py` 这个 checkpoint stub。它不能替代 Rayyan/Covidence 这类真正的多人筛选平台，但可以：
+- 读取 `screening/title_abstract.md`、`screening/full_text.md`、`screening/prisma_flow.md`、`retrieval_manifest.csv`
+- 推导 title/abstract screening、full-text retrieval、full-text decision completion、PRISMA refresh 的本地 checkpoint 状态
+- 输出 `resume_state.next_actions`，让长链路文献流程从下一个未完成步骤继续，而不是每次从头开始
+
 **推荐工具：**
 
 | 工具 | 类型 | 地址 |
@@ -139,7 +144,7 @@ export RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD="npx -y @zcaceres/zotero-mcp-
 | Rayyan MCP（实验性）| 接入 Rayyan 平台 API | 见 [rayyan.ai](https://www.rayyan.ai) 开发者文档 |
 | 自定义 SQLite 追踪器 | 本地文件 | 参考下方"自建 stub"章节 |
 
-Rayyan 是目前最主流的系统综述文献筛选平台（支持多人协作、盲筛）。如无现成 MCP，可先用轻量 stub 脚本代替（见文末）。
+Rayyan 是目前最主流的系统综述文献筛选平台（支持多人协作、盲筛）。单人或 repo-local workflow 可以先用 builtin checkpoint stub；一旦进入盲筛、冲突仲裁或 reviewer assignment，就应切到外部 tracker。
 
 ---
 

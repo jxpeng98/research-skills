@@ -24,7 +24,7 @@
 
 以下层仍然是外部 provider 插槽：
 
-- `screening-tracker`
+- `screening-tracker` → 内置 checkpoint stub，可给 repo-local screening 产物生成 resume state；盲筛/多人筛选仍建议外部 tracker
 - `extraction-store`
 
 所以当前最现实的“严格 baseline”是：
@@ -57,7 +57,7 @@
 | `citation-graph` | 可以，走内置 Semantic Scholar graph | 不强制 | 可选 | 即使不接外部 MCP，也能先做 snowballing；内置模式会优先从本地产物抽 seed |
 | `metadata-registry` | 可以，走内置本地 reference provider | 本地模式不需要 | 可选 | 内置模式可直接合并 BibTeX、RIS、CSL-JSON、notes 与 search results；要权威 enrichment 时再接 OpenAlex 等外部实现 |
 | `fulltext-retrieval` | 可以，走内置 retrieval-manifest stub | 内置模式不需要 | 可选，但真实下载强烈建议配置 | 内置模式会先草拟 retrieval status 和 provenance；要真正下载 PDF/全文时再接 Zotero 或其他解析器 |
-| `screening-tracker` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
+| `screening-tracker` | 可以，但仅限 checkpoint stub | builtin stub 不需要 | 真正的多人筛选仍建议配置 | builtin 模式会从本地 screening artifacts 推导 resume checkpoints |
 | `extraction-store` | 不可以 | 取决于 provider | 需要 | 主要用于 systematic review |
 
 ## 常用配置总表
@@ -95,6 +95,7 @@
 - `citation-graph` 仍会尝试使用内置 Semantic Scholar graph
 - `metadata-registry` 仍会尝试使用内置本地 reference provider
 - `fulltext-retrieval` 仍会先生成本地 retrieval manifest 和 screening 草稿
+- 即使没有外部 tracker，`screening-tracker` 也能基于这些产物推导 repo-local resume checkpoints
 - 只要你没有显式启用严格 MCP 校验，任务通常仍能继续运行
 
 这足够做 exploratory search，但不适合作为严格 review-grade 检索的长期默认配置。
@@ -231,6 +232,8 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 - `bibliography.bib`
 - `screening_decisions.csv`
 - `retrieval_manifest.csv`
+- `screening/title_abstract.md`
+- `screening/full_text.md`
 
 ## 不同引擎分别适合什么
 

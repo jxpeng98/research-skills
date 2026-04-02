@@ -16,7 +16,7 @@ expected_outputs:
   question-refiner:
     artifact: framing/research_question.md
     must_contain:
-      - "PICO" or "PEO"
+      - "PICO or PEO"
       - "inclusion criteria"
       - "exclusion criteria"
     validation: "RQ must be specific enough for database search"

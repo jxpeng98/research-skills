@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────
+# Eval Case: Theory Paper (Platform Governance + Ecosystems)
+# ─────────────────────────────────────────────
+
+case_id: theory-platform-governance-ecosystems
+pipeline: theory-paper
+description: "Conceptual paper on how platform governance shapes complementor innovation in digital ecosystems."
+
+input:
+  topic: "How platform governance shapes complementor innovation in digital ecosystems"
+  domain: management
+  additional_context: "Focus on theory development, mechanism clarity, and boundary conditions rather than empirical estimation"
+
+expected_outputs:
+  question-refiner:
+    artifact: framing/research_question.md
+    must_contain:
+      - "platform governance"
+      - "complementor"
+      - "boundary condition"
+    validation: "RQ frames a theory-building question with explicit scope conditions"
+
+  academic-searcher:
+    artifact: search_strategy.md
+    must_contain:
+      - "platform ecosystem"
+      - "governance"
+      - "Web of Science or Scopus"
+    validation: "Search plan names theory-relevant terms and at least one scholarly index"
+
+  gap-analyzer:
+    artifact: gap_analysis.md
+    must_contain:
+      - "theoretical gap"
+      - "boundary condition"
+      - "complementor"
+    validation: "Gap analysis identifies missing mechanism or scope explanation"
+
+  theory-mapper:
+    artifact: theoretical_framework.md
+    must_contain:
+      - "mermaid"
+      - "proposition"
+      - "mechanism"
+    validation: "Framework includes explicit relationships and a visual structure"
+
+  hypothesis-generator:
+    artifact: framing/hypothesis.md
+    must_contain:
+      - "proposition"
+      - "governance"
+      - "innovation"
+    validation: "Theory paper generates propositions or hypotheses linked to the framework"
+
+  manuscript-architect:
+    artifact: manuscript/manuscript.md
+    must_contain:
+      - "theoretical contribution"
+      - "mechanism"
+      - "boundary condition"
+    validation: "Manuscript draft interprets contribution, not just restates the framework"
+
+  submission-packager:
+    artifact: submission/cover_letter.md
+    must_contain:
+      - "theory paper"
+      - "contribution"
+    validation: "Submission package explains the conceptual contribution for editors"

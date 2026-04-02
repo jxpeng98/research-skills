@@ -22,7 +22,7 @@ expected_outputs:
   code-builder:
     artifact: analysis/
     must_contain:
-      - "transformers" or "torch"
+      - "transformers or torch"
       - "requirements.txt"
     validation: "Working Python code with environment specification"
 

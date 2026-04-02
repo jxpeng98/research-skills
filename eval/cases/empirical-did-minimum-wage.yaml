@@ -37,5 +37,5 @@ expected_outputs:
   code-builder:
     artifact: analysis/
     must_contain:
-      - "fixest" or "pyfixest" or "reghdfe"
+      - "fixest or pyfixest or reghdfe"
     validation: "Uses appropriate DID library from economics domain profile"

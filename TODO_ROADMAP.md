@@ -183,6 +183,12 @@ Key facts confirmed from current repo:
 - [x] Added `discussion-writer`, `limitation-auditor`, and `qualitative-coding` skill files
 - [x] Registered the above skills in `skills/registry.yaml` and surfaced them in generated skill docs
 
+### 15. Contract and Eval Hardening
+
+- [x] Aligned `discussion-writer`, `limitation-auditor`, and `qualitative-coding` to canonical contract artifact paths
+- [x] Added golden eval coverage for `systematic-review-prisma`, `empirical-study`, and `theory-paper`
+- [x] Added eval drift tests so cases must reference real pipelines and pipeline-owned skills
+
 ---
 
 ## Verified but Not Yet Fully Accepted
@@ -230,12 +236,6 @@ Key facts confirmed from current repo:
   - keep markdown focused on execution guidance rather than duplicated metadata
   - keep generated docs and orchestrator skill cards registry-driven
 
-- [ ] Align newly added skills to canonical contract artifact paths
-  - `discussion-writer` currently writes to `manuscript_fragments/` and `tools/` instead of canonical manuscript paths
-  - `limitation-auditor` currently writes to `tools/` instead of a contract-owned submission/revision location
-  - `qualitative-coding` currently writes top-level artifacts that are not wired into the stage contract
-  - decide whether these outputs should become canonical contract artifacts or be rewritten to existing canonical paths
-
 - [ ] Improve install/upgrade ergonomics
   - add part-level control (`--parts` or equivalent) to `scripts/install_research_skill.sh`
   - pass the same control through `rsk upgrade`
@@ -276,11 +276,6 @@ Key facts confirmed from current repo:
   - [x] add real bridge command construction checks
   - [x] add recorded external-provider output parsing checks
   - [x] decide which smoke stages should be part of release gating versus optional maintainers' checks
-
-- [ ] Add empirical acceptance / eval coverage for the refactored pipelines
-  - `systematic-review-prisma`
-  - `empirical-study`
-  - `theory-paper`
 
 - [ ] Add a skill-structure lint layer
   - enforce maximum size / section-count heuristics for repo-internal skill files

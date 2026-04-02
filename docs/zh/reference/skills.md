@@ -49,10 +49,10 @@
 | `B_literature` | 检索、筛选、提取、引文、文献地图 | 9 | “文献怎么系统找、系统筛、系统整理？” |
 | `C_design` | 研究设计、变量、稳健性、数据可得性 | 9 | “这个研究该怎么设计和 operationalize？” |
 | `D_ethics` | IRB、隐私、治理 | 3 | “伦理与数据合规材料要怎么准备？” |
-| `E_synthesis` | 证据综合、质量评估、发表偏倚 | 4 | “已有证据要怎么整合和评级？” |
-| `F_writing` | 结构、结果解释、表格、图、摘要 | 6 | “如何把分析结果写成论文？” |
+| `E_synthesis` | 证据综合、质量评估、发表偏倚 | 5 | “已有证据要怎么整合和评级？” |
+| `F_writing` | 结构、结果解释、表格、图、摘要 | 7 | “如何把分析结果写成论文？” |
 | `G_compliance` | PRISMA、报告规范、学术语气 | 3 | “论文是否已经满足提交前规范？” |
-| `H_submission` | 投稿包、回复审稿、模拟评审 | 6 | “投稿前后怎么打包和应对审稿？” |
+| `H_submission` | 投稿包、回复审稿、模拟评审 | 7 | “投稿前后怎么打包和应对审稿？” |
 | `I_code` | 学术代码、统计、可复现性 | 10 | “研究代码如何实现、审查、复现？” |
 | `K_presentation` | 学术报告、幻灯片规划、Slidev、Beamer | 4 | “怎么把论文变成一个可讲、可答辩的学术报告？” |
 | `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 3 | “哪些能力是跨阶段通用的？” |
@@ -124,6 +124,7 @@
 | `evidence-synthesizer` | 证据综合 | 当你已有证据材料，需要做叙事综合或 meta-analysis 时使用。 | `EvidenceTable`, `SynthesisMatrix` |
 | `quality-assessor` | 质量评估 | 当你需要评估 risk of bias 和证据确定性时使用。 | `QualityTable`, `GRADESummary` |
 | `publication-bias-checker` | 发表偏倚检查 | 当你需要判断结果是否受发表偏倚影响时使用。 | `PublicationBiasReport` |
+| `qualitative-coding` | 定性数据编码 | 处理原始质性数据、摘要文本，需整理出现象与主题编码时使用。 | `DataDictionary`, `ThematicCodebook` |
 
 ### F. Writing
 
@@ -137,6 +138,7 @@
 | `table-generator` | 论文表格生成 | 当你需要把统计结果整理成论文级表格时使用。 | `FormattedTables` |
 | `figure-specifier` | 图形规范定义 | 当你需要先定义图的逻辑、编码和可及性要求时使用。 | `FigureSpecs` |
 | `meta-optimizer` | 题摘关键词优化 | 当你需要优化标题、摘要和关键词的可发现性时使用。 | `MetaOptimization` |
+| `discussion-writer` | 讨论部分起草 | 当结果部分写完，需要解释结果及其理论现实意义时使用。 | `DiscussionDraft`, `StorySpine` |
 
 ### G. Compliance
 
@@ -160,6 +162,7 @@
 | `fatal-flaw-detector` | 致命缺陷检测 | 当你想先做一轮 desk-reject 风险扫描时使用。 | `FatalFlawAnalysis` |
 | `reviewer-empathy-checker` | 审稿沟通校准 | 当回复内容技术上正确，但语气可能过硬或防御性过强时使用。 | `EmpathyCheck` |
 | `credit-taxonomy-helper` | CRediT贡献声明 | 当投稿需要 CRediT 作者贡献声明或需理清署名伦理时使用。 | `CRediTStatement` |
+| `limitation-auditor` | 研究局限审计 | 完稿前梳理研究的缺陷、数据局限及其应对机制时使用。 | `LimitationSection`, `MitigationStrategy` |
 
 ### I. Code
 

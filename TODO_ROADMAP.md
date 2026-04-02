@@ -1,6 +1,6 @@
 # Optimization Roadmap TODO
 
-> Last reorganized: 2026-04-01
+> Last reorganized: 2026-04-02
 > This file now tracks only three things:
 > 1. verified completed milestones
 > 2. active remaining work
@@ -12,16 +12,16 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 13
+- Verified completed workstreams: 14
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 24
+- Active TODOs: 18
 - Deferred future bets: 5
 
 ---
 
 ## Verification Basis
 
-Checked against current repository structure on 2026-04-01.
+Checked against current repository structure on 2026-04-02.
 
 Verified from source:
 - `standards/research-workflow-contract.yaml`
@@ -58,6 +58,9 @@ Key facts confirmed from current repo:
 - release preparation is already unified through `scripts/release_ready.sh`
 - `skills/registry.yaml` is now the single canonical skill version source
 - the literature pipeline now has a dedicated integration smoke wired into the main smoke entrypoint
+- standalone `/compliance-check` workflow already exists under `.agent/workflows/`
+- `contribution-crafter`, `statement-generator`, `effect-size-calculator`, `qualitative-coding`, `discussion-writer`, and `limitation-auditor` already exist in the skill corpus
+- some of those newly added skills still need stronger contract-path alignment before they count as fully integrated workflow outputs
 
 ---
 
@@ -167,7 +170,18 @@ Key facts confirmed from current repo:
 - [x] Reports found/missing counts in routing notes
 - [x] Adjusts confidence score proportional to missing outputs
 - [x] Returns `validator_gate` dict in `CollaborationResult.data`
+- [x] Extended `scripts/validate_project_artifacts.py` task coverage to include `J*` and `K*`
+- [x] Added direct validator tests for project-artifact task-ID coverage
 - [x] All 101 unit tests pass
+
+### 14. Skill Surface Expansion Beyond Core MVP
+
+- [x] Added `contribution-crafter` for Stage A2
+- [x] Added `statement-generator` for Stage D2
+- [x] Added `effect-size-calculator` for Stage E2
+- [x] Added standalone `/compliance-check` workflow for Stage G access
+- [x] Added `discussion-writer`, `limitation-auditor`, and `qualitative-coding` skill files
+- [x] Registered the above skills in `skills/registry.yaml` and surfaced them in generated skill docs
 
 ---
 
@@ -216,27 +230,17 @@ Key facts confirmed from current repo:
   - keep markdown focused on execution guidance rather than duplicated metadata
   - keep generated docs and orchestrator skill cards registry-driven
 
+- [ ] Align newly added skills to canonical contract artifact paths
+  - `discussion-writer` currently writes to `manuscript_fragments/` and `tools/` instead of canonical manuscript paths
+  - `limitation-auditor` currently writes to `tools/` instead of a contract-owned submission/revision location
+  - `qualitative-coding` currently writes top-level artifacts that are not wired into the stage contract
+  - decide whether these outputs should become canonical contract artifacts or be rewritten to existing canonical paths
+
 - [ ] Improve install/upgrade ergonomics
   - add part-level control (`--parts` or equivalent) to `scripts/install_research_skill.sh`
   - pass the same control through `rsk upgrade`
   - add `rsk doctor`
   - add `rsk init`
-
-- [ ] Add `statement-generator` skill for Stage D2
-  - generate ethics, data availability, CRediT, funding, COI, and AI disclosure statements from structured inputs
-  - currently D2 is handled ad hoc by manuscript-architect with no dedicated guidance
-
-- [ ] Add `effect-size-calculator` skill for Stage E2
-  - standardized extraction: Cohen's d/g, OR/RR conversions, extraction from p-values/F-stats/medians
-  - currently E2 reuses the broad evidence-synthesizer without dedicated conversion guidance
-
-- [ ] Add `/compliance-check` workflow for standalone Stage G access
-  - G1 (reporting checklist), G2 (PRISMA), G3 (cross-section), G4 (tone) are only reachable via `/paper` routing
-  - compliance checks are frequently needed independently after drafting
-
-- [ ] Add `contribution-crafter` skill for Stage A2
-  - structured contribution statement: theoretical + empirical + practical + methodological
-  - currently A2 has no dedicated skill file
 
 - [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
 
@@ -303,18 +307,6 @@ Key facts confirmed from current repo:
 - [ ] Improve confidence scoring using agreement + validation outcomes
 
 - [ ] Add metrics / timing output for orchestration runs
-
-- [ ] Add `discussion-writer` skill for structured Discussion sections
-  - findings summary → theory dialogue → practical implications → limitations → future work
-  - currently Discussion is part of manuscript-architect but lacks dedicated scaffolding
-
-- [ ] Add `limitation-auditor` skill for proactive limitation identification
-  - selection bias, measurement, generalizability, design-specific threats
-  - run before submission to anticipate reviewer objections
-
-- [ ] Add `qualitative-coding` skill for iterative coding workflow
-  - codebook management, inter-rater reliability, theme development
-  - currently qualitative analysis relies on general evidence-synthesizer guidance
 
 ---
 

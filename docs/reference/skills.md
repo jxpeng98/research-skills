@@ -49,10 +49,10 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 | `B_literature` | search, screen, extract, cite, map | 9 | "What does the literature say, and how do I build a corpus?" |
 | `C_design` | design, variables, robustness, datasets | 9 | "How should this study be designed and operationalized?" |
 | `D_ethics` | IRB, privacy, governance | 3 | "What ethics and data-protection materials do I need?" |
-| `E_synthesis` | evidence synthesis, quality, bias | 4 | "How do I combine and rate evidence?" |
-| `F_writing` | manuscript building, tables, figures, results writing | 6 | "How do I turn analysis into publishable text?" |
+| `E_synthesis` | evidence synthesis, quality, bias | 5 | "How do I combine and rate evidence?" |
+| `F_writing` | manuscript building, tables, figures, results writing | 7 | "How do I turn analysis into publishable text?" |
 | `G_compliance` | reporting checklists, tone, PRISMA | 3 | "Is this compliant and submission-ready?" |
-| `H_submission` | submission package, rebuttal, review simulation | 6 | "How do I package, defend, and stress-test the paper?" |
+| `H_submission` | submission package, rebuttal, review simulation | 7 | "How do I package, defend, and stress-test the paper?" |
 | `I_code` | academic code, stats, reproducibility | 10 | "How do I implement and verify research code?" |
 | `K_presentation` | academic talks, slide planning, Slidev, Beamer | 4 | "How do I turn the paper into a defensible talk?" |
 | `Z_cross_cutting` | metadata, model collaboration, self-critique | 3 | "How do I improve quality across stages?" |
@@ -124,6 +124,7 @@ Use Stage E when the evidence base already exists and the task is to combine, ra
 | `evidence-synthesizer` | Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting. | `EvidenceTable`, `SynthesisMatrix` |
 | `quality-assessor` | Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE. | `QualityTable`, `GRADESummary` |
 | `publication-bias-checker` | Evaluate publication bias via funnel plots, Egger's test, trim-and-fill. | `PublicationBiasReport` |
+| `qualitative-coding` | Extract phenomena, perform thematic/grounded theory coding, and build a codebook from qualitative transcripts or extracted text. | `DataDictionary`, `ThematicCodebook` |
 
 ### F. Writing
 
@@ -137,6 +138,7 @@ Use Stage F when the main question is turning evidence and analysis into section
 | `table-generator` | Generate publication-ready tables from statistical output with venue-aware formatting. | `FormattedTables` |
 | `figure-specifier` | Specify publication-quality figures with reproducible code and accessibility guidance. | `FigureSpecs` |
 | `meta-optimizer` | Optimize abstract, title, keywords for indexing and discoverability. | `MetaOptimization` |
+| `discussion-writer` | Drafts the Discussion section using a structured story spine, separating factual findings from theoretical implications. | `DiscussionDraft`, `StorySpine` |
 
 ### G. Compliance
 
@@ -160,6 +162,7 @@ Use Stage H when the manuscript is near submission or already under review.
 | `fatal-flaw-detector` | Desk-reject analysis identifying critical flaws blocking publication. | `FatalFlawAnalysis` |
 | `reviewer-empathy-checker` | Neutralize defensiveness in reviewer responses and verify exact addressing. | `EmpathyCheck` |
 | `credit-taxonomy-helper` | Generate CRediT author contribution statements with ICMJE cross-check and authorship ethics guidance. | `CRediTStatement` |
+| `limitation-auditor` | Identifies and structures study constraints, ensuring rigorous self-critique without undermining the manuscript's core contribution. | `LimitationSection`, `MitigationStrategy` |
 
 ### I. Code
 

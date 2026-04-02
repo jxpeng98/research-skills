@@ -1,0 +1,230 @@
+from __future__ import annotations
+
+from pathlib import Path
+import re
+from typing import Any
+
+import yaml
+
+
+STAGE_DISPLAY_ORDER = ["A", "B", "C", "D", "E", "F", "G", "J", "H", "I", "K"]
+STAGE_LABELS = {
+    "A": "Framing and positioning",
+    "B": "Literature and related work",
+    "C": "Study design and analysis planning",
+    "D": "Ethics and IRB",
+    "E": "Evidence synthesis",
+    "F": "Manuscript writing",
+    "G": "Polishing and compliance",
+    "H": "Submission and revision",
+    "I": "Research code support",
+    "J": "Proofread and de-AI",
+    "K": "Academic presentation",
+}
+STAGE_GUIDE_FILES = {
+    "A": "references/stage-A-framing.md",
+    "B": "references/stage-B-literature.md",
+    "C": "references/stage-C-design.md",
+    "D": "references/stage-D-ethics.md",
+    "E": "references/stage-E-synthesis.md",
+    "F": "references/stage-F-writing.md",
+    "G": "references/stage-G-compliance.md",
+    "H": "references/stage-H-submission.md",
+    "I": "references/stage-I-code.md",
+    "J": "references/stage-J-proofread.md",
+    "K": "references/stage-K-presentation.md",
+}
+TASK_PURPOSE_OVERRIDES = {
+    "A1": "Research question",
+    "A1_5": "Hypothesis generation",
+    "A2": "Contribution statement",
+    "A3": "Theoretical framing",
+    "A4": "Gap analysis",
+    "A5": "Target venue analysis",
+    "B1": "Systematic review",
+    "B1_5": "Concept/keyword extraction",
+    "B2": "Targeted paper reading",
+    "B3": "Citation snowballing",
+    "B4": "Related work writing",
+    "B5": "Citation management",
+    "B6": "Literature mapping",
+    "C1": "Study design",
+    "C1_5": "Rival hypothesis design",
+    "C2": "Instruments",
+    "C3": "Analysis plan",
+    "C3_5": "Robustness check plan",
+    "C4": "Data management plan",
+    "C5": "Preregistration draft",
+    "D1": "Ethics pack",
+    "D2": "Ethics statements",
+    "D3": "Participant de-identification plan",
+    "E1": "Synthesis strategy",
+    "E2": "Effect size table",
+    "E3": "Meta-analysis write-up",
+    "E3_5": "Publication bias assessment",
+    "E4": "Certainty grading",
+    "E5": "Integrated synthesis",
+    "F1": "Manuscript outline",
+    "F2": "Single section writing",
+    "F3": "Full draft",
+    "F4": "Claim-evidence map",
+    "F5": "Figures/tables plan",
+    "F6": "Abstract & Title Optimization",
+    "G1": "Reporting completeness",
+    "G2": "PRISMA compliance",
+    "G3": "Cross-section integrity",
+    "G4": "Tone & Style Normalization",
+    "H1": "Submission package",
+    "H2": "Rebuttal package",
+    "H2_5": "Reviewer empathy check",
+    "H3": "Peer review simulation",
+    "H4": "Fatal flaw analysis",
+    "I1": "Method implementation",
+    "I2": "Reproduction",
+    "I3": "Data pipeline",
+    "I4": "Code reproducibility audit",
+    "I5": "Code specification",
+    "I6": "Code planning",
+    "I7": "Code execution",
+    "I8": "Code review",
+    "I9": "Release packaging",
+    "J1": "AI fingerprint scan",
+    "J2": "Human-voice rewrite",
+    "J3": "Similarity & originality check",
+    "J4": "Final proofread",
+    "K1": "Presentation planning",
+    "K2": "Slide architecture",
+    "K3": "Slidev build",
+    "K4": "Beamer build",
+}
+QUALITY_GATE_LABEL_OVERRIDES = {
+    "Q1": "RQ-method alignment",
+    "Q2": "Claim-evidence traceability",
+    "Q3": "Reporting checklist complete",
+    "Q4": "Reproducibility baseline documented",
+}
+ACRONYM_TOKENS = {
+    "ai": "AI",
+    "irb": "IRB",
+    "prisma": "PRISMA",
+    "id": "ID",
+}
+
+
+def load_workflow_contract(root: Path) -> dict[str, Any]:
+    path = root / "standards" / "research-workflow-contract.yaml"
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def _humanize_slug(value: str) -> str:
+    parts = [part for part in re.split(r"[-_]+", value) if part]
+    rendered: list[str] = []
+    for part in parts:
+        lowered = part.lower()
+        if lowered in ACRONYM_TOKENS:
+            rendered.append(ACRONYM_TOKENS[lowered])
+        else:
+            rendered.append(lowered.capitalize())
+    return " ".join(rendered)
+
+
+def _task_sort_key(task_id: str) -> tuple[int, list[int]]:
+    stage_id = task_id[0]
+    try:
+        stage_index = STAGE_DISPLAY_ORDER.index(stage_id)
+    except ValueError:
+        stage_index = len(STAGE_DISPLAY_ORDER)
+    numeric_parts = [int(part) for part in re.findall(r"\d+", task_id)]
+    return stage_index, numeric_parts
+
+
+def _render_outputs(outputs: list[str]) -> str:
+    return ", ".join(f"`{output}`" for output in outputs)
+
+
+def generate_workflow_contract_reference(root: Path) -> str:
+    contract = load_workflow_contract(root)
+    paper_types = contract.get("paper_types", [])
+    task_catalog = contract.get("task_catalog", {})
+    quality_gates = contract.get("quality_gates", [])
+
+    ordered_task_ids = sorted(task_catalog.keys(), key=_task_sort_key)
+
+    lines = [
+        "# Workflow Contract",
+        "",
+        "> Auto-generated from `standards/research-workflow-contract.yaml` by `python3 scripts/generate_workflow_contract_doc.py`. Do not edit this file by hand.",
+        "",
+        "Use this contract as the single source of truth for:",
+        "- `paper_type`",
+        "- `stage`",
+        "- `task_id`",
+        "- expected outputs under `RESEARCH/[topic]/`",
+        "",
+        "## Paper Types",
+        "",
+    ]
+
+    for paper_type in paper_types:
+        paper_type_id = str(paper_type.get("id", "")).strip()
+        if paper_type_id:
+            lines.append(f"- `{paper_type_id}`")
+
+    lines.extend(
+        [
+            "",
+            "## Stages",
+            "",
+        ]
+    )
+    for stage_id in STAGE_DISPLAY_ORDER:
+        lines.append(f"- `{stage_id}`: {STAGE_LABELS[stage_id]}")
+
+    lines.extend(
+        [
+            "",
+            "## Task IDs (Canonical)",
+            "",
+            "| Task ID | Stage | Purpose | Primary Output |",
+            "|---|---|---|---|",
+        ]
+    )
+
+    for task_id in ordered_task_ids:
+        task = task_catalog[task_id] or {}
+        stage_id = str(task.get("stage", "")).strip()
+        purpose = TASK_PURPOSE_OVERRIDES.get(task_id) or _humanize_slug(str(task.get("title", "")))
+        outputs = [str(output) for output in task.get("outputs", []) if str(output).strip()]
+        lines.append(
+            f"| `{task_id}` | {stage_id} | {purpose} | {_render_outputs(outputs)} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Quality Gates",
+            "",
+        ]
+    )
+    for gate in quality_gates:
+        gate_id = str(gate.get("id", "")).strip()
+        label = QUALITY_GATE_LABEL_OVERRIDES.get(gate_id) or _humanize_slug(
+            str(gate.get("name", "")).replace(" ", "-")
+        )
+        if gate_id:
+            lines.append(f"- `{gate_id}`: {label}")
+
+    lines.extend(
+        [
+            "",
+            "## Stage Guides",
+            "",
+            "Use these when you need more operational detail than the task table provides:",
+            "",
+        ]
+    )
+    for stage_id in STAGE_DISPLAY_ORDER:
+        guide_path = STAGE_GUIDE_FILES[stage_id]
+        lines.append(f"- `{guide_path}`")
+
+    return "\n".join(lines).rstrip() + "\n"

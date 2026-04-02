@@ -257,7 +257,7 @@ You must make coordinated updates across the entire chain:
    - If this is the default output of a specific skill, update `skill_catalog.<skill>.default_outputs`
 3. Interaction Layer (As needed)
    - `.agent/workflows/*.md`: Ensure the new path is written/referenced.
-   - `research-paper-workflow/references/workflow-contract.md`: Update the task table (to maintain portable skill consistency).
+   - `research-paper-workflow/references/workflow-contract.md`: Regenerate the portable task table via `python3 scripts/generate_workflow_contract_doc.py`.
 4. Artifact Structure (As needed)
    - `templates/`: Add the template.
    - `skills/`: Add the output format and "definition of done" to the internal skill spec.
@@ -272,8 +272,8 @@ Steps:
 2. `standards/mcp-agent-capability-map.yaml`
    - Add `required_skills` under `task_skill_mapping`.
    - Add `required_mcp`, agent routing, and `quality_gates` under `task_execution`.
-3. `research-paper-workflow/references/workflow-contract.md`
-   - Add the new task to the task table.
+3. Regenerate `research-paper-workflow/references/workflow-contract.md`
+   - Run `python3 scripts/generate_workflow_contract_doc.py` so the portable task table stays in sync.
 4. `.agent/workflows/paper.md`
    - Add an entry point to the menu (so users can select it).
 5. Update local consistency validations (otherwise CI will fail):

@@ -268,9 +268,9 @@ Key facts confirmed from current repo:
   - `fulltext-fetcher`
   - related workflow and user docs
 
-- [ ] Close the YAML <-> portable markdown contract gap
-  - auto-generate `research-paper-workflow/references/workflow-contract.md`
-  - or enforce stronger YAML/MD equivalence validation
+- [x] Close the YAML <-> portable markdown contract gap
+  - [x] auto-generate `research-paper-workflow/references/workflow-contract.md`
+  - [x] enforce stronger YAML/MD equivalence validation
 
 - [ ] Expand integration smoke beyond the builtin literature baseline
   - [x] add real bridge command construction checks

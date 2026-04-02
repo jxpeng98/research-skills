@@ -149,7 +149,7 @@ python3 -m unittest tests.test_orchestrator_workflows -v
    - 如涉及某 skill 的默认产物，更新 `skill_catalog.<skill>.default_outputs`
 3. 交互层（按需要）
    - `.agent/workflows/*.md`：确保写入/引用了新路径
-   - `research-paper-workflow/references/workflow-contract.md`：更新 task 表格（保持可移植 skill 一致）
+   - `research-paper-workflow/references/workflow-contract.md`：执行 `python3 scripts/generate_workflow_contract_doc.py` 重生 portable task 表格
 4. 产物结构（按需要）
    - `templates/`：补模板
    - `skills/`：补输出格式与“完成标准”
@@ -164,8 +164,8 @@ python3 -m unittest tests.test_orchestrator_workflows -v
 2. `standards/mcp-agent-capability-map.yaml`
    - 在 `task_skill_mapping` 加 required_skills
    - 在 `task_execution` 加 required_mcp + agent 路由 + quality_gates
-3. `research-paper-workflow/references/workflow-contract.md`
-   - 在 task 表格中加入新 Task
+3. 重生 `research-paper-workflow/references/workflow-contract.md`
+   - 执行 `python3 scripts/generate_workflow_contract_doc.py`，保持 portable task 表格和标准层同步
 4. `.agent/workflows/paper.md`
    - 菜单里加入口（用户能选到）
 5. 更新本地一致性校验（否则 CI 会失败）：

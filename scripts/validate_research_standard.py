@@ -13,6 +13,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from research_skills.skill_docs import generate_skill_reference_docs
+from research_skills.workflow_contract_doc import generate_workflow_contract_reference
 
 EXPECTED_PAPER_TYPES = {"empirical", "qualitative", "systematic-review", "methods", "theory"}
 EXPECTED_STAGE_IDS = {stage for stage in "ABCDEFGHIJK"}
@@ -1383,21 +1384,21 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
         report,
     )
     if markdown_contract:
-        markdown_task_ids = {
-            found
-            for found in re.findall(
-                r"^\|\s*`([A-K][0-9_]+)`\s*\|",
-                markdown_contract,
-                flags=re.MULTILINE,
-            )
-        }
+        expected_contract = generate_workflow_contract_reference(root)
         report.check(
-            markdown_task_ids == EXPECTED_TASK_IDS,
-            "Reference workflow-contract.md task table is complete",
+            markdown_contract == expected_contract,
+            "Reference workflow-contract.md is in sync with generated contract docs",
             (
-                "workflow-contract.md task table mismatch. Missing: "
-                f"{ids_to_text(EXPECTED_TASK_IDS - markdown_task_ids) or 'none'}; "
-                f"Extra: {ids_to_text(markdown_task_ids - EXPECTED_TASK_IDS) or 'none'}"
+                "research-paper-workflow/references/workflow-contract.md is out of sync with "
+                "standards/research-workflow-contract.yaml. Run: python3 scripts/generate_workflow_contract_doc.py"
+            ),
+        )
+        report.check(
+            "Auto-generated from `standards/research-workflow-contract.yaml`" in markdown_contract,
+            "Reference workflow-contract.md includes generated-file marker",
+            (
+                "research-paper-workflow/references/workflow-contract.md must declare that it is generated "
+                "from standards/research-workflow-contract.yaml"
             ),
         )
 
@@ -2118,6 +2119,7 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
     smoke_content = read_text(root, "scripts/run_beta_smoke.sh", report)
     if smoke_content:
         for token in (
+            "--tier <release|maintainer>",
             "./scripts/run_literature_smoke.sh",
             "[literature-smoke] passed",
             "bridges.orchestrator doctor",
@@ -2149,7 +2151,8 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "validate_research_standard.py",
             "unittest discover -s tests -v",
             "./scripts/run_beta_smoke.sh",
-            "literature pipeline + doctor + parallel + task-run",
+            "release smoke tier (literature pipeline + doctor)",
+            "--maintainer-smoke",
             "generate_release_notes.sh",
             "--skip-note-gen",
             "--from-tag",

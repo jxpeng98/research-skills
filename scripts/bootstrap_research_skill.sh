@@ -16,6 +16,7 @@ SOURCE_REPO=""
 RAW_REPO="${RESEARCH_SKILLS_REPO:-$DEFAULT_REPO}"
 INSTALL_CLI=1
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
+PARTS=""
 MISE_BIN="${HOME}/.local/bin/mise"
 PYTHON_RUNTIME_MODE=""
 
@@ -61,6 +62,7 @@ Options:
   --install-cli                        Install shell CLI commands into the bin dir (default: on)
   --no-cli                             Skip shell CLI installation
   --cli-dir <path>                     Directory for shell CLI binaries (default: RESEARCH_SKILLS_BIN_DIR or ~/.local/bin)
+  --parts <globals,project,cli,doctor> Limit install surfaces passed to the installer
   --overwrite                          Overwrite existing installed files
   --doctor                             Run orchestrator doctor after install when python3 exists
   --no-doctor                          Skip doctor even in full profile
@@ -553,6 +555,11 @@ while [[ $# -gt 0 ]]; do
       CLI_DIR="$2"
       shift 2
       ;;
+    --parts)
+      [[ $# -ge 2 ]] || { err "Missing value for --parts"; exit 2; }
+      PARTS="$2"
+      shift 2
+      ;;
     --overwrite)
       OVERWRITE=1
       shift
@@ -715,6 +722,9 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   if [[ "$INSTALL_CLI" -eq 1 ]]; then
     printf ' --install-cli --cli-dir %q' "$CLI_DIR"
   fi
+  if [[ -n "$PARTS" ]]; then
+    printf ' --parts %q' "$PARTS"
+  fi
   if [[ "$RUN_DOCTOR" -eq 1 ]]; then
     printf ' --doctor'
   fi
@@ -757,6 +767,9 @@ if [[ "$OVERWRITE" -eq 1 ]]; then
 fi
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   cmd+=(--install-cli --cli-dir "$CLI_DIR")
+fi
+if [[ -n "$PARTS" ]]; then
+  cmd+=(--parts "$PARTS")
 fi
 if [[ "$RUN_DOCTOR" -eq 1 ]]; then
   cmd+=(--doctor)

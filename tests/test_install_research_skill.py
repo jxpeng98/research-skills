@@ -163,6 +163,51 @@ class InstallResearchSkillTests(unittest.TestCase):
             self.assertIn("antigravity CLI not found in PATH", result.stdout)
             self.assertIn("Install Antigravity and ensure the `antigravity` binary is on PATH", result.stdout)
 
+    def test_parts_project_skips_global_skill_copy(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            claude_home = temp_root / "claude-home"
+            home_dir = temp_root / "home"
+            home_dir.mkdir()
+
+            env = os.environ.copy()
+            env["HOME"] = str(home_dir)
+            env["CLAUDE_CODE_HOME"] = str(claude_home)
+            env["NO_COLOR"] = "1"
+
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(INSTALL_SCRIPT),
+                    "--target",
+                    "claude",
+                    "--mode",
+                    "copy",
+                    "--project-dir",
+                    str(project_dir),
+                    "--parts",
+                    "project",
+                ],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn("parts:   project", result.stdout)
+            self.assertTrue((project_dir / ".agent" / "workflows" / "proofread.md").exists())
+            self.assertTrue((project_dir / "CLAUDE.md").exists())
+            self.assertTrue((project_dir / ".env").exists())
+            self.assertFalse((claude_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

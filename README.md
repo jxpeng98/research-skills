@@ -461,10 +461,19 @@ Notes:
 
 ### 4. `rsk` / `research-skills` subcommands
 
-Both shell CLI and Python CLI use the same command names:
+Both shell CLI and Python CLI expose:
 - `research-skills`
 - `rsk`
 - `rsw`
+
+Shared commands:
+- `check`
+- `upgrade`
+- `align`
+
+Python CLI only:
+- `doctor`
+- `init`
 
 #### `rsk check`
 
@@ -504,8 +513,10 @@ Common args:
 | `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` |
 | `--target <codex|claude|gemini|antigravity|all>` | Choose install target |
 | `--project-dir <path>` | Choose project path |
+| `--install-cli` | Install or refresh shell CLI wrappers |
 | `--no-cli` | Skip shell CLI refresh |
 | `--cli-dir <path>` | Choose shell CLI directory |
+| `--parts <globals,project,cli,doctor>` | Only apply selected install surfaces |
 | `--overwrite` | Replace existing targets |
 | `--doctor` | Run doctor after upgrade |
 | `--dry-run` | Preview upgrade actions |
@@ -514,8 +525,43 @@ Examples:
 
 ```bash
 rsk upgrade --project-dir . --target all --overwrite
+rsk upgrade --project-dir . --parts project,doctor
 rsk upgrade --repo jxpeng98/research-skills --ref main --ref-type branch --project-dir . --target claude
 rsk upgrade --project-dir . --target codex --dry-run
+```
+
+#### `rsk doctor`  (Python CLI)
+
+Purpose:
+- run `bridges.orchestrator doctor` against a project path without remembering the module invocation
+
+Examples:
+
+```bash
+rsk doctor --cwd .
+```
+
+#### `rsk init`  (Python CLI)
+
+Purpose:
+- initialize project-facing workflow assets from the installed package without downloading a fresh archive
+
+Common args:
+
+| Arg | Purpose |
+|-----|---------|
+| `--project-dir <path>` | Choose project path |
+| `--target <codex|claude|gemini|antigravity|all>` | Choose client/project surface |
+| `--parts <globals,project,cli,doctor>` | Select install surfaces (default: `project`) |
+| `--overwrite` | Replace existing project assets |
+| `--doctor` | Run doctor after init |
+| `--dry-run` | Preview init actions |
+
+Examples:
+
+```bash
+rsk init --project-dir .
+rsk init --project-dir . --target claude --overwrite
 ```
 
 #### `rsk align`

@@ -70,6 +70,33 @@ class BootstrapResearchSkillTests(unittest.TestCase):
         self.assertIn("--install-cli", result.stdout)
         self.assertIn("--doctor", result.stdout)
 
+    def test_dry_run_passes_parts_to_installer(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(BOOTSTRAP_SCRIPT),
+                    "--profile",
+                    "partial",
+                    "--project-dir",
+                    tmp_dir,
+                    "--parts",
+                    "project,cli",
+                    "--dry-run",
+                ],
+                cwd=str(REPO_ROOT),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+        self.assertIn("--parts project\\,cli", result.stdout)
+
     def test_partial_profile_from_source_repo_exits_cleanly(self) -> None:
         if not SYSTEM_BASH.exists():
             self.skipTest("/bin/bash is not available")

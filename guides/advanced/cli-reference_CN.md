@@ -45,6 +45,10 @@ repo = "owner/repo"   # 或 url = "https://github.com/owner/repo.git"
 - Python CLI：通过 `pip`/`pipx` 安装
 - Shell CLI：由 `bootstrap_research_skill.sh` 默认安装到 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
 
+共同支持的命令：`check`、`upgrade`、`align`
+
+仅 Python CLI 提供：`doctor`、`init`
+
 ### 2.1 `rsk check`（检查版本/是否有更新）
 
 用途：
@@ -79,6 +83,10 @@ rsk upgrade \
   [--target codex|claude|gemini|antigravity|all] \
   [--mode copy|link] \
   [--project-dir <path>] \
+  [--install-cli] \
+  [--no-cli] \
+  [--cli-dir <path>] \
+  [--parts globals,project,cli,doctor] \
   [--no-overwrite] \
   [--doctor] \
   [--dry-run]
@@ -86,11 +94,38 @@ rsk upgrade \
 
 说明：
 - `--project-dir` 用于写入项目内集成文件（例如 `.agent/workflows/`、`.agents/skills/`、`CLAUDE.md`、`.gemini/`）。
+- `--parts` 用于收窄安装面，例如 `project` 表示只刷新项目资产，`project,doctor` 表示轻量刷新后立即校验。
 - `--mode link` 适合“长期维护一个本地 clone”的场景（软链接安装）；`--mode copy` 更适合一次性安装/CI。
 - Shell CLI 会通过随附的 bootstrap helper 执行升级，不依赖 Python。
 - 退出码为底层安装器返回码（若安装失败，沿用其错误码）。
 
-### 2.3 `rsk align`（快速参考）
+### 2.3 `rsk doctor`（仅 Python CLI）
+
+用途：
+- 用更短的命令运行 orchestrator doctor
+
+```bash
+rsk doctor [--cwd <path>]
+```
+
+### 2.4 `rsk init`（仅 Python CLI）
+
+用途：
+- 直接从已安装包初始化项目侧 workflow 资产
+- 默认等价于 `--parts project`，适合给一个新项目快速接好 workflow 入口
+
+```bash
+rsk init \
+  [--project-dir <path>] \
+  [--target codex|claude|gemini|antigravity|all] \
+  [--mode copy|link] \
+  [--parts globals,project,cli,doctor] \
+  [--overwrite] \
+  [--doctor] \
+  [--dry-run]
+```
+
+### 2.5 `rsk align`（快速参考）
 
 用途：打印“pipx 安装了什么 / upgrade 会修改哪些路径 / 常见用法”。
 

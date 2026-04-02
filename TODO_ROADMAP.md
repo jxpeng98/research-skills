@@ -213,6 +213,13 @@ Key facts confirmed from current repo:
 - [x] Routed `model-collaborator` into explicit multi-agent tasks `B1` and `H3`
 - [x] Updated collaboration guidance so systematic review and rebuttal paths surface the shared multi-agent layer
 
+### 20. Installer Ergonomics
+
+- [x] Added `--parts` support to the shell installer, Python bootstrap, and universal installer
+- [x] Passed part-level install control through `rsk upgrade`
+- [x] Added Python `rsk doctor` and `rsk init` entrypoints for project bootstrap and environment checks
+- [x] Added installer/CLI regression coverage for selective install surfaces and new subcommands
+
 ---
 
 ---
@@ -244,11 +251,7 @@ Key facts confirmed from current repo:
 
 - [x] ~~Move more user-facing skill metadata out of markdown prose and into the registry~~ (Completed in Milestone 18)
 
-- [ ] Improve install/upgrade ergonomics
-  - add part-level control (`--parts` or equivalent) to `scripts/install_research_skill.sh`
-  - pass the same control through `rsk upgrade`
-  - add `rsk doctor`
-  - add `rsk init`
+- [x] ~~Improve install/upgrade ergonomics~~ (Completed in Milestone 20)
 
 - [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
 

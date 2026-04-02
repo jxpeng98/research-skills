@@ -462,10 +462,19 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 
 ### 4. `rsk` / `research-skills` CLI 子命令说明
 
-shell CLI 和 Python CLI 共享相同的命令名：
+shell CLI 和 Python CLI 都有这些入口名：
 - `research-skills`
 - `rsk`
 - `rsw`
+
+共同支持的命令：
+- `check`
+- `upgrade`
+- `align`
+
+仅 Python CLI 提供：
+- `doctor`
+- `init`
 
 #### `rsk check`
 
@@ -505,8 +514,10 @@ rsk check --json
 | `--ref-type <tag|branch>` | 指定 ref 类型 |
 | `--target <codex|claude|gemini|antigravity|all>` | 指定安装目标 |
 | `--project-dir <path>` | 指定项目路径 |
+| `--install-cli` | 安装或刷新 shell CLI 包装命令 |
 | `--no-cli` | 升级时不刷新 shell CLI |
 | `--cli-dir <path>` | 指定 shell CLI 目录 |
+| `--parts <globals,project,cli,doctor>` | 只执行指定安装面 |
 | `--overwrite` | 覆盖已有目标 |
 | `--doctor` | 升级后执行 doctor |
 | `--dry-run` | 预演升级动作 |
@@ -515,8 +526,43 @@ rsk check --json
 
 ```bash
 rsk upgrade --project-dir . --target all --overwrite
+rsk upgrade --project-dir . --parts project,doctor
 rsk upgrade --repo jxpeng98/research-skills --ref main --ref-type branch --project-dir . --target claude
 rsk upgrade --project-dir . --target codex --dry-run
+```
+
+#### `rsk doctor`（仅 Python CLI）
+
+用途：
+- 用更短的命令运行 `bridges.orchestrator doctor`
+
+示例：
+
+```bash
+rsk doctor --cwd .
+```
+
+#### `rsk init`（仅 Python CLI）
+
+用途：
+- 直接从已安装的包初始化项目侧 workflow 资产，不需要重新下载 release 压缩包
+
+常用参数：
+
+| 参数 | 作用 |
+|------|------|
+| `--project-dir <path>` | 指定项目路径 |
+| `--target <codex|claude|gemini|antigravity|all>` | 指定客户端/项目侧表面 |
+| `--parts <globals,project,cli,doctor>` | 选择安装面（默认 `project`） |
+| `--overwrite` | 覆盖已有项目资产 |
+| `--doctor` | init 后执行 doctor |
+| `--dry-run` | 预演 init 动作 |
+
+示例：
+
+```bash
+rsk init --project-dir .
+rsk init --project-dir . --target claude --overwrite
 ```
 
 #### `rsk align`

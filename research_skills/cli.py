@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import __version__
-from .universal_installer import InstallOptions, install
+from .universal_installer import PART_CHOICES, InstallOptions, install
 
 TAG_PATTERN = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+)|b(\d+))?$")
 RELEASE_NOTE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
@@ -565,6 +565,31 @@ def _extract_tarball(tar_path: Path, dest_dir: Path) -> Path:
     return dest_dir / sorted(top_levels)[0]
 
 
+def _parse_parts_arg(raw: str | None) -> tuple[str, ...] | None:
+    if not raw:
+        return None
+    return tuple(part.strip() for part in str(raw).split(",") if part.strip()) or None
+
+
+def _run_orchestrator_doctor(cwd: Path) -> int:
+    env = os.environ.copy()
+    repo_root = _find_repo_root(Path.cwd())
+    if repo_root is not None:
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = str(repo_root) if not existing_pythonpath else f"{repo_root}{os.pathsep}{existing_pythonpath}"
+    result = subprocess.run(
+        [sys.executable, "-m", "bridges.orchestrator", "doctor", "--cwd", str(cwd)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        check=False,
+        env=env,
+    )
+    if result.stdout:
+        print(result.stdout.rstrip())
+    return result.returncode
+
+
 def cmd_upgrade(args: argparse.Namespace) -> int:
     project_dir = Path(args.project_dir).expanduser().resolve()
 
@@ -610,6 +635,11 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
     print(f"  {_dim}repo:{_reset}    {resolved_repo}")
     print(f"  {_dim}ref:{_reset}     {ref}{beta_label}")
     print(f"  {_dim}project:{_reset} {project_dir}")
+    install_cli = None
+    if getattr(args, "install_cli", False):
+        install_cli = True
+    if getattr(args, "no_cli", False):
+        install_cli = False
 
     with tempfile.TemporaryDirectory(prefix="research-skills-upgrade-") as temp_dir:
         temp_root = Path(temp_dir)
@@ -629,11 +659,36 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
                 target=args.target,
                 mode=args.mode,
                 overwrite=args.overwrite,
-                install_cli=False,
+                install_cli=install_cli,
+                cli_dir=Path(args.cli_dir).expanduser().resolve() if getattr(args, "cli_dir", None) else None,
                 doctor=args.doctor,
                 dry_run=args.dry_run,
+                parts=_parse_parts_arg(getattr(args, "parts", None)),
             )
         )
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    return _run_orchestrator_doctor(Path(args.cwd).expanduser().resolve())
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    project_dir = Path(args.project_dir).expanduser().resolve()
+    repo_root = Path(__file__).resolve().parents[1]
+    parts = _parse_parts_arg(getattr(args, "parts", None)) or ("project",)
+    return install(
+        InstallOptions(
+            repo_root=repo_root,
+            project_dir=project_dir,
+            target=args.target,
+            mode=args.mode,
+            overwrite=args.overwrite,
+            install_cli=False,
+            doctor=args.doctor,
+            dry_run=args.dry_run,
+            parts=parts,
+        )
+    )
 
 def cmd_align(args: argparse.Namespace) -> int:
     repo_hint = (
@@ -658,6 +713,8 @@ def cmd_align(args: argparse.Namespace) -> int:
     print("Typical usage:")
     print(f"1) Check:   {prog} check --repo {repo_hint}")
     print(f"2) Upgrade: {prog} upgrade --repo {repo_hint} --project-dir . --target all --doctor")
+    print(f"3) Init:    {prog} init --project-dir . --target all")
+    print(f"4) Doctor:  {prog} doctor --cwd .")
     print("")
     print("Tip:")
     print(f"- Run `{prog} upgrade` from your project root to use `--project-dir .`.")
@@ -721,6 +778,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(Path.cwd()),
         help="Project directory for workflow integration (default: current dir)",
     )
+    upgrade.add_argument("--install-cli", action="store_true", help="Install or refresh shell CLI wrappers")
+    upgrade.add_argument("--no-cli", action="store_true", help="Skip shell CLI installation during upgrade")
+    upgrade.add_argument("--cli-dir", help="Directory for shell CLI wrappers")
     upgrade.add_argument(
         "--overwrite",
         action="store_true",
@@ -735,9 +795,51 @@ def build_parser() -> argparse.ArgumentParser:
     )
     upgrade.add_argument("--doctor", action="store_true", help="Run orchestrator doctor after install")
     upgrade.add_argument("--dry-run", action="store_true", help="Show install actions only")
+    upgrade.add_argument(
+        "--parts",
+        help=f"Comma-separated install surfaces to apply: {', '.join(PART_CHOICES)}.",
+    )
 
     align = subparsers.add_parser("align", help="Print a short usage alignment (what installs where)")
     align.add_argument("--repo", help="Optional upstream repo in owner/repo form (used in examples)")
+
+    doctor = subparsers.add_parser("doctor", help="Run orchestrator doctor for the current project")
+    doctor.add_argument(
+        "--cwd",
+        default=str(Path.cwd()),
+        help="Project directory to inspect (default: current dir)",
+    )
+
+    init = subparsers.add_parser("init", help="Initialize project-facing research-skills assets from the installed package")
+    init.add_argument(
+        "--project-dir",
+        default=str(Path.cwd()),
+        help="Project directory to initialize (default: current dir)",
+    )
+    init.add_argument(
+        "--target",
+        default="all",
+        choices=["codex", "claude", "gemini", "antigravity", "all"],
+        help="Project/client surface to initialize (default: all)",
+    )
+    init.add_argument(
+        "--mode",
+        default="copy",
+        choices=["copy", "link"],
+        help="Install mode (default: copy)",
+    )
+    init.add_argument(
+        "--overwrite",
+        action="store_true",
+        default=False,
+        help="Overwrite existing project-facing assets",
+    )
+    init.add_argument("--doctor", action="store_true", help="Run orchestrator doctor after init")
+    init.add_argument("--dry-run", action="store_true", help="Show init actions only")
+    init.add_argument(
+        "--parts",
+        help=f"Comma-separated install surfaces to apply (default: project): {', '.join(PART_CHOICES)}.",
+    )
 
     return parser
 
@@ -751,6 +853,10 @@ def main() -> int:
         return cmd_upgrade(args)
     if args.cmd == "align":
         return cmd_align(args)
+    if args.cmd == "doctor":
+        return cmd_doctor(args)
+    if args.cmd == "init":
+        return cmd_init(args)
     raise RuntimeError(f"Unhandled command: {args.cmd}")
 
 

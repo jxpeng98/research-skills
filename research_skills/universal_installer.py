@@ -12,6 +12,7 @@ from pathlib import Path
 
 TARGET_CHOICES = ("codex", "claude", "gemini", "antigravity", "all")
 PROFILE_CHOICES = ("partial", "full")
+PART_CHOICES = ("globals", "project", "cli", "doctor")
 LEGACY_MANIFEST_PATH = Path(__file__).resolve().parents[1] / "install" / "install_manifest.tsv"
 
 
@@ -27,6 +28,7 @@ class InstallOptions:
     doctor: bool | None = None
     dry_run: bool = False
     profile: str | None = None
+    parts: tuple[str, ...] | None = None
 
 
 def profile_defaults(profile: str) -> dict[str, bool]:
@@ -52,7 +54,37 @@ def apply_profile(options: InstallOptions) -> InstallOptions:
         doctor=defaults["doctor"] if options.doctor is None else options.doctor,
         dry_run=options.dry_run,
         profile=options.profile,
+        parts=options.parts,
     )
+
+
+def normalize_parts(parts: tuple[str, ...] | list[str] | str | None) -> tuple[str, ...] | None:
+    if parts is None:
+        return None
+    raw_items: list[str]
+    if isinstance(parts, str):
+        raw_items = [item.strip() for item in parts.split(",")]
+    else:
+        raw_items = [str(item).strip() for item in parts]
+
+    cleaned = [item for item in raw_items if item]
+    if not cleaned:
+        return None
+
+    normalized: list[str] = []
+    for item in cleaned:
+        token = item.lower()
+        if token in {"all", "*"}:
+            return PART_CHOICES
+        if token == "global":
+            token = "globals"
+        if token == "shell-cli":
+            token = "cli"
+        if token not in PART_CHOICES:
+            raise ValueError(f"Unsupported install part: {item}")
+        if token not in normalized:
+            normalized.append(token)
+    return tuple(normalized)
 
 
 def cli_name_for_target(target: str) -> str:
@@ -148,6 +180,10 @@ def _parse_manifest() -> list[dict[str, str]]:
             }
         )
     return entries
+
+
+def _manifest_entry_part(entry: dict[str, str]) -> str:
+    return "project" if "${PROJECT_DIR}" in entry["destination"] else "globals"
 
 
 def _expand_path(template: str, values: dict[str, str]) -> Path:
@@ -353,6 +389,7 @@ def install(options: InstallOptions) -> int:
             doctor=options.doctor,
             dry_run=options.dry_run,
             profile=options.profile,
+            parts=options.parts,
         )
     )
 
@@ -360,8 +397,11 @@ def install(options: InstallOptions) -> int:
         raise ValueError(f"Unsupported target: {options.target}")
     if options.mode not in {"copy", "link"}:
         raise ValueError(f"Unsupported mode: {options.mode}")
-    install_cli = bool(options.install_cli)
-    doctor = bool(options.doctor)
+    selected_parts = normalize_parts(options.parts)
+    install_globals = True if selected_parts is None else "globals" in selected_parts
+    install_project = True if selected_parts is None else "project" in selected_parts
+    install_cli = bool(options.install_cli) if selected_parts is None else "cli" in selected_parts
+    doctor = bool(options.doctor) if selected_parts is None else "doctor" in selected_parts
 
     repo_root = options.repo_root
     skill_src = repo_root / "research-paper-workflow"
@@ -387,6 +427,8 @@ def install(options: InstallOptions) -> int:
     print(f"  target:  {options.target} | mode: {options.mode}")
     if options.profile:
         print(f"  profile: {options.profile}")
+    if selected_parts is not None:
+        print(f"  parts:   {', '.join(selected_parts)}")
     if install_cli:
         print(f"  cli:     install -> {options.cli_dir}")
 
@@ -397,10 +439,20 @@ def install(options: InstallOptions) -> int:
     for section_target in section_targets:
         if options.target not in {section_target, "all"}:
             continue
+        entries_for_target = [
+            entry
+            for entry in manifest_entries
+            if entry["target"] == section_target
+            and (
+                (install_globals and _manifest_entry_part(entry) == "globals")
+                or (install_project and _manifest_entry_part(entry) == "project")
+            )
+        ]
+        if not entries_for_target:
+            continue
+
         _print_section(section_target.capitalize() if section_target != "antigravity" else "Antigravity")
-        for entry in manifest_entries:
-            if entry["target"] != section_target:
-                continue
+        for entry in entries_for_target:
             op = entry["op"]
             label = entry["label"]
             src = repo_root / entry["source"]
@@ -437,11 +489,12 @@ def install(options: InstallOptions) -> int:
     if install_cli:
         _install_shell_cli(options)
 
-    _print_section("Project Env")
-    for entry in manifest_entries:
-        if entry["target"] != "project":
-            continue
-        _copy_display(repo_root / entry["source"], _expand_path(entry["destination"], manifest_values), entry["label"], options)
+    if install_project:
+        _print_section("Project Env")
+        for entry in manifest_entries:
+            if entry["target"] != "project":
+                continue
+            _copy_display(repo_root / entry["source"], _expand_path(entry["destination"], manifest_values), entry["label"], options)
 
     if doctor:
         _run_doctor(options.project_dir, options.dry_run)

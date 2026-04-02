@@ -45,6 +45,10 @@ There are two distributions of this CLI:
 - Python CLI: installed via `pip`/`pipx`
 - Shell CLI: installed by `bootstrap_research_skill.sh` into `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` by default
 
+Shared commands: `check`, `upgrade`, `align`
+
+Python-only commands: `doctor`, `init`
+
 ### 2.1 `rsk check` (Check versions/Available updates)
 
 Use Case:
@@ -79,6 +83,10 @@ rsk upgrade \
   [--target codex|claude|gemini|antigravity|all] \
   [--mode copy|link] \
   [--project-dir <path>] \
+  [--install-cli] \
+  [--no-cli] \
+  [--cli-dir <path>] \
+  [--parts globals,project,cli,doctor] \
   [--no-overwrite] \
   [--doctor] \
   [--dry-run]
@@ -86,11 +94,37 @@ rsk upgrade \
 
 Notes:
 - `--project-dir` tells the installer where to write the project-level integrations (e.g., `.agent/workflows/`, `.agents/skills/`, `CLAUDE.md`, `.gemini/`).
+- `--parts` narrows the install surface, for example `project` for project-only assets or `project,doctor` for a lightweight refresh plus validation.
 - `--mode link` is suitable for "maintaining a local clone" (symlink-based installation); `--mode copy` is best for one-off installs or CI.
 - Shell CLI uses the bundled bootstrap helper and does not require Python.
 - The command exits with the error code returned by the underlying installer.
 
-### 2.3 `rsk align` (Quick Reference Guide)
+### 2.3 `rsk doctor` (Python CLI only)
+
+Use Case:
+- Runs orchestrator doctor against a target project path with a shorter command.
+
+```bash
+rsk doctor [--cwd <path>]
+```
+
+### 2.4 `rsk init` (Python CLI only)
+
+Use Case:
+- Initializes project-facing workflow assets directly from the installed package.
+- Defaults to `--parts project`, so it is useful when you want to wire a repo without downloading a new release archive.
+
+```bash
+rsk init \
+  [--project-dir <path>] \
+  [--target codex|claude|gemini|antigravity|all] \
+  [--mode copy|link] \
+  [--parts globals,project,cli,doctor] \
+  [--overwrite] \
+  [--doctor] \
+  [--dry-run]
+```
+### 2.5 `rsk align` (Quick Reference Guide)
 
 Use Case: Prints an overview of "what pipx installed / paths modified by upgrades / common commands".
 

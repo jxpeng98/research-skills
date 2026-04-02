@@ -8,7 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from research_skills.universal_installer import PROFILE_CHOICES, TARGET_CHOICES, InstallOptions, install
+from research_skills.universal_installer import PART_CHOICES, PROFILE_CHOICES, TARGET_CHOICES, InstallOptions, install
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -44,6 +44,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--doctor", action="store_true", help="Force doctor after install.")
     parser.add_argument("--no-doctor", action="store_true", help="Skip doctor even in full profile.")
     parser.add_argument("--cli-dir", help="Directory for shell CLI binaries.")
+    parser.add_argument(
+        "--parts",
+        help=f"Comma-separated install surfaces to apply: {', '.join(PART_CHOICES)}.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Show install actions without writing files.")
     return parser
 
@@ -75,6 +79,7 @@ def main() -> int:
         doctor=doctor,
         dry_run=args.dry_run,
         profile=args.profile,
+        parts=tuple(part.strip() for part in str(args.parts or "").split(",") if part.strip()) or None,
     )
     return install(options)
 

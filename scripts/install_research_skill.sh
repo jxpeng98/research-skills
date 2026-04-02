@@ -12,6 +12,10 @@ RUN_DOCTOR=0
 INSTALL_CLI=0
 PROFILE="custom"
 CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
+PARTS_SPEC=""
+PARTS_ACTIVE=0
+INSTALL_GLOBALS=1
+INSTALL_PROJECT=1
 
 # ── ANSI colors (respects NO_COLOR) ──────────────────────────────────────────
 if [[ -z "${NO_COLOR:-}" ]] && [[ -t 1 ]]; then
@@ -64,6 +68,9 @@ Options:
   --install-cli                        Install shell CLI commands (`research-skills`, `rsk`, `rsw`)
   --no-cli                             Skip shell CLI installation
   --cli-dir <path>                     Directory for shell CLI binaries (default: RESEARCH_SKILLS_BIN_DIR or ~/.local/bin)
+  --parts <globals,project,cli,doctor>
+                                       Install only specific surfaces. If omitted, globals + project stay on,
+                                       while cli / doctor still follow profile flags and explicit switches.
   --overwrite                           Overwrite existing installed files
   --doctor                              Run orchestrator doctor after install
   --dry-run                             Print actions without writing files
@@ -101,6 +108,51 @@ apply_profile_defaults() {
       exit 2
       ;;
   esac
+}
+
+parse_parts_spec() {
+  local raw="${1:-}"
+  local old_ifs="$IFS"
+  local token normalized
+
+  INSTALL_GLOBALS=0
+  INSTALL_PROJECT=0
+  INSTALL_CLI=0
+  RUN_DOCTOR=0
+
+  IFS=','
+  for token in $raw; do
+    token="$(printf '%s' "$token" | tr '[:upper:]' '[:lower:]')"
+    token="${token#"${token%%[![:space:]]*}"}"
+    token="${token%"${token##*[![:space:]]}"}"
+    case "$token" in
+      "" )
+        ;;
+      all|"*")
+        INSTALL_GLOBALS=1
+        INSTALL_PROJECT=1
+        INSTALL_CLI=1
+        RUN_DOCTOR=1
+        ;;
+      global|globals)
+        INSTALL_GLOBALS=1
+        ;;
+      project)
+        INSTALL_PROJECT=1
+        ;;
+      cli|shell-cli)
+        INSTALL_CLI=1
+        ;;
+      doctor)
+        RUN_DOCTOR=1
+        ;;
+      *)
+        err "Unsupported install part: $token"
+        exit 2
+        ;;
+    esac
+  done
+  IFS="$old_ifs"
 }
 
 run_cmd() {
@@ -474,11 +526,13 @@ install_antigravity_workspace() {
 
 install_manifest_target() {
   local wanted_target="$1"
-  local manifest_target op label source_rel dest_tpl
+  local manifest_target op label source_rel dest_tpl part
   while IFS=$'\t' read -r manifest_target op label source_rel dest_tpl; do
     [[ -n "$manifest_target" ]] || continue
     [[ "$manifest_target" == \#* ]] && continue
     [[ "$manifest_target" == "$wanted_target" ]] || continue
+    part="$(manifest_entry_part "$dest_tpl")"
+    manifest_part_enabled "$part" || continue
     apply_manifest_entry "$op" "$label" "$source_rel" "$dest_tpl"
   done < "$MANIFEST_PATH"
 }
@@ -491,6 +545,39 @@ install_project_manifest() {
     [[ "$manifest_target" == "project" ]] || continue
     apply_manifest_entry "$op" "$label" "$source_rel" "$dest_tpl"
   done < "$MANIFEST_PATH"
+}
+
+manifest_entry_part() {
+  local dest_tpl="$1"
+  if [[ "$dest_tpl" == *'${PROJECT_DIR}'* ]]; then
+    printf 'project\n'
+  else
+    printf 'globals\n'
+  fi
+}
+
+manifest_part_enabled() {
+  local part="$1"
+  case "$part" in
+    globals) [[ "$INSTALL_GLOBALS" -eq 1 ]] ;;
+    project) [[ "$INSTALL_PROJECT" -eq 1 ]] ;;
+    *) return 1 ;;
+  esac
+}
+
+target_has_enabled_entries() {
+  local wanted_target="$1"
+  local manifest_target op label source_rel dest_tpl part
+  while IFS=$'\t' read -r manifest_target op label source_rel dest_tpl; do
+    [[ -n "$manifest_target" ]] || continue
+    [[ "$manifest_target" == \#* ]] && continue
+    [[ "$manifest_target" == "$wanted_target" ]] || continue
+    part="$(manifest_entry_part "$dest_tpl")"
+    if manifest_part_enabled "$part"; then
+      return 0
+    fi
+  done < "$MANIFEST_PATH"
+  return 1
 }
 
 # ── Parse arguments ──────────────────────────────────────────────────────────
@@ -528,6 +615,12 @@ while [[ $# -gt 0 ]]; do
     --cli-dir)
       [[ $# -ge 2 ]] || { echo "Missing value for --cli-dir" >&2; exit 2; }
       CLI_DIR="$2"
+      shift 2
+      ;;
+    --parts)
+      [[ $# -ge 2 ]] || { echo "Missing value for --parts" >&2; exit 2; }
+      PARTS_SPEC="$2"
+      PARTS_ACTIVE=1
       shift 2
       ;;
     --overwrite)
@@ -574,6 +667,9 @@ esac
 
 PROJECT_DIR="$(resolve_abs "$PROJECT_DIR")"
 CLI_DIR="$(resolve_abs "$CLI_DIR")"
+if [[ "$PARTS_ACTIVE" -eq 1 ]]; then
+  parse_parts_spec "$PARTS_SPEC"
+fi
 SKILL_SRC="$ROOT_DIR/research-paper-workflow"
 if [[ ! -f "$SKILL_SRC/SKILL.md" ]]; then
   echo "Missing skill source: $SKILL_SRC/SKILL.md" >&2
@@ -592,6 +688,9 @@ info "source:  $SKILL_SRC"
 info "project: $PROJECT_DIR"
 info "target:  $TARGET  |  mode: $MODE"
 info "profile: $PROFILE"
+if [[ "$PARTS_ACTIVE" -eq 1 ]]; then
+  info "parts:   $PARTS_SPEC"
+fi
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   info "cli:     install -> $CLI_DIR"
 fi
@@ -624,31 +723,41 @@ esac
 
 # ── Install targets ──────────────────────────────────────────────────────────
 if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
-  section "Codex"
-  install_manifest_target codex
+  if target_has_enabled_entries codex; then
+    section "Codex"
+    install_manifest_target codex
+  fi
 fi
 
 if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
-  section "Claude"
-  install_manifest_target claude
+  if target_has_enabled_entries claude; then
+    section "Claude"
+    install_manifest_target claude
+  fi
 fi
 
 if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
-  section "Gemini"
-  install_manifest_target gemini
+  if target_has_enabled_entries gemini; then
+    section "Gemini"
+    install_manifest_target gemini
+  fi
 fi
 
 if [[ "$TARGET" == "antigravity" || "$TARGET" == "all" ]]; then
-  section "Antigravity"
-  install_manifest_target antigravity
+  if target_has_enabled_entries antigravity; then
+    section "Antigravity"
+    install_manifest_target antigravity
+  fi
 fi
 
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   install_cli_assets
 fi
 
-section "Project Env"
-install_project_manifest
+if [[ "$INSTALL_PROJECT" -eq 1 ]]; then
+  section "Project Env"
+  install_project_manifest
+fi
 
 # ── Doctor ───────────────────────────────────────────────────────────────────
 if [[ "$RUN_DOCTOR" -eq 1 ]]; then

@@ -27,6 +27,8 @@ FULLTEXT_PROVIDER_PRIORITIES = {
     "builtin_fulltext_stub": 20,
 }
 FULLTEXT_RESOLUTION_CONTRACT_VERSION = "resolver_manifest_overlay_v1"
+FULLTEXT_RESOLUTION_BUNDLE_VERSION = "fulltext_resolution_bundle_v1"
+FULLTEXT_DEFAULT_MODE = "planning_stub_with_optional_overlay"
 
 
 def run_fulltext_retrieval(
@@ -63,6 +65,10 @@ def run_fulltext_retrieval(
     )
     screening_rows = _build_screening_rows(manifest_rows)
     summary_counts = _summarize_manifest(manifest_rows)
+    resolution_bundle = _build_resolution_bundle(
+        manifest_rows,
+        resolution_info=resolution_info,
+    )
 
     if manifest_rows:
         summary = (
@@ -106,6 +112,7 @@ def run_fulltext_retrieval(
             "screening_full_text_rows": screening_rows[:200],
             "summary_counts": summary_counts,
             "artifact_bundle": _artifact_bundle(),
+            "resolution_bundle": resolution_bundle,
             "dedup_log": dedup_log[:100],
             "existing_manifest_count": len(existing_manifest),
             "external_resolution": resolution_info,
@@ -715,6 +722,69 @@ def _artifact_bundle() -> dict[str, str]:
         "retrieval_manifest": "retrieval_manifest.csv",
         "screening_full_text": "screening/full_text.md",
     }
+
+
+def _build_resolution_bundle(
+    manifest_rows: list[dict[str, str]],
+    *,
+    resolution_info: dict[str, Any],
+) -> dict[str, Any]:
+    pending_records: list[dict[str, str]] = []
+    resolved_records = 0
+    for row in manifest_rows:
+        status = row.get("retrieval_status", "")
+        if status in {"retrieved_oa", "retrieved_preprint", "abstract_only"}:
+            resolved_records += 1
+            continue
+        pending_records.append(
+            {
+                "record_id": row.get("record_id", ""),
+                "citekey": row.get("citekey", ""),
+                "doi": row.get("doi", ""),
+                "retrieval_status": status,
+                "preferred_action": _preferred_resolver_action(row),
+                "access_url": row.get("access_url", ""),
+                "fulltext_path": row.get("fulltext_path", ""),
+                "source_provider": row.get("source_provider", ""),
+            }
+        )
+
+    next_actions: list[dict[str, Any]] = []
+    if pending_records:
+        grouped: dict[str, int] = {}
+        for row in pending_records:
+            grouped[row["preferred_action"]] = grouped.get(row["preferred_action"], 0) + 1
+        for action, count in sorted(grouped.items()):
+            next_actions.append(
+                {
+                    "step": action,
+                    "pending_records": count,
+                }
+            )
+
+    return {
+        "bundle_version": FULLTEXT_RESOLUTION_BUNDLE_VERSION,
+        "default_mode": FULLTEXT_DEFAULT_MODE,
+        "resolver_contract_version": FULLTEXT_RESOLUTION_CONTRACT_VERSION,
+        "resolver_configured": bool(resolution_info.get("configured")),
+        "pending_records": pending_records[:200],
+        "pending_count": len(pending_records),
+        "resolved_count": resolved_records,
+        "next_actions": next_actions,
+    }
+
+
+def _preferred_resolver_action(row: dict[str, str]) -> str:
+    status = row.get("retrieval_status", "")
+    if status == "not_retrieved:oa_candidate":
+        return "resolve_oa_candidate"
+    if status == "not_retrieved:needs_provider":
+        return "resolve_via_library_or_provider"
+    if status == "not_retrieved:path_missing":
+        return "repair_local_manifest_path"
+    if status == "not_retrieved:missing_locator":
+        return "repair_bibliographic_locator"
+    return "review_resolution_state"
 
 
 def _append_note(existing: str, addition: str) -> str:

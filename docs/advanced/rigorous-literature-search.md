@@ -32,7 +32,7 @@ So the strictest practical baseline today is:
 - built-in Semantic Scholar for discovery
 - built-in metadata-registry for local normalization, plus OpenAlex MCP for authoritative enrichment
 - built-in citation graph for snowballing
-- built-in fulltext planning stub, plus Zotero / OA resolver for actual full-text downloads
+- built-in fulltext planning stub, plus Zotero / OA resolver for actual full-text downloads; builtin output now carries a stable `resolution_bundle` for resolver handoff
 
 ## Standard Literature Bundle
 
@@ -104,6 +104,7 @@ If you also want local full-text planning without wiring a resolver yet, the bui
 - `retrieval_manifest.csv` draft rows
 - `screening/full_text.md` draft rows
 - `not_retrieved:oa_candidate` / `not_retrieved:needs_provider` / `not_retrieved:missing_locator` status hints
+- `resolution_bundle.pending_records` and grouped `next_actions` for the next resolver step
 
 ### Option C. Review-Grade Multi-Source Setup
 

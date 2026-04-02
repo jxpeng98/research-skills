@@ -32,7 +32,7 @@
 - 用内置 Semantic Scholar 做发现
 - 用内置 metadata-registry 做本地规范化，再用 OpenAlex MCP 做权威 enrichment
 - 用内置 citation graph 做 snowballing
-- 用内置全文 planning stub 打底，再用 Zotero / OA resolver 做真实全文获取
+- 用内置全文 planning stub 打底，再用 Zotero / OA resolver 做真实全文获取；builtin 输出现在会携带稳定的 `resolution_bundle` 供 resolver 直接消费
 
 ## 标准 Literature Bundle
 
@@ -131,6 +131,7 @@ RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 - `retrieval_manifest.csv` 草稿行
 - `screening/full_text.md` 草稿行
 - `not_retrieved:oa_candidate` / `not_retrieved:needs_provider` / `not_retrieved:missing_locator` 这类状态提示
+- `resolution_bundle.pending_records` 和聚合后的 `next_actions`，方便下一步接入 resolver
 
 ### 方案 C：Review-Grade 多源方案
 

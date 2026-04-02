@@ -92,6 +92,8 @@ export RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD="python3 -m openalex_mcp"
 
 这个 provider 现在也有仓库内置的 retrieval-planning stub。内置模式不会真正下载 PDF，但会根据本地文献产物草拟 `retrieval_manifest.csv` 和 `screening/full_text.md`，保留已有 manifest 行、检查本地路径是否存在，并标出需要 OA/manual follow-up 的条目。
 
+这个问题现在已经有明确结论：默认仍然保留 **planning stub first**，但 builtin 输出会额外暴露更强的 `resolution_bundle`，因此外部 resolver 不需要替换整个 provider 才能稳定接手未完成行。
+
 resolver handoff 现在按分层合同处理：
 - 默认保留 builtin stub 作为 planning baseline
 - 当你希望外部解析器把真实获取结果写回 manifest 时，设置 `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD`
@@ -106,6 +108,7 @@ resolver handoff 现在按分层合同处理：
 - wrapper 可以返回 `data.retrieval_manifest` 或 `data.manifest_rows`
 - 为了兼容 bridge-friendly wrapper，行级字段别名也会被接受：`reference_id`/`id`、`status`、`pdf_path`/`file_path`、`url`/`resolved_url`、`rights`、`version`
 - builtin merge 结果现在会暴露 `external_resolution.contract_version` 和 `external_resolution.merge_trace`，方便 wrapper 和维护者审计哪些字段真正被 resolver 接管
+- builtin provider 输出现在还会暴露 `resolution_bundle`，其中包含 `default_mode`、`pending_records` 和聚合后的 `next_actions`，外部 resolver 不必重新解析整份 manifest 才能继续执行
 
 **推荐工具：**
 

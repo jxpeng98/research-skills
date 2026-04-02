@@ -398,6 +398,14 @@ class MCPConnectorTests(unittest.TestCase):
 
         self.assertEqual(evidence.status, "ok")
         self.assertEqual(evidence.data["provider_mode"], "builtin_fulltext_manifest_stub")
+        self.assertEqual(
+            evidence.data["resolution_bundle"]["default_mode"],
+            "planning_stub_with_optional_overlay",
+        )
+        self.assertEqual(
+            evidence.data["resolution_bundle"]["resolver_contract_version"],
+            "resolver_manifest_overlay_v1",
+        )
         self.assertEqual(evidence.data["record_count"], 1)
         self.assertEqual(
             evidence.data["retrieval_manifest"][0]["retrieval_status"],
@@ -453,6 +461,7 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(evidence.status, "ok")
         self.assertEqual(evidence.data["provider_mode"], "builtin_fulltext_manifest_overlay")
         self.assertTrue(evidence.data["external_resolution"]["configured"])
+        self.assertTrue(evidence.data["resolution_bundle"]["resolver_configured"])
         self.assertEqual(
             evidence.data["external_resolution"]["contract_version"],
             "resolver_manifest_overlay_v1",

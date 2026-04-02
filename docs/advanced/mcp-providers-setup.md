@@ -92,6 +92,8 @@ Set `RESEARCH_MCP_METADATA_REGISTRY_CMD` only if you want to replace the builtin
 
 This provider now has a built-in retrieval-planning stub. The builtin mode does not download PDFs, but it can draft `retrieval_manifest.csv` and `screening/full_text.md` from local literature artifacts, preserve existing manifest rows, verify referenced local files, and flag OA/manual follow-up candidates.
 
+Decision: the default stays **planning stub first**, but the builtin output now also exposes a stronger resolver abstraction surface through `resolution_bundle`. That means you do not need to replace the builtin provider just to hand off unresolved rows cleanly to Zotero or another resolver.
+
 Resolver handoff should follow a layered contract:
 - keep the builtin stub as the planning baseline
 - use `RESEARCH_MCP_FULLTEXT_RETRIEVAL_RESOLVE_CMD` when you want an external resolver to update manifest rows with actual retrieval outcomes
@@ -106,6 +108,7 @@ The current resolver handoff contract is `resolver_manifest_overlay_v1`:
 - wrappers can return either `data.retrieval_manifest` or `data.manifest_rows`
 - row aliases are accepted for bridge-friendly wrappers: `reference_id`/`id`, `status`, `pdf_path`/`file_path`, `url`/`resolved_url`, `rights`, `version`
 - builtin merge results now expose `external_resolution.contract_version` and `external_resolution.merge_trace` so wrappers and maintainers can audit how resolver fields were applied
+- builtin provider output also exposes `resolution_bundle` with `default_mode`, `pending_records`, and grouped `next_actions`, so external resolvers can consume a stable handoff view without reparsing the whole manifest
 
 **Recommended tools:**
 

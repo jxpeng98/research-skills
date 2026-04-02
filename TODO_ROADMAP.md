@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 24
+- Verified completed workstreams: 25
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 8
+- Active TODOs: 7
 - Deferred future bets: 5
 
 ---
@@ -247,6 +247,12 @@ Key facts confirmed from current repo:
 - [x] Derived repo-local resume checkpoints from `screening/*.md` and `retrieval_manifest.csv`
 - [x] Documented when builtin screening checkpoints are enough versus when an external reviewer tracker is still required
 
+### 25. Fulltext Resolver Abstraction Decision
+
+- [x] Kept `fulltext-retrieval` as a planning stub by default instead of forcing a full external override
+- [x] Added `resolution_bundle` so pending manifest rows can be handed to external resolvers through a stable abstraction surface
+- [x] Documented the default-mode decision and the new handoff bundle in EN/ZH literature setup guides
+
 ---
 
 ---
@@ -288,7 +294,7 @@ Key facts confirmed from current repo:
 
 - [ ] Consolidate MCP integration for literature search
   - [x] add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment
-  - decide whether `fulltext-retrieval` should remain a planning stub by default or grow a stronger resolver abstraction
+  - [x] decide whether `fulltext-retrieval` should remain a planning stub by default or grow a stronger resolver abstraction
   - [x] tighten external-provider handoff contracts so builtin literature artifacts can be consumed cleanly by bridge-level wrappers
 
 - [x] Close the YAML <-> portable markdown contract gap

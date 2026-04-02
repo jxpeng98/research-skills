@@ -141,6 +141,43 @@ A profile can define:
 - Recommended MCPs: `submission-kit`, `metadata-registry`, `reporting-guidelines`
 - Agent combination: Primary `claude`, Review `gemini/codex`
 
+## 4.1) `team-run` Acceptance Workflow (`B1`, `H3`)
+
+`team-run` is the fanout/fanin execution mode for the current MVP tasks:
+
+- `B1`: planner or fallback partitioning for systematic-review shards
+- `H3`: fixed reviewer personas (`methodologist`, `domain_expert`, `reviewer_2`)
+
+Use the receipt helper to capture one real run instead of relying only on mock tests:
+
+```bash
+python3 scripts/capture_team_run_acceptance.py \
+  --task-id B1 \
+  --paper-type systematic-review \
+  --topic acceptance-probe \
+  --cwd . \
+  --max-units 2 \
+  --receipt release/acceptance/team-run-b1-local-receipt.md
+
+python3 scripts/capture_team_run_acceptance.py \
+  --task-id H3 \
+  --paper-type empirical \
+  --topic acceptance-probe \
+  --cwd . \
+  --receipt release/acceptance/team-run-h3-local-receipt.md
+```
+
+Interpretation rules:
+
+- `Barrier Status: ok`: all shards reached merge/review.
+- `Barrier Status: degraded`: enough shards succeeded to merge; keep the receipt and inspect missing shard notes before trusting the merged output.
+- `Barrier Status: blocked`: treat the receipt as environment evidence, not product acceptance. Keep the exact blocking observations.
+
+Current local receipts in this repo show two concrete block classes:
+
+- `B1`: outbound scholarly-search resolution failed and optional external MCP overlays were not configured.
+- `H3`: `claude` / `gemini` CLIs were absent from `PATH`, and the Codex worker produced no consumable agent message.
+
 ## 5) Execution Entry Points (Unified)
 
 It is recommended to run a pre-flight check first:

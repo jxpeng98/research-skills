@@ -452,7 +452,7 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("\"required_outputs\": [\n    \"manuscript/manuscript.md\"\n  ]", result.merged_analysis)
         self.assertIn("\"deferred_outputs\": [", result.merged_analysis)
         self.assertIn("manuscript/results_interpretation.md", result.merged_analysis)
-        self.assertIn("Output control: policy=focused, active_outputs=1/3.", result.merged_analysis)
+        self.assertIn("Output control: policy=focused, active_outputs=1/5.", result.merged_analysis)
 
     def test_build_task_prompts_include_deep_research_constraints(self) -> None:
         orchestrator = MockOrchestrator()

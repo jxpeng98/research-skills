@@ -189,12 +189,14 @@ Key facts confirmed from current repo:
 - [x] Added golden eval coverage for `systematic-review-prisma`, `empirical-study`, and `theory-paper`
 - [x] Added eval drift tests so cases must reference real pipelines and pipeline-owned skills
 
+### 16. Team-Run Acceptance and Documentation
+
+- [x] Captured real `team-run` acceptance receipts for `B1` and `H3`
+- [x] Recorded concrete block/degrade observations from local runtime conditions
+- [x] Added a reusable receipt helper for future `team-run` acceptance runs
+- [x] Updated collaboration-layer docs for `team-run` in EN/ZH mirrors
+
 ---
-
-## Verified but Not Yet Fully Accepted
-
-- [ ] `team-run` still needs real-agent acceptance evidence for `B1`
-- [ ] `team-run` still needs real-agent acceptance evidence for `H3`
 
 ---
 
@@ -207,10 +209,7 @@ Key facts confirmed from current repo:
 - [x] ~~Implement a real `validator-gate` in `task-run`~~ (Completed in Milestone 13)
   - TODO: add `--skip-validation` CLI flag with warning output
 
-- [ ] Complete real-agent acceptance for `team-run`
-  - run one real acceptance path for `B1`
-  - run one real acceptance path for `H3`
-  - record receipts plus degrade/block observations
+- [x] ~~Complete real-agent acceptance for `team-run`~~ (Completed in Milestone 16)
 
 ### P1 Near-Term
 
@@ -218,10 +217,7 @@ Key facts confirmed from current repo:
   - move contract/capability-map parsing to a safe structured parser
   - emit clear parse failures instead of silent extraction drift
 
-- [ ] Finish collaboration-layer docs for `team-run`
-  - update `docs/advanced/agent-skill-collaboration.md`
-  - update `docs/zh/advanced/agent-skill-collaboration.md`
-  - keep `guides/advanced/*` mirrors aligned
+- [x] ~~Finish collaboration-layer docs for `team-run`~~ (Completed in Milestone 16)
 
 - [ ] Generalize `model-collaborator` from code-only to research-wide collaboration language
 

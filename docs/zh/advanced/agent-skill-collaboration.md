@@ -141,6 +141,43 @@ profile 可定义：
 - 推荐 MCP：`submission-kit`, `metadata-registry`, `reporting-guidelines`
 - agent 组合：主执行 `claude`，复核 `gemini/codex`
 
+## 4.1) `team-run` 验收流程（`B1`, `H3`）
+
+`team-run` 是当前 MVP 的 fanout/fanin 执行模式：
+
+- `B1`：用于系统综述分片，先走 planner，失败时退回单 shard fallback
+- `H3`：固定 reviewer persona（`methodologist`、`domain_expert`、`reviewer_2`）
+
+不要只看 mock 单测，建议用 receipt 脚本记录至少一次真实运行：
+
+```bash
+python3 scripts/capture_team_run_acceptance.py \
+  --task-id B1 \
+  --paper-type systematic-review \
+  --topic acceptance-probe \
+  --cwd . \
+  --max-units 2 \
+  --receipt release/acceptance/team-run-b1-local-receipt.md
+
+python3 scripts/capture_team_run_acceptance.py \
+  --task-id H3 \
+  --paper-type empirical \
+  --topic acceptance-probe \
+  --cwd . \
+  --receipt release/acceptance/team-run-h3-local-receipt.md
+```
+
+判读规则：
+
+- `Barrier Status: ok`：所有 shard 都进入 merge/review。
+- `Barrier Status: degraded`：成功 shard 足以继续 merge，但必须保留 receipt 并人工检查缺失 shard 的说明。
+- `Barrier Status: blocked`：只能算环境证据，不能算功能已绿；必须保留精确的阻塞观察。
+
+当前仓库内的本地 receipt 已记录两类真实阻塞：
+
+- `B1`：scholarly-search 的外网解析失败，且外部 MCP overlay 未配置。
+- `H3`：`claude` / `gemini` CLI 不在 `PATH` 中，同时 Codex worker 没有产出可消费的 agent message。
+
 ## 5) 运行入口（统一）
 
 建议先做预检：

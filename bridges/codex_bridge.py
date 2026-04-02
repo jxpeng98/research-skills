@@ -77,6 +77,7 @@ class CodexBridge(BaseBridge):
         agent_messages = ""
         thread_id: str | None = None
         errors: list[str] = []
+        log_lines: list[str] = []
         
         for line in lines:
             try:
@@ -99,11 +100,13 @@ class CodexBridge(BaseBridge):
                         data.get("error", {}).get("message", "") or
                         data.get("message", "")
                     )
-                    if error_msg and "Reconnecting" not in error_msg:
+                    if error_msg:
                         errors.append(error_msg)
                         
             except json.JSONDecodeError:
-                errors.append(f"JSON decode error: {line[:100]}")
+                # Codex may emit plain-text warnings before the JSON event stream.
+                if line:
+                    log_lines.append(line[:200])
             except Exception as e:
                 errors.append(f"Parse error: {e}")
         
@@ -117,11 +120,17 @@ class CodexBridge(BaseBridge):
             )
         
         if not agent_messages:
+            detail_parts: list[str] = []
+            if errors:
+                detail_parts.append(errors[-1])
+            if log_lines:
+                detail_parts.append(log_lines[-1])
+            detail = f" Last observed issue: {' | '.join(detail_parts)}" if detail_parts else ""
             return BridgeResponse(
                 success=False,
                 model="codex",
                 session_id=thread_id,
-                error="No agent messages received. Try with --return-all-messages.",
+                error=f"Codex did not emit agent messages.{detail}",
                 raw_messages=all_messages,
             )
         

@@ -488,6 +488,18 @@ artifact_types:
     produced_by: [self-critique]
     consumed_by: [research-orchestrator]
 
+  - name: ResearchStateSnapshot
+    description: "Project-level academic state summary capturing current question, locked decisions, evidence position, disputes, and next-stage priorities"
+    format: markdown
+    produced_by: [academic-context-maintainer]
+    consumed_by: [manuscript-architect, discussion-writer, submission-packager, fatal-flaw-detector, reviewer-empathy-checker, model-collaborator, self-critique]
+
+  - name: ResearchDecisionLog
+    description: "Auditable decision ledger recording why major framing, design, synthesis, and submission choices were made"
+    format: markdown
+    produced_by: [academic-context-maintainer]
+    consumed_by: [study-designer, ethics-irb-helper, evidence-synthesizer, manuscript-architect, submission-packager, model-collaborator]
+
   - name: LiteratureCorpus
     description: "Working literature corpus assembled from search and screening steps"
     format: markdown

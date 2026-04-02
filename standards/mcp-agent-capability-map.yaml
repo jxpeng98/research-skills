@@ -286,6 +286,7 @@ skill_registry:
   - "slide-architect"
   - "slidev-scholarly-builder"
   - "beamer-builder"
+  - "academic-context-maintainer"
   - "data-dictionary-builder"
   - "data-management-plan"
   - "prereg-writer"
@@ -300,6 +301,13 @@ skill_registry:
   - "qualitative-coding"
 
 skill_catalog:
+  academic-context-maintainer:
+    file: "skills/Z_cross_cutting/academic-context-maintainer.md"
+    category: "research-continuity"
+    focus: "Maintain project-level academic state continuity across major stage transitions."
+    default_outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
   qualitative-coding:
     file: "skills/E_synthesis/qualitative-coding.md"
     category: "synthesis"
@@ -539,6 +547,14 @@ skill_catalog:
     focus: "Coordinate independent multi-agent execution, disagreement logging, and synthesis across research tasks."
     default_outputs:
       - "logs/model_collab_trace.md"
+
+  academic-context-maintainer:
+    file: "skills/Z_cross_cutting/academic-context-maintainer.md"
+    category: "research-continuity"
+    focus: "Maintain project-level academic state continuity across major stage transitions."
+    default_outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
 
   self-critique:
     file: "skills/Z_cross_cutting/self-critique.md"
@@ -919,6 +935,7 @@ task_skill_mapping:
     required_skills:
       - "venue-analyzer"
       - "academic-searcher"
+      - "academic-context-maintainer"
 
   B1:
     required_skills:
@@ -957,6 +974,7 @@ task_skill_mapping:
     required_skills:
       - "literature-mapper"
       - "paper-extractor"
+      - "academic-context-maintainer"
 
   C1:
     required_skills:
@@ -990,6 +1008,7 @@ task_skill_mapping:
     required_skills:
       - "study-designer"
       - "metadata-enricher"
+      - "academic-context-maintainer"
 
   D1:
     required_skills:
@@ -1004,6 +1023,7 @@ task_skill_mapping:
     required_skills:
       - "deidentification-planner"
       - "ethics-irb-helper"
+      - "academic-context-maintainer"
 
   E1:
     required_skills:
@@ -1033,6 +1053,7 @@ task_skill_mapping:
       - "evidence-synthesizer"
       - "manuscript-architect"
       - "qualitative-coding"
+      - "academic-context-maintainer"
 
   F1:
     required_skills:
@@ -1065,6 +1086,7 @@ task_skill_mapping:
     required_skills:
       - "meta-optimizer"
       - "manuscript-architect"
+      - "academic-context-maintainer"
 
   G1:
     required_skills:
@@ -1110,6 +1132,7 @@ task_skill_mapping:
       - "fatal-flaw-detector"
       - "limitation-auditor"
       - "self-critique"
+      - "academic-context-maintainer"
 
   I1:
     required_skills:

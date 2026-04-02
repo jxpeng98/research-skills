@@ -55,7 +55,7 @@ skills/
 ├── H_submission/    (submission-packager, rebuttal-assistant, peer-review-simulation, fatal-flaw-detector, reviewer-empathy-checker, credit-taxonomy-helper, limitation-auditor)
 ├── I_code/          (code-builder, data-cleaning-planner, data-merge-planner, code-specification, code-planning, code-execution, code-review, reproducibility-auditor, stats-engine)
 ├── K_presentation/  (presentation-planner, slide-architect, slidev-scholarly-builder, beamer-builder)
-├── Z_cross_cutting/ (metadata-enricher, model-collaborator, self-critique)
+├── Z_cross_cutting/ (academic-context-maintainer, metadata-enricher, model-collaborator, self-critique)
 └── domain-profiles/ (economics, finance, psychology, biomedical, education, cs-ai, ...)
 ```
 
@@ -63,6 +63,7 @@ skills/
 
 ```
 RESEARCH/[topic]/
+├── context/                 # Project-level research state + decision log
 ├── framing/                 # A-stage outputs (RQ, hypothesis, contribution, venue)
 ├── protocol.md              # Research protocol
 ├── search_log.md            # Reproducible search records

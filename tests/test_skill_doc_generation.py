@@ -29,6 +29,11 @@ class SkillDocGenerationTests(unittest.TestCase):
             "literature screening, peer review simulation, rebuttal drafting, qualitative coding, or code/statistics validation",
             en_doc,
         )
+        self.assertIn("| `academic-context-maintainer` | Academic Context Maintainer |", en_doc)
+        self.assertIn(
+            "stage-aware academic state summary that preserves research question scope, locked methodological choices, stable findings, unresolved disputes, and decision rationale",
+            en_doc,
+        )
 
     def test_generated_skill_docs_include_localized_registry_metadata(self) -> None:
         generated = generate_skill_reference_docs(REPO_ROOT)
@@ -59,6 +64,8 @@ class SkillDocGenerationTests(unittest.TestCase):
 
         for token in (
             "J_proofread/",
+            "academic-context-maintainer",
+            "context/",
             "statement-generator",
             "effect-size-calculator",
             "qualitative-coding",

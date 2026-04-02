@@ -5,6 +5,8 @@ scope: "cross-model academic paper workflow"
 artifacts:
   root: "RESEARCH/[topic]/"
   required_core:
+    - "context/research_state.md"
+    - "context/decision_log.md"
     - "protocol.md"
     - "framing/research_question.md"
     - "framing/contribution_statement.md"
@@ -128,12 +130,47 @@ literature_evidence_bundle:
         - "version and provenance tracking"
         - "retrieval status needed for PRISMA-style reporting"
 
+academic_context_continuity:
+  artifacts:
+    - "context/research_state.md"
+    - "context/decision_log.md"
+  refresh_points:
+    A: "Lock the working research question, scope boundaries, construct definitions, contribution thesis, and venue-positioning assumptions."
+    B: "Summarize the literature topology, inclusion/exclusion logic, evidence gaps, and contested concepts that must survive into design and writing."
+    C: "Record design commitments, identification logic, measurement choices, dataset constraints, and preregistration-facing decision rules."
+    D: "Update ethics constraints, privacy limits, deidentification commitments, and any design changes forced by participant-risk or governance concerns."
+    E: "Distinguish stable findings from tentative signals, document heterogeneity/nulls/conflicts, and preserve the current evidence position before manuscript drafting."
+    F: "Carry forward the manuscript thesis, claims-evidence alignment status, interpretation boundaries, and remaining narrative or analytical fragilities."
+    H: "Summarize reviewer-sensitive weaknesses, locked revision strategy, unresolved fatal risks, and submission-readiness blockers."
+  research_state_required_sections:
+    - "Paper identity and current stage status"
+    - "Current research question, thesis, or contribution claim"
+    - "Scope boundaries and contested definitions"
+    - "Locked decisions with rationale and confidence"
+    - "Stable findings or current evidence position"
+    - "Active contradictions, nulls, or unresolved disputes"
+    - "Current risk register and fragility points"
+    - "Next-stage priorities"
+    - "Source artifact anchors"
+  decision_log_required_fields:
+    - "decision_id"
+    - "stage"
+    - "decision"
+    - "status"
+    - "rationale"
+    - "alternatives_rejected"
+    - "evidence_basis"
+    - "revisit_trigger"
+    - "downstream_impact"
+
 stages:
   - id: "A"
     name: "framing-positioning"
     sequence_index: 1
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "framing/research_question.md"
       - "framing/hypothesis.md"
       - "framing/contribution_statement.md"
@@ -145,6 +182,8 @@ stages:
     sequence_index: 2
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "protocol.md"
       - "search_strategy.md"
       - "literature/concept_extraction.md"
@@ -165,6 +204,8 @@ stages:
     sequence_index: 3
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "study_design.md"
       - "design/rival_hypotheses.md"
       - "instruments/"
@@ -179,6 +220,8 @@ stages:
     sequence_index: 4
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "ethics_irb.md"
       - "compliance/deidentification_plan.md"
   - id: "E"
@@ -186,6 +229,8 @@ stages:
     sequence_index: 5
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "meta_analysis_plan.md"
       - "effect_size_table.md"
       - "meta_analysis_results.md"
@@ -225,6 +270,8 @@ stages:
     sequence_index: 7
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "manuscript/outline.md"
       - "manuscript/manuscript.md"
       - "manuscript/discussion.md"
@@ -259,6 +306,8 @@ stages:
     sequence_index: 10
     phase_type: "core"
     outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
       - "submission/cover_letter.md"
       - "submission/submission_checklist.md"
       - "submission/title_page.md"

@@ -1333,6 +1333,25 @@ skills:
     tooling_requirements: [filesystem, metadata-registry]
     domain_aware: false
 
+  - id: academic-context-maintainer
+    stage: Z_cross_cutting
+    version: "0.4.0"
+    file: skills/Z_cross_cutting/academic-context-maintainer.md
+    canonical: true
+    summary: "Maintain project-level academic continuity by updating research state, locked decisions, disputes, and next-stage priorities across major workflow transitions."
+    display_name: "Academic Context Maintainer"
+    when_to_use: "Use when you need a stage-aware academic state summary that preserves research question scope, locked methodological choices, stable findings, unresolved disputes, and decision rationale across long-running paper workflows."
+    summary_zh: "通过阶段性更新研究状态、关键决策、争议点和下一步优先级，维护项目级学术上下文连续性。"
+    display_name_zh: "学术上下文维护"
+    when_to_use_zh: "当你需要在长周期论文流程中持续保留研究问题边界、已锁定方法决策、稳定结论和未解决争议时使用。"
+    inputs: [TaskPacket, AnyArtifact]
+    outputs: [ResearchStateSnapshot, ResearchDecisionLog]
+    tags: [cross-cutting, context, continuity, state-tracking, decision-log, handoff]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
   - id: model-collaborator
     stage: Z_cross_cutting
     version: "0.4.0"

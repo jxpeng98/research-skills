@@ -147,6 +147,7 @@ def generate_workflow_contract_reference(root: Path) -> str:
     paper_types = contract.get("paper_types", [])
     task_catalog = contract.get("task_catalog", {})
     quality_gates = contract.get("quality_gates", [])
+    academic_context = contract.get("academic_context_continuity", {})
 
     ordered_task_ids = sorted(task_catalog.keys(), key=_task_sort_key)
 
@@ -213,6 +214,57 @@ def generate_workflow_contract_reference(root: Path) -> str:
         )
         if gate_id:
             lines.append(f"- `{gate_id}`: {label}")
+
+    if academic_context:
+        lines.extend(
+            [
+                "",
+                "## Academic Context Continuity",
+                "",
+                "Use this layer to preserve project-level academic state across long-running stage transitions.",
+                "",
+            ]
+        )
+        for artifact in academic_context.get("artifacts", []):
+            lines.append(f"- artifact: `{artifact}`")
+
+        refresh_points = academic_context.get("refresh_points", {}) or {}
+        if refresh_points:
+            lines.extend(
+                [
+                    "",
+                    "### Refresh Points",
+                    "",
+                ]
+            )
+            for stage_id in ("A", "B", "C", "D", "E", "F", "H"):
+                note = str(refresh_points.get(stage_id, "")).strip()
+                if note:
+                    lines.append(f"- `{stage_id}`: {note}")
+
+        required_sections = academic_context.get("research_state_required_sections", []) or []
+        if required_sections:
+            lines.extend(
+                [
+                    "",
+                    "### `context/research_state.md` must preserve",
+                    "",
+                ]
+            )
+            for item in required_sections:
+                lines.append(f"- {item}")
+
+        required_fields = academic_context.get("decision_log_required_fields", []) or []
+        if required_fields:
+            lines.extend(
+                [
+                    "",
+                    "### `context/decision_log.md` must preserve",
+                    "",
+                ]
+            )
+            for item in required_fields:
+                lines.append(f"- `{item}`")
 
     lines.extend(
         [

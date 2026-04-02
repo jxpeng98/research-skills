@@ -103,6 +103,47 @@ Use this contract as the single source of truth for:
 - `Q3`: Reporting checklist complete
 - `Q4`: Reproducibility baseline documented
 
+## Academic Context Continuity
+
+Use this layer to preserve project-level academic state across long-running stage transitions.
+
+- artifact: `context/research_state.md`
+- artifact: `context/decision_log.md`
+
+### Refresh Points
+
+- `A`: Lock the working research question, scope boundaries, construct definitions, contribution thesis, and venue-positioning assumptions.
+- `B`: Summarize the literature topology, inclusion/exclusion logic, evidence gaps, and contested concepts that must survive into design and writing.
+- `C`: Record design commitments, identification logic, measurement choices, dataset constraints, and preregistration-facing decision rules.
+- `D`: Update ethics constraints, privacy limits, deidentification commitments, and any design changes forced by participant-risk or governance concerns.
+- `E`: Distinguish stable findings from tentative signals, document heterogeneity/nulls/conflicts, and preserve the current evidence position before manuscript drafting.
+- `F`: Carry forward the manuscript thesis, claims-evidence alignment status, interpretation boundaries, and remaining narrative or analytical fragilities.
+- `H`: Summarize reviewer-sensitive weaknesses, locked revision strategy, unresolved fatal risks, and submission-readiness blockers.
+
+### `context/research_state.md` must preserve
+
+- Paper identity and current stage status
+- Current research question, thesis, or contribution claim
+- Scope boundaries and contested definitions
+- Locked decisions with rationale and confidence
+- Stable findings or current evidence position
+- Active contradictions, nulls, or unresolved disputes
+- Current risk register and fragility points
+- Next-stage priorities
+- Source artifact anchors
+
+### `context/decision_log.md` must preserve
+
+- `decision_id`
+- `stage`
+- `decision`
+- `status`
+- `rationale`
+- `alternatives_rejected`
+- `evidence_basis`
+- `revisit_trigger`
+- `downstream_impact`
+
 ## Stage Guides
 
 Use these when you need more operational detail than the task table provides:

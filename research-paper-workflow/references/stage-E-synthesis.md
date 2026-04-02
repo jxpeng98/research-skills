@@ -9,10 +9,11 @@ This stage produces defensible synthesis: narrative, qualitative, and/or quantit
 - `E3` → `meta_analysis_results.md`
 - `E3_5` → `synthesis/publication_bias.md`
 - `E4` → `grade_sof.md`
-- `E5` → `synthesis.md`
+- `E5` → `synthesis.md`, `synthesis/qualitative_data_dictionary.md`, `synthesis/thematic_codebook.md`
 
 Supporting artifact (core for transparency):
 - `synthesis_matrix.md`
+- `synthesis/qualitative_data_dictionary.md` and `synthesis/thematic_codebook.md` when the synthesis includes qualitative evidence
 
 ## Quality gate focus
 
@@ -126,6 +127,7 @@ Write into: `grade_sof.md`.
 **Definition of done**
 - `synthesis.md` conclusions are supported by extraction + quality tables
 - `synthesis_matrix.md` makes the narrative traceable (themes × papers)
+- Qualitative synthesis tracks constructs and theme definitions in `synthesis/qualitative_data_dictionary.md` and `synthesis/thematic_codebook.md`
 - Limitations and certainty statements are calibrated (avoid overclaim)
 - Downstream manuscript drafting can reuse concise interpretation notes from E3/E5 in `manuscript/results_interpretation.md`
 

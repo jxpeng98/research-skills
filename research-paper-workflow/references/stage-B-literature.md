@@ -35,6 +35,10 @@ Treat the literature stack as four coordinated layers, not one blob:
 
 If a workflow touches literature evidence, it should respect those ownership boundaries even when one runtime agent executes multiple steps.
 
+Execution rule:
+- literature discovery and retrieval should flow through MCP/provider adapters (`scholarly-search`, `citation-graph`, `metadata-registry`, `fulltext-retrieval`) rather than hard-coded direct web-tool calls inside skill prose
+- manual spot checks are allowed, but they must be logged as supplemental evidence instead of becoming the default reproducible pipeline
+
 Builtin baseline expectation:
 - `citation-graph` should first try to derive seed identifiers from `search_results.csv`, `bibliography.bib`, and `notes/` before requiring an explicit `target_paper_id`
 - `metadata-registry` should treat `bibliography.bib` as the canonical export, but it may derive normalized reference state from `references.json`, `references.ris`, `search_results.csv`, and `notes/`
@@ -50,7 +54,7 @@ Use `B1` when you want an end-to-end pipeline. If you only need one component (e
 
 - A protocol statement exists (`protocol.md`) with scope + eligibility criteria
 - `search_strategy.md` contains reproducible database queries (exact strings + limits)
-- `search_log.md` records dates/timestamps + counts per source
+- `search_log.md` records dates/timestamps + counts per source, plus the provider or overlay used for each execution
 - `search_results.csv` is a dedup-ready record table (one row per record)
 - `dedup_log.csv` records merge/drop decisions and the basis for each dedup action
 - `snowball_log.md` records citation-based expansions when used

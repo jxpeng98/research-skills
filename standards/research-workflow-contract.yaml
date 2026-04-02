@@ -193,6 +193,8 @@ stages:
       - "synthesis_matrix.md"
       - "synthesis.md"
       - "synthesis/publication_bias.md"
+      - "synthesis/qualitative_data_dictionary.md"
+      - "synthesis/thematic_codebook.md"
   - id: "I"
     name: "research-code-support"
     sequence_index: 6
@@ -225,6 +227,8 @@ stages:
     outputs:
       - "manuscript/outline.md"
       - "manuscript/manuscript.md"
+      - "manuscript/discussion.md"
+      - "manuscript/discussion_story_spine.md"
       - "manuscript/claims_evidence_map.md"
       - "manuscript/figures_tables_plan.md"
       - "manuscript/results_interpretation.md"
@@ -271,6 +275,8 @@ stages:
       - "revision/response_letter.md"
       - "revision/peer_review_simulation.md"
       - "revision/fatal_flaw_analysis.md"
+      - "revision/limitations_audit.md"
+      - "revision/limitation_mitigations.md"
 
 task_catalog:
   A1:
@@ -439,6 +445,8 @@ task_catalog:
     title: "integrated-synthesis"
     outputs:
       - "synthesis.md"
+      - "synthesis/qualitative_data_dictionary.md"
+      - "synthesis/thematic_codebook.md"
   F1:
     stage: "F"
     title: "manuscript-outline"
@@ -454,6 +462,8 @@ task_catalog:
     title: "full-manuscript-draft"
     outputs:
       - "manuscript/manuscript.md"
+      - "manuscript/discussion.md"
+      - "manuscript/discussion_story_spine.md"
       - "manuscript/results_interpretation.md"
       - "manuscript/effect_interpretation.md"
   F4:
@@ -550,6 +560,8 @@ task_catalog:
     title: "fatal-flaw-analysis"
     outputs:
       - "revision/fatal_flaw_analysis.md"
+      - "revision/limitations_audit.md"
+      - "revision/limitation_mitigations.md"
   I5:
     stage: "I"
     title: "code-specification"

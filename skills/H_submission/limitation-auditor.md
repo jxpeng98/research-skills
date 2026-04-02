@@ -9,9 +9,9 @@ inputs:
     description: "The core research design and constraints"
 outputs:
   - type: LimitationSection
-    artifact: "tools/limitations_audit.md"
+    artifact: "revision/limitations_audit.md"
   - type: MitigationStrategy
-    artifact: "tools/limitation_mitigations.md"
+    artifact: "revision/limitation_mitigations.md"
 constraints:
   - "Must map limitations directly to research design flaws or data constraints"
   - "Must include a mitigation or justification for each limitation"
@@ -37,9 +37,10 @@ Use during the late drafting or pre-submission phase when the Methods and Discus
 
 ## Expected Inputs
 
-- `RESEARCH/[topic]/manuscript_fragments/03_methods.md`
-- `RESEARCH/[topic]/manuscript_fragments/05_results.md`
-- `RESEARCH/[topic]/manuscript_fragments/06_discussion.md`
+- `RESEARCH/[topic]/manuscript/manuscript.md`
+- `RESEARCH/[topic]/study_design.md`
+- `RESEARCH/[topic]/analysis_plan.md`
+- `RESEARCH/[topic]/manuscript/discussion.md` (or the integrated discussion section inside `manuscript/manuscript.md`)
 
 ## Process
 
@@ -63,7 +64,7 @@ For each identified limitation, structure the audit:
 4. **Future Directions:** Clearly specify how subsequent studies could overcome this constraint.
 
 ### Step 4: Output Generation
-Create the `limitations_audit.md` mapping out the limitations, and provide a polished text block (`limitation_mitigations.md`) that can be copy-pasted directly into the manuscript's Discussion/Conclusion section.
+Create `revision/limitations_audit.md` to map the limitations, and provide a polished text block in `revision/limitation_mitigations.md` that can be merged back into the manuscript's Discussion/Conclusion section.
 
 ## Quality Bar
 

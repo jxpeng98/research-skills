@@ -35,9 +35,9 @@ Conduct systematic searches across academic databases to find relevant scholarly
 ## Purpose
 
 Execute comprehensive literature searches using:
-- Semantic Scholar API (primary)
-- arXiv API (CS/AI/Physics/Math)
-- Web search for Google Scholar, PubMed, etc.
+- `scholarly-search` as the primary discovery layer
+- provider APIs such as Semantic Scholar, OpenAlex, Crossref, and arXiv through the MCP/provider layer
+- optional external overlays for domain-specific sources or manual supplementary checks
 
 ## Granularity Boundary
 
@@ -81,15 +81,15 @@ Do not collapse all literature responsibilities into this skill just because one
 
 | Database | Coverage | Access Method | Best For |
 |----------|----------|---------------|----------|
-| Semantic Scholar | 200M+ papers, all domains | API | Broad searches, citations |
-| arXiv | Physics, Math, CS, Stats | API | Preprints, CS/AI research |
-| OpenAlex | 250M+ works, all domains | API | Bibliometrics, author data |
-| Crossref | 140M+ DOIs | API | Metadata verification |
-| Google Scholar | Broad coverage | Web search | Comprehensive coverage |
-| PubMed | Biomedical, Life sciences | Web search | Medical research |
-| SSRN | Social sciences, Economics | Web search | Business, Law, Economics |
-| Unpaywall | OA status for DOIs | API | Full-text availability |
-| CORE | 200M+ OA articles | API | Repository content |
+| Semantic Scholar | 200M+ papers, all domains | `scholarly-search` builtin/provider adapter | Broad searches, citations |
+| arXiv | Physics, Math, CS, Stats | `scholarly-search` provider adapter | Preprints, CS/AI research |
+| OpenAlex | 250M+ works, all domains | `scholarly-search` or `metadata-registry` overlay | Bibliometrics, author data |
+| Crossref | 140M+ DOIs | `metadata-registry` overlay | Metadata verification |
+| Google Scholar | Broad coverage | Manual supplementary check or external scholarly provider | Edge-case recall checks |
+| PubMed | Biomedical, Life sciences | External scholarly provider wired into `scholarly-search` | Medical research |
+| SSRN | Social sciences, Economics | External scholarly provider wired into `scholarly-search` | Business, Law, Economics |
+| Unpaywall | OA status for DOIs | `fulltext-retrieval` resolver / overlay | Full-text availability |
+| CORE | 200M+ OA articles | `fulltext-retrieval` resolver / overlay | Repository content |
 
 ## Process
 
@@ -133,22 +133,22 @@ Use `templates/search-strategy.md` to keep concept groups, synonyms, limits, and
 
 ### Step 2: Execute Searches
 
-For each database:
+For each provider family, execute through the MCP/provider layer rather than hard-coded direct web tools:
 
 1. **Semantic Scholar**
-   - Use search_web tool with site:semanticscholar.org
-   - Or construct API call via read_url_content
+   - Route the query through `scholarly-search`
+   - Keep the provider name, translated query, and filter set in `search_log.md`
    - Extract: title, authors, year, abstract, citation count, PDF link
 
 2. **arXiv**
-   - Use read_url_content with arXiv API endpoint
-   - Parse Atom feed response
+   - Use the `scholarly-search` provider adapter or equivalent external MCP wired into the same contract
+   - Parse and normalize the provider response into the shared search-results schema
    - Extract: title, authors, abstract, categories, PDF link
 
-3. **Google Scholar**
-   - Use search_web tool
-   - Filter by date range
-   - Note: Limited metadata
+3. **Domain-specific or supplementary sources**
+   - Prefer a configured scholarly provider overlay (for example PubMed or SSRN) over ad hoc browsing
+   - If a manual spot check is necessary, log it explicitly as supplemental evidence instead of mixing it into the default provider pipeline
+   - Normalize any retained records before they enter `search_results.csv`
 
 ### Step 3: Result Processing
 
@@ -377,7 +377,7 @@ Minimum review-grade stack:
 5. Snowball backward and forward citations from high-value seed papers
 6. Resolve full text with provenance before synthesis
 
-Avoid using Google Scholar as the primary reproducible pipeline source. It can still be useful for manual spot checks, but it is not the default audit-friendly fallback for this system.
+Avoid using Google Scholar as the primary reproducible pipeline source. It can still be useful for manual spot checks, but it is not the default audit-friendly fallback for this system. The canonical execution path in this repo is the MCP/provider stack, with provider names and translated queries logged in `search_log.md`.
 
 ## Usage
 

@@ -44,14 +44,15 @@ The skill system covers the full research lifecycle across 11 stages:
 
 ```
 skills/
-├── A_framing/       (question-refiner, hypothesis-generator, theory-mapper, gap-analyzer, venue-analyzer)
+├── A_framing/       (question-refiner, contribution-crafter, hypothesis-generator, theory-mapper, gap-analyzer, venue-analyzer)
 ├── B_literature/    (academic-searcher, paper-screener, paper-extractor, citation-snowballer, fulltext-fetcher, citation-formatter, concept-extractor, literature-mapper, reference-manager-bridge)
-├── C_design/        (study-designer, rival-hypothesis-designer, robustness-planner, dataset-finder, variable-constructor)
-├── D_ethics/        (ethics-irb-helper, deidentification-planner)
-├── E_synthesis/     (evidence-synthesizer, quality-assessor, publication-bias-checker)
-├── F_writing/       (manuscript-architect, analysis-interpreter, effect-size-interpreter, table-generator, figure-specifier, meta-optimizer)
+├── C_design/        (study-designer, rival-hypothesis-designer, robustness-planner, dataset-finder, variable-constructor, data-dictionary-builder, data-management-plan, prereg-writer, variable-operationalizer)
+├── D_ethics/        (ethics-irb-helper, statement-generator, deidentification-planner)
+├── E_synthesis/     (effect-size-calculator, evidence-synthesizer, quality-assessor, publication-bias-checker, qualitative-coding)
+├── F_writing/       (manuscript-architect, analysis-interpreter, effect-size-interpreter, table-generator, figure-specifier, meta-optimizer, discussion-writer)
 ├── G_compliance/    (prisma-checker, reporting-checker, tone-normalizer)
-├── H_submission/    (submission-packager, rebuttal-assistant, peer-review-simulation, fatal-flaw-detector, reviewer-empathy-checker)
+├── J_proofread/     (ai-fingerprint-scanner, human-voice-rewriter, similarity-checker, final-proofreader)
+├── H_submission/    (submission-packager, rebuttal-assistant, peer-review-simulation, fatal-flaw-detector, reviewer-empathy-checker, credit-taxonomy-helper, limitation-auditor)
 ├── I_code/          (code-builder, data-cleaning-planner, data-merge-planner, code-specification, code-planning, code-execution, code-review, reproducibility-auditor, stats-engine)
 ├── K_presentation/  (presentation-planner, slide-architect, slidev-scholarly-builder, beamer-builder)
 ├── Z_cross_cutting/ (metadata-enricher, model-collaborator, self-critique)
@@ -70,6 +71,7 @@ RESEARCH/[topic]/
 ├── extraction_table.md      # Data extraction table
 ├── synthesis.md             # Final synthesis report
 ├── manuscript/              # Outline, draft, claims map, figures plan
+├── proofread/               # AI detection, humanization, similarity, final proofread
 ├── submission/              # Cover letter, checklist, statements
 ├── revision/                # Rebuttal + response materials
 ├── analysis/                # Code + data pipelines
@@ -110,5 +112,5 @@ Two-tier loading for token efficiency:
   - `references/stage-G-compliance.md` (tasks G1–G4)
   - `references/stage-J-proofread.md` (tasks J1–J4)
   - `references/stage-H-submission.md` (tasks H1–H4)
-  - `references/stage-I-code.md` (tasks I1–I8)
+  - `references/stage-I-code.md` (tasks I1–I9)
   - `references/stage-K-presentation.md` (tasks K1–K4)

@@ -60,10 +60,10 @@ Use this contract as the single source of truth for:
 | `E3` | E | Meta-analysis write-up | `meta_analysis_results.md` |
 | `E3_5` | E | Publication bias assessment | `synthesis/publication_bias.md` |
 | `E4` | E | Certainty grading | `grade_sof.md` |
-| `E5` | E | Integrated synthesis | `synthesis.md` |
+| `E5` | E | Integrated synthesis | `synthesis.md`, `synthesis/qualitative_data_dictionary.md`, `synthesis/thematic_codebook.md` |
 | `F1` | F | Manuscript outline | `manuscript/outline.md` |
 | `F2` | F | Single section writing | `manuscript/manuscript.md` |
-| `F3` | F | Full draft | `manuscript/manuscript.md`, `manuscript/results_interpretation.md`, `manuscript/effect_interpretation.md` |
+| `F3` | F | Full draft | `manuscript/manuscript.md`, `manuscript/discussion.md`, `manuscript/discussion_story_spine.md`, `manuscript/results_interpretation.md`, `manuscript/effect_interpretation.md` |
 | `F4` | F | Claim-evidence map | `manuscript/claims_evidence_map.md` |
 | `F5` | F | Figures/tables plan | `manuscript/figures_tables_plan.md`, `manuscript/tables/`, `manuscript/figures/` |
 | `F6` | F | Abstract & Title Optimization | `manuscript/meta_optimization.md` |
@@ -75,7 +75,7 @@ Use this contract as the single source of truth for:
 | `H2` | H | Rebuttal package | `revision/` |
 | `H2_5` | H | Reviewer empathy check | `revision/reviewer_empathy_check.md` |
 | `H3` | H | Peer review simulation | `revision/peer_review_simulation.md` |
-| `H4` | H | Fatal flaw analysis | `revision/fatal_flaw_analysis.md` |
+| `H4` | H | Fatal flaw analysis | `revision/fatal_flaw_analysis.md`, `revision/limitations_audit.md`, `revision/limitation_mitigations.md` |
 | `I1` | I | Method implementation | `analysis/` |
 | `I2` | I | Reproduction | `analysis/` |
 | `I3` | I | Data pipeline | `analysis/`, `data/cleaning_plan.md`, `data/merge_plan.md` |

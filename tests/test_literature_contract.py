@@ -48,8 +48,26 @@ class LiteratureContractTests(unittest.TestCase):
             "`retrieval_manifest.csv`",
             "candidate_record_id,canonical_record_id,decision,match_basis,resolver,notes",
             "record_id,citekey,doi,retrieval_status,version_label,source_provider",
+            "MCP/provider adapters",
+            "supplemental evidence",
         ):
             self.assertIn(token, content)
+
+    def test_academic_searcher_uses_provider_layer_language(self) -> None:
+        content = (REPO_ROOT / "skills" / "B_literature" / "academic-searcher.md").read_text(
+            encoding="utf-8"
+        )
+
+        for token in (
+            "`scholarly-search` as the primary discovery layer",
+            "through the MCP/provider layer",
+            "configured scholarly provider overlay",
+            "canonical execution path in this repo is the MCP/provider stack",
+        ):
+            self.assertIn(token, content)
+
+        self.assertNotIn("search_web tool", content)
+        self.assertNotIn("read_url_content", content)
 
     def test_literature_templates_exist(self) -> None:
         self.assertTrue((REPO_ROOT / "templates" / "dedup-log.csv").exists())

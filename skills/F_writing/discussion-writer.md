@@ -9,9 +9,9 @@ inputs:
     description: "Original contribution mapping from the introduction"
 outputs:
   - type: DiscussionDraft
-    artifact: "manuscript_fragments/06_discussion.md"
+    artifact: "manuscript/discussion.md"
   - type: StorySpine
-    artifact: "tools/discussion_story_spine.md"
+    artifact: "manuscript/discussion_story_spine.md"
 constraints:
   - "Must avoid restating results in detail; focus on interpretation"
   - "Must link findings back to the existing literature and theoretical framework"
@@ -37,9 +37,10 @@ Use after the Results section has been drafted and the primary findings are fina
 
 ## Expected Inputs
 
-- `RESEARCH/[topic]/manuscript_fragments/05_results.md`
-- `RESEARCH/[topic]/framing.md` (for the RQ and Contribution)
-- `RESEARCH/[topic]/literature_review.md` (to connect back to the existing gap)
+- `RESEARCH/[topic]/manuscript/manuscript.md`
+- `RESEARCH/[topic]/framing/research_question.md`
+- `RESEARCH/[topic]/framing/contribution_statement.md`
+- `RESEARCH/[topic]/literature/literature_map.md`
 
 ## Process
 
@@ -66,8 +67,8 @@ Map the principal findings to the core narrative using a structured spine:
 
 ### Step 5: Integration and Tone Check
 - Review the draft to ensure a balanced, scholarly tone. Avoid hyperbolic language (e.g., "proves," "solves").
-- Output the draft to `06_discussion.md`.
-- Output the structural mapping to `discussion_story_spine.md`.
+- Output the discussion draft to `manuscript/discussion.md`.
+- Output the structural mapping to `manuscript/discussion_story_spine.md`.
 
 ## Quality Bar
 

@@ -9,9 +9,9 @@ inputs:
     description: "Research question and domain context"
 outputs:
   - type: DataDictionary
-    artifact: "data_dictionary.md"
+    artifact: "synthesis/qualitative_data_dictionary.md"
   - type: ThematicCodebook
-    artifact: "thematic_codebook.md"
+    artifact: "synthesis/thematic_codebook.md"
 constraints:
   - "Must employ systematically documented codes with clear definitions"
   - "Must establish an audit trail mapping quotes to codes and themes"
@@ -62,11 +62,13 @@ Use after raw qualitative data has been collected or extracted, but before the f
 - Identify a "core category" if conducting grounded theory.
 
 ### Step 5: Codebook Generation
-Output a structured codebook (`thematic_codebook.md`) containing:
+Output a structured codebook (`synthesis/thematic_codebook.md`) containing:
 - **Theme name**
 - **Definition** (what the theme means in context)
 - **Sub-themes/Categories**
 - **Exemplary quotes** (linking back to the raw text for auditability)
+
+Also maintain a qualitative data dictionary in `synthesis/qualitative_data_dictionary.md` so constructs, participant groups, source segments, and coding conventions remain traceable during later manuscript drafting.
 
 ## Quality Bar
 

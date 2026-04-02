@@ -880,6 +880,22 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
 
 REQUIRED_SKILL_SECTIONS = {"Purpose", "Process"}
 RECOMMENDED_SKILL_SECTIONS = {"When to Use", "Quality Bar", "Common Pitfalls"}
+SKILL_STRUCTURE_WARN_MAX_LINES = 520
+SKILL_STRUCTURE_WARN_MAX_SECTIONS = 32
+ALIAS_SKILL_MAX_LINES = 80
+ALIAS_SKILL_MAX_SECTIONS = 4
+
+
+def _normalize_lint_text(value: str) -> str:
+    return " ".join(value.lower().split())
+
+
+def _count_normalized_occurrences(content: str, needle: str) -> int:
+    normalized_content = _normalize_lint_text(content)
+    normalized_needle = _normalize_lint_text(needle)
+    if not normalized_needle:
+        return 0
+    return normalized_content.count(normalized_needle)
 
 
 def validate_skill_structure(root: Path, report: ValidationReport) -> None:
@@ -894,21 +910,76 @@ def validate_skill_structure(root: Path, report: ValidationReport) -> None:
         if not skill_path.exists():
             continue
         content = skill_path.read_text(encoding="utf-8")
+        _frontmatter, body = parse_frontmatter(content)
+        line_count = len(content.splitlines())
         headings = set(
             re.findall(r"^##\s+(.+?)(?:\s*\(.+\))?\s*$", content, flags=re.MULTILINE)
         )
+        section_count = len(re.findall(r"^##\s+", content, flags=re.MULTILINE))
         for section in REQUIRED_SKILL_SECTIONS:
             report.check(
                 section in headings,
                 f"Skill {skill_id} contains required section '{section}'",
                 f"{entry.file} missing required section: '{section}'",
             )
+        if entry.alias_of:
+            report.check(
+                line_count <= ALIAS_SKILL_MAX_LINES,
+                f"Alias skill {skill_id} stays within thin-stub line budget",
+                (
+                    f"{entry.file} is registered as alias_of={entry.alias_of} but has "
+                    f"{line_count} lines (max {ALIAS_SKILL_MAX_LINES}). Keep alias skills as thin stubs."
+                ),
+            )
+            report.check(
+                section_count <= ALIAS_SKILL_MAX_SECTIONS,
+                f"Alias skill {skill_id} stays within thin-stub section budget",
+                (
+                    f"{entry.file} is registered as alias_of={entry.alias_of} but has "
+                    f"{section_count} sections (max {ALIAS_SKILL_MAX_SECTIONS}). Keep alias skills as thin stubs."
+                ),
+            )
+            report.check(
+                entry.alias_of.lower() in content.lower(),
+                f"Alias skill {skill_id} points readers to canonical skill",
+                (
+                    f"{entry.file} is registered as alias_of={entry.alias_of} but does not mention "
+                    "the canonical skill id in the markdown body."
+                ),
+            )
+            continue
         for section in RECOMMENDED_SKILL_SECTIONS:
             report.warn(
                 section in headings,
                 f"Skill {skill_id} contains recommended section '{section}'",
                 f"{entry.file} missing recommended section: '{section}'",
             )
+
+        report.warn(
+            line_count <= SKILL_STRUCTURE_WARN_MAX_LINES,
+            f"Skill {skill_id} stays within canonical line budget",
+            (
+                f"{entry.file} is {line_count} lines. Consider splitting large canonical skills or "
+                f"moving reference-heavy detail into linked docs (budget: {SKILL_STRUCTURE_WARN_MAX_LINES})."
+            ),
+        )
+        report.warn(
+            section_count <= SKILL_STRUCTURE_WARN_MAX_SECTIONS,
+            f"Skill {skill_id} stays within canonical section budget",
+            (
+                f"{entry.file} contains {section_count} top-level sections. Consider consolidating sections "
+                f"or moving checklist detail into tables/templates (budget: {SKILL_STRUCTURE_WARN_MAX_SECTIONS})."
+            ),
+        )
+        summary_occurrences = _count_normalized_occurrences(body, entry.summary)
+        report.warn(
+            summary_occurrences <= 1,
+            f"Skill {skill_id} avoids repeated registry-summary duplication",
+            (
+                f"{entry.file} repeats the registry summary {summary_occurrences} times in the markdown body. "
+                "Keep the registry summary canonical and avoid duplicating it verbatim throughout the skill."
+            ),
+        )
 
 
 def validate_generated_skill_docs(root: Path, report: ValidationReport) -> None:

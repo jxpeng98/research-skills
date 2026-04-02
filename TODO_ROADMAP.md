@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 25
+- Verified completed workstreams: 26
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 7
+- Active TODOs: 6
 - Deferred future bets: 5
 
 ---
@@ -253,6 +253,12 @@ Key facts confirmed from current repo:
 - [x] Added `resolution_bundle` so pending manifest rows can be handed to external resolvers through a stable abstraction surface
 - [x] Documented the default-mode decision and the new handoff bundle in EN/ZH literature setup guides
 
+### 26. Skill-Structure Lint Layer
+
+- [x] Added size and section-budget lint heuristics for canonical skill files
+- [x] Added registry-summary duplication linting for canonical skill markdown bodies
+- [x] Enforced thin-stub budgets and canonical-pointer checks for `alias_of` skill files
+
 ---
 
 ---
@@ -301,10 +307,7 @@ Key facts confirmed from current repo:
   - [x] auto-generate `research-paper-workflow/references/workflow-contract.md`
   - [x] enforce stronger YAML/MD equivalence validation
 
-- [ ] Add a skill-structure lint layer
-  - enforce maximum size / section-count heuristics for repo-internal skill files
-  - prevent registry-summary duplication inside markdown bodies
-  - keep alias skills as thin stubs instead of silently growing into duplicate canonical specs
+- [x] ~~Add a skill-structure lint layer~~ (Completed in Milestone 26)
 
 - [ ] Define an external skill-set borrowing framework
   - classify imported ideas into `provider`, `workflow`, `rubric`, `interaction`, or `canonical skill` before implementation

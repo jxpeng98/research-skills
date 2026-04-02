@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import re
+import yaml
 
 
 STAGE_ORDER = [
@@ -180,94 +180,43 @@ class SkillDocEntry:
     id: str
     stage: str
     file: str
+    canonical: bool
+    deprecated: bool
+    alias_of: str
     summary: str
+    display_name: str
+    when_to_use: str
     summary_zh: str
     display_name_zh: str
     when_to_use_zh: str
     outputs: list[str]
 
 
-def _extract_top_level_section(content: str, key: str) -> str:
-    match = re.search(rf"^{re.escape(key)}:\s*\n", content, flags=re.MULTILINE)
-    if not match:
-        return ""
-    start = match.end()
-    tail = content[start:]
-    next_key = re.search(r"^[A-Za-z0-9_]+:\s*", tail, flags=re.MULTILINE)
-    if not next_key:
-        return tail
-    return tail[: next_key.start()]
-
-
-def _iter_yaml_list_blocks(section: str, item_indent: int) -> list[tuple[str, str]]:
-    pattern = re.compile(
-        rf"^\s{{{item_indent}}}-\s*id:\s*([A-Za-z0-9_-]+)\s*$",
-        flags=re.MULTILINE,
-    )
-    matches = list(pattern.finditer(section))
-    blocks: list[tuple[str, str]] = []
-    for index, match in enumerate(matches):
-        start = match.start()
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(section)
-        blocks.append((match.group(1), section[start:end]))
-    return blocks
-
-
-def _parse_yaml_scalar(block: str, key: str, indent: int) -> str:
-    match = re.search(
-        rf"^\s{{{indent}}}{re.escape(key)}:\s*(.+?)\s*$",
-        block,
-        flags=re.MULTILINE,
-    )
-    if not match:
-        return ""
-    value = match.group(1).strip()
-    if (value.startswith('"') and value.endswith('"')) or (
-        value.startswith("'") and value.endswith("'")
-    ):
-        return value[1:-1]
-    return value
-
-
-def _parse_inline_yaml_list(block: str, key: str, indent: int) -> list[str]:
-    match = re.search(
-        rf"^\s{{{indent}}}{re.escape(key)}:\s*\[(.*?)\]\s*$",
-        block,
-        flags=re.MULTILINE,
-    )
-    if not match:
-        return []
-    raw = match.group(1).strip()
-    if not raw:
-        return []
-    items: list[str] = []
-    for part in re.split(r"\s*,\s*", raw):
-        item = part.strip()
-        if not item:
-            continue
-        if (item.startswith('"') and item.endswith('"')) or (
-            item.startswith("'") and item.endswith("'")
-        ):
-            item = item[1:-1]
-        items.append(item)
-    return items
-
-
 def load_skill_doc_entries(root: Path) -> list[SkillDocEntry]:
-    content = (root / "skills" / "registry.yaml").read_text(encoding="utf-8")
-    section = _extract_top_level_section(content, "skills")
+    payload = yaml.safe_load((root / "skills" / "registry.yaml").read_text(encoding="utf-8")) or {}
+    skills = payload.get("skills", [])
     entries: list[SkillDocEntry] = []
-    for skill_id, block in _iter_yaml_list_blocks(section, item_indent=2):
+    for item in skills:
+        if not isinstance(item, dict):
+            continue
+        skill_id = str(item.get("id", "")).strip()
+        if not skill_id:
+            continue
         entries.append(
             SkillDocEntry(
                 id=skill_id,
-                stage=_parse_yaml_scalar(block, "stage", indent=4),
-                file=_parse_yaml_scalar(block, "file", indent=4),
-                summary=_parse_yaml_scalar(block, "summary", indent=4),
-                summary_zh=_parse_yaml_scalar(block, "summary_zh", indent=4),
-                display_name_zh=_parse_yaml_scalar(block, "display_name_zh", indent=4),
-                when_to_use_zh=_parse_yaml_scalar(block, "when_to_use_zh", indent=4),
-                outputs=_parse_inline_yaml_list(block, "outputs", indent=4),
+                stage=str(item.get("stage", "")).strip(),
+                file=str(item.get("file", "")).strip(),
+                canonical=bool(item.get("canonical", False)),
+                deprecated=bool(item.get("deprecated", False)),
+                alias_of=str(item.get("alias_of", "")).strip(),
+                summary=str(item.get("summary", "")).strip(),
+                display_name=str(item.get("display_name", "")).strip(),
+                when_to_use=str(item.get("when_to_use", "")).strip(),
+                summary_zh=str(item.get("summary_zh", "")).strip(),
+                display_name_zh=str(item.get("display_name_zh", "")).strip(),
+                when_to_use_zh=str(item.get("when_to_use_zh", "")).strip(),
+                outputs=[str(output).strip() for output in item.get("outputs", []) if str(output).strip()],
             )
         )
     return entries
@@ -327,7 +276,7 @@ def _build_skills_by_stage_en(entries: list[SkillDocEntry]) -> str:
     lines = ["## Canonical Skills By Stage", ""]
     for stage in STAGE_ORDER:
         meta = STAGE_META_EN[stage]
-        stage_entries = [entry for entry in entries if entry.stage == stage]
+        stage_entries = [entry for entry in entries if entry.stage == stage and entry.canonical and not entry.deprecated]
         lines.extend(
             [
                 f"### {meta['label']}",
@@ -341,13 +290,13 @@ def _build_skills_by_stage_en(entries: list[SkillDocEntry]) -> str:
             lines.extend([extra, ""])
         lines.extend(
             [
-                "| Skill | What it does | Produces |",
-                "|---|---|---|",
+                "| Skill | Display Name | When to use | Produces |",
+                "|---|---|---|---|",
             ]
         )
         for entry in stage_entries:
             lines.append(
-                f"| `{entry.id}` | {entry.summary} | {_format_outputs(entry.outputs)} |"
+                f"| `{entry.id}` | {entry.display_name or entry.id} | {entry.when_to_use or entry.summary} | {_format_outputs(entry.outputs)} |"
             )
         lines.append("")
     return "\n".join(lines).rstrip()
@@ -357,7 +306,7 @@ def _build_skills_by_stage_zh(entries: list[SkillDocEntry]) -> str:
     lines = ["## 按 Stage 看 Canonical Skills", ""]
     for stage in STAGE_ORDER:
         meta = STAGE_META_ZH[stage]
-        stage_entries = [entry for entry in entries if entry.stage == stage]
+        stage_entries = [entry for entry in entries if entry.stage == stage and entry.canonical and not entry.deprecated]
         lines.extend(
             [
                 f"### {meta['label']}",
@@ -440,7 +389,7 @@ def render_skill_reference_en(root: Path) -> str:
         "",
         "::: tip Canonical Source",
         "The canonical routed skill list lives in `skills/registry.yaml`. The tables below summarize that registry for human readers.",
-        "Localized surfaces may additionally read `summary_zh`, `display_name_zh`, and `when_to_use_zh` from that registry.",
+        "User-facing surfaces may read `display_name`, `when_to_use`, `summary_zh`, `display_name_zh`, and `when_to_use_zh` directly from that registry.",
         ":::",
         "",
         "## How Users Should Read The Skills Layer",
@@ -534,7 +483,7 @@ def render_skill_reference_zh(root: Path) -> str:
         "",
         "::: tip Canonical Source",
         "系统自动路由的 canonical skill 列表以 `skills/registry.yaml` 为准；这一页是在它基础上的用户版说明。",
-        "中文界面会优先读取其中的 `summary_zh`、`display_name_zh` 和 `when_to_use_zh`。",
+        "用户界面会直接读取其中的 `display_name`、`when_to_use`、`summary_zh`、`display_name_zh` 和 `when_to_use_zh`。",
         ":::",
         "",
         "## 使用者应该怎样理解 `skills/`",

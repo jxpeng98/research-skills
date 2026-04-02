@@ -13,7 +13,7 @@
 
 ::: tip Canonical Source
 系统自动路由的 canonical skill 列表以 `skills/registry.yaml` 为准；这一页是在它基础上的用户版说明。
-中文界面会优先读取其中的 `summary_zh`、`display_name_zh` 和 `when_to_use_zh`。
+用户界面会直接读取其中的 `display_name`、`when_to_use`、`summary_zh`、`display_name_zh` 和 `when_to_use_zh`。
 :::
 
 ## 使用者应该怎样理解 `skills/`

@@ -196,6 +196,23 @@ Key facts confirmed from current repo:
 - [x] Added a reusable receipt helper for future `team-run` acceptance runs
 - [x] Updated collaboration-layer docs for `team-run` in EN/ZH mirrors
 
+### 17. Structured YAML Parsing Hardening
+
+- [x] Replaced regex-style YAML extraction in `bridges/orchestrator.py` with structured parsing helpers
+- [x] Added regression coverage for domain-profile loading and Stage-I frontmatter parsing drift
+
+### 18. Registry-Driven Skill Metadata
+
+- [x] Added `display_name` and `when_to_use` as English user-facing registry fields
+- [x] Promoted `canonical`, `alias_of`, and `deprecated` into validated registry semantics
+- [x] Switched generated skill docs and orchestrator skill cards to consume registry-driven user-facing metadata
+
+### 19. Research-Wide Collaboration Semantics
+
+- [x] Generalized `model-collaborator` wording from code-only framing to research-wide collaboration
+- [x] Routed `model-collaborator` into explicit multi-agent tasks `B1` and `H3`
+- [x] Updated collaboration guidance so systematic review and rebuttal paths surface the shared multi-agent layer
+
 ---
 
 ---
@@ -213,13 +230,11 @@ Key facts confirmed from current repo:
 
 ### P1 Near-Term
 
-- [ ] Replace regex-style YAML parsing in `bridges/orchestrator.py`
-  - move contract/capability-map parsing to a safe structured parser
-  - emit clear parse failures instead of silent extraction drift
+- [x] ~~Replace regex-style YAML parsing in `bridges/orchestrator.py`~~ (Completed in Milestone 17)
 
 - [x] ~~Finish collaboration-layer docs for `team-run`~~ (Completed in Milestone 16)
 
-- [ ] Generalize `model-collaborator` from code-only to research-wide collaboration language
+- [x] ~~Generalize `model-collaborator` from code-only to research-wide collaboration language~~ (Completed in Milestone 19)
 
 - [x] ~~Collapse duplicate / alias skill layouts into one canonical-file rule~~ (Completed in Milestone 12)
 
@@ -227,10 +242,7 @@ Key facts confirmed from current repo:
 
 - [x] ~~Standardize a strict skill file skeleton~~ (Completed in Milestone 12)
 
-- [ ] Move more user-facing skill metadata out of markdown prose and into the registry
-  - evaluate adding `display_name`, `when_to_use`, `canonical/alias`, and `deprecated` fields
-  - keep markdown focused on execution guidance rather than duplicated metadata
-  - keep generated docs and orchestrator skill cards registry-driven
+- [x] ~~Move more user-facing skill metadata out of markdown prose and into the registry~~ (Completed in Milestone 18)
 
 - [ ] Improve install/upgrade ergonomics
   - add part-level control (`--parts` or equivalent) to `scripts/install_research_skill.sh`

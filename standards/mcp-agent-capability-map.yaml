@@ -535,8 +535,8 @@ skill_catalog:
       - "data/merge_plan.md"
   model-collaborator:
     file: "skills/Z_cross_cutting/model-collaborator.md"
-    category: "multi-agent-verification"
-    focus: "Split execution and cross-review across model runtimes."
+    category: "research-collaboration"
+    focus: "Coordinate independent multi-agent execution, disagreement logging, and synthesis across research tasks."
     default_outputs:
       - "logs/model_collab_trace.md"
 
@@ -924,6 +924,7 @@ task_skill_mapping:
     required_skills:
       - "academic-searcher"
       - "paper-screener"
+      - "model-collaborator"
       - "fulltext-fetcher"
       - "paper-extractor"
       - "quality-assessor"
@@ -1101,6 +1102,7 @@ task_skill_mapping:
   H3:
     required_skills:
       - "peer-review-simulation"
+      - "model-collaborator"
       - "manuscript-architect"
       - "quality-assessor"
   H4:

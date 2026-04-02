@@ -1015,14 +1015,20 @@ Provide your verification assessment.
     def _standards_file(self, filename: str) -> Path:
         return self.standards_dir / filename
 
-    def _load_yaml(self, filename: str) -> dict[str, Any]:
-        path = self._standards_file(filename)
+    def _load_yaml_path(self, path: Path) -> dict[str, Any]:
         if not path.exists():
-            raise FileNotFoundError(f"Missing standards file: {path}")
+            raise FileNotFoundError(f"Missing YAML file: {path}")
         try:
-            return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+            loaded = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         except yaml.YAMLError as exc:
             raise ValueError(f"Invalid YAML in {path}: {exc}")
+        if not isinstance(loaded, dict):
+            raise ValueError(f"Expected YAML mapping in {path}, got {type(loaded).__name__}.")
+        return loaded
+
+    def _load_yaml(self, filename: str) -> dict[str, Any]:
+        path = self._standards_file(filename)
+        return self._load_yaml_path(path)
 
 
 
@@ -1036,8 +1042,8 @@ Provide your verification assessment.
             return self._skill_registry_metadata_cache
 
         try:
-            content = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
-        except (OSError, yaml.YAMLError):
+            content = self._load_yaml_path(registry_path)
+        except (OSError, ValueError):
             self._skill_registry_metadata_cache = {}
             return self._skill_registry_metadata_cache
 
@@ -1048,7 +1054,12 @@ Provide your verification assessment.
                 continue
             skill_id = entry["id"]
             metadata[skill_id] = {
+                "canonical": str(entry.get("canonical", "")).strip(),
+                "alias_of": str(entry.get("alias_of", "")).strip(),
+                "deprecated": str(entry.get("deprecated", "")).strip(),
                 "summary": str(entry.get("summary", "")).strip(),
+                "display_name": str(entry.get("display_name", "")).strip(),
+                "when_to_use": str(entry.get("when_to_use", "")).strip(),
                 "summary_zh": str(entry.get("summary_zh", "")).strip(),
                 "display_name_zh": str(entry.get("display_name_zh", "")).strip(),
                 "when_to_use_zh": str(entry.get("when_to_use_zh", "")).strip(),
@@ -1545,7 +1556,12 @@ Provide your verification assessment.
                     "file": skill_file,
                     "category": category,
                     "focus": focus,
+                    "canonical": str(registry_metadata.get("canonical", "")).strip(),
+                    "alias_of": str(registry_metadata.get("alias_of", "")).strip(),
+                    "deprecated": str(registry_metadata.get("deprecated", "")).strip(),
                     "summary": str(registry_metadata.get("summary", "")).strip(),
+                    "display_name": str(registry_metadata.get("display_name", "")).strip(),
+                    "when_to_use": str(registry_metadata.get("when_to_use", "")).strip(),
                     "summary_zh": str(registry_metadata.get("summary_zh", "")).strip(),
                     "display_name_zh": str(registry_metadata.get("display_name_zh", "")).strip(),
                     "when_to_use_zh": str(registry_metadata.get("when_to_use_zh", "")).strip(),
@@ -1925,14 +1941,15 @@ Provide your verification assessment.
 
         try:
             content = profile_path.read_text(encoding="utf-8")
+            payload = self._load_yaml_path(profile_path)
         except OSError:
             content = ""
+            payload = {}
+        except ValueError:
+            content = profile_path.read_text(encoding="utf-8")
+            payload = {}
 
-        display_name = normalized
-        if content:
-            match = re.search(r'^display_name:\s*"?(.*?)"?\s*$', content, re.MULTILINE)
-            if match and match.group(1).strip():
-                display_name = match.group(1).strip()
+        display_name = str(payload.get("display_name", "")).strip() or normalized
 
         excerpt_lines = content.splitlines()[:120] if content else []
         excerpt = "\n".join(excerpt_lines).strip()
@@ -2353,25 +2370,25 @@ Stage-I structure checks:
         return {mapped_task_id: resolved_targets}
 
     def _parse_simple_frontmatter(self, content: str) -> tuple[dict[str, str], str]:
-        match = re.match(r"^---\n(.*?)\n---\n?(.*)$", content, flags=re.DOTALL)
-        if not match:
+        if not content.startswith("---\n"):
             return {}, content
-        block = match.group(1)
-        body = match.group(2)
+        marker = "\n---\n"
+        end = content.find(marker, 4)
+        if end == -1:
+            return {}, content
+        block = content[4:end]
+        body = content[end + len(marker):]
+        try:
+            loaded = yaml.safe_load(block) or {}
+        except yaml.YAMLError:
+            return {}, body
+        if not isinstance(loaded, dict):
+            return {}, body
         parsed: dict[str, str] = {}
-        for line in block.splitlines():
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#"):
+        for key, value in loaded.items():
+            if value is None:
                 continue
-            item = re.match(r"^([A-Za-z0-9_-]+):\s*(.+?)\s*$", stripped)
-            if not item:
-                continue
-            key, value = item.group(1), item.group(2)
-            if (value.startswith('"') and value.endswith('"')) or (
-                value.startswith("'") and value.endswith("'")
-            ):
-                value = value[1:-1]
-            parsed[key] = value
+            parsed[str(key)] = str(value).strip()
         return parsed, body
 
     def _extract_fenced_block_after_heading(
@@ -2857,9 +2874,14 @@ Stage-I structure checks:
                     "skill": skill_name,
                     "category": str(card.get("category", "")).strip(),
                     "summary": str(card.get("summary", "")).strip(),
+                    "display_name": str(card.get("display_name", "")).strip(),
+                    "when_to_use": str(card.get("when_to_use", "")).strip(),
                     "summary_zh": str(card.get("summary_zh", "")).strip(),
                     "display_name_zh": str(card.get("display_name_zh", "")).strip(),
                     "when_to_use_zh": str(card.get("when_to_use_zh", "")).strip(),
+                    "canonical": str(card.get("canonical", "")).strip(),
+                    "alias_of": str(card.get("alias_of", "")).strip(),
+                    "deprecated": str(card.get("deprecated", "")).strip(),
                     "focus": str(card.get("focus", "")).strip(),
                     "file": file_rel,
                     "default_outputs": [
@@ -2888,11 +2910,16 @@ Stage-I structure checks:
             skill_name = str(card.get("skill", "")).strip() or "unknown-skill"
             category = str(card.get("category", "")).strip() or "unspecified"
             summary = str(card.get("summary", "")).strip()
+            display_name = str(card.get("display_name", "")).strip()
+            when_to_use = str(card.get("when_to_use", "")).strip()
             summary_zh = str(card.get("summary_zh", "")).strip()
             display_name_zh = str(card.get("display_name_zh", "")).strip()
             when_to_use_zh = str(card.get("when_to_use_zh", "")).strip()
             focus = str(card.get("focus", "")).strip() or "No focus provided."
             status = str(card.get("status", "ok")).strip() or "ok"
+            canonical = str(card.get("canonical", "")).strip()
+            deprecated = str(card.get("deprecated", "")).strip()
+            alias_of = str(card.get("alias_of", "")).strip()
             status_label = status_map.get(status, status)
             outputs = [
                 str(item)
@@ -2906,13 +2933,19 @@ Stage-I structure checks:
             if zh_ui and display_name_zh:
                 lines.append(f"- {display_name_zh} (`{skill_name}`) [{status_label}] ({category})")
             else:
-                lines.append(f"- {skill_name} [{status_label}] ({category})")
+                lines.append(f"- {(display_name or skill_name)} (`{skill_name}`) [{status_label}] ({category})")
             lines.append(
                 f"  {'summary' if not zh_ui else '摘要/summary'}: {display_summary}"
             )
+            if not zh_ui and when_to_use:
+                lines.append(f"  when_to_use: {when_to_use}")
             if zh_ui and when_to_use_zh:
                 lines.append(
                     f"  适用场景/when_to_use: {when_to_use_zh}"
+                )
+            if not zh_ui and (canonical or deprecated or alias_of):
+                lines.append(
+                    f"  registry_semantics: canonical={canonical or 'false'}, deprecated={deprecated or 'false'}, alias_of={alias_of or '-'}"
                 )
             if focus:
                 lines.append(

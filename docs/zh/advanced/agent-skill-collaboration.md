@@ -112,7 +112,7 @@ profile 可定义：
 
 ### B. 系统综述能力（`B1`）
 
-- 推荐 skills：`academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`
+- 推荐 skills：`academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`, `model-collaborator`
 - 推荐 MCP：`scholarly-search`, `screening-tracker`, `extraction-store`, `fulltext-retrieval`
 - agent 组合：主执行 `claude`，复核 `codex`
 
@@ -137,7 +137,7 @@ profile 可定义：
 ### F. 投稿与返修（`H1`~`H4`）
 
 - **多角色专家互审 (H3-H4)**：在正式投稿前，通过平行调用模拟 Methodologist、Domain Expert 等苛刻审稿人进行交叉审查（H3），并执行 Desktop-reject 致命缺陷排查（H4）。
-- 推荐 skills：`submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`
+- 推荐 skills：`submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`, `model-collaborator`
 - 推荐 MCP：`submission-kit`, `metadata-registry`, `reporting-guidelines`
 - agent 组合：主执行 `claude`，复核 `gemini/codex`
 

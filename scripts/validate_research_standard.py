@@ -7,6 +7,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -152,7 +153,12 @@ class SkillRegistryEntry:
     id: str
     stage: str
     file: str
+    canonical: bool
+    deprecated: bool
+    alias_of: str
     summary: str
+    display_name: str
+    when_to_use: str
     summary_zh: str
     display_name_zh: str
     when_to_use_zh: str
@@ -311,27 +317,30 @@ def parse_artifact_types(content: str) -> list[str]:
 
 
 def parse_skill_registry_entries(content: str) -> dict[str, SkillRegistryEntry]:
-    section = extract_top_level_section(content, "skills")
+    payload = yaml.safe_load(content) or {}
+    skills = payload.get("skills", [])
     entries: dict[str, SkillRegistryEntry] = {}
-    for skill_id, block in iter_yaml_list_blocks(section, item_indent=2):
-        stage = parse_yaml_scalar(block, "stage", indent=4)
-        file_path = parse_yaml_scalar(block, "file", indent=4)
-        summary = parse_yaml_scalar(block, "summary", indent=4)
-        summary_zh = parse_yaml_scalar(block, "summary_zh", indent=4)
-        display_name_zh = parse_yaml_scalar(block, "display_name_zh", indent=4)
-        when_to_use_zh = parse_yaml_scalar(block, "when_to_use_zh", indent=4)
-        inputs = parse_inline_yaml_list(block, "inputs", indent=4)
-        outputs = parse_inline_yaml_list(block, "outputs", indent=4)
+    for item in skills:
+        if not isinstance(item, dict) or "id" not in item:
+            continue
+        skill_id = str(item.get("id", "")).strip()
+        if not skill_id:
+            continue
         entries[skill_id] = SkillRegistryEntry(
             id=skill_id,
-            stage=stage,
-            file=file_path,
-            summary=summary,
-            summary_zh=summary_zh,
-            display_name_zh=display_name_zh,
-            when_to_use_zh=when_to_use_zh,
-            inputs=inputs,
-            outputs=outputs,
+            stage=str(item.get("stage", "")).strip(),
+            file=str(item.get("file", "")).strip(),
+            canonical=bool(item.get("canonical", False)),
+            deprecated=bool(item.get("deprecated", False)),
+            alias_of=str(item.get("alias_of", "")).strip(),
+            summary=str(item.get("summary", "")).strip(),
+            display_name=str(item.get("display_name", "")).strip(),
+            when_to_use=str(item.get("when_to_use", "")).strip(),
+            summary_zh=str(item.get("summary_zh", "")).strip(),
+            display_name_zh=str(item.get("display_name_zh", "")).strip(),
+            when_to_use_zh=str(item.get("when_to_use_zh", "")).strip(),
+            inputs=[str(v).strip() for v in item.get("inputs", []) if str(v).strip()],
+            outputs=[str(v).strip() for v in item.get("outputs", []) if str(v).strip()],
         )
     return entries
 
@@ -752,6 +761,16 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
             f"skills/registry.yaml missing summary for {skill_id}",
         )
         report.check(
+            bool(entry.display_name),
+            f"Registry English display name exists for {skill_id}",
+            f"skills/registry.yaml missing display_name for {skill_id}",
+        )
+        report.check(
+            bool(entry.when_to_use),
+            f"Registry English usage note exists for {skill_id}",
+            f"skills/registry.yaml missing when_to_use for {skill_id}",
+        )
+        report.check(
             bool(entry.summary_zh),
             f"Registry Chinese summary exists for {skill_id}",
             f"skills/registry.yaml missing summary_zh for {skill_id}",
@@ -771,6 +790,23 @@ def validate_skill_registry(root: Path, report: ValidationReport) -> None:
             f"Registry file path exists for {skill_id}",
             f"skills/registry.yaml missing file path for {skill_id}",
         )
+        report.check(
+            entry.canonical or bool(entry.alias_of),
+            f"Registry canonical/alias semantics exist for {skill_id}",
+            f"skills/registry.yaml must declare canonical or alias_of for {skill_id}",
+        )
+        if entry.alias_of:
+            report.check(
+                not entry.canonical,
+                f"Registry alias is not marked canonical for {skill_id}",
+                f"skills/registry.yaml alias entry must set canonical=false for {skill_id}",
+            )
+        else:
+            report.check(
+                entry.canonical and not entry.deprecated,
+                f"Registry canonical entry is active for {skill_id}",
+                f"skills/registry.yaml canonical entry should not be deprecated without alias_of for {skill_id}",
+            )
         if entry.file:
             report.check(
                 entry.file.startswith("skills/"),

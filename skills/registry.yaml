@@ -13,7 +13,10 @@ skills:
     stage: A_framing
     version: "0.4.0"
     file: skills/A_framing/question-refiner.md
+    canonical: true
     summary: "Transform vague topics into structured RQs via PICO/PEO + FINER evaluation."
+    display_name: "Question Refiner"
+    when_to_use: "Use when you need to transform vague topics into structured rqs via pico/peo + finer evaluation."
     summary_zh: "将模糊选题转成经过 PICO/PEO + FINER 评估的结构化研究问题。"
     display_name_zh: "研究问题精炼"
     when_to_use_zh: "当选题还模糊、范围过大或研究问题不可执行时使用。"
@@ -28,7 +31,10 @@ skills:
     stage: A_framing
     version: "0.4.0"
     file: skills/A_framing/contribution-crafter.md
+    canonical: true
     summary: "Draft a compelling contribution statement highlighting theoretical, methodological, and empirical novelty."
+    display_name: "Contribution Crafter"
+    when_to_use: "When framing the pitch for a manuscript introduction"
     summary_zh: "提炼突显理论、方法与实证新颖性的贡献声明。"
     display_name_zh: "贡献提炼"
     when_to_use_zh: "当引言需要点明主要贡献，或需要为文章定位和强调创新点时使用。"
@@ -44,7 +50,10 @@ skills:
     stage: A_framing
     version: "0.4.0"
     file: skills/A_framing/hypothesis-generator.md
+    canonical: true
     summary: "Translate RQs into testable hypotheses with mechanisms and boundary conditions."
+    display_name: "Hypothesis Generator"
+    when_to_use: "Use when you need to translate rqs into testable hypotheses with mechanisms and boundary conditions."
     summary_zh: "把研究问题转成带机制和边界条件的可检验假设。"
     display_name_zh: "假设生成"
     when_to_use_zh: "当你需要把研究问题转成可检验假设或 propositions 时使用。"
@@ -60,7 +69,10 @@ skills:
     stage: A_framing
     version: "0.4.0"
     file: skills/A_framing/theory-mapper.md
+    canonical: true
     summary: "Map theoretical concepts, relationships, and frameworks with Mermaid diagrams."
+    display_name: "Theory Mapper"
+    when_to_use: "Use when you need to map theoretical concepts, relationships, and frameworks with mermaid diagrams."
     summary_zh: "用 Mermaid 梳理理论概念、关系和框架。"
     display_name_zh: "理论映射"
     when_to_use_zh: "当你需要概念图、理论框架或机制关系图时使用。"
@@ -76,7 +88,10 @@ skills:
     stage: A_framing
     version: "0.4.0"
     file: skills/A_framing/gap-analyzer.md
+    canonical: true
     summary: "Identify and categorize research gaps using 5-type taxonomy with FINER prioritization."
+    display_name: "Gap Analyzer"
+    when_to_use: "Use when you need to identify and categorize research gaps using 5-type taxonomy with finer prioritization."
     summary_zh: "用五类 gap taxonomy 与 FINER 优先级识别并分类研究空白。"
     display_name_zh: "研究空白分析"
     when_to_use_zh: "当你需要从已有文献中证明 novelty 和贡献空间时使用。"
@@ -92,7 +107,10 @@ skills:
     stage: A_framing
     version: "0.4.0"
     file: skills/A_framing/venue-analyzer.md
+    canonical: true
     summary: "Analyze venue fit, formatting constraints, and reviewer expectations."
+    display_name: "Venue Analyzer"
+    when_to_use: "At the very start of a project (affects RQ scope, methods choice, page limits)"
     summary_zh: "分析目标期刊或会议的匹配度、格式约束和审稿预期。"
     display_name_zh: "期刊匹配分析"
     when_to_use_zh: "当研究方向已较清楚，需要判断目标期刊或会议匹配度时使用。"
@@ -111,7 +129,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/academic-searcher.md
+    canonical: true
     summary: "Own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill."
+    display_name: "Academic Searcher"
+    when_to_use: "Use when you need to own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill."
     summary_zh: "统一负责检索式设计、数据库检索和去重后的搜索产物。"
     display_name_zh: "学术检索"
     when_to_use_zh: "当你需要可复现的检索式、数据库搜索和 search log 时使用。"
@@ -127,7 +148,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/paper-screener.md
+    canonical: true
     summary: "Two-stage PRISMA-compliant systematic screening with decision logging."
+    display_name: "Paper Screener"
+    when_to_use: "Use when you need to two-stage prisma-compliant systematic screening with decision logging."
     summary_zh: "按 PRISMA 做两阶段系统筛选，并记录每一步决策依据。"
     display_name_zh: "文献筛选"
     when_to_use_zh: "当你需要按纳入排除标准筛选文献并留下决策记录时使用。"
@@ -143,7 +167,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/paper-extractor.md
+    canonical: true
     summary: "Extract structured theory, method, data, findings, and limitation slots into notes and rollups."
+    display_name: "Paper Extractor"
+    when_to_use: "Use when you need to extract structured theory, method, data, findings, and limitation slots into notes and rollups."
     summary_zh: "将论文中的理论、方法、数据、发现和局限提取为结构化笔记与汇总。"
     display_name_zh: "论文提取"
     when_to_use_zh: "当你需要把入选论文转成结构化笔记和 extraction table 时使用。"
@@ -159,7 +186,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/citation-snowballer.md
+    canonical: true
     summary: "Forward/backward citation tracing to expand corpus and find seminal works."
+    display_name: "Citation Snowballer"
+    when_to_use: "Use when you need to forward/backward citation tracing to expand corpus and find seminal works."
     summary_zh: "通过前向与后向引文追踪扩展语料，并发现奠基性文献。"
     display_name_zh: "引文滚雪球"
     when_to_use_zh: "当已有种子文献但覆盖还不够时使用。"
@@ -175,7 +205,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/fulltext-fetcher.md
+    canonical: true
     summary: "Retrieve full-text PDFs via OA channels with PRISMA-compliant status tracking."
+    display_name: "Full-text Fetcher"
+    when_to_use: "Use when you need to retrieve full-text pdfs via oa channels with prisma-compliant status tracking."
     summary_zh: "通过开放获取渠道获取全文 PDF，并记录符合 PRISMA 的状态轨迹。"
     display_name_zh: "全文获取"
     when_to_use_zh: "当你已找到候选论文但缺少全文时使用。"
@@ -191,7 +224,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/citation-formatter.md
+    canonical: true
     summary: "Format citations in APA/MLA/Chicago/IEEE/BibTeX with consistent citekeys."
+    display_name: "Citation Formatter"
+    when_to_use: "Use when you need to format citations in apa/mla/chicago/ieee/bibtex with consistent citekeys."
     summary_zh: "用统一 citekey 生成 APA、MLA、Chicago、IEEE 与 BibTeX 引文。"
     display_name_zh: "引文格式化"
     when_to_use_zh: "当写作前需要统一 bibliography、citekey 和引文格式时使用。"
@@ -207,7 +243,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/concept-extractor.md
+    canonical: true
     summary: "Expand search concepts with controlled vocabulary and Boolean query drafting."
+    display_name: "Concept Extractor"
+    when_to_use: "After research questions (A1) are drafted but before search execution (B1)"
     summary_zh: "借助 controlled vocabulary 扩展检索概念，并起草 Boolean 检索式。"
     display_name_zh: "检索概念提取"
     when_to_use_zh: "当检索概念不稳定，需要补 controlled vocabulary 和 Boolean 术语时使用。"
@@ -223,7 +262,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/literature-mapper.md
+    canonical: true
     summary: "Build literature taxonomy with mechanism-based cluster labels and open problems."
+    display_name: "Literature Mapper"
+    when_to_use: "After paper extraction (B2) when you have ≥15 papers with structured notes"
     summary_zh: "用机制导向的簇标签和开放问题构建文献地图。"
     display_name_zh: "文献地图"
     when_to_use_zh: "当你需要重组文献流派、机制簇和开放问题时使用。"
@@ -239,7 +281,10 @@ skills:
     stage: B_literature
     version: "0.4.0"
     file: skills/B_literature/reference-manager-bridge.md
+    canonical: true
     summary: "Export/import references between research system and Zotero/Mendeley/EndNote."
+    display_name: "Reference Manager Bridge"
+    when_to_use: "Use when you need to export/import references between research system and zotero/mendeley/endnote."
     summary_zh: "在研究系统与 Zotero、Mendeley、EndNote 之间导入导出文献。"
     display_name_zh: "文献管理器桥接"
     when_to_use_zh: "当你需要与 Zotero、Mendeley 或 EndNote 双向交换文献时使用。"
@@ -258,7 +303,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/study-designer.md
+    canonical: true
     summary: "Own study design rationale, measures, analysis summary, and design handoff artifacts in one package."
+    display_name: "Study Designer"
+    when_to_use: "After `/find-gap` and `/build-framework`, when you want to run an empirical, qualitative, or mixed-methods study."
     summary_zh: "将研究设计依据、测量、分析概要和设计交接产物整合成一个设计包。"
     display_name_zh: "研究设计"
     when_to_use_zh: "当研究问题已清楚，需要搭建设计、测量和分析方案时使用。"
@@ -274,7 +322,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/rival-hypothesis-designer.md
+    canonical: true
     summary: "Construct competing theories and rival explanations to strengthen design."
+    display_name: "Rival Hypothesis Designer"
+    when_to_use: "After hypotheses (A1_5) and study design (C1) are drafted"
     summary_zh: "构造竞争性理论和替代解释，强化研究设计。"
     display_name_zh: "竞争解释设计"
     when_to_use_zh: "当你需要主动处理替代解释和 competing theories 时使用。"
@@ -290,7 +341,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/robustness-planner.md
+    canonical: true
     summary: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
+    display_name: "Robustness Planner"
+    when_to_use: "After analysis plan (C3) is drafted"
     summary_zh: "预先规定稳健性检验、敏感性分析和 bounds scaling。"
     display_name_zh: "稳健性规划"
     when_to_use_zh: "当经验设计需要预先规定稳健性和敏感性分析时使用。"
@@ -306,7 +360,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/dataset-finder.md
+    canonical: true
     summary: "Identify feasible datasets, access routes, and coverage risks before implementation."
+    display_name: "Dataset Finder"
+    when_to_use: "After study design specifies what data is needed"
     summary_zh: "在实施前识别可行数据集、获取路径和覆盖风险。"
     display_name_zh: "数据集搜寻"
     when_to_use_zh: "当你不确定有哪些可行数据源和获取路径时使用。"
@@ -322,7 +379,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/variable-constructor.md
+    canonical: true
     summary: "Operationalize constructs into auditable variables, coding rules, and transformations."
+    display_name: "Variable Constructor"
+    when_to_use: "After study design is finalized"
     summary_zh: "将构念 operationalize 为可审计变量、编码规则和变换。"
     display_name_zh: "变量构造"
     when_to_use_zh: "当你需要把抽象构念落成可审计变量和编码规则时使用。"
@@ -338,7 +398,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/data-dictionary-builder.md
+    canonical: true
     summary: "Create structured data dictionaries defining every variable's name, type, range, coding, and source."
+    display_name: "Data Dictionary Builder"
+    when_to_use: "After study design is finalized and instruments are selected"
     summary_zh: "创建结构化数据字典，定义每个变量的名称、类型、范围、编码和来源。"
     display_name_zh: "数据字典构建"
     when_to_use_zh: "当需要为数据集建立权威的变量定义和编码手册时使用。"
@@ -354,7 +417,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/data-management-plan.md
+    canonical: true
     summary: "Generate FAIR-compliant data management plans specifying storage, backup, retention, sharing, and archival."
+    display_name: "Data Management Plan"
+    when_to_use: "Use when you need to generate fair-compliant data management plans specifying storage, backup, retention, sharing, and archival."
     summary_zh: "生成符合 FAIR 原则的数据管理计划，涵盖存储、备份、保留、共享和归档。"
     display_name_zh: "数据管理计划"
     when_to_use_zh: "当需要按资助方或机构要求编写 DMP 时使用。"
@@ -370,7 +436,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/prereg-writer.md
+    canonical: true
     summary: "Generate preregistration documents for OSF/AsPredicted/ClinicalTrials.gov from study design and analysis plan."
+    display_name: "Pre-registration Writer"
+    when_to_use: "After study design and analysis plan are finalized"
     summary_zh: "根据研究设计和分析计划生成 OSF、AsPredicted 等平台的预注册文档。"
     display_name_zh: "预注册撰写"
     when_to_use_zh: "当需要在数据收集前锁定假设、设计和分析计划时使用。"
@@ -386,7 +455,10 @@ skills:
     stage: C_design
     version: "0.4.0"
     file: skills/C_design/variable-operationalizer.md
+    canonical: true
     summary: "Map abstract constructs to concrete, measurable variables with validity/reliability justification."
+    display_name: "Variable Operationalizer"
+    when_to_use: "After theoretical framework is established"
     summary_zh: "将抽象构念映射到具体可测量变量，并提供效度与信度依据。"
     display_name_zh: "变量操作化"
     when_to_use_zh: "当需要选择或设计测量工具、从构念到变量做 traceability 时使用。"
@@ -405,7 +477,10 @@ skills:
     stage: D_ethics
     version: "0.4.0"
     file: skills/D_ethics/ethics-irb-helper.md
+    canonical: true
     summary: "Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance."
+    display_name: "Ethics & IRB Helper"
+    when_to_use: "Before data collection involving human participants or sensitive data"
     summary_zh: "准备可直接用于 IRB 的风险评估、知情同意、招募和数据治理材料。"
     display_name_zh: "伦理与IRB助手"
     when_to_use_zh: "当研究涉及 IRB、人类受试者或敏感数据时使用。"
@@ -421,7 +496,10 @@ skills:
     stage: D_ethics
     version: "0.4.0"
     file: skills/D_ethics/statement-generator.md
+    canonical: true
     summary: "Generate standardized ethics, data availability, and COI statements for manuscript inclusion."
+    display_name: "Statement Generator"
+    when_to_use: "When finalizing a manuscript for submission and ensuring compliance with journal statement requirements (e.g., PLOS, Nature, Elsevier)."
     summary_zh: "生成标准化的伦理、数据可用性和利益冲突声明。"
     display_name_zh: "声明生成"
     when_to_use_zh: "当准备投稿并需要编写伦理及数据公开声明时使用。"
@@ -437,7 +515,10 @@ skills:
     stage: D_ethics
     version: "0.4.0"
     file: skills/D_ethics/deidentification-planner.md
+    canonical: true
     summary: "Design technical privacy measures via k-anonymity or differential privacy."
+    display_name: "Deidentification Planner"
+    when_to_use: "When handling any dataset containing identifiable information"
     summary_zh: "用 k-匿名或差分隐私设计技术性的隐私保护方案。"
     display_name_zh: "去标识化规划"
     when_to_use_zh: "当你需要技术层面的隐私保护和去标识化方案时使用。"
@@ -456,7 +537,10 @@ skills:
     stage: E_synthesis
     version: "0.4.0"
     file: skills/E_synthesis/effect-size-calculator.md
+    canonical: true
     summary: "Calculate standard effect sizes from raw statistics to enable meta-analysis."
+    display_name: "Effect Size Calculator"
+    when_to_use: "When preparing data for a quantitative meta-analysis"
     summary_zh: "计算标准化效应量以支持元分析。"
     display_name_zh: "效应量计算"
     when_to_use_zh: "当需要将原始统计数据转换为统一的效应量（如 Cohen's d）时使用。"
@@ -472,7 +556,10 @@ skills:
     stage: E_synthesis
     version: "0.4.0"
     file: skills/E_synthesis/evidence-synthesizer.md
+    canonical: true
     summary: "Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting."
+    display_name: "Evidence Synthesizer"
+    when_to_use: "Use after you have:"
     summary_zh: "以符合 PRISMA 的方式进行叙事性或定量证据综合。"
     display_name_zh: "证据综合"
     when_to_use_zh: "当你已有证据材料，需要做叙事综合或 meta-analysis 时使用。"
@@ -488,7 +575,10 @@ skills:
     stage: E_synthesis
     version: "0.4.0"
     file: skills/E_synthesis/quality-assessor.md
+    canonical: true
     summary: "Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE."
+    display_name: "Quality Assessor"
+    when_to_use: "Use when you need to assess risk of bias and certainty via rob 2, robins-i, grade."
     summary_zh: "使用 RoB 2、ROBINS-I、GRADE 评估偏倚风险和证据确定性。"
     display_name_zh: "质量评估"
     when_to_use_zh: "当你需要评估 risk of bias 和证据确定性时使用。"
@@ -504,7 +594,10 @@ skills:
     stage: E_synthesis
     version: "0.4.0"
     file: skills/E_synthesis/publication-bias-checker.md
+    canonical: true
     summary: "Evaluate publication bias via funnel plots, Egger's test, trim-and-fill."
+    display_name: "Publication Bias Checker"
+    when_to_use: "After completing meta-analysis (E3) with ≥5 studies"
     summary_zh: "用漏斗图、Egger 检验和 trim-and-fill 评估发表偏倚。"
     display_name_zh: "发表偏倚检查"
     when_to_use_zh: "当你需要判断结果是否受发表偏倚影响时使用。"
@@ -520,7 +613,10 @@ skills:
     stage: E_synthesis
     version: "0.4.0"
     file: skills/E_synthesis/qualitative-coding.md
+    canonical: true
     summary: "Extract phenomena, perform thematic/grounded theory coding, and build a codebook from qualitative transcripts or extracted text."
+    display_name: "Qualitative Coding"
+    when_to_use: "Use after raw qualitative data has been collected or extracted, but before the final synthesis narrative is drafted. Ideal for Grounded Theory, Thematic Analysis, or Interpretative Phenomenological Analysis (IPA)."
     summary_zh: "做定性分析（例如扎根理论编码），将逐字稿或摘录转成带现象结构的主题编码表。"
     display_name_zh: "定性数据编码"
     when_to_use_zh: "处理原始质性数据、摘要文本，需整理出现象与主题编码时使用。"
@@ -539,7 +635,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/manuscript-architect.md
+    canonical: true
     summary: "Own story spine, section drafting, and deep analytical framing as one manuscript package."
+    display_name: "Manuscript Architect"
+    when_to_use: "You want to draft a paper from an existing `RESEARCH/[topic]/` project folder (empirical study or systematic review)."
     summary_zh: "统一负责论文叙事主线、章节起草和深度分析框架。"
     display_name_zh: "论文架构师"
     when_to_use_zh: "当你需要搭建论文整体结构、章节推进和核心论证主线时使用。"
@@ -555,7 +654,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/analysis-interpreter.md
+    canonical: true
     summary: "Translate findings into analytical prose with uncertainty, mechanisms, rivals, and boundary conditions."
+    display_name: "Analysis Interpreter"
+    when_to_use: "After primary analysis is complete"
     summary_zh: "将结果写成包含不确定性、机制、竞争解释和边界条件的分析性文本。"
     display_name_zh: "结果分析解释"
     when_to_use_zh: "当你需要把 quant 或 qualitative findings 写成有分析深度的结果叙述时使用。"
@@ -571,7 +673,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/effect-size-interpreter.md
+    canonical: true
     summary: "Explain the substantive magnitude of estimates in interpretable units."
+    display_name: "Effect Size Interpreter"
+    when_to_use: "After primary analysis is complete"
     summary_zh: "用可解释单位说明估计量的实质性大小。"
     display_name_zh: "效应量解释"
     when_to_use_zh: "当你需要把统计系数翻译成读者能理解的实际意义时使用。"
@@ -587,7 +692,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/table-generator.md
+    canonical: true
     summary: "Generate publication-ready tables from statistical output with venue-aware formatting."
+    display_name: "Table Generator"
+    when_to_use: "After primary analysis is complete"
     summary_zh: "按期刊规范把统计输出整理成可投稿表格。"
     display_name_zh: "论文表格生成"
     when_to_use_zh: "当你需要把统计结果整理成论文级表格时使用。"
@@ -603,7 +711,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/figure-specifier.md
+    canonical: true
     summary: "Specify publication-quality figures with reproducible code and accessibility guidance."
+    display_name: "Figure Specifier"
+    when_to_use: "After primary analysis is complete"
     summary_zh: "定义带复现代码和可及性说明的论文级图形。"
     display_name_zh: "图形规范定义"
     when_to_use_zh: "当你需要先定义图的逻辑、编码和可及性要求时使用。"
@@ -619,7 +730,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/meta-optimizer.md
+    canonical: true
     summary: "Optimize abstract, title, keywords for indexing and discoverability."
+    display_name: "Meta Optimizer"
+    when_to_use: "After manuscript draft is complete (F2/F3/F4)"
     summary_zh: "优化标题、摘要和关键词的索引表现与可发现性。"
     display_name_zh: "题摘关键词优化"
     when_to_use_zh: "当你需要优化标题、摘要和关键词的可发现性时使用。"
@@ -635,7 +749,10 @@ skills:
     stage: F_writing
     version: "0.4.0"
     file: skills/F_writing/discussion-writer.md
+    canonical: true
     summary: "Drafts the Discussion section using a structured story spine, separating factual findings from theoretical implications."
+    display_name: "Discussion Writer"
+    when_to_use: "Use after the Results section has been drafted and the primary findings are finalized. Provide the core contribution statement and literature framing to ensure alignment."
     summary_zh: "用结构化故事主线起草讨论部分（归纳事实、推导理论意涵和应用价值）。"
     display_name_zh: "讨论部分起草"
     when_to_use_zh: "当结果部分写完，需要解释结果及其理论现实意义时使用。"
@@ -654,7 +771,10 @@ skills:
     stage: G_compliance
     version: "0.4.0"
     file: skills/G_compliance/prisma-checker.md
+    canonical: true
     summary: "Verify PRISMA 2020 flow diagram and all 27 checklist items."
+    display_name: "PRISMA Checker"
+    when_to_use: "Use when you need to verify prisma 2020 flow diagram and all 27 checklist items."
     summary_zh: "核验 PRISMA 2020 流程图和 27 项清单。"
     display_name_zh: "PRISMA检查"
     when_to_use_zh: "当系统综述或证据综合需要核对 PRISMA 完整性时使用。"
@@ -670,7 +790,10 @@ skills:
     stage: G_compliance
     version: "0.4.0"
     file: skills/G_compliance/reporting-checker.md
+    canonical: true
     summary: "Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness."
+    display_name: "Reporting Checker"
+    when_to_use: "Before submission (final quality assurance pass)"
     summary_zh: "检查 CONSORT、STROBE、COREQ、SRQR、TRIPOD 等报告规范的完整性。"
     display_name_zh: "报告规范检查"
     when_to_use_zh: "当你需要核查 CONSORT、STROBE、COREQ、SRQR 或 TRIPOD 时使用。"
@@ -686,7 +809,10 @@ skills:
     stage: G_compliance
     version: "0.4.0"
     file: skills/G_compliance/tone-normalizer.md
+    canonical: true
     summary: "Cut fluff, hedge words, and absolute claims for concise academic tone."
+    display_name: "Tone Normalizer"
+    when_to_use: "After manuscript draft is complete (but before final submission)"
     summary_zh: "删除废话、模糊 hedge 和绝对化表述，收敛为简洁学术语气。"
     display_name_zh: "学术语气归一"
     when_to_use_zh: "当文本太松、太满、太绝对或废话过多时使用。"
@@ -705,7 +831,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/submission-packager.md
+    canonical: true
     summary: "Assemble submission package: cover letter, disclosures, supplementary materials."
+    display_name: "Submission Packager"
+    when_to_use: "You have a near-final manuscript draft ready for submission"
     summary_zh: "组装 cover letter、披露声明和补充材料等投稿包。"
     display_name_zh: "投稿包组装"
     when_to_use_zh: "当稿件接近投稿，需要准备 cover letter、声明和补充材料时使用。"
@@ -721,7 +850,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/rebuttal-assistant.md
+    canonical: true
     summary: "Generate point-by-point response matrix from reviewer comments."
+    display_name: "Rebuttal Assistant"
+    when_to_use: "After receiving a Revise & Resubmit (R&R) decision"
     summary_zh: "根据审稿意见生成逐点回复矩阵。"
     display_name_zh: "审稿回复助手"
     when_to_use_zh: "当你需要把审稿意见转成逐点回复矩阵时使用。"
@@ -737,7 +869,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/peer-review-simulation.md
+    canonical: true
     summary: "Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2)."
+    display_name: "Peer Review Simulation"
+    when_to_use: "Before submission (final red-team pass)"
     summary_zh: "模拟多 persona 并行交叉评审，如方法学者、领域专家和 Reviewer 2。"
     display_name_zh: "同行评审模拟"
     when_to_use_zh: "当你想在投稿前做多 persona 压力测试时使用。"
@@ -753,7 +888,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/fatal-flaw-detector.md
+    canonical: true
     summary: "Desk-reject analysis identifying critical flaws blocking publication."
+    display_name: "Fatal Flaw Detector"
+    when_to_use: "Before final submission (last quality gate)"
     summary_zh: "做 desk-reject 风险分析，识别阻断发表的致命缺陷。"
     display_name_zh: "致命缺陷检测"
     when_to_use_zh: "当你想先做一轮 desk-reject 风险扫描时使用。"
@@ -769,7 +907,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/reviewer-empathy-checker.md
+    canonical: true
     summary: "Neutralize defensiveness in reviewer responses and verify exact addressing."
+    display_name: "Reviewer Empathy Checker"
+    when_to_use: "After drafting the response letter (from `rebuttal-assistant` H2) but BEFORE submitting"
     summary_zh: "消解回复中的防御性语气，并检查是否逐点准确回应。"
     display_name_zh: "审稿沟通校准"
     when_to_use_zh: "当回复内容技术上正确，但语气可能过硬或防御性过强时使用。"
@@ -785,7 +926,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/credit-taxonomy-helper.md
+    canonical: true
     summary: "Generate CRediT author contribution statements with ICMJE cross-check and authorship ethics guidance."
+    display_name: "CRediT Taxonomy Helper"
+    when_to_use: "During submission packaging (H1)"
     summary_zh: "生成 CRediT 作者贡献声明，并做 ICMJE 交叉检查和署名伦理指导。"
     display_name_zh: "CRediT贡献声明"
     when_to_use_zh: "当投稿需要 CRediT 作者贡献声明或需理清署名伦理时使用。"
@@ -801,7 +945,10 @@ skills:
     stage: H_submission
     version: "0.4.0"
     file: skills/H_submission/limitation-auditor.md
+    canonical: true
     summary: "Identifies and structures study constraints, ensuring rigorous self-critique without undermining the manuscript's core contribution."
+    display_name: "Limitation Auditor"
+    when_to_use: "Use during the late drafting or pre-submission phase when the Methods and Discussion sections are complete, to ensure the manuscript demonstrates scholarly humility and self-awareness before peer reviewers point out the flaws."
     summary_zh: "系统梳理研究短板及边界条件，在自我批评与贡献保护之间取得平衡。"
     display_name_zh: "研究局限审计"
     when_to_use_zh: "完稿前梳理研究的缺陷、数据局限及其应对机制时使用。"
@@ -820,7 +967,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/code-builder.md
+    canonical: true
     summary: "Convert academic methods into executable code with domain-profile library selection."
+    display_name: "Code Builder"
+    when_to_use: "Use when you need to convert academic methods into executable code with domain-profile library selection."
     summary_zh: "结合 domain profile 的库选择，把学术方法转成可执行代码。"
     display_name_zh: "学术代码构建"
     when_to_use_zh: "当你需要把论文方法转成可执行研究代码时使用。"
@@ -836,7 +986,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/data-cleaning-planner.md
+    canonical: true
     summary: "Define reproducible cleaning rules for validation, missingness, and harmonization."
+    display_name: "Data Cleaning Planner"
+    when_to_use: "After dataset is obtained, before any analysis"
     summary_zh: "定义可复现的数据清洗规则，覆盖校验、缺失和 harmonization。"
     display_name_zh: "数据清洗规划"
     when_to_use_zh: "当原始数据清洗需要变成可审计流程时使用。"
@@ -852,7 +1005,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/data-merge-planner.md
+    canonical: true
     summary: "Define join logic, key validation, and provenance controls for multi-source data."
+    display_name: "Data Merge Planner"
+    when_to_use: "When analysis requires combining multiple data sources"
     summary_zh: "定义多源数据的 join 逻辑、主键校验和 provenance 控制。"
     display_name_zh: "数据合并规划"
     when_to_use_zh: "当多数据源需要安全合并并保留 provenance 时使用。"
@@ -868,7 +1024,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/code-specification.md
+    canonical: true
     summary: "Generate strict OPSX-style constraint sets before coding."
+    display_name: "Code Specification"
+    when_to_use: "Use when you need to generate strict opsx-style constraint sets before coding."
     summary_zh: "在编码前生成严格的 OPSX 风格约束集。"
     display_name_zh: "代码规范定义"
     when_to_use_zh: "当编码前必须先锁定约束、输入输出和验收标准时使用。"
@@ -884,7 +1043,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/code-planning.md
+    canonical: true
     summary: "Transform specs into parallelizable, zero-decision execution plans."
+    display_name: "Code Planning"
+    when_to_use: "Use when you need to transform specs into parallelizable, zero-decision execution plans."
     summary_zh: "把规范转成可并行、零自由裁量的执行计划。"
     display_name_zh: "代码执行规划"
     when_to_use_zh: "当你需要零自由裁量的实现计划和并行拆分时使用。"
@@ -900,7 +1062,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/code-execution.md
+    canonical: true
     summary: "Execute code plans with cProfile performance profiling and optimization."
+    display_name: "Code Execution"
+    when_to_use: "Use when you need to execute code plans with cprofile performance profiling and optimization."
     summary_zh: "按计划执行代码，并输出 cProfile 性能分析与优化记录。"
     display_name_zh: "代码执行"
     when_to_use_zh: "当你需要按既定计划实现代码并记录 profiling 与验证证据时使用。"
@@ -916,7 +1081,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/code-review.md
+    canonical: true
     summary: "Secondary model reviews code logic, security, and statistical validity."
+    display_name: "Code Review"
+    when_to_use: "Use when you need to secondary model reviews code logic, security, and statistical validity."
     summary_zh: "由第二模型审查代码逻辑、安全性和统计有效性。"
     display_name_zh: "学术代码审查"
     when_to_use_zh: "当你需要第二模型审查代码逻辑、统计有效性和方法一致性时使用。"
@@ -932,7 +1100,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/reproducibility-auditor.md
+    canonical: true
     summary: "Verify seeds, containerization, and fail-graceful contingencies."
+    display_name: "Reproducibility Auditor"
+    when_to_use: "Use when you need to verify seeds, containerization, and fail-graceful contingencies."
     summary_zh: "核验随机种子、容器化和失败时的 graceful contingency。"
     display_name_zh: "可复现性审计"
     when_to_use_zh: "当你需要检查 seed、环境、rerun recipe 和复现证据时使用。"
@@ -948,7 +1119,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/release-packager.md
+    canonical: true
     summary: "Package code, data, environment, and documentation for reproducible release (Zenodo, GitHub, Dataverse)."
+    display_name: "Release Packager"
+    when_to_use: "When preparing for manuscript submission (data/code availability statement)"
     summary_zh: "将代码、数据、环境和文档打包为可复现的发布包（Zenodo、GitHub、Dataverse）。"
     display_name_zh: "发布打包"
     when_to_use_zh: "当需要为投稿或归档准备代码/数据的可复现发布包时使用。"
@@ -964,7 +1138,10 @@ skills:
     stage: I_code
     version: "0.4.0"
     file: skills/I_code/stats-engine.md
+    canonical: true
     summary: "Statistical modeling and hypothesis testing with domain-driven diagnostics."
+    display_name: "Stats Engine"
+    when_to_use: "You need to execute modeling/testing for synthesis (`E3/E3_5`) or empirical results (`F` stage) with a clear report of assumptions and uncertainty."
     summary_zh: "提供带领域诊断逻辑的统计建模与假设检验。"
     display_name_zh: "统计引擎"
     when_to_use_zh: "当重点是统计建模、诊断和假设检验，而不是一般编码时使用。"
@@ -983,7 +1160,10 @@ skills:
     stage: K_presentation
     version: "0.4.0"
     file: skills/K_presentation/presentation-planner.md
+    canonical: true
     summary: "Design story arc, content budget, and audience calibration for academic talks."
+    display_name: "Presentation Planner"
+    when_to_use: "After manuscript is substantially complete (or results are available)"
     summary_zh: "设计学术报告的叙事弧线、内容预算和观众校准策略。"
     display_name_zh: "报告规划"
     when_to_use_zh: "当你需要从论文出发策划一个学术报告的结构和取舍时使用。"
@@ -999,7 +1179,10 @@ skills:
     stage: K_presentation
     version: "0.4.0"
     file: skills/K_presentation/slide-architect.md
+    canonical: true
     summary: "Design slide content specs with assertion-evidence format and multi-backend layout mapping."
+    display_name: "Slide Architect"
+    when_to_use: "After `presentation-planner` has produced a slide blueprint"
     summary_zh: "用 assertion-evidence 格式设计每页幻灯片内容，并映射到多个渲染后端。"
     display_name_zh: "幻灯片架构"
     when_to_use_zh: "当你需要逐页定义幻灯片的内容、布局和演讲备注时使用。"
@@ -1015,7 +1198,10 @@ skills:
     stage: K_presentation
     version: "0.4.0"
     file: skills/K_presentation/slidev-scholarly-builder.md
+    canonical: true
     summary: "Generate Slidev deck with slidev-theme-scholarly layouts, BibTeX citations, and visual presets."
+    display_name: "Slidev Scholarly Builder"
+    when_to_use: "When Slidev + scholarly is chosen as the output backend"
     summary_zh: "用 slidev-theme-scholarly 生成带学术布局、BibTeX 引文和视觉预设的演示文稿。"
     display_name_zh: "Slidev 学术构建"
     when_to_use_zh: "当你选择 Slidev + scholarly 主题作为演示后端时使用。"
@@ -1031,7 +1217,10 @@ skills:
     stage: K_presentation
     version: "0.4.0"
     file: skills/K_presentation/beamer-builder.md
+    canonical: true
     summary: "Generate LaTeX Beamer presentation with theme selection, BibLaTeX citations, and math support."
+    display_name: "Beamer Builder"
+    when_to_use: "When LaTeX Beamer is the chosen backend"
     summary_zh: "生成带主题选择、BibLaTeX 引文和数学支持的 LaTeX Beamer 演示文稿。"
     display_name_zh: "Beamer 构建"
     when_to_use_zh: "当你选择 LaTeX Beamer 作为演示后端时使用。"
@@ -1050,7 +1239,10 @@ skills:
     stage: J_proofread
     version: "0.4.0"
     file: skills/J_proofread/ai-fingerprint-scanner.md
+    canonical: true
     summary: "Scan manuscript for AI-generation fingerprints including formulaic transitions, uniform rhythm, and generic hedging."
+    display_name: "AI Fingerprint Scanner"
+    when_to_use: "After the first complete manuscript draft (F2+)"
     summary_zh: "扫描稿件中的 AI 生成指纹，包括公式化过渡词、均匀节奏和笼统 hedging。"
     display_name_zh: "AI指纹扫描"
     when_to_use_zh: "当需要识别稿件中可能被 AI 检测器标记的段落时使用。"
@@ -1066,7 +1258,10 @@ skills:
     stage: J_proofread
     version: "0.4.0"
     file: skills/J_proofread/human-voice-rewriter.md
+    canonical: true
     summary: "Rewrite AI-flagged passages to sound authentically human-authored while preserving scientific accuracy."
+    display_name: "Human-Voice Rewriter"
+    when_to_use: "After J1 (AI fingerprint scan) identifies high/medium severity passages"
     summary_zh: "改写被标记的 AI 段落，使其具有真实人类写作风格，同时保持科学准确性。"
     display_name_zh: "人类风格改写"
     when_to_use_zh: "当 AI 检测报告中有高严重度段落需要改写时使用。"
@@ -1082,7 +1277,10 @@ skills:
     stage: J_proofread
     version: "0.4.0"
     file: skills/J_proofread/similarity-checker.md
+    canonical: true
     summary: "Identify text overlap including self-plagiarism, close paraphrasing, and boilerplate passages."
+    display_name: "Similarity Checker"
+    when_to_use: "After J2 (human-voice rewrite) to ensure rewrites are original"
     summary_zh: "识别文本重叠，包括自我抄袭、过近释义和模板化段落。"
     display_name_zh: "相似度检查"
     when_to_use_zh: "当需要在投稿前检查文本原创性和引用充分性时使用。"
@@ -1098,7 +1296,10 @@ skills:
     stage: J_proofread
     version: "0.4.0"
     file: skills/J_proofread/final-proofreader.md
+    canonical: true
     summary: "Language-level polish covering grammar, tense, acronyms, cross-references, and venue-specific formatting."
+    display_name: "Final Proofreader"
+    when_to_use: "As the final step before submission (J4)"
     summary_zh: "语言层面终审校对，覆盖语法、时态、缩写、交叉引用和期刊格式要求。"
     display_name_zh: "终审校对"
     when_to_use_zh: "当稿件内容已定稿，需要做投稿前最后一遍语言校对时使用。"
@@ -1117,7 +1318,10 @@ skills:
     stage: Z_cross_cutting
     version: "0.4.0"
     file: skills/Z_cross_cutting/metadata-enricher.md
+    canonical: true
     summary: "Normalize and enrich DOI, venue, year, author metadata across artifacts."
+    display_name: "Metadata Enricher"
+    when_to_use: "Use when you need to normalize and enrich doi, venue, year, author metadata across artifacts."
     summary_zh: "在各类产物之间标准化并补全 DOI、期刊、年份和作者元数据。"
     display_name_zh: "元数据补全"
     when_to_use_zh: "当 DOI、作者、年份或 venue 元数据在不同产物之间不一致时使用。"
@@ -1133,7 +1337,10 @@ skills:
     stage: Z_cross_cutting
     version: "0.4.0"
     file: skills/Z_cross_cutting/model-collaborator.md
-    summary: "Coordinate multi-agent execution and cross-review across model runtimes."
+    canonical: true
+    summary: "Coordinate independent multi-agent execution, disagreement tracking, and synthesis across literature, writing, review, and code tasks."
+    display_name: "Model Collaborator"
+    when_to_use: "Use when literature screening, peer review simulation, rebuttal drafting, qualitative coding, or code/statistics validation benefits from independent multi-model passes before synthesis."
     summary_zh: "协调多模型运行时的协作执行与交叉复核。"
     display_name_zh: "多模型协作"
     when_to_use_zh: "当你需要 Codex、Claude 和 Gemini 分工协作或交叉复核时使用。"
@@ -1149,7 +1356,10 @@ skills:
     stage: Z_cross_cutting
     version: "0.4.0"
     file: skills/Z_cross_cutting/self-critique.md
+    canonical: true
     summary: "Iterative red teaming against superficial reasoning, contradictions, and overclaiming."
+    display_name: "Self-Critique"
+    when_to_use: "Use when you need to iterative red teaming against superficial reasoning, contradictions, and overclaiming."
     summary_zh: "通过迭代式 red teaming 打击浅层推理、矛盾和过度主张。"
     display_name_zh: "自我批判"
     when_to_use_zh: "当你想主动提高 red-teaming 强度、压制浅层推理和过度主张时使用。"

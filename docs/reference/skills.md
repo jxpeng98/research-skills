@@ -13,7 +13,7 @@ It is meant to answer questions such as:
 
 ::: tip Canonical Source
 The canonical routed skill list lives in `skills/registry.yaml`. The tables below summarize that registry for human readers.
-Localized surfaces may additionally read `summary_zh`, `display_name_zh`, and `when_to_use_zh` from that registry.
+User-facing surfaces may read `display_name`, `when_to_use`, `summary_zh`, `display_name_zh`, and `when_to_use_zh` directly from that registry.
 :::
 
 ## How Users Should Read The Skills Layer
@@ -63,117 +63,117 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 
 Use Stage A when you are still defining the research question, contribution, theory anchor, or venue positioning.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `question-refiner` | Transform vague topics into structured RQs via PICO/PEO + FINER evaluation. | `RQSet` |
-| `contribution-crafter` | Draft a compelling contribution statement highlighting theoretical, methodological, and empirical novelty. | `ContributionStatement` |
-| `hypothesis-generator` | Translate RQs into testable hypotheses with mechanisms and boundary conditions. | `HypothesisSet` |
-| `theory-mapper` | Map theoretical concepts, relationships, and frameworks with Mermaid diagrams. | `TheoreticalFramework` |
-| `gap-analyzer` | Identify and categorize research gaps using 5-type taxonomy with FINER prioritization. | `GapAnalysis` |
-| `venue-analyzer` | Analyze venue fit, formatting constraints, and reviewer expectations. | `VenueAnalysis` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `question-refiner` | Question Refiner | Use when you need to transform vague topics into structured rqs via pico/peo + finer evaluation. | `RQSet` |
+| `contribution-crafter` | Contribution Crafter | When framing the pitch for a manuscript introduction | `ContributionStatement` |
+| `hypothesis-generator` | Hypothesis Generator | Use when you need to translate rqs into testable hypotheses with mechanisms and boundary conditions. | `HypothesisSet` |
+| `theory-mapper` | Theory Mapper | Use when you need to map theoretical concepts, relationships, and frameworks with mermaid diagrams. | `TheoreticalFramework` |
+| `gap-analyzer` | Gap Analyzer | Use when you need to identify and categorize research gaps using 5-type taxonomy with finer prioritization. | `GapAnalysis` |
+| `venue-analyzer` | Venue Analyzer | At the very start of a project (affects RQ scope, methods choice, page limits) | `VenueAnalysis` |
 
 ### B. Literature
 
 Use Stage B when you are building or maintaining the literature base for a topic, especially systematic or reproducible reviews.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `academic-searcher` | Own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill. | `SearchQueryPlan`, `SearchResults`, `SearchLog` |
-| `paper-screener` | Two-stage PRISMA-compliant systematic screening with decision logging. | `ScreeningDecisionLog`, `PRISMAFlowData` |
-| `paper-extractor` | Extract structured theory, method, data, findings, and limitation slots into notes and rollups. | `ExtractionTable`, `PaperNotes` |
-| `citation-snowballer` | Forward/backward citation tracing to expand corpus and find seminal works. | `SnowballLog` |
-| `fulltext-fetcher` | Retrieve full-text PDFs via OA channels with PRISMA-compliant status tracking. | `FullTextStatus` |
-| `citation-formatter` | Format citations in APA/MLA/Chicago/IEEE/BibTeX with consistent citekeys. | `Bibliography` |
-| `concept-extractor` | Expand search concepts with controlled vocabulary and Boolean query drafting. | `ConceptMap` |
-| `literature-mapper` | Build literature taxonomy with mechanism-based cluster labels and open problems. | `LiteratureMap` |
-| `reference-manager-bridge` | Export/import references between research system and Zotero/Mendeley/EndNote. | `Bibliography`, `RISExport`, `CSLJSONExport` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `academic-searcher` | Academic Searcher | Use when you need to own query design, provider-backed retrieval, and deduplicated search outputs as one top-level search skill. | `SearchQueryPlan`, `SearchResults`, `SearchLog` |
+| `paper-screener` | Paper Screener | Use when you need to two-stage prisma-compliant systematic screening with decision logging. | `ScreeningDecisionLog`, `PRISMAFlowData` |
+| `paper-extractor` | Paper Extractor | Use when you need to extract structured theory, method, data, findings, and limitation slots into notes and rollups. | `ExtractionTable`, `PaperNotes` |
+| `citation-snowballer` | Citation Snowballer | Use when you need to forward/backward citation tracing to expand corpus and find seminal works. | `SnowballLog` |
+| `fulltext-fetcher` | Full-text Fetcher | Use when you need to retrieve full-text pdfs via oa channels with prisma-compliant status tracking. | `FullTextStatus` |
+| `citation-formatter` | Citation Formatter | Use when you need to format citations in apa/mla/chicago/ieee/bibtex with consistent citekeys. | `Bibliography` |
+| `concept-extractor` | Concept Extractor | After research questions (A1) are drafted but before search execution (B1) | `ConceptMap` |
+| `literature-mapper` | Literature Mapper | After paper extraction (B2) when you have ≥15 papers with structured notes | `LiteratureMap` |
+| `reference-manager-bridge` | Reference Manager Bridge | Use when you need to export/import references between research system and zotero/mendeley/endnote. | `Bibliography`, `RISExport`, `CSLJSONExport` |
 
 ### C. Design
 
 Use Stage C when the question is already clear and the next problem is design validity, data feasibility, and operationalization.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `study-designer` | Own study design rationale, measures, analysis summary, and design handoff artifacts in one package. | `DesignSpec`, `AnalysisPlan`, `DataManagementPlan`, `Instruments`, `Preregistration` |
-| `rival-hypothesis-designer` | Construct competing theories and rival explanations to strengthen design. | `RivalHypotheses` |
-| `robustness-planner` | Pre-specify robustness checks, sensitivity analysis, and bounds scaling. | `RobustnessPlan` |
-| `dataset-finder` | Identify feasible datasets, access routes, and coverage risks before implementation. | `DatasetPlan` |
-| `variable-constructor` | Operationalize constructs into auditable variables, coding rules, and transformations. | `VariableSpec` |
-| `data-dictionary-builder` | Create structured data dictionaries defining every variable's name, type, range, coding, and source. | `DataDictionary` |
-| `data-management-plan` | Generate FAIR-compliant data management plans specifying storage, backup, retention, sharing, and archival. | `DataManagementPlan` |
-| `prereg-writer` | Generate preregistration documents for OSF/AsPredicted/ClinicalTrials.gov from study design and analysis plan. | `Preregistration` |
-| `variable-operationalizer` | Map abstract constructs to concrete, measurable variables with validity/reliability justification. | `OperationalizationMap` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `study-designer` | Study Designer | After `/find-gap` and `/build-framework`, when you want to run an empirical, qualitative, or mixed-methods study. | `DesignSpec`, `AnalysisPlan`, `DataManagementPlan`, `Instruments`, `Preregistration` |
+| `rival-hypothesis-designer` | Rival Hypothesis Designer | After hypotheses (A1_5) and study design (C1) are drafted | `RivalHypotheses` |
+| `robustness-planner` | Robustness Planner | After analysis plan (C3) is drafted | `RobustnessPlan` |
+| `dataset-finder` | Dataset Finder | After study design specifies what data is needed | `DatasetPlan` |
+| `variable-constructor` | Variable Constructor | After study design is finalized | `VariableSpec` |
+| `data-dictionary-builder` | Data Dictionary Builder | After study design is finalized and instruments are selected | `DataDictionary` |
+| `data-management-plan` | Data Management Plan | Use when you need to generate fair-compliant data management plans specifying storage, backup, retention, sharing, and archival. | `DataManagementPlan` |
+| `prereg-writer` | Pre-registration Writer | After study design and analysis plan are finalized | `Preregistration` |
+| `variable-operationalizer` | Variable Operationalizer | After theoretical framework is established | `OperationalizationMap` |
 
 ### D. Ethics
 
 Use Stage D when the study touches human participants, sensitive data, governance, or data-release constraints.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `ethics-irb-helper` | Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance. | `EthicsPackage` |
-| `statement-generator` | Generate standardized ethics, data availability, and COI statements for manuscript inclusion. | `Manuscript` |
-| `deidentification-planner` | Design technical privacy measures via k-anonymity or differential privacy. | `DeidentificationPlan` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `ethics-irb-helper` | Ethics & IRB Helper | Before data collection involving human participants or sensitive data | `EthicsPackage` |
+| `statement-generator` | Statement Generator | When finalizing a manuscript for submission and ensuring compliance with journal statement requirements (e.g., PLOS, Nature, Elsevier). | `Manuscript` |
+| `deidentification-planner` | Deidentification Planner | When handling any dataset containing identifiable information | `DeidentificationPlan` |
 
 ### E. Synthesis
 
 Use Stage E when the evidence base already exists and the task is to combine, rate, or stress-test that evidence.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `effect-size-calculator` | Calculate standard effect sizes from raw statistics to enable meta-analysis. | `EffectSizeTable`, `AnalysisCode` |
-| `evidence-synthesizer` | Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting. | `EvidenceTable`, `SynthesisMatrix` |
-| `quality-assessor` | Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE. | `QualityTable`, `GRADESummary` |
-| `publication-bias-checker` | Evaluate publication bias via funnel plots, Egger's test, trim-and-fill. | `PublicationBiasReport` |
-| `qualitative-coding` | Extract phenomena, perform thematic/grounded theory coding, and build a codebook from qualitative transcripts or extracted text. | `DataDictionary`, `ThematicCodebook` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `effect-size-calculator` | Effect Size Calculator | When preparing data for a quantitative meta-analysis | `EffectSizeTable`, `AnalysisCode` |
+| `evidence-synthesizer` | Evidence Synthesizer | Use after you have: | `EvidenceTable`, `SynthesisMatrix` |
+| `quality-assessor` | Quality Assessor | Use when you need to assess risk of bias and certainty via rob 2, robins-i, grade. | `QualityTable`, `GRADESummary` |
+| `publication-bias-checker` | Publication Bias Checker | After completing meta-analysis (E3) with ≥5 studies | `PublicationBiasReport` |
+| `qualitative-coding` | Qualitative Coding | Use after raw qualitative data has been collected or extracted, but before the final synthesis narrative is drafted. Ideal for Grounded Theory, Thematic Analysis, or Interpretative Phenomenological Analysis (IPA). | `DataDictionary`, `ThematicCodebook` |
 
 ### F. Writing
 
 Use Stage F when the main question is turning evidence and analysis into sections, tables, figures, and readable claims.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `manuscript-architect` | Own story spine, section drafting, and deep analytical framing as one manuscript package. | `ManuscriptOutline`, `Manuscript`, `ClaimGraph`, `FiguresTablesPlan` |
-| `analysis-interpreter` | Translate findings into analytical prose with uncertainty, mechanisms, rivals, and boundary conditions. | `ResultInterpretation` |
-| `effect-size-interpreter` | Explain the substantive magnitude of estimates in interpretable units. | `EffectInterpretation` |
-| `table-generator` | Generate publication-ready tables from statistical output with venue-aware formatting. | `FormattedTables` |
-| `figure-specifier` | Specify publication-quality figures with reproducible code and accessibility guidance. | `FigureSpecs` |
-| `meta-optimizer` | Optimize abstract, title, keywords for indexing and discoverability. | `MetaOptimization` |
-| `discussion-writer` | Drafts the Discussion section using a structured story spine, separating factual findings from theoretical implications. | `DiscussionDraft`, `StorySpine` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `manuscript-architect` | Manuscript Architect | You want to draft a paper from an existing `RESEARCH/[topic]/` project folder (empirical study or systematic review). | `ManuscriptOutline`, `Manuscript`, `ClaimGraph`, `FiguresTablesPlan` |
+| `analysis-interpreter` | Analysis Interpreter | After primary analysis is complete | `ResultInterpretation` |
+| `effect-size-interpreter` | Effect Size Interpreter | After primary analysis is complete | `EffectInterpretation` |
+| `table-generator` | Table Generator | After primary analysis is complete | `FormattedTables` |
+| `figure-specifier` | Figure Specifier | After primary analysis is complete | `FigureSpecs` |
+| `meta-optimizer` | Meta Optimizer | After manuscript draft is complete (F2/F3/F4) | `MetaOptimization` |
+| `discussion-writer` | Discussion Writer | Use after the Results section has been drafted and the primary findings are finalized. Provide the core contribution statement and literature framing to ensure alignment. | `DiscussionDraft`, `StorySpine` |
 
 ### G. Compliance
 
 Use Stage G when the paper exists and now needs formal checklist coverage, tone cleanup, or reporting verification.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `prisma-checker` | Verify PRISMA 2020 flow diagram and all 27 checklist items. | `PRISMAChecklist` |
-| `reporting-checker` | Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness. | `ReportingChecklist` |
-| `tone-normalizer` | Cut fluff, hedge words, and absolute claims for concise academic tone. | `ToneNormalization` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `prisma-checker` | PRISMA Checker | Use when you need to verify prisma 2020 flow diagram and all 27 checklist items. | `PRISMAChecklist` |
+| `reporting-checker` | Reporting Checker | Before submission (final quality assurance pass) | `ReportingChecklist` |
+| `tone-normalizer` | Tone Normalizer | After manuscript draft is complete (but before final submission) | `ToneNormalization` |
 
 ### J. Proofread
 
 Use Stage J when the draft is substantively complete and needs AI-fingerprint review, human-voice rewriting, similarity screening, or final proofreading before submission.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `ai-fingerprint-scanner` | Scan manuscript for AI-generation fingerprints including formulaic transitions, uniform rhythm, and generic hedging. | `AIDetectionReport` |
-| `human-voice-rewriter` | Rewrite AI-flagged passages to sound authentically human-authored while preserving scientific accuracy. | `HumanizedManuscript` |
-| `similarity-checker` | Identify text overlap including self-plagiarism, close paraphrasing, and boilerplate passages. | `SimilarityReport` |
-| `final-proofreader` | Language-level polish covering grammar, tense, acronyms, cross-references, and venue-specific formatting. | `ProofreadChecklist` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `ai-fingerprint-scanner` | AI Fingerprint Scanner | After the first complete manuscript draft (F2+) | `AIDetectionReport` |
+| `human-voice-rewriter` | Human-Voice Rewriter | After J1 (AI fingerprint scan) identifies high/medium severity passages | `HumanizedManuscript` |
+| `similarity-checker` | Similarity Checker | After J2 (human-voice rewrite) to ensure rewrites are original | `SimilarityReport` |
+| `final-proofreader` | Final Proofreader | As the final step before submission (J4) | `ProofreadChecklist` |
 
 ### H. Submission
 
 Use Stage H when the manuscript is near submission or already under review.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `submission-packager` | Assemble submission package: cover letter, disclosures, supplementary materials. | `SubmissionPackage` |
-| `rebuttal-assistant` | Generate point-by-point response matrix from reviewer comments. | `ResponseToReviewers`, `ResponseLetter` |
-| `peer-review-simulation` | Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2). | `PeerReviewSimulation` |
-| `fatal-flaw-detector` | Desk-reject analysis identifying critical flaws blocking publication. | `FatalFlawAnalysis` |
-| `reviewer-empathy-checker` | Neutralize defensiveness in reviewer responses and verify exact addressing. | `EmpathyCheck` |
-| `credit-taxonomy-helper` | Generate CRediT author contribution statements with ICMJE cross-check and authorship ethics guidance. | `CRediTStatement` |
-| `limitation-auditor` | Identifies and structures study constraints, ensuring rigorous self-critique without undermining the manuscript's core contribution. | `LimitationSection`, `MitigationStrategy` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `submission-packager` | Submission Packager | You have a near-final manuscript draft ready for submission | `SubmissionPackage` |
+| `rebuttal-assistant` | Rebuttal Assistant | After receiving a Revise & Resubmit (R&R) decision | `ResponseToReviewers`, `ResponseLetter` |
+| `peer-review-simulation` | Peer Review Simulation | Before submission (final red-team pass) | `PeerReviewSimulation` |
+| `fatal-flaw-detector` | Fatal Flaw Detector | Before final submission (last quality gate) | `FatalFlawAnalysis` |
+| `reviewer-empathy-checker` | Reviewer Empathy Checker | After drafting the response letter (from `rebuttal-assistant` H2) but BEFORE submitting | `EmpathyCheck` |
+| `credit-taxonomy-helper` | CRediT Taxonomy Helper | During submission packaging (H1) | `CRediTStatement` |
+| `limitation-auditor` | Limitation Auditor | Use during the late drafting or pre-submission phase when the Methods and Discussion sections are complete, to ensure the manuscript demonstrates scholarly humility and self-awareness before peer reviewers point out the flaws. | `LimitationSection`, `MitigationStrategy` |
 
 ### I. Code
 
@@ -189,39 +189,39 @@ The core strict sequence is:
 
 That sequence is what `code-build --focus full` is designed to reinforce.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `code-builder` | Convert academic methods into executable code with domain-profile library selection. | `AnalysisCode` |
-| `data-cleaning-planner` | Define reproducible cleaning rules for validation, missingness, and harmonization. | `CleaningPlan` |
-| `data-merge-planner` | Define join logic, key validation, and provenance controls for multi-source data. | `MergePlan` |
-| `code-specification` | Generate strict OPSX-style constraint sets before coding. | `CodeSpec` |
-| `code-planning` | Transform specs into parallelizable, zero-decision execution plans. | `CodePlan` |
-| `code-execution` | Execute code plans with cProfile performance profiling and optimization. | `PerformanceProfile` |
-| `code-review` | Secondary model reviews code logic, security, and statistical validity. | `CodeReview` |
-| `reproducibility-auditor` | Verify seeds, containerization, and fail-graceful contingencies. | `ReproducibilityReport` |
-| `release-packager` | Package code, data, environment, and documentation for reproducible release (Zenodo, GitHub, Dataverse). | `ReleasePackage` |
-| `stats-engine` | Statistical modeling and hypothesis testing with domain-driven diagnostics. | `StatsReport` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `code-builder` | Code Builder | Use when you need to convert academic methods into executable code with domain-profile library selection. | `AnalysisCode` |
+| `data-cleaning-planner` | Data Cleaning Planner | After dataset is obtained, before any analysis | `CleaningPlan` |
+| `data-merge-planner` | Data Merge Planner | When analysis requires combining multiple data sources | `MergePlan` |
+| `code-specification` | Code Specification | Use when you need to generate strict opsx-style constraint sets before coding. | `CodeSpec` |
+| `code-planning` | Code Planning | Use when you need to transform specs into parallelizable, zero-decision execution plans. | `CodePlan` |
+| `code-execution` | Code Execution | Use when you need to execute code plans with cprofile performance profiling and optimization. | `PerformanceProfile` |
+| `code-review` | Code Review | Use when you need to secondary model reviews code logic, security, and statistical validity. | `CodeReview` |
+| `reproducibility-auditor` | Reproducibility Auditor | Use when you need to verify seeds, containerization, and fail-graceful contingencies. | `ReproducibilityReport` |
+| `release-packager` | Release Packager | When preparing for manuscript submission (data/code availability statement) | `ReleasePackage` |
+| `stats-engine` | Stats Engine | You need to execute modeling/testing for synthesis (`E3/E3_5`) or empirical results (`F` stage) with a clear report of assumptions and uncertainty. | `StatsReport` |
 
 ### K. Presentation
 
 Use Stage K when the paper already exists and the next task is to turn it into a talk, seminar deck, or conference presentation.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `presentation-planner` | Design story arc, content budget, and audience calibration for academic talks. | `PresentationPlan` |
-| `slide-architect` | Design slide content specs with assertion-evidence format and multi-backend layout mapping. | `SlideDeckSpec` |
-| `slidev-scholarly-builder` | Generate Slidev deck with slidev-theme-scholarly layouts, BibTeX citations, and visual presets. | `SlidevDeck`, `BibTeXFile` |
-| `beamer-builder` | Generate LaTeX Beamer presentation with theme selection, BibLaTeX citations, and math support. | `BeamerDeck`, `BibTeXFile` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `presentation-planner` | Presentation Planner | After manuscript is substantially complete (or results are available) | `PresentationPlan` |
+| `slide-architect` | Slide Architect | After `presentation-planner` has produced a slide blueprint | `SlideDeckSpec` |
+| `slidev-scholarly-builder` | Slidev Scholarly Builder | When Slidev + scholarly is chosen as the output backend | `SlidevDeck`, `BibTeXFile` |
+| `beamer-builder` | Beamer Builder | When LaTeX Beamer is the chosen backend | `BeamerDeck`, `BibTeXFile` |
 
 ### Z. Cross-Cutting
 
 Use Stage Z when the need cuts across stages rather than belonging to one paper section.
 
-| Skill | What it does | Produces |
-|---|---|---|
-| `metadata-enricher` | Normalize and enrich DOI, venue, year, author metadata across artifacts. | `Bibliography` |
-| `model-collaborator` | Coordinate multi-agent execution and cross-review across model runtimes. | `CollaborationTrace` |
-| `self-critique` | Iterative red teaming against superficial reasoning, contradictions, and overclaiming. | `CritiqueLog` |
+| Skill | Display Name | When to use | Produces |
+|---|---|---|---|
+| `metadata-enricher` | Metadata Enricher | Use when you need to normalize and enrich doi, venue, year, author metadata across artifacts. | `Bibliography` |
+| `model-collaborator` | Model Collaborator | Use when literature screening, peer review simulation, rebuttal drafting, qualitative coding, or code/statistics validation benefits from independent multi-model passes before synthesis. | `CollaborationTrace` |
+| `self-critique` | Self-Critique | Use when you need to iterative red teaming against superficial reasoning, contradictions, and overclaiming. | `CritiqueLog` |
 
 ## Supplemental Cards And Mirror Files
 

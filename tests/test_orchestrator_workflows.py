@@ -227,6 +227,33 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertEqual(context["domain"], "business-management")
         self.assertEqual(context["status"], "loaded")
         self.assertIn("business-management.yaml", context["file"])
+        self.assertEqual(
+            context["display_name"],
+            "Business Management & Organization Studies",
+        )
+
+    def test_domain_profile_display_name_uses_structured_yaml_parsing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            standards_dir = root / "standards"
+            profile_dir = root / "skills" / "domain-profiles"
+            standards_dir.mkdir(parents=True, exist_ok=True)
+            profile_dir.mkdir(parents=True, exist_ok=True)
+            (profile_dir / "custom-structured.yaml").write_text(
+                'domain: custom-structured\n'
+                'display_name: >-\n'
+                '  Structured Domain Profile\n'
+                'libraries:\n'
+                '  python:\n'
+                '    - pandas\n',
+                encoding="utf-8",
+            )
+
+            orchestrator = ModelOrchestrator(standards_dir=standards_dir)
+            context = orchestrator._load_domain_profile_context("custom-structured")
+
+        self.assertEqual(context["status"], "loaded")
+        self.assertEqual(context["display_name"], "Structured Domain Profile")
 
     def test_task_plan_routes_i8_to_academic_code_reviewer(self) -> None:
         orchestrator = MockOrchestrator()
@@ -348,6 +375,18 @@ class OrchestratorWorkflowTests(unittest.TestCase):
             "当你需要搭建论文整体结构、章节推进和核心论证主线时使用。",
         )
 
+    def test_multi_agent_research_tasks_route_model_collaborator(self) -> None:
+        orchestrator = MockOrchestrator()
+
+        b1_plan = orchestrator._load_task_agent_plan("B1")
+        h3_plan = orchestrator._load_task_agent_plan("H3")
+
+        b1_skills = {card["skill"] for card in b1_plan["required_skill_cards"]}
+        h3_skills = {card["skill"] for card in h3_plan["required_skill_cards"]}
+
+        self.assertIn("model-collaborator", b1_skills)
+        self.assertIn("model-collaborator", h3_skills)
+
     def test_format_skill_context_prefers_chinese_registry_summary(self) -> None:
         orchestrator = MockOrchestrator()
         rendered = orchestrator._format_skill_context(
@@ -371,6 +410,39 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("摘要/summary: 统一负责论文叙事主线、章节起草和深度分析框架。", rendered)
         self.assertIn("适用场景/when_to_use: 当你需要搭建论文整体结构、章节推进和核心论证主线时使用。", rendered)
         self.assertIn("方法焦点/focus: Drafting, section structure, and claim presentation.", rendered)
+
+    def test_format_skill_context_uses_english_registry_display_name_and_usage(self) -> None:
+        orchestrator = MockOrchestrator()
+        with mock.patch.dict(os.environ, {"RESEARCH_CLI_LANG": "en"}, clear=False):
+            i18n_module._current_lang = None
+            rendered = orchestrator._format_skill_context(
+                [
+                    {
+                        "skill": "question-refiner",
+                        "category": "framing",
+                        "summary": "Transform vague topics into structured research questions.",
+                        "display_name": "Question Refiner",
+                        "when_to_use": "Use when you need to narrow a vague topic into an executable research question.",
+                        "focus": "Question sharpening, scope control, and framing diagnostics.",
+                        "file": "skills/A_framing/question-refiner.md",
+                        "default_outputs": ["framing/research_questions.md"],
+                        "status": "ok",
+                        "canonical": "True",
+                        "deprecated": "",
+                        "alias_of": "",
+                    }
+                ]
+            )
+
+        self.assertIn("- Question Refiner (`question-refiner`) [ok] (framing)", rendered)
+        self.assertIn(
+            "when_to_use: Use when you need to narrow a vague topic into an executable research question.",
+            rendered,
+        )
+        self.assertIn(
+            "registry_semantics: canonical=True, deprecated=false, alias_of=-",
+            rendered,
+        )
 
     def test_task_run_unknown_profile_returns_structured_error(self) -> None:
         from bridges.errors import ConfigError
@@ -738,6 +810,45 @@ primary_artifact: code/plan.md
         self.assertEqual(structured["frontmatter"]["template_type"], "code_plan")
         self.assertEqual(structured["contract"]["steps"][0]["step_id"], "S1")
         self.assertEqual(structured["actionable_targets"], ["S1"])
+
+    def test_parse_stage_i_structured_output_parses_frontmatter_with_inline_comments(self) -> None:
+        orchestrator = MockOrchestrator()
+        content = """---
+task_id: I6
+template_type: code_plan
+topic: llm-bias # scoped topic
+primary_artifact: code/plan.md # canonical artifact
+---
+
+# Execution Plan
+
+## Plan Contract Block
+```json
+{
+  "task_id": "I6",
+  "topic": "llm-bias",
+  "spec_source": "code/code_specification.md",
+  "plan_artifact": "code/plan.md",
+  "steps": [
+    {
+      "step_id": "S1",
+      "depends_on": [],
+      "owner": "codex",
+      "command": "python run_stage_one.py",
+      "outputs": ["analysis/results_a.csv"],
+      "checkpoint": "results_a.csv exists",
+      "rollback": "git restore analysis/results_a.csv"
+    }
+  ]
+}
+```
+"""
+
+        structured = orchestrator._parse_stage_i_structured_output(content, "I6")
+
+        self.assertTrue(structured["valid"])
+        self.assertEqual(structured["frontmatter"]["topic"], "llm-bias")
+        self.assertEqual(structured["frontmatter"]["primary_artifact"], "code/plan.md")
 
     def test_task_run_targeted_follow_up_reads_existing_stage_artifact(self) -> None:
         existing_artifact = """---

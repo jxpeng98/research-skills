@@ -10,6 +10,26 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class SkillDocGenerationTests(unittest.TestCase):
+    def test_generated_skill_docs_include_registry_driven_user_facing_fields(self) -> None:
+        generated = generate_skill_reference_docs(REPO_ROOT)
+        en_doc = generated["docs/reference/skills.md"]
+
+        self.assertIn(
+            "User-facing surfaces may read `display_name`, `when_to_use`, `summary_zh`, `display_name_zh`, and `when_to_use_zh` directly from that registry.",
+            en_doc,
+        )
+        self.assertIn("| Skill | Display Name | When to use | Produces |", en_doc)
+        self.assertIn("| `question-refiner` | Question Refiner |", en_doc)
+        self.assertIn(
+            "transform vague topics into structured rqs via pico/peo + finer evaluation",
+            en_doc.lower(),
+        )
+        self.assertIn("| `model-collaborator` | Model Collaborator |", en_doc)
+        self.assertIn(
+            "literature screening, peer review simulation, rebuttal drafting, qualitative coding, or code/statistics validation",
+            en_doc,
+        )
+
     def test_generated_skill_docs_include_localized_registry_metadata(self) -> None:
         generated = generate_skill_reference_docs(REPO_ROOT)
         zh_doc = generated["docs/zh/reference/skills.md"]

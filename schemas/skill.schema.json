@@ -9,7 +9,10 @@
         "stage",
         "version",
         "file",
+        "canonical",
         "summary",
+        "display_name",
+        "when_to_use",
         "summary_zh",
         "display_name_zh",
         "when_to_use_zh",
@@ -34,6 +37,8 @@
                 "G_compliance",
                 "H_submission",
                 "I_code",
+                "J_proofread",
+                "K_presentation",
                 "Z_cross_cutting"
             ],
             "description": "Research lifecycle stage"
@@ -48,10 +53,33 @@
             "pattern": "^skills/",
             "description": "Relative path to an internal skill markdown file under skills/ (not a portable skill package)"
         },
+        "canonical": {
+            "type": "boolean",
+            "description": "True when this entry is a canonical routed skill rather than an alias placeholder"
+        },
+        "alias_of": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$",
+            "description": "Optional canonical skill ID when this entry is an alias"
+        },
+        "deprecated": {
+            "type": "boolean",
+            "description": "Whether this registry entry is retained only for backward compatibility"
+        },
         "summary": {
             "type": "string",
             "maxLength": 200,
             "description": "One-line summary of skill purpose"
+        },
+        "display_name": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Short English display name for user-facing skill cards and docs"
+        },
+        "when_to_use": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line English usage guidance for user-facing skill cards and docs"
         },
         "summary_zh": {
             "type": "string",

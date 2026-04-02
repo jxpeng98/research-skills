@@ -262,3 +262,28 @@ Papers cited by multiple seeds or with high relevance scores:
 This skill is called by:
 - `/lit-review` Phase 3.5 - Citation snowballing
 - `/find-gap` - Identifying seminal works and research clusters
+
+## Quality Bar
+
+- [ ] Forward 和 backward 两个方向都已执行
+- [ ] Snowball log 记录了每轮新增和排除文献数
+- [ ] 达到 saturation（连续一轮无新增有效文献）
+- [ ] 新增文献已经过 screening criteria 筛选
+- [ ] 结果已合并回 search_results.csv 并去重
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 无 stopping rule | 无限滚雪球 | 定义 saturation 标准（连续 N 轮无新增） |
+| 只做 backward | 遗漏后续跟进研究 | Forward + backward 并行执行 |
+| 未去重 | 新增文献与已有重复 | 每轮合并后运行 dedup |
+| 种子论文选择偏差 | 只从一个流派出发 | 选择跨流派的多个 seed papers |
+| 无记录追踪 | 不知道新增来自哪个 seed | Snowball log 标注 source paper |
+
+## When to Use
+
+- 已有种子文献但覆盖不够时
+- 需要发现 seminal works 或 foundational papers 时
+- 数据库检索遗漏了重要文献时
+- 需要向 Reviewer 证明 exhaustive search effort 时

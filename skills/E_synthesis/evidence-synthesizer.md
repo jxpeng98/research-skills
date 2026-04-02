@@ -195,3 +195,20 @@ Outputs:
 - Bias due to missing results (Items 14, 21)
 - Certainty of evidence (Items 15, 22)
 
+## Quality Bar
+
+- [ ] 综合方法（叙事/定性/定量）有明确选择依据
+- [ ] 若 meta-analysis，异质性已报告（I², τ², Q-test）
+- [ ] 综合矩阵覆盖所有入选研究
+- [ ] 亚组/敏感性分析按预注册计划执行
+- [ ] PRISMA-aligned reporting 要素齐全
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 忽视异质性 | 合成异质数据导致误导 | 先 I² 检查，> 75% 需解释或放弃 pooling |
+| Vote counting | 只数 significant 研究比例 | 使用正式综合方法 |
+| 混淆效应指标 | 混合 OR/RR/HR | 统一转换后再 pool |
+| 遗漏灰色文献 | Publication bias | 加入未发表研究或做 sensitivity |
+| 未做 sensitivity | 不知道结果是否 robust | 移除影响力最大的研究后重跑 |

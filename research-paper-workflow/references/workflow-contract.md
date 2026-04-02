@@ -26,6 +26,7 @@ Use this contract as the single source of truth for:
 - `J`: Proofread and de-AI
 - `H`: Submission and revision
 - `I`: Research code support
+- `K`: Academic presentation
 
 ## Task IDs (Canonical)
 
@@ -83,10 +84,15 @@ Use this contract as the single source of truth for:
 | `I6` | I | Code planning | `code/plan.md` |
 | `I7` | I | Code execution | `code/performance_profile.md` |
 | `I8` | I | Code review | `code/code_review.md` |
+| `I9` | I | Release packaging | `release/` |
 | `J1` | J | AI fingerprint scan | `proofread/ai_detection_report.md` |
 | `J2` | J | Human-voice rewrite | `proofread/humanized_manuscript.md` |
 | `J3` | J | Similarity & originality check | `proofread/similarity_report.md` |
 | `J4` | J | Final proofread | `proofread/proofread_checklist.md` |
+| `K1` | K | Presentation planning | `presentation/presentation_plan.md` |
+| `K2` | K | Slide architecture | `presentation/slide_deck_spec.md` |
+| `K3` | K | Slidev build | `presentation/slidev/`, `presentation/slides.bib` |
+| `K4` | K | Beamer build | `presentation/beamer/`, `presentation/slides.bib` |
 
 ## Quality Gates
 

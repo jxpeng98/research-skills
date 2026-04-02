@@ -23,6 +23,7 @@ Canonical standard (cross-model):
 /paper-write [topic] [type] [venue]  # Full manuscript drafting
 /study-design [topic]                # Empirical study design
 /ethics-check [topic]                # Ethics / IRB pack
+/compliance-check [topic]            # Checklist compliance, PRISMA, and tone verification
 /submission-prep [topic] [venue]     # Submission package
 /rebuttal [topic]                    # Rebuttal / response to reviewers
 /code-build [method] --domain ...    # Build academic research code

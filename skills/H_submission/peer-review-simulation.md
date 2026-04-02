@@ -227,3 +227,13 @@ The simulation is **ready** when:
 ### Minor (fix if time allows)
 1. ...
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| Persona 不够刁钻 | 模拟太温和发现不了问题 | 包含 Reviewer 2（挑剔型） |
+| 不同 persona 意见雷同 | 缺少独立性 | 先独立生成再 cross-review |
+| 只关注写作 | 忽视方法论和数据问题 | 包含 Methodologist persona |
+| 缺少 actionable feedback | 指出问题但不建议如何修 | 每条 concern 附带 suggested fix |
+| 未映射到修改计划 | 模拟完但不行动 | 输出 → rebuttal-assistant 接力 |

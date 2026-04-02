@@ -251,3 +251,28 @@ Create integrated framework:
 This skill is called by:
 - `/build-framework` - Main framework building workflow
 - `/lit-review` - For theoretical synthesis
+
+## Quality Bar
+
+- [ ] 每个 construct 有明确定义和操作化路径
+- [ ] 关系箭头标注了方向、极性（正/负）和条件
+- [ ] Mermaid 图可正确渲染且无悬挂节点
+- [ ] 至少标注一个 boundary condition
+- [ ] 每个理论引用都有明确来源
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 概念定义模糊 | Construct 与 variable 混淆 | 分层：construct → dimension → indicator |
+| 关系箭头无标注 | 读者不知道是正相关还是调节 | 标注方向 + 机制 |
+| 框架过于复杂 | 一个图超过 15 个节点 | 拆分为核心框架 + 扩展因素 |
+| 缺少竞争解释 | Reviewer 质疑为何选此理论 | 添加 rival theory comparison |
+| 图文不一致 | 文字描述与 Mermaid 图不对应 | 以图为准，反向核验文字 |
+
+## When to Use
+
+- 需要概念图、理论框架或机制关系图时
+- 写 literature review 需要组织 theoretical landscape
+- 需要识别 mediator/moderator 关系时
+- 理论框架涉及多个 competing theories 需要比较时

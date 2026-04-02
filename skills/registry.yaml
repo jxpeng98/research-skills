@@ -24,6 +24,21 @@ skills:
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem]
     domain_aware: false
+  - id: contribution-crafter
+    stage: A_framing
+    version: "0.4.0"
+    file: skills/A_framing/contribution-crafter.md
+    summary: "Draft a compelling contribution statement highlighting theoretical, methodological, and empirical novelty."
+    summary_zh: "提炼突显理论、方法与实证新颖性的贡献声明。"
+    display_name_zh: "贡献提炼"
+    when_to_use_zh: "当引言需要点明主要贡献，或需要为文章定位和强调创新点时使用。"
+    inputs: [RQSet, GapAnalysis]
+    outputs: [ContributionStatement]
+    tags: [contribution, novelty, framing, positioning]
+    depends_on: [question-refiner, gap-analyzer]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
 
   - id: hypothesis-generator
     stage: A_framing
@@ -397,10 +412,26 @@ skills:
     inputs: [DesignSpec]
     outputs: [EthicsPackage]
     tags: [ethics, IRB, consent, privacy, GDPR, compliance]
-    depends_on: [study-designer]
-    compatible_models: [codex, claude, gemini, gpt]
+    depends_on: [study-designer, dataset-finder, data-management-plan]
+    compatible_models: [claude, gpt, gemini]
     tooling_requirements: [filesystem]
-    domain_aware: false
+    domain_aware: true
+
+  - id: statement-generator
+    stage: D_ethics
+    version: "0.4.0"
+    file: skills/D_ethics/statement-generator.md
+    summary: "Generate standardized ethics, data availability, and COI statements for manuscript inclusion."
+    summary_zh: "生成标准化的伦理、数据可用性和利益冲突声明。"
+    display_name_zh: "声明生成"
+    when_to_use_zh: "当准备投稿并需要编写伦理及数据公开声明时使用。"
+    inputs: [EthicsPackage, DataManagementPlan]
+    outputs: [Manuscript]
+    tags: [ethics, statements, compliance, irb, data-availability]
+    depends_on: [ethics-irb-helper, data-management-plan]
+    compatible_models: [claude, gpt, gemini]
+    tooling_requirements: [filesystem]
+    domain_aware: true
 
   - id: deidentification-planner
     stage: D_ethics
@@ -421,6 +452,22 @@ skills:
   # ══════════════════════════════════════════════════════════
   # E_synthesis — Quality assessment, synthesis, bias
   # ══════════════════════════════════════════════════════════
+  - id: effect-size-calculator
+    stage: E_synthesis
+    version: "0.4.0"
+    file: skills/E_synthesis/effect-size-calculator.md
+    summary: "Calculate standard effect sizes from raw statistics to enable meta-analysis."
+    summary_zh: "计算标准化效应量以支持元分析。"
+    display_name_zh: "效应量计算"
+    when_to_use_zh: "当需要将原始统计数据转换为统一的效应量（如 Cohen's d）时使用。"
+    inputs: [ExtractionTable, VariableSpec]
+    outputs: [EffectSizeTable, AnalysisCode]
+    tags: [meta-analysis, effect-size, statistics, synthesis]
+    depends_on: [paper-extractor, variable-constructor]
+    compatible_models: [claude, gpt, gemini]
+    tooling_requirements: [filesystem, code-runtime]
+    domain_aware: true
+
   - id: evidence-synthesizer
     stage: E_synthesis
     version: "0.4.0"
@@ -847,6 +894,22 @@ skills:
     depends_on: [code-builder]
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem]
+    domain_aware: false
+
+  - id: release-packager
+    stage: I_code
+    version: "0.4.0"
+    file: skills/I_code/release-packager.md
+    summary: "Package code, data, environment, and documentation for reproducible release (Zenodo, GitHub, Dataverse)."
+    summary_zh: "将代码、数据、环境和文档打包为可复现的发布包（Zenodo、GitHub、Dataverse）。"
+    display_name_zh: "发布打包"
+    when_to_use_zh: "当需要为投稿或归档准备代码/数据的可复现发布包时使用。"
+    inputs: [AnalysisCode, ReproducibilityReport]
+    outputs: [ReleasePackage]
+    tags: [code, release, packaging, Zenodo, reproducibility, README]
+    depends_on: [code-builder, reproducibility-auditor]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem, code-runtime]
     domain_aware: false
 
   - id: stats-engine

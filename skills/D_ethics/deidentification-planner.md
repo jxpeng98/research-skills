@@ -185,3 +185,13 @@ The de-identification plan is **ready** when:
 - Correlation preservation: [% of key relationships preserved]
 - Sample size impact: [any cells dropped below threshold]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只去显式 ID | 忽视准标识符组合重识别 | k-anonymity 验证 quasi-identifier 组合 |
+| 过度去标识 | 数据效用严重下降 | 用 utility-privacy trade-off 评估 |
+| 忽略文本字段 | 叙述中含可识别信息 | NER 扫描 + manual review |
+| 地理信息残留 | 精确 GPS 或小地理单元 | 泛化到更大的地理区域 |
+| 未考虑纵向链接 | 多波数据可重组身份 | 使用 project-specific 随机 ID |

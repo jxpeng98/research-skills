@@ -45,15 +45,15 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 
 | Stage | Focus | Skill count | Typical user intent |
 |---|---|---:|---|
-| `A_framing` | topic framing, questions, theory, gap, venue | 5 | "What exactly is my contribution?" |
+| `A_framing` | topic framing, questions, theory, gap, venue | 6 | "What exactly is my contribution?" |
 | `B_literature` | search, screen, extract, cite, map | 9 | "What does the literature say, and how do I build a corpus?" |
 | `C_design` | design, variables, robustness, datasets | 9 | "How should this study be designed and operationalized?" |
-| `D_ethics` | IRB, privacy, governance | 2 | "What ethics and data-protection materials do I need?" |
-| `E_synthesis` | evidence synthesis, quality, bias | 3 | "How do I combine and rate evidence?" |
+| `D_ethics` | IRB, privacy, governance | 3 | "What ethics and data-protection materials do I need?" |
+| `E_synthesis` | evidence synthesis, quality, bias | 4 | "How do I combine and rate evidence?" |
 | `F_writing` | manuscript building, tables, figures, results writing | 6 | "How do I turn analysis into publishable text?" |
 | `G_compliance` | reporting checklists, tone, PRISMA | 3 | "Is this compliant and submission-ready?" |
 | `H_submission` | submission package, rebuttal, review simulation | 6 | "How do I package, defend, and stress-test the paper?" |
-| `I_code` | academic code, stats, reproducibility | 9 | "How do I implement and verify research code?" |
+| `I_code` | academic code, stats, reproducibility | 10 | "How do I implement and verify research code?" |
 | `K_presentation` | academic talks, slide planning, Slidev, Beamer | 4 | "How do I turn the paper into a defensible talk?" |
 | `Z_cross_cutting` | metadata, model collaboration, self-critique | 3 | "How do I improve quality across stages?" |
 
@@ -66,6 +66,7 @@ Use Stage A when you are still defining the research question, contribution, the
 | Skill | What it does | Produces |
 |---|---|---|
 | `question-refiner` | Transform vague topics into structured RQs via PICO/PEO + FINER evaluation. | `RQSet` |
+| `contribution-crafter` | Draft a compelling contribution statement highlighting theoretical, methodological, and empirical novelty. | `ContributionStatement` |
 | `hypothesis-generator` | Translate RQs into testable hypotheses with mechanisms and boundary conditions. | `HypothesisSet` |
 | `theory-mapper` | Map theoretical concepts, relationships, and frameworks with Mermaid diagrams. | `TheoreticalFramework` |
 | `gap-analyzer` | Identify and categorize research gaps using 5-type taxonomy with FINER prioritization. | `GapAnalysis` |
@@ -110,6 +111,7 @@ Use Stage D when the study touches human participants, sensitive data, governanc
 | Skill | What it does | Produces |
 |---|---|---|
 | `ethics-irb-helper` | Prepare IRB-ready materials: risk assessment, consent, recruitment, data governance. | `EthicsPackage` |
+| `statement-generator` | Generate standardized ethics, data availability, and COI statements for manuscript inclusion. | `Manuscript` |
 | `deidentification-planner` | Design technical privacy measures via k-anonymity or differential privacy. | `DeidentificationPlan` |
 
 ### E. Synthesis
@@ -118,6 +120,7 @@ Use Stage E when the evidence base already exists and the task is to combine, ra
 
 | Skill | What it does | Produces |
 |---|---|---|
+| `effect-size-calculator` | Calculate standard effect sizes from raw statistics to enable meta-analysis. | `EffectSizeTable`, `AnalysisCode` |
 | `evidence-synthesizer` | Synthesize evidence narratively or quantitatively with PRISMA-aligned reporting. | `EvidenceTable`, `SynthesisMatrix` |
 | `quality-assessor` | Assess risk of bias and certainty via RoB 2, ROBINS-I, GRADE. | `QualityTable`, `GRADESummary` |
 | `publication-bias-checker` | Evaluate publication bias via funnel plots, Egger's test, trim-and-fill. | `PublicationBiasReport` |
@@ -182,6 +185,7 @@ That sequence is what `code-build --focus full` is designed to reinforce.
 | `code-execution` | Execute code plans with cProfile performance profiling and optimization. | `PerformanceProfile` |
 | `code-review` | Secondary model reviews code logic, security, and statistical validity. | `CodeReview` |
 | `reproducibility-auditor` | Verify seeds, containerization, and fail-graceful contingencies. | `ReproducibilityReport` |
+| `release-packager` | Package code, data, environment, and documentation for reproducible release (Zenodo, GitHub, Dataverse). | `ReleasePackage` |
 | `stats-engine` | Statistical modeling and hypothesis testing with domain-driven diagnostics. | `StatsReport` |
 
 ### K. Presentation

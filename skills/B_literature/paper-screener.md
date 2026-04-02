@@ -227,3 +227,28 @@ Studies included in review: [N7]
 
 This skill is called by:
 - `/lit-review` - During screening phase
+
+## Quality Bar
+
+- [ ] Inclusion/exclusion criteria 已前置定义且无歧义
+- [ ] Title-abstract 和 full-text screening 分阶段记录
+- [ ] 每条排除决策附带排除理由
+- [ ] PRISMA flow 数据可直接生成 flow diagram
+- [ ] 存在 inter-rater reliability 描述（或标注为单筛）
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 标准模糊 | 同一篇文献不同标准得出不同结论 | 操作化每条 criteria 的判断规则 |
+| 无排除理由 | 无法复现筛选过程 | 每条记录附 exclusion reason code |
+| Full-text 获取失败未记录 | PRISMA flow 不完整 | 在 flow 中标注 unable to retrieve |
+| 一次筛完 | 跳过 title-abstract 阶段 | 强制两阶段分开 |
+| 无冲突解决机制 | 双筛不一致时无规则 | 预定义 consensus / third reviewer 规则 |
+
+## When to Use
+
+- 检索完成后需要按纳入排除标准筛选文献时
+- 需要 PRISMA-compliant 的双阶段筛选记录时
+- 大量文献（> 100 篇）需要系统筛选时
+- 需要生成 screening decision log 和 PRISMA flow 数据时

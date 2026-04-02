@@ -202,3 +202,13 @@ The response package is **ready** when:
 ## Response Letter
 [Full response letter with verbatim quotes and point-by-point responses]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 回避核心问题 | 只回应边缘意见 | 优先处理 major concerns |
+| 过度辩解 | 语气防御性太强 | 先 acknowledge 再 explain |
+| 改动未标记 | Editor 找不到修改处 | 用 track changes + 标注页码/段落 |
+| 逐字照搬评审意见 | 看起来没有理解 | 用自己的话 paraphrase 问题 |
+| 承诺但未兑现 | 说会修改但文中没改 | Cross-check response matrix vs manuscript |

@@ -198,3 +198,28 @@ primary_artifact: code/code_review.md
 ## Confidence
 - 0.xx
 ```
+
+## Quality Bar
+
+- [ ] 逻辑正确性已逐函数审查
+- [ ] 统计方法与 analysis plan 一致
+- [ ] 无数据泄漏（训练/测试/时间序列前瞻）
+- [ ] 代码风格和命名一致
+- [ ] Review 报告包含具体行号引用
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只查格式 | 忽视逻辑和统计错误 | 按 logic → statistics → style 优先级 |
+| 不理解方法 | 审查者不熟悉 estimator | 审查前阅读 analysis plan + 方法文献 |
+| 无 action item | 评论模糊 | 每条评论是 must-fix / should-fix / nice-to-have |
+| 忽视数据泄漏 | 训练集信息泄漏到测试 | 专门检查 data split boundary |
+| 审查不独立 | 看了作者解释再审 | 先盲审代码，再看文档 |
+
+## When to Use
+
+- 分析代码完成后需要第二模型/人审查时
+- 需要检查统计有效性和方法论一致性时
+- 投稿前需要独立核验代码逻辑时
+- 需要安全性审查（数据泄漏、路径注入）时

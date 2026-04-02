@@ -202,3 +202,11 @@ What is the research goal?
 
 ## Caveats
 ```
+
+## Quality Bar
+
+- [ ] 模型选择有统计学依据（而非仅因常用）
+- [ ] 假设检验结果包含 effect size + CI（不止 p-value）
+- [ ] 诊断检验已执行（residuals, multicollinearity, heteroscedasticity）
+- [ ] 多重比较已校正（Bonferroni / FDR / 等效方法）
+- [ ] domain profile 对应的统计方法已正确适用

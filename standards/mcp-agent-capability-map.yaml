@@ -229,6 +229,7 @@ functional_agents:
 
 skill_registry:
   - "question-refiner"
+  - "contribution-crafter"
   - "academic-searcher"
   - "paper-screener"
   - "paper-extractor"
@@ -242,7 +243,9 @@ skill_registry:
   - "reference-manager-bridge"
   - "study-designer"
   - "ethics-irb-helper"
+  - "statement-generator"
   - "evidence-synthesizer"
+  - "effect-size-calculator"
   - "manuscript-architect"
   - "prisma-checker"
   - "reporting-checker"
@@ -278,6 +281,7 @@ skill_registry:
   - "code-planning"
   - "code-execution"
   - "code-review"
+  - "release-packager"
   - "presentation-planner"
   - "slide-architect"
   - "slidev-scholarly-builder"
@@ -299,6 +303,12 @@ skill_catalog:
     focus: "Refine research questions, scope boundaries, and keyword strategy."
     default_outputs:
       - "framing/research_question.md"
+  contribution-crafter:
+    file: "skills/A_framing/contribution-crafter.md"
+    category: "framing"
+    focus: "Draft compelling statement highlighting theoretical, methodological, and empirical novelty."
+    default_outputs:
+      - "framing/contribution_statement.md"
   academic-searcher:
     file: "skills/B_literature/academic-searcher.md"
     category: "literature-discovery"
@@ -394,6 +404,12 @@ skill_catalog:
     focus: "Prepare IRB-ready risk, consent, privacy, and governance content."
     default_outputs:
       - "ethics_irb.md"
+  statement-generator:
+    file: "skills/D_ethics/statement-generator.md"
+    category: "ethics-compliance"
+    focus: "Generate standardized ethics, data availability, and COI statements for manuscript inclusion."
+    default_outputs:
+      - "manuscript/manuscript.md"
   evidence-synthesizer:
     file: "skills/E_synthesis/evidence-synthesizer.md"
     category: "evidence-synthesis"
@@ -401,6 +417,12 @@ skill_catalog:
     default_outputs:
       - "synthesis.md"
       - "synthesis_matrix.md"
+  effect-size-calculator:
+    file: "skills/E_synthesis/effect-size-calculator.md"
+    category: "evidence-synthesis"
+    focus: "Calculate standard effect sizes from raw statistics to enable meta-analysis synthesis."
+    default_outputs:
+      - "effect_size_table.md"
   manuscript-architect:
     file: "skills/F_writing/manuscript-architect.md"
     category: "manuscript-structure"
@@ -626,6 +648,12 @@ skill_catalog:
     focus: "Secondary model reviews code logic, security, and statistical validity."
     default_outputs:
       - "code/code_review.md"
+  release-packager:
+    file: "skills/I_code/release-packager.md"
+    category: "research-code"
+    focus: "Package code, data, environment, and documentation for reproducible release."
+    default_outputs:
+      - "release/"
   presentation-planner:
     file: "skills/K_presentation/presentation-planner.md"
     category: "academic-presentation"
@@ -820,6 +848,7 @@ task_functional_routing:
     H: "publication-agent"
     I: "analysis-agent"
     J: "publication-agent"
+    K: "publication-agent"
   overrides:
     A1_5: "theory-agent"
     A2: "theory-agent"
@@ -851,6 +880,7 @@ task_skill_mapping:
       - "self-critique"
   A2:
     required_skills:
+      - "contribution-crafter"
       - "question-refiner"
       - "manuscript-architect"
   A3:
@@ -943,7 +973,7 @@ task_skill_mapping:
       - "self-critique"
   D2:
     required_skills:
-      - "ethics-irb-helper"
+      - "statement-generator"
       - "manuscript-architect"
   D3:
     required_skills:
@@ -956,6 +986,7 @@ task_skill_mapping:
       - "quality-assessor"
   E2:
     required_skills:
+      - "effect-size-calculator"
       - "evidence-synthesizer"
       - "paper-extractor"
   E3:
@@ -1090,6 +1121,46 @@ task_skill_mapping:
     required_skills:
       - "code-review"
       - "model-collaborator"
+  I9:
+    required_skills:
+      - "release-packager"
+      - "reproducibility-auditor"
+
+  J1:
+    required_skills:
+      - "ai-fingerprint-scanner"
+      - "manuscript-architect"
+  J2:
+    required_skills:
+      - "human-voice-rewriter"
+      - "ai-fingerprint-scanner"
+  J3:
+    required_skills:
+      - "similarity-checker"
+      - "human-voice-rewriter"
+  J4:
+    required_skills:
+      - "final-proofreader"
+      - "similarity-checker"
+
+  K1:
+    required_skills:
+      - "presentation-planner"
+      - "manuscript-architect"
+  K2:
+    required_skills:
+      - "slide-architect"
+      - "presentation-planner"
+  K3:
+    required_skills:
+      - "slidev-scholarly-builder"
+      - "slide-architect"
+      - "citation-formatter"
+  K4:
+    required_skills:
+      - "beamer-builder"
+      - "slide-architect"
+      - "citation-formatter"
 
 task_execution:
   A1:
@@ -1621,6 +1692,81 @@ task_execution:
     quality_gates:
       - "Q2"
       - "Q4"
+  I9:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  J1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  J2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  J3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  J4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  K1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  K2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  K3:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  K4:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "claude"
+    review_agent: "gemini"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
 
 # ── Team-Run (Research Fanout/Fanin) Configuration ──────────────────
 # MVP scope: only B1 and H3 are supported.

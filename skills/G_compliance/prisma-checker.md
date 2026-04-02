@@ -281,3 +281,28 @@ The full PRISMA 2020 checklist is available in:
 This skill is called by:
 - `/lit-review` Phase 9 - Final compliance verification
 - Pre-submission quality check
+
+## Quality Bar
+
+- [ ] 27 项 PRISMA 2020 checklist 逐条标注了对应稿件位置
+- [ ] Flow diagram 数据与正文数字完全一致
+- [ ] 所有 checklist 项标注为 Yes/No/NA（不留空白）
+- [ ] 扩展项（如 PRISMA-S for searches）已按需覆盖
+- [ ] Checklist 与 flow diagram 互相一致
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 数字不一致 | Flow diagram 与正文数字不match | 从数据源重新计数并核验 |
+| 用旧版 PRISMA | 使用 2009 版而非 2020 | 确认使用 PRISMA 2020 |
+| Checklist 项笼统回答 | 写见方法但位置不精确 | 标注段落/页码 |
+| 忽略 protocol registration | 未报告 protocol DOI | 在 Methods 中标注 PROSPERO 等 |
+| NA 项无理由 | 标 NA 但不解释原因 | 每个 NA 附简要说明 |
+
+## When to Use
+
+- 系统综述或 meta-analysis 稿件需要核查 PRISMA 合规性时
+- 需要生成 PRISMA 2020 flow diagram 时
+- 投稿前需要逐条核对 27 项 checklist 时
+- Reviewer 要求补充 PRISMA 报告时

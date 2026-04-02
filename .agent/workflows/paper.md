@@ -8,7 +8,7 @@ Provide a systematic “choose-your-path” workflow for writing research papers
 1) paper type, and 2) what they want to do right now (stage/section).
 
 Use the canonical standard contract from the globally installed `research-paper-workflow` skill.
-Task IDs (`A1` ... `I8`) and output paths in `references/workflow-contract.md` are authoritative.
+Task IDs (`A1` ... `K4`) and output paths in `references/workflow-contract.md` are authoritative.
 
 ## Context
 
@@ -186,14 +186,36 @@ Pick one:
 6. **I6 Zero-Decision Planning** (Transform specs into execution plans)
 7. **I7 Parallel Execution & Optimization** (Execute plan and run profilers/vectorization)
 8. **I8 Cross-Model Code Review** (Secondary model reviews code logic, security, stats validity)
+9. **I9 Release Packaging** (Package code, data, environment for archival in Zenodo/GitHub)
 
 **Routing:**
 - I5 → use `code-specification`
 - I6 → use `code-planning`
 - I7 → use `code-execution` (Codex execution)
 - I8 → use `code-review` (Gemini review)
+- I9 → use `release-packager`
 - I4 → use `reproducibility-auditor`
 - I1–I3 → `/code-build` (use `model-collaborator` when verification is needed)
+
+### J) Proofreading & Humanization (去AI痕迹与终审)
+Pick one:
+1. **J1 AI Fingerprint Scan** (Detect AI-generated text patterns)
+2. **J2 Human Voice Rewrite** (Rewrite flagged passages for natural tone)
+3. **J3 Similarity & Originality Check** (Check for text overlap against literature)
+4. **J4 Final Proofread** (Grammar, formatting, citation cross-checks)
+
+**Routing:**
+- J1-J4 → `/proofread`
+
+### K) Academic Presentation (学术展示与答辩)
+Pick one:
+1. **K1 Presentation Planning** (Talk-level story arc, timing, audience calibration)
+2. **K2 Slide Architecture** (Slide-by-slide assertions, layout, speaker notes)
+3. **K3 Slidev Build** (Generate Slidev presentation with scholarly components)
+4. **K4 Beamer Build** (Generate LaTeX Beamer presentation)
+
+**Routing:**
+- K1-K4 → `/academic-present`
 
 ## Step 3: Execute the Chosen Path (In This Session)
 

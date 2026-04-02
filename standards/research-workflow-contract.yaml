@@ -208,6 +208,16 @@ stages:
       - "code/code_review.md"
       - "code/container_config/"
       - "code/documentation/"
+  - id: "K"
+    name: "academic-presentation"
+    sequence_index: 11
+    phase_type: "core"
+    outputs:
+      - "presentation/presentation_plan.md"
+      - "presentation/slide_deck_spec.md"
+      - "presentation/slidev/"
+      - "presentation/beamer/"
+      - "presentation/slides.bib"
   - id: "F"
     name: "manuscript-writing"
     sequence_index: 7
@@ -583,6 +593,33 @@ task_catalog:
     title: "final-proofread"
     outputs:
       - "proofread/proofread_checklist.md"
+  I9:
+    stage: "I"
+    title: "release-packaging"
+    outputs:
+      - "release/"
+  K1:
+    stage: "K"
+    title: "presentation-planning"
+    outputs:
+      - "presentation/presentation_plan.md"
+  K2:
+    stage: "K"
+    title: "slide-architecture"
+    outputs:
+      - "presentation/slide_deck_spec.md"
+  K3:
+    stage: "K"
+    title: "slidev-build"
+    outputs:
+      - "presentation/slidev/"
+      - "presentation/slides.bib"
+  K4:
+    stage: "K"
+    title: "beamer-build"
+    outputs:
+      - "presentation/beamer/"
+      - "presentation/slides.bib"
 
 dependency_catalog:
   A1:
@@ -1030,6 +1067,33 @@ dependency_catalog:
       - "I7"
     recommended_next:
       - "I4"
+  I9:
+    prerequisites_any:
+      - "I4"
+      - "I7"
+    recommended_next:
+      - "H1"
+
+  K1:
+    prerequisites_any:
+      - "F3"
+      - "F2"
+    recommended_prerequisites:
+      - "A5"
+    recommended_next:
+      - "K2"
+  K2:
+    prerequisites_all:
+      - "K1"
+    recommended_next:
+      - "K3"
+      - "K4"
+  K3:
+    prerequisites_all:
+      - "K2"
+  K4:
+    prerequisites_all:
+      - "K2"
 
 platform_mapping:
   claude_code:

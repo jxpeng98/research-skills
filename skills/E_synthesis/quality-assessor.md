@@ -319,3 +319,28 @@ For systematic reviews, apply GRADE to rate certainty of evidence:
 This skill is called by:
 - `/lit-review` - Quality assessment phase
 - `/paper-read` - Individual paper assessment
+
+## Quality Bar
+
+- [ ] 选用工具匹配研究设计（RCT→RoB 2, observational→ROBINS-I）
+- [ ] 每个 domain 有独立判断 + 支撑理由
+- [ ] GRADE 评估（如适用）覆盖 5 downgrade + 3 upgrade 因素
+- [ ] Quality table 可直接嵌入论文或 appendix
+- [ ] 存在 inter-rater agreement 描述或计划
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 工具不匹配 | RCT 用 NOS 评估 | 按 study design 选工具 |
+| 评估过于宽泛 | 全部标为 some concerns | 逐 domain 给出具体依据 |
+| 忽略 GRADE | 只做 RoB 不做证据确定性 | 对每个 outcome 做 GRADE SoF |
+| 无 inter-rater | 审稿人质疑主观性 | 至少 20% 样本双评或标注 |
+| 结果不影响综合 | 评估完但综合不分层 | 按 quality tier 做 sensitivity |
+
+## When to Use
+
+- 完成数据提取后需要评估每篇文献的 risk of bias 时
+- 系统综述需要 RoB 2 / ROBINS-I / GRADE 评估时
+- 需要按证据质量加权综合时
+- 投稿前 Reviewer 要求质量评估透明化时

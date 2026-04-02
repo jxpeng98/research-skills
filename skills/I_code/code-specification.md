@@ -130,3 +130,28 @@ primary_artifact: code/code_specification.md
 ## Blocked Decisions / Escalations
 - ...
 ```
+
+## Quality Bar
+
+- [ ] 输入/输出类型和格式已完全定义
+- [ ] 约束条件可自动测试（不含模糊表述）
+- [ ] 验收标准有具体数字或条件
+- [ ] 与 analysis plan 逆向可追溯
+- [ ] 边界情况和异常处理已列出
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 规范太模糊 | 实现时有自由裁量空间 | 每条约束用 GIVEN-WHEN-THEN 格式 |
+| 过度规范 | 规范比代码还长 | 只规范接口和约束，不规范实现 |
+| 遗漏 edge case | 缺失数据/空输入未定义 | 用 boundary value analysis 补充 |
+| 与 analysis plan 脱节 | 规范了代码但不对应统计需求 | 添加 traceability matrix |
+| 无版本控制 | 规范修改后实现不同步 | 规范文件纳入 git 管理 |
+
+## When to Use
+
+- 编码前需要先锁定约束、输入输出和验收标准时
+- 需要 OPSX 风格的严格规范集时
+- 复杂分析需要正式的 contract before implementation 时
+- 多人协作编码需要统一接口规范时

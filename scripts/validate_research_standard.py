@@ -15,7 +15,7 @@ if str(REPO_ROOT) not in sys.path:
 from research_skills.skill_docs import generate_skill_reference_docs
 
 EXPECTED_PAPER_TYPES = {"empirical", "qualitative", "systematic-review", "methods", "theory"}
-EXPECTED_STAGE_IDS = {stage for stage in "ABCDEFGHI"}
+EXPECTED_STAGE_IDS = {stage for stage in "ABCDEFGHIJK"}
 EXPECTED_TASK_IDS = {
     "A1", "A1_5", "A2", "A3", "A4", "A5",
     "B1", "B1_5", "B2", "B3", "B4", "B5", "B6",
@@ -25,7 +25,9 @@ EXPECTED_TASK_IDS = {
     "F1", "F2", "F3", "F4", "F5", "F6",
     "G1", "G2", "G3", "G4",
     "H1", "H2", "H2_5", "H3", "H4",
-    "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8",
+    "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8", "I9",
+    "J1", "J2", "J3", "J4",
+    "K1", "K2", "K3", "K4",
 }
 EXPECTED_QUALITY_GATES = {"Q1", "Q2", "Q3", "Q4"}
 EXPECTED_AGENTS = {"codex", "claude", "gemini"}
@@ -354,7 +356,7 @@ def parse_task_skill_mapping(content: str) -> dict[str, set[str]]:
     section = extract_top_level_section(content, "task_skill_mapping")
     task_map: dict[str, set[str]] = {}
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-K][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         section,
         flags=re.MULTILINE,
     ):
@@ -379,7 +381,7 @@ def parse_task_functional_routing(content: str) -> tuple[dict[str, str], dict[st
     routing_overrides = {
         task_id: owner
         for task_id, owner in re.findall(
-            r'^\s{4}([A-I][0-9_]+):\s*"?(.*?)"?\s*$',
+            r'^\s{4}([A-K][0-9_]+):\s*"?(.*?)"?\s*$',
             overrides_section,
             flags=re.MULTILINE,
         )
@@ -477,7 +479,7 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
     stage_ids = {
         found
         for found in re.findall(
-            r'^\s*-\s*id:\s*"([A-I])"\s*$',
+            r'^\s*-\s*id:\s*"([A-K])"\s*$',
             stages_section,
             flags=re.MULTILINE,
         )
@@ -496,7 +498,7 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
     task_ids = {
         found
         for found in re.findall(
-            r"^\s{2}([A-I][0-9_]+):\s*$",
+            r"^\s{2}([A-K][0-9_]+):\s*$",
             task_section,
             flags=re.MULTILINE,
         )
@@ -512,12 +514,12 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
     )
 
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-K][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         task_section,
         flags=re.MULTILINE,
     ):
         stage_match = re.search(
-            r'^\s{4}stage:\s*"([A-I])"\s*$',
+            r'^\s{4}stage:\s*"([A-K])"\s*$',
             block,
             flags=re.MULTILINE,
         )
@@ -552,7 +554,7 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
         dependency_ids = {
             found
             for found in re.findall(
-                r"^\s{2}([A-I][0-9_]+):\s*$",
+                r"^\s{2}([A-K][0-9_]+):\s*$",
                 dependency_section,
                 flags=re.MULTILINE,
             )
@@ -568,7 +570,7 @@ def validate_contract(root: Path, report: ValidationReport) -> None:
         )
         prereq_all_graph: dict[str, list[str]] = {task_id: [] for task_id in EXPECTED_TASK_IDS}
         for dep_task_id, dep_block in re.findall(
-            r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+            r"^\s{2}([A-K][0-9_]+):\n((?:^\s{4}.*\n?)+)",
             dependency_section,
             flags=re.MULTILINE,
         ):
@@ -1248,7 +1250,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     skill_map_ids = {
         found
         for found in re.findall(
-            r"^\s{2}([A-I][0-9_]+):\s*$",
+            r"^\s{2}([A-K][0-9_]+):\s*$",
             skill_map_section,
             flags=re.MULTILINE,
         )
@@ -1263,7 +1265,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
         ),
     )
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-K][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         skill_map_section,
         flags=re.MULTILINE,
     ):
@@ -1287,7 +1289,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     task_ids = {
         found
         for found in re.findall(
-            r"^\s{2}([A-I][0-9_]+):\s*$",
+            r"^\s{2}([A-K][0-9_]+):\s*$",
             task_section,
             flags=re.MULTILINE,
         )
@@ -1303,7 +1305,7 @@ def validate_mcp_agent_map(root: Path, report: ValidationReport) -> None:
     )
 
     for task_id, block in re.findall(
-        r"^\s{2}([A-I][0-9_]+):\n((?:^\s{4}.*\n?)+)",
+        r"^\s{2}([A-K][0-9_]+):\n((?:^\s{4}.*\n?)+)",
         task_section,
         flags=re.MULTILINE,
     ):
@@ -1384,7 +1386,7 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
         markdown_task_ids = {
             found
             for found in re.findall(
-                r"^\|\s*`([A-I][0-9_]+)`\s*\|",
+                r"^\|\s*`([A-K][0-9_]+)`\s*\|",
                 markdown_contract,
                 flags=re.MULTILINE,
             )
@@ -1402,7 +1404,7 @@ def validate_cross_file_consistency(root: Path, report: ValidationReport) -> Non
     paper_workflow_content = read_text(root, ".agent/workflows/paper.md", report)
     if paper_workflow_content:
         paper_ids = {
-            found for found in re.findall(r"\*\*([A-I][0-9_]+)\b", paper_workflow_content)
+            found for found in re.findall(r"\*\*([A-K][0-9_]+)\b", paper_workflow_content)
         }
         report.check(
             paper_ids == EXPECTED_TASK_IDS,

@@ -115,3 +115,28 @@ Do NOT use high-level wrappers; implement from first principles."
 4. **Validation**: Test case proving correctness
 5. **Domain Checklist**: Pass/fail status for each domain-profile checklist item
 6. **Visualization**: Key diagnostic/result plots per domain profile `visualization_templates`
+
+## Quality Bar
+
+- [ ] 代码可在新环境中 one-command 运行（附 requirements/renv.lock）
+- [ ] 所有硬编码路径已替换为相对路径或配置参数
+- [ ] 随机种子已固定且有文档说明
+- [ ] 核心函数有 docstring 和至少一个 assertion/test
+- [ ] 输出与 analysis plan 中预期的 table/figure 一一对应
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 硬编码路径 | 他人无法运行 | 用 config file 或 argparse |
+| 缺少 seed | 结果不可复现 | 全局 set.seed() + 记录 |
+| 库版本不锁 | 依赖更新后行为变化 | 使用 lock file (pip freeze / renv::snapshot) |
+| 魔法数字 | 代码中常数无解释 | 提取为 named constant + 注释来源 |
+| 分析与可视化耦合 | 改图就得重跑分析 | 分离 analysis → save results → plot |
+
+## When to Use
+
+- 需要将论文方法/分析计划转化为可执行代码时
+- 需要结合 domain profile 选择合适的统计/数据处理库时
+- 需要生成可复现的分析脚本（R/Python/Stata/Julia）时
+- 需要从 analysis plan 派生数据处理 pipeline 时

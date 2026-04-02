@@ -198,3 +198,13 @@ Tables are **ready** when:
 
 Note. [General note + significance markers]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 精度不一致 | 同列混用 2/3/4 位小数 | 统一精度规则 |
+| 缺少 N | 不知道每个 cell 的样本量 | 表头或脚注标注 N |
+| 表格过宽 | 超出页面边距 | 拆分或旋转为 landscape |
+| 无标注说明 | 读者不知道 * ** *** 含义 | 表格脚注统一标注 significance level |
+| 格式不符期刊要求 | APA 要求三线表 | 预先检查 author guidelines |

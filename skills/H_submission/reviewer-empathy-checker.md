@@ -164,3 +164,13 @@ The empathy check is **ready** when:
 | Issue | R1 Response | R2 Response | Contradiction? |
 |-------|-----------|-----------|---------------|
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 过度谦卑 | 全面承认 reviewer 正确 | 区分合理批评 vs. 误解之处 |
+| 技术正确但语气差 | 内容对但对话感差 | 按 acknowledge → address → appreciate 结构 |
+| 忽略夸赞 | 只回应批评不回应肯定 | 对正面评论也要回应致谢 |
+| 逐字 copy-paste | 直接复制 rebuttal-assistant 输出 | 根据 reviewer 风格调整措辞 |
+| 未检查一致性 | 给 R1 和 R2 的回复互相矛盾 | 全局检查跨 reviewer 一致性 |

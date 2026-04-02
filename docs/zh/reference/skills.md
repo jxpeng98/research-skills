@@ -45,15 +45,15 @@
 
 | Stage | 关注点 | Skill 数量 | 使用者最常见的问题 |
 |---|---|---:|---|
-| `A_framing` | 选题、问题、理论、gap、期刊定位 | 5 | “我的研究问题和贡献到底是什么？” |
+| `A_framing` | 选题、问题、理论、gap、期刊定位 | 6 | “我的研究问题和贡献到底是什么？” |
 | `B_literature` | 检索、筛选、提取、引文、文献地图 | 9 | “文献怎么系统找、系统筛、系统整理？” |
 | `C_design` | 研究设计、变量、稳健性、数据可得性 | 9 | “这个研究该怎么设计和 operationalize？” |
-| `D_ethics` | IRB、隐私、治理 | 2 | “伦理与数据合规材料要怎么准备？” |
-| `E_synthesis` | 证据综合、质量评估、发表偏倚 | 3 | “已有证据要怎么整合和评级？” |
+| `D_ethics` | IRB、隐私、治理 | 3 | “伦理与数据合规材料要怎么准备？” |
+| `E_synthesis` | 证据综合、质量评估、发表偏倚 | 4 | “已有证据要怎么整合和评级？” |
 | `F_writing` | 结构、结果解释、表格、图、摘要 | 6 | “如何把分析结果写成论文？” |
 | `G_compliance` | PRISMA、报告规范、学术语气 | 3 | “论文是否已经满足提交前规范？” |
 | `H_submission` | 投稿包、回复审稿、模拟评审 | 6 | “投稿前后怎么打包和应对审稿？” |
-| `I_code` | 学术代码、统计、可复现性 | 9 | “研究代码如何实现、审查、复现？” |
+| `I_code` | 学术代码、统计、可复现性 | 10 | “研究代码如何实现、审查、复现？” |
 | `K_presentation` | 学术报告、幻灯片规划、Slidev、Beamer | 4 | “怎么把论文变成一个可讲、可答辩的学术报告？” |
 | `Z_cross_cutting` | 元数据、多模型协作、自我批判 | 3 | “哪些能力是跨阶段通用的？” |
 
@@ -66,6 +66,7 @@
 | Skill | 中文名 | 适用场景 | 产出类型 |
 |---|---|---|---|
 | `question-refiner` | 研究问题精炼 | 当选题还模糊、范围过大或研究问题不可执行时使用。 | `RQSet` |
+| `contribution-crafter` | 贡献提炼 | 当引言需要点明主要贡献，或需要为文章定位和强调创新点时使用。 | `ContributionStatement` |
 | `hypothesis-generator` | 假设生成 | 当你需要把研究问题转成可检验假设或 propositions 时使用。 | `HypothesisSet` |
 | `theory-mapper` | 理论映射 | 当你需要概念图、理论框架或机制关系图时使用。 | `TheoreticalFramework` |
 | `gap-analyzer` | 研究空白分析 | 当你需要从已有文献中证明 novelty 和贡献空间时使用。 | `GapAnalysis` |
@@ -110,6 +111,7 @@
 | Skill | 中文名 | 适用场景 | 产出类型 |
 |---|---|---|---|
 | `ethics-irb-helper` | 伦理与IRB助手 | 当研究涉及 IRB、人类受试者或敏感数据时使用。 | `EthicsPackage` |
+| `statement-generator` | 声明生成 | 当准备投稿并需要编写伦理及数据公开声明时使用。 | `Manuscript` |
 | `deidentification-planner` | 去标识化规划 | 当你需要技术层面的隐私保护和去标识化方案时使用。 | `DeidentificationPlan` |
 
 ### E. Synthesis
@@ -118,6 +120,7 @@
 
 | Skill | 中文名 | 适用场景 | 产出类型 |
 |---|---|---|---|
+| `effect-size-calculator` | 效应量计算 | 当需要将原始统计数据转换为统一的效应量（如 Cohen's d）时使用。 | `EffectSizeTable`, `AnalysisCode` |
 | `evidence-synthesizer` | 证据综合 | 当你已有证据材料，需要做叙事综合或 meta-analysis 时使用。 | `EvidenceTable`, `SynthesisMatrix` |
 | `quality-assessor` | 质量评估 | 当你需要评估 risk of bias 和证据确定性时使用。 | `QualityTable`, `GRADESummary` |
 | `publication-bias-checker` | 发表偏倚检查 | 当你需要判断结果是否受发表偏倚影响时使用。 | `PublicationBiasReport` |
@@ -182,6 +185,7 @@
 | `code-execution` | 代码执行 | 当你需要按既定计划实现代码并记录 profiling 与验证证据时使用。 | `PerformanceProfile` |
 | `code-review` | 学术代码审查 | 当你需要第二模型审查代码逻辑、统计有效性和方法一致性时使用。 | `CodeReview` |
 | `reproducibility-auditor` | 可复现性审计 | 当你需要检查 seed、环境、rerun recipe 和复现证据时使用。 | `ReproducibilityReport` |
+| `release-packager` | 发布打包 | 当需要为投稿或归档准备代码/数据的可复现发布包时使用。 | `ReleasePackage` |
 | `stats-engine` | 统计引擎 | 当重点是统计建模、诊断和假设检验，而不是一般编码时使用。 | `StatsReport` |
 
 ### K. Presentation

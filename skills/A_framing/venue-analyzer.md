@@ -183,3 +183,13 @@ The venue analysis is **ready** when:
 - Section structure: [IMRAD / custom]
 - Word limit: [n]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只关注 IF | 忽视了 scope match 和 audience | 并行评估 fit / format / reputation |
+| 格式要求遗漏 | 被要求大改格式 | 投稿前完整核查 author guidelines |
+| 忽视审稿速度 | 项目 deadline 前无法完成 R&R | 考虑 first-decision turnaround |
+| 过度乐观定级 | 方法/数据撑不住 top journal | 用 desk-reject 风险评估 |
+| 忽视 OA 费用 | 预算不够 APC | 预先核查 OA 政策和费用 |

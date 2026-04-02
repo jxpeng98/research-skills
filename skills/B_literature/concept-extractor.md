@@ -193,3 +193,13 @@ The concept extraction is **ready** when:
 ## Revised Query (after seed test)
 ...
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| Confirmation bias | 只扩展已有概念 | 强制检索 controlled vocabulary 中的替代术语 |
+| 过度扩展 | 概念外延过大导致不相关文献涌入 | 用 PCC 框架约束 scope |
+| 遗漏跨学科术语 | 不同学科用不同术语描述同一现象 | 咨询 thesaurus 和 MeSH cross-references |
+| Boolean 逻辑错误 | AND/OR 混淆改变搜索含义 | 逐步构建并测试每个 block |
+| 未记录扩展来源 | 术语来源不可追踪 | 每个新增术语标注来源 |

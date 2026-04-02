@@ -8,7 +8,13 @@ artifact_types:
     description: "Structured research questions with PICO/PEO framework and FINER evaluation"
     format: markdown
     produced_by: [question-refiner]
-    consumed_by: [study-designer, manuscript-architect, academic-searcher, hypothesis-generator]
+    consumed_by: [study-designer, manuscript-architect, academic-searcher, hypothesis-generator, contribution-crafter]
+
+  - name: ContributionStatement
+    description: "Structured statement of theoretical, methodological, and empirical novelty"
+    format: markdown
+    produced_by: [contribution-crafter]
+    consumed_by: [manuscript-architect, venue-analyzer]
 
   - name: HypothesisSet
     description: "Testable hypotheses with mechanisms, boundary conditions, and rival explanations"
@@ -181,6 +187,12 @@ artifact_types:
     format: markdown
     produced_by: [evidence-synthesizer]
     consumed_by: [manuscript-architect, publication-bias-checker]
+
+  - name: EffectSizeTable
+    description: "Calculated standard effect sizes from raw statistics for meta-analysis"
+    format: markdown
+    produced_by: [effect-size-calculator]
+    consumed_by: [evidence-synthesizer, stats-engine]
 
   - name: SynthesisMatrix
     description: "Cross-study synthesis matrix aligning studies, constructs, methods, and outcomes"
@@ -505,4 +517,10 @@ artifact_types:
     description: "Final proofread checklist covering grammar, consistency, formatting, and cross-references"
     format: markdown
     produced_by: [final-proofreader]
+    consumed_by: [submission-packager]
+
+  - name: ReleasePackage
+    description: "Reproducible release bundle containing code, data, environment specifications, and documentation for archival repositories"
+    format: directory
+    produced_by: [release-packager]
     consumed_by: [submission-packager]

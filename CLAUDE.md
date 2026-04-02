@@ -32,6 +32,7 @@ python3 -m bridges.orchestrator doctor --cwd .
 /paper-write [topic] [type] [venue]  # Full manuscript drafting
 /study-design [topic]                # Empirical study design
 /ethics-check [topic]                # Ethics / IRB pack
+/compliance-check [topic]            # Pre-submission compliance check (G1-G4)
 /submission-prep [topic] [venue]     # Submission package
 /rebuttal [topic]                    # Rebuttal / response to reviewers
 /code-build [method] --domain ...    # Build academic research code

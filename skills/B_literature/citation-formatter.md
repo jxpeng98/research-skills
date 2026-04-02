@@ -254,3 +254,28 @@ This skill is called by:
 - `/lit-review` - Generate bibliography
 - `/paper-read` - Create BibTeX entry
 - `/academic-write` - Format in-text citations
+
+## Quality Bar
+
+- [ ] 所有 citekey 遵循统一命名规则 (author_year 格式)
+- [ ] 每条引文的必填字段完整（author, title, year, journal/booktitle）
+- [ ] BibTeX 文件可被 LaTeX/Pandoc 编译无错误
+- [ ] 引文格式与目标期刊 author guidelines 一致
+- [ ] 重复条目已合并
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| Citekey 重复 | 同一作者同年多篇冲突 | 用 author_year_a/b 后缀 |
+| 字段缺失 | 编译时报 warning | 检查 required fields per entry type |
+| 编码错误 | 特殊字符（ü, ñ）乱码 | 使用 UTF-8 + LaTeX escape |
+| 引文样式混用 | 同一文档出现两种格式 | 锁定一种 CSL/BST 文件 |
+| DOI 格式不一 | 有的带 https 有的不带 | 统一为 doi.org URL 格式 |
+
+## When to Use
+
+- 写作前需要统一 bibliography 和 citekey 规范时
+- 需要在 APA/MLA/Chicago/IEEE 等格式间转换时
+- 需要从 extraction notes 生成可用的 .bib 文件时
+- 投稿前需要核查引文格式与目标期刊一致时

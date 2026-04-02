@@ -104,3 +104,28 @@ primary_artifact: code/reproducibility_audit.md
 ## Confidence
 - 0.xx
 ```
+
+## Quality Bar
+
+- [ ] Random seed 已固定且 rerun 产出一致
+- [ ] 环境可从 lock file 重建
+- [ ] 数据路径不含 hardcoded absolute path
+- [ ] README 包含完整 setup + run 指令
+- [ ] Rerun recipe 存在且已测试通过
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只固定主 seed | 子过程的随机性未控制 | 每个随机操作都 derive seed |
+| 环境未锁定 | pip install 获取最新版可能 break | 使用 lock file |
+| 数据未版本化 | 数据更新后结果不同 | 数据快照 + hash 记录 |
+| 缺少 rerun 脚本 | 不知道按什么顺序跑 | Makefile / dvc pipeline |
+| 忽视 OS 差异 | macOS vs Linux 浮点差异 | 容器化或文档记录 OS requirement |
+
+## When to Use
+
+- 代码完成后需要验证可复现性时
+- 投稿前需要 reproducibility evidence 时
+- 需要检查 random seed、容器化和 rerun 能力时
+- 代码共享/开源前的最终审计时

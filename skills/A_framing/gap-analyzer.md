@@ -252,3 +252,28 @@ pie title Gap Distribution by Type
 This skill is called by:
 - `/find-gap` - Main gap analysis workflow
 - `/lit-review` - In synthesis phase
+
+## Quality Bar
+
+- [ ] 每个 gap 归类到五类 taxonomy 中的一类
+- [ ] 每个 gap 附带至少 2 篇支撑文献
+- [ ] FINER 优先级排序已完成
+- [ ] 至少一个 gap 直接对应研究问题
+- [ ] 排除了已被近期文献填补的 gap
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 伪 gap | 文献检索不充分导致误判 | 扩大搜索范围后再确认 |
+| Gap ≠ RQ | 识别了 gap 但 RQ 没有对应 | 用 gap → RQ mapping 表 |
+| 忽视近期文献 | 别人已经填补了 | 检索不设过远时间下限 |
+| 只有一类 gap | 全是 empirical gap | 强制检查 5 类 taxonomy |
+| 无优先级 | 所有 gap 同等重要 | 用 FINER 打分排序 |
+
+## When to Use
+
+- 完成初步文献检索后需要证明 novelty
+- 写 Introduction 需要定位贡献空间时
+- 基金申请需要说明 research significance
+- 需要区分 theoretical / empirical / methodological gap 类型时

@@ -220,3 +220,10 @@ A hypothesis set is **ready** when:
 - [ ] Scope conditions explicit
 - [ ] Rival explanations documented
 ```
+
+## When to Use
+
+- 研究问题已经结构化（PICO/PEO），需要转化为可检验命题
+- 理论框架已确定，需要推导 testable predictions
+- Pre-registration 前需要锁定假设方向和备择
+- 定性研究需要 propositions 而非假设时

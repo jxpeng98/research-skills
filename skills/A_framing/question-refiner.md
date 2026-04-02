@@ -172,3 +172,28 @@ This skill is called by:
 - `/lit-review` - At the scoping phase
 - `/find-gap` - To clarify research area
 - `/build-framework` - To define scope
+
+## Quality Bar
+
+- [ ] 每个 RQ 通过五项 FINER 评估 (Feasible, Interesting, Novel, Ethical, Relevant)
+- [ ] PICO/PEO 四要素均已显式填写
+- [ ] 至少一个 primary RQ 可直接对应分析计划
+- [ ] 每个 RQ 附带 scope boundary — 明确研究不包括什么
+- [ ] 术语定义一致且无歧义
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| RQ 过宽 | 无法在一篇论文中回答 | 用 PICO 强制拆分 sub-RQ |
+| 缺 boundary | Reviewer 质疑 scope creep | 每个 RQ 附 exclusion list |
+| 混淆 RQ 与假设 | RQ 不可检验 | RQ 用疑问句，假设用陈述句 |
+| 术语不一致 | 同一概念多种表述 | 建立 glossary 并固定用词 |
+| 忽视 feasibility | 提出无法获取数据的问题 | FINER-F 先行评估 |
+
+## When to Use
+
+- 选题还模糊、范围过大或研究问题不可执行时
+- 导师反馈研究问题不够聚焦时
+- 需要在 PICO/PEO 框架下结构化问题时
+- 从课题申请转化为论文时需要收窄 scope

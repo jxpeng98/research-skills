@@ -182,3 +182,13 @@ The rival hypothesis set is **ready** when:
 - Robustness plan additions: [checks to add to C3_5]
 - Planned limitations: [rivals that cannot be resolved]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只考虑稻草人替代 | 竞争假设太弱不构成威胁 | 找该理论的 strongest advocate 论文 |
+| 未连接到测试 | 列出竞争解释但不设计区分检验 | 每个 rival 附带 discriminating test |
+| 遗漏内生性 | 反向因果或遗漏变量 | 系统检查 endogeneity threats |
+| 只考虑理论竞争 | 忽视方法论替代（不同估计方法） | 同时考虑 method-driven rivals |
+| 数量太多 | 无法全部回应 | 按 plausibility 排序 top 3 |

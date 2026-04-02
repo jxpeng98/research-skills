@@ -102,3 +102,28 @@ Generate FAIR-compliant data management plans specifying storage, backup, retent
 ## 6. Responsibilities
 ...
 ```
+
+## Quality Bar
+
+- [ ] 覆盖 FAIR 四原则（Findable, Accessible, Interoperable, Reusable）
+- [ ] 存储、备份、保留和归档策略均已说明
+- [ ] 数据共享计划包含 embargo/access levels
+- [ ] 隐私保护措施与 ethics package 一致
+- [ ] DMP 格式符合资助方模板要求
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 模板化填写 | 不具体到项目 | 每个字段填入 project-specific 内容 |
+| 忽略成本 | 存储/归档需要预算 | 在 DMP 中注明成本估算 |
+| 未考虑数据销毁 | 保留期限过后如何处理不清 | 明确 retention period + destruction policy |
+| 访问权限不明 | 团队成员权限未定义 | 建立 role-based access matrix |
+| 与 IRB 不一致 | DMP 承诺共享但 IRB 限制 | 交叉核查两份文档 |
+
+## When to Use
+
+- 基金申请需要提交 DMP 时
+- 机构 IRB/ethics 要求数据治理文档时
+- 协作研究需要明确数据存储和共享规则时
+- FAIR 原则合规要求时

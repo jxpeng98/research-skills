@@ -180,3 +180,13 @@ The fatal flaw analysis is **ready** when:
 - Major flaws: [n] — [list]
 - Minor flaws: [n]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只看表面 | 格式/字数/引文数量 | 深入检查方法论和论证逻辑 |
+| 过度敏感 | 每个潜在问题都标为 fatal | 区分 fatal vs. major vs. minor |
+| 忽视 scope match | 论文本身好但不适合目标期刊 | 交叉引用 venue-analyzer 结论 |
+| 无优先级 | 列出 20 个问题同等对待 | 按 desk-reject probability 排序 |
+| 未考虑领域惯例 | 某些做法在该领域是 acceptable | 检查目标期刊近期发表的类似论文 |

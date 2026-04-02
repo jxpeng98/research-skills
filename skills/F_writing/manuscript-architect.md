@@ -278,3 +278,13 @@ The manuscript is **ready for review** when:
 - For citation formatting, pair with **citation-formatter**.
 - For figure/table design, pair with **figure-specifier** and **table-generator**.
 - For final compliance, pair with **reporting-checker** or **prisma-checker**.
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 结构先行内容后行 | 套模板但论证空洞 | 先建 claim-evidence map 再搭骨架 |
+| Introduction 过长 | 读者失去耐心 | 控制在 4-5 段，渐进缩窄 |
+| Results 与 Discussion 混合 | 描述与解释交织 | 严格分离（除非期刊要求合并） |
+| 图表堆砌 | 太多表格淹没重点 | 核心数据进正文，其余转 appendix |
+| Story spine 缺失 | 各章节割裂 | 用一句话总结每节的叙事推进  |

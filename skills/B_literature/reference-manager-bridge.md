@@ -300,3 +300,28 @@ This skill is called by:
 - `/lit-review` Phase 8 - Bibliography generation
 - `/paper-read` - Adding new papers to library
 - Manual export requests
+
+## Quality Bar
+
+- [ ] 导入/导出后文献条数一致（无丢失）
+- [ ] Citekey 在双向同步后保持稳定
+- [ ] 格式转换（BibTeX ↔ RIS ↔ CSL-JSON）无信息丢失
+- [ ] 附件（PDF）关联关系在同步后保持完整
+- [ ] 冲突条目已标记并手动解决
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| Citekey 重写 | Zotero 自动生成 citekey 覆盖 | 使用 Better BibTeX 插件锁定 |
+| 编码丢失 | 特殊字符在 RIS 中丢失 | 优先使用 BibTeX 或 CSL-JSON |
+| 附件断链 | PDF 路径在同步后失效 | 使用相对路径或 linked file 模式 |
+| 条目格式分类错误 | Article 被识别为 InProceedings | 手动检查 entry type 映射 |
+| 无增量同步 | 全量覆盖导致手动编辑丢失 | 使用 merge 模式而非 overwrite |
+
+## When to Use
+
+- 需要将研究系统的 bibliography 导入 Zotero/Mendeley/EndNote 时
+- 需要从外部工具导入文献到研究系统时
+- 团队协作需要共享统一的文献库时
+- 切换写作工具（LaTeX ↔ Word）需要转换引文格式时

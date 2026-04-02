@@ -161,3 +161,13 @@ The effect size interpretation is **ready** when:
 ## Interpretation Summary
 [2–3 sentence narrative integrating magnitude, precision, and practical importance]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 只报告 Cohen's 基准 | Small/medium/large 脱离学科语境 | 用 domain-specific benchmark |
+| 混淆 statistical 与 practical significance | p < 0.05 但 d = 0.05 | 必须同时讨论两者 |
+| 单一度量 | 只报告 d 但读者不直观 | 转化为 CLES、NNT 或百分比变化 |
+| 忽略 CI | 只报告点估计 | 必须附带 95% CI |
+| 无参照基准 | 读者不知道 0.3 SD 意味着什么 | 找同领域类似干预的 effect size 比较 |

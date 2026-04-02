@@ -107,3 +107,28 @@ primary_artifact: code/plan.md
 ## Risks / Blockers
 - ...
 ```
+
+## Quality Bar
+
+- [ ] 每个步骤有明确的输入/输出定义
+- [ ] 依赖关系图已标注且无循环依赖
+- [ ] 可并行步骤已标识
+- [ ] 每个步骤有验收标准（assertion 或 test case）
+- [ ] 估算完成时间/复杂度
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 步骤粒度不均 | 有的步骤 5 分钟有的 5 小时 | 拆分大步骤至 1-2 小时粒度 |
+| 依赖不明 | 并行执行时出错 | 画依赖 DAG 并标注 critical path |
+| 缺少验收标准 | 不知道步骤是否完成 | 每步附带 assertion checklist |
+| 过度设计 | 计划比代码还长 | 保持计划简洁，focus on interface |
+| 忽略数据 I/O | 计划只关心算法 | 明确数据流 format 和存储位置 |
+
+## When to Use
+
+- 已有 code specification，需要拆分为可并行的执行步骤时
+- 复杂分析需要零自由裁量的实现计划时
+- 团队协作需要明确模块划分和接口定义时
+- 需要估算工作量和识别关键路径时

@@ -112,3 +112,28 @@ Prevent superficial research by forcing the AI to act as "Reviewer 2" or a "Socr
 This skill is injected into tasks by the `mcp-agent-capability-map.yaml` and should be called:
 - By the **Reviewer Agent** (e.g., Gemini) during the `review-agent-check` phase of orchestrator runs.
 - Via role-play instructions in `/paper-write`, `/study-design`, and other generative commands.
+
+## Quality Bar
+
+- [ ] 至少执行两轮 critique 迭代
+- [ ] 每个 critique 点附带具体修正建议
+- [ ] Overclaiming 已被识别并降级表述
+- [ ] 自相矛盾点已消解或标注为 limitation
+- [ ] Critique log 记录了改进前后的对比
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 走过场 | Critique 只说整体不错 | 每轮至少 3 个 specific 挑战 |
+| 过度自我批评 | 导致不敢下结论 | 区分 fatal flaw vs. minor improvement |
+| 只关注表面 | 挑错别字不挑逻辑 | 按逻辑 → 证据 → 表述优先级 |
+| 无 action | 批判完但不修改 | 每条 critique 必须附带 action item |
+| Critique 同质化 | 每轮发现同一问题 | 每轮切换 lens（逻辑/证据/读者体验） |
+
+## When to Use
+
+- 需要主动提高 red-teaming 强度时
+- 产出可能存在浅层推理或过度主张时
+- 投稿前做最后一轮逻辑检查时
+- 需要 Socratic questioning 来压力测试结论时

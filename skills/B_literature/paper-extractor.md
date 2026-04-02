@@ -256,3 +256,28 @@ At minimum, the rollup should preserve:
 This skill is called by:
 - `/lit-review` - During extraction phase
 - `/paper-read` - For deep reading
+
+## Quality Bar
+
+- [ ] 每篇论文的提取字段完整覆盖预定义的 extraction schema
+- [ ] Extraction table 格式标准化且可直接用于综合分析
+- [ ] 每篇 paper note 包含该论文对 RQ 的直接 relevance 说明
+- [ ] 数值数据提取附带精度和单位
+- [ ] 存在 inter-rater reliability 描述（或标注为单提取）
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 提取字段不一致 | 不同论文提取了不同字段 | 先定义 extraction form 再统一填充 |
+| 数值精度丢失 | 四舍五入导致后续计算偏差 | 保留原始精度 |
+| 定性与定量混合 | Extraction table 字段设计不合理 | 分开定性 slot 和定量 slot |
+| 缺少 context | 只提取数字不提取研究条件 | 每个 finding 附带 study context |
+| 遗漏 supplementary data | 补充材料中有关键数据 | 明确标注是否包含 supplement |
+
+## When to Use
+
+- 筛选完成后需要从入选论文中提取结构化数据时
+- 需要生成 extraction table 和 paper notes 时
+- 系统综述需要标准化的数据提取格式时
+- 需要提取 theory/method/data/finding/limitation 等多维度信息时

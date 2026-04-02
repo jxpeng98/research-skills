@@ -177,3 +177,13 @@ The tone normalization is **ready** when:
 | Location | Claim strength | Evidence strength | Adjustment |
 |----------|---------------|-------------------|------------|
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 过度删减 | 删减了必要的 hedging | 保留 evidence-based hedging（如 may, suggest） |
+| 中文论文英文味 | 直译导致语体不对 | 区分中英文学术 register |
+| 去掉所有 transition | 段落间缺少衔接 | 去的是 filler，留 logical connector |
+| 统一 hedge 为 may | 所有句子用同一个 hedging | 变换用词：suggests, indicates, appears to |
+| 忽略学科惯例 | 某些学科允许主动语态 | 核查目标期刊的 style preference |

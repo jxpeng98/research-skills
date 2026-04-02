@@ -265,3 +265,28 @@ This skill is called by:
 - `/lit-review` Phase 3.5 - Full-text retrieval
 - `/paper-read` Step 1 - Paper retrieval
 - Screening processes requiring full text
+
+## Quality Bar
+
+- [ ] 每篇入选论文的全文获取状态已记录
+- [ ] Retrieval manifest 包含 DOI、来源、获取日期、版本信息
+- [ ] 无法获取的论文标注了原因和替代方案
+- [ ] PDF 文件命名统一且可追踪
+- [ ] 获取状态可直接用于更新 PRISMA flow
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 版本不一致 | Preprint 与 published 版本结果不同 | 标注版本并优先 final published |
+| 付费墙阻断 | 无法获取闭源文献 | 尝试 Unpaywall、作者邮件、ILL |
+| 文件未命名编号 | PDF 无法追踪到文献 | 用 citekey 命名 |
+| 未记录失败 | PRISMA flow 数据缺失 | 每次失败都写入 manifest |
+| 忽略 supplementary | 关键方法/数据在 supplement | 全文 + supplement 一同获取 |
+
+## When to Use
+
+- 已完成筛选但缺少入选论文的全文时
+- 需要 PRISMA-compliant 的全文获取状态追踪时
+- 需要通过 OA 渠道或数据库下载全文 PDF 时
+- 需要生成 retrieval manifest 记录获取结果时

@@ -284,3 +284,13 @@ The submission package is **ready** when:
 ## Anonymization: [Verified / N/A]
 ## Submission checklist: [All items green / n items pending]
 ```
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 遗漏 mandatory attachment | Cover letter 未附带 | 逐项核查期刊 submission checklist |
+| 字数超限 | Abstract 或正文超标 | 投稿前 word count 检查 |
+| 作者信息不一致 | ORCID/affiliation 跨文件不一 | 用单一 author info 源文件 |
+| Supplementary 未编号 | 正文引用对不上 | 统一编号 S1, S2, ... |
+| Cover letter 过于 generic | 未针对目标期刊定制 | 包含 scope fit + 贡献亮点 |

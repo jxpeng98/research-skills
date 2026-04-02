@@ -385,3 +385,28 @@ This skill is called by:
 - `/lit-review` - During search phase
 - `/find-gap` - To map literature landscape
 - `/build-framework` - To find theoretical papers
+
+## Quality Bar
+
+- [ ] 检索式使用 Boolean 逻辑且每个 concept block 至少包含 3 个同义词
+- [ ] 至少搜索 2 个数据库
+- [ ] search_log.md 完整记录了每次检索的日期、数据库、命中数
+- [ ] 去重后记录了 dedup_log.csv 中的合并决策
+- [ ] 检索式经过 domain expert 或 librarian 审议（或标注待审）
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 检索式过窄 | 漏掉关键文献 | 加 MeSH/Emtree + 自由词 |
+| 未覆盖灰色文献 | 系统偏差 | 明确说明灰色文献策略 |
+| 去重不一致 | 同一篇文献保留多次 | 用 DOI + 标题 fuzzy match |
+| 检索式不可复现 | Reviewer 无法验证 | 完整记录 search string + 日期 |
+| 只搜 PubMed | 学科覆盖偏差 | 加 Scopus/WoS/domain-specific DB |
+
+## When to Use
+
+- 需要可复现的检索式设计和数据库搜索时
+- 系统综述或 scoping review 的初始检索阶段
+- 需要生成 search log 和 dedup log 时
+- 需要覆盖多个数据库（PubMed, Scopus, WoS 等）时

@@ -211,3 +211,28 @@ This skill is called by:
 - `/lit-review` - Metadata normalization after search
 - `/paper-read` - Enrich paper metadata
 - Deduplication processes
+
+## Quality Bar
+
+- [ ] 所有 DOI 已归一化为标准格式
+- [ ] 作者姓名格式统一（Last, First 或 First Last）
+- [ ] 年份和 venue 信息完整无缺
+- [ ] Citekey 唯一且稳定
+- [ ] Dedup 决策有明确理由记录
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| DOI 格式不统一 | 大小写或 URL scheme 不一 | 全部转 lowercase + https://doi.org/ |
+| 作者名字翻转 | 中文/东亚作者姓名反 | 检查 parsed name vs. original |
+| 年份混淆 | Online first vs. print year | 优先使用 published year |
+| Dedup 过激 | 不该合并的条目被合并 | 用 DOI + title + year 三重匹配 |
+| Citekey 漂移 | 同一论文每次 enrichment 换 key | 首次生成后锁定 citekey |
+
+## When to Use
+
+- 不同产物之间的 DOI/作者/年份/期刊信息不一致时
+- 需要标准化和补全文献元数据时
+- 合并多来源搜索结果需要统一 citekey 时
+- bibliography.bib 需要 cleanup 和 enrichment 时

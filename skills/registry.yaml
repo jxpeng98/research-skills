@@ -516,6 +516,22 @@ skills:
     tooling_requirements: [filesystem, stats-engine]
     domain_aware: false
 
+  - id: qualitative-coding
+    stage: E_synthesis
+    version: "0.4.0"
+    file: skills/E_synthesis/qualitative-coding.md
+    summary: "Extract phenomena, perform thematic/grounded theory coding, and build a codebook from qualitative transcripts or extracted text."
+    summary_zh: "做定性分析（例如扎根理论编码），将逐字稿或摘录转成带现象结构的主题编码表。"
+    display_name_zh: "定性数据编码"
+    when_to_use_zh: "处理原始质性数据、摘要文本，需整理出现象与主题编码时使用。"
+    inputs: [ExtractedText, ResearchContext]
+    outputs: [DataDictionary, ThematicCodebook]
+    tags: [qualitative, thematic-analysis, grounded-theory, codebook, synthesis]
+    depends_on: []
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
   # ══════════════════════════════════════════════════════════
   # F_writing — Manuscript, meta-optimization
   # ══════════════════════════════════════════════════════════
@@ -611,6 +627,22 @@ skills:
     outputs: [MetaOptimization]
     tags: [writing, abstract, title, SEO, indexing, keywords]
     depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+
+  - id: discussion-writer
+    stage: F_writing
+    version: "0.4.0"
+    file: skills/F_writing/discussion-writer.md
+    summary: "Drafts the Discussion section using a structured story spine, separating factual findings from theoretical implications."
+    summary_zh: "用结构化故事主线起草讨论部分（归纳事实、推导理论意涵和应用价值）。"
+    display_name_zh: "讨论部分起草"
+    when_to_use_zh: "当结果部分写完，需要解释结果及其理论现实意义时使用。"
+    inputs: [ResultsSummary, ContributionStatement]
+    outputs: [DiscussionDraft, StorySpine]
+    tags: [writing, discussion, implications, story-spine, drafting]
+    depends_on: [analysis-interpreter]
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem]
     domain_aware: true
@@ -764,6 +796,22 @@ skills:
     compatible_models: [codex, claude, gemini, gpt]
     tooling_requirements: [filesystem]
     domain_aware: false
+
+  - id: limitation-auditor
+    stage: H_submission
+    version: "0.4.0"
+    file: skills/H_submission/limitation-auditor.md
+    summary: "Identifies and structures study constraints, ensuring rigorous self-critique without undermining the manuscript's core contribution."
+    summary_zh: "系统梳理研究短板及边界条件，在自我批评与贡献保护之间取得平衡。"
+    display_name_zh: "研究局限审计"
+    when_to_use_zh: "完稿前梳理研究的缺陷、数据局限及其应对机制时使用。"
+    inputs: [DraftManuscript, MethodologicalFramework]
+    outputs: [LimitationSection, MitigationStrategy]
+    tags: [submission, limitations, rigorous, self-critique, boundary-conditions]
+    depends_on: [manuscript-architect]
+    compatible_models: [codex, claude, gemini, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
 
   # ══════════════════════════════════════════════════════════
   # I_code — Specification, build, execution, review

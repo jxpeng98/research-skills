@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-EXPECTED_TASK_ID = re.compile(r"^[A-I][0-9_]+$")
+EXPECTED_TASK_ID = re.compile(r"^[A-K][0-9_]+$")
 
 
 @dataclass
@@ -398,7 +398,7 @@ def main() -> int:
     report.check(
         bool(EXPECTED_TASK_ID.match(task_id)),
         "Task ID is canonical format",
-        f"Task ID must match pattern [A-I][0-9_]+; got: {args.task_id}",
+        f"Task ID must match pattern [A-K][0-9_]+; got: {args.task_id}",
     )
     contract = read_contract(repo_root)
     artifact_root = load_artifact_root(contract)

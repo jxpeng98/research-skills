@@ -17,10 +17,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import re
 import shutil
 import sys
+import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict
 from enum import Enum
@@ -1013,71 +1015,16 @@ Provide your verification assessment.
     def _standards_file(self, filename: str) -> Path:
         return self.standards_dir / filename
 
-    def _read_standard(self, filename: str) -> str:
+    def _load_yaml(self, filename: str) -> dict[str, Any]:
         path = self._standards_file(filename)
         if not path.exists():
             raise FileNotFoundError(f"Missing standards file: {path}")
-        return path.read_text(encoding="utf-8")
+        try:
+            return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError as exc:
+            raise ValueError(f"Invalid YAML in {path}: {exc}")
 
-    def _extract_top_level_section(self, content: str, key: str) -> str:
-        match = re.search(rf"^{re.escape(key)}:\s*\n", content, flags=re.MULTILINE)
-        if not match:
-            return ""
-        start = match.end()
-        tail = content[start:]
-        next_key = re.search(r"^[A-Za-z0-9_]+:\s*", tail, flags=re.MULTILINE)
-        if not next_key:
-            return tail
-        return tail[: next_key.start()]
 
-    def _extract_nested_section(self, block: str, key: str, indent: int) -> str:
-        match = re.search(
-            rf"^\s{{{indent}}}{re.escape(key)}:\s*\n",
-            block,
-            flags=re.MULTILINE,
-        )
-        if not match:
-            return ""
-        start = match.end()
-        tail = block[start:]
-        next_key = re.search(
-            rf"^\s{{{indent}}}[A-Za-z0-9_-]+:\s*",
-            tail,
-            flags=re.MULTILINE,
-        )
-        if not next_key:
-            return tail
-        return tail[: next_key.start()]
-
-    def _parse_yaml_list(self, section: str, item_indent: int) -> list[str]:
-        values: list[str] = []
-        for raw in re.findall(
-            rf"^\s{{{item_indent}}}-\s*(.+?)\s*$",
-            section,
-            flags=re.MULTILINE,
-        ):
-            item = raw.strip()
-            if (item.startswith('"') and item.endswith('"')) or (
-                item.startswith("'") and item.endswith("'")
-            ):
-                item = item[1:-1]
-            values.append(item)
-        return values
-
-    def _parse_yaml_scalar(self, block: str, key: str, indent: int) -> str:
-        match = re.search(
-            rf"^\s{{{indent}}}{re.escape(key)}:\s*(.+?)\s*$",
-            block,
-            flags=re.MULTILINE,
-        )
-        if not match:
-            return ""
-        value = match.group(1).strip()
-        if (value.startswith('"') and value.endswith('"')) or (
-            value.startswith("'") and value.endswith("'")
-        ):
-            return value[1:-1]
-        return value
 
     def _load_skill_registry_metadata(self) -> dict[str, dict[str, str]]:
         if self._skill_registry_metadata_cache is not None:
@@ -1089,93 +1036,64 @@ Provide your verification assessment.
             return self._skill_registry_metadata_cache
 
         try:
-            content = registry_path.read_text(encoding="utf-8")
-        except OSError:
+            content = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
+        except (OSError, yaml.YAMLError):
             self._skill_registry_metadata_cache = {}
             return self._skill_registry_metadata_cache
 
-        section = self._extract_top_level_section(content, "skills")
-        entry_pattern = re.compile(
-            r"^\s{2}-\s*id:\s*([A-Za-z0-9_-]+)\s*$",
-            flags=re.MULTILINE,
-        )
-        matches = list(entry_pattern.finditer(section))
+        skills = content.get("skills", [])
         metadata: dict[str, dict[str, str]] = {}
-        for index, match in enumerate(matches):
-            start = match.start()
-            end = matches[index + 1].start() if index + 1 < len(matches) else len(section)
-            block = section[start:end]
-            skill_id = match.group(1)
+        for entry in skills:
+            if not isinstance(entry, dict) or "id" not in entry:
+                continue
+            skill_id = entry["id"]
             metadata[skill_id] = {
-                "summary": self._parse_yaml_scalar(block, "summary", indent=4),
-                "summary_zh": self._parse_yaml_scalar(block, "summary_zh", indent=4),
-                "display_name_zh": self._parse_yaml_scalar(block, "display_name_zh", indent=4),
-                "when_to_use_zh": self._parse_yaml_scalar(block, "when_to_use_zh", indent=4),
+                "summary": str(entry.get("summary", "")).strip(),
+                "summary_zh": str(entry.get("summary_zh", "")).strip(),
+                "display_name_zh": str(entry.get("display_name_zh", "")).strip(),
+                "when_to_use_zh": str(entry.get("when_to_use_zh", "")).strip(),
             }
 
         self._skill_registry_metadata_cache = metadata
         return self._skill_registry_metadata_cache
 
     def _load_task_outputs(self, task_id: str) -> tuple[str, list[str]]:
-        contract = self._read_standard("research-workflow-contract.yaml")
-        artifacts = self._extract_top_level_section(contract, "artifacts")
-        artifact_root = self._parse_yaml_scalar(artifacts, "root", indent=2) or "RESEARCH/[topic]/"
+        contract = self._load_yaml("research-workflow-contract.yaml")
+        artifacts = contract.get("artifacts", {})
+        artifact_root = artifacts.get("root", "RESEARCH/[topic]/")
 
-        task_section = self._extract_top_level_section(contract, "task_catalog")
-        task_match = re.search(
-            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
-            task_section,
-            flags=re.MULTILINE,
-        )
-        if not task_match:
+        task_catalog = contract.get("task_catalog", {})
+        if task_id not in task_catalog:
             raise ValueError(f"Task ID not found in research-workflow-contract.yaml: {task_id}")
-        outputs_section = self._extract_nested_section(task_match.group(1), "outputs", indent=4)
-        outputs = self._parse_yaml_list(outputs_section, item_indent=6)
+            
+        outputs = task_catalog[task_id].get("outputs", [])
         if not outputs:
             raise ValueError(f"No outputs configured for task {task_id} in contract")
-        return artifact_root, outputs
+        return artifact_root, list(outputs)
 
     def _load_task_dependencies(self, task_id: str) -> dict[str, list[str]]:
-        contract = self._read_standard("research-workflow-contract.yaml")
-        dependency_section = self._extract_top_level_section(contract, "dependency_catalog")
-        if not dependency_section:
-            return {
-                "prerequisites_all": [],
-                "prerequisites_any": [],
-                "recommended_prerequisites": [],
-                "recommended_next": [],
-            }
-        task_match = re.search(
-            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
-            dependency_section,
-            flags=re.MULTILINE,
-        )
-        if not task_match:
-            return {
-                "prerequisites_all": [],
-                "prerequisites_any": [],
-                "recommended_prerequisites": [],
-                "recommended_next": [],
-            }
+        contract = self._load_yaml("research-workflow-contract.yaml")
+        dep_catalog = contract.get("dependency_catalog", {})
+        
+        empty_deps = {
+            "prerequisites_all": [],
+            "prerequisites_any": [],
+            "recommended_prerequisites": [],
+            "recommended_next": [],
+        }
+        
+        if task_id not in dep_catalog:
+            return empty_deps
 
-        block = task_match.group(1)
+        task_deps = dep_catalog[task_id]
+        if not isinstance(task_deps, dict):
+            return empty_deps
+            
         return {
-            "prerequisites_all": self._parse_yaml_list(
-                self._extract_nested_section(block, "prerequisites_all", indent=4),
-                item_indent=6,
-            ),
-            "prerequisites_any": self._parse_yaml_list(
-                self._extract_nested_section(block, "prerequisites_any", indent=4),
-                item_indent=6,
-            ),
-            "recommended_prerequisites": self._parse_yaml_list(
-                self._extract_nested_section(block, "recommended_prerequisites", indent=4),
-                item_indent=6,
-            ),
-            "recommended_next": self._parse_yaml_list(
-                self._extract_nested_section(block, "recommended_next", indent=4),
-                item_indent=6,
-            ),
+            "prerequisites_all": list(task_deps.get("prerequisites_all", []) or []),
+            "prerequisites_any": list(task_deps.get("prerequisites_any", []) or []),
+            "recommended_prerequisites": list(task_deps.get("recommended_prerequisites", []) or []),
+            "recommended_next": list(task_deps.get("recommended_next", []) or []),
         }
 
     def _project_root_for_topic(self, cwd: Path, artifact_root: str, topic: str) -> Path:
@@ -1229,55 +1147,25 @@ Provide your verification assessment.
     def _load_task_functional_plan(
         self,
         task_id: str,
-        capability_map: str | None = None,
+        capability_map: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        capability_map = capability_map or self._read_standard("mcp-agent-capability-map.yaml")
-        functional_agent_registry = set(
-            self._parse_yaml_list(
-                self._extract_top_level_section(capability_map, "functional_agent_registry"),
-                item_indent=2,
-            )
-        )
+        if capability_map is None:
+            capability_map = self._load_yaml("mcp-agent-capability-map.yaml")
+        functional_agent_registry = set(capability_map.get("functional_agent_registry", []))
         if not functional_agent_registry:
             raise ValueError(
                 "functional_agent_registry is missing or empty in mcp-agent-capability-map.yaml"
             )
 
-        routing_section = self._extract_top_level_section(
-            capability_map,
-            "task_functional_routing",
-        )
-        defaults_section = self._extract_nested_section(
-            routing_section,
-            "defaults_by_stage",
-            indent=2,
-        )
-        routing_defaults = {
-            stage: owner
-            for stage, owner in re.findall(
-                r'^\s{4}([A-Z]):\s*"?(.*?)"?\s*$',
-                defaults_section,
-                flags=re.MULTILINE,
-            )
-        }
-        overrides_section = self._extract_nested_section(
-            routing_section,
-            "overrides",
-            indent=2,
-        )
-        routing_overrides = {
-            routed_task: owner
-            for routed_task, owner in re.findall(
-                r'^\s{4}([A-I][0-9_]+):\s*"?(.*?)"?\s*$',
-                overrides_section,
-                flags=re.MULTILINE,
-            )
-        }
+        task_func_routing = capability_map.get("task_functional_routing", {})
+        routing_defaults = task_func_routing.get("defaults_by_stage", {})
+        routing_overrides = task_func_routing.get("overrides", {})
 
         stage_id = task_id[:1]
-        stage_default_owner = routing_defaults.get(stage_id, "")
-        functional_owner = routing_overrides.get(task_id) or stage_default_owner
+        stage_default_owner = str(routing_defaults.get(stage_id, ""))
+        functional_owner = str(routing_overrides.get(task_id, stage_default_owner))
         owner_source = "override" if task_id in routing_overrides else "stage-default"
+        
         if not functional_owner:
             raise ValueError(f"Task {task_id} has no functional owner in task_functional_routing")
         if functional_owner not in functional_agent_registry:
@@ -1285,42 +1173,30 @@ Provide your verification assessment.
                 f"Task {task_id} resolves to unknown functional owner: {functional_owner}"
             )
 
-        functional_agents_section = self._extract_top_level_section(
-            capability_map,
-            "functional_agents",
-        )
-        agent_match = re.search(
-            rf"^\s{{2}}{re.escape(functional_owner)}:\n((?:^\s{{4}}.*\n?)+)",
-            functional_agents_section,
-            flags=re.MULTILINE,
-        )
-        if not agent_match:
+        functional_agents = capability_map.get("functional_agents", {})
+        if functional_owner not in functional_agents:
             raise ValueError(
                 f"Functional owner {functional_owner} missing from functional_agents catalog"
             )
-        agent_block = agent_match.group(1)
-        role_file = self._parse_yaml_scalar(agent_block, "file", indent=4)
-        mapped_role = self._parse_yaml_scalar(agent_block, "mapped_role", indent=4)
-        focus = self._parse_yaml_scalar(agent_block, "focus", indent=4)
+            
+        agent_block = functional_agents[functional_owner]
+        role_file = agent_block.get("file", "")
+        mapped_role = agent_block.get("mapped_role", "")
+        focus = agent_block.get("focus", "")
 
         role_id = mapped_role or functional_owner
         display_name = functional_owner
         tone = ""
         preferred_skills: list[str] = []
+        
         if role_file:
             role_path = self.standards_dir.parent / role_file
             if role_path.exists():
-                role_content = role_path.read_text(encoding="utf-8")
-                role_id = self._parse_yaml_scalar(role_content, "id", indent=0) or role_id
-                display_name = (
-                    self._parse_yaml_scalar(role_content, "display_name", indent=0)
-                    or display_name
-                )
-                tone = self._parse_yaml_scalar(role_content, "tone", indent=0)
-                preferred_skills = self._parse_yaml_list(
-                    self._extract_top_level_section(role_content, "preferred_skills"),
-                    item_indent=2,
-                )
+                role_content = yaml.safe_load(role_path.read_text(encoding="utf-8")) or {}
+                role_id = str(role_content.get("id", role_id))
+                display_name = str(role_content.get("display_name", display_name))
+                tone = str(role_content.get("tone", tone))
+                preferred_skills = list(role_content.get("preferred_skills", []))
 
         return {
             "functional_owner": functional_owner,
@@ -1338,9 +1214,10 @@ Provide your verification assessment.
     def _build_functional_handoff_trace(
         self,
         task_ids: list[str],
-        capability_map: str | None = None,
+        capability_map: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        capability_map = capability_map or self._read_standard("mcp-agent-capability-map.yaml")
+        if capability_map is None:
+            capability_map = self._load_yaml("mcp-agent-capability-map.yaml")
         trace: list[dict[str, Any]] = []
         owner_chain: list[str] = []
 
@@ -1617,77 +1494,50 @@ Provide your verification assessment.
         )
 
     def _load_task_agent_plan(self, task_id: str) -> dict[str, Any]:
-        capability_map = self._read_standard("mcp-agent-capability-map.yaml")
-        mcp_registry = set(
-            self._parse_yaml_list(
-                self._extract_top_level_section(capability_map, "mcp_registry"),
-                item_indent=2,
-            )
-        )
-        agent_registry = set(
-            self._parse_yaml_list(
-                self._extract_top_level_section(capability_map, "agent_registry"),
-                item_indent=2,
-            )
-        )
-        skill_registry = set(
-            self._parse_yaml_list(
-                self._extract_top_level_section(capability_map, "skill_registry"),
-                item_indent=2,
-            )
-        )
+        capability_map = self._load_yaml("mcp-agent-capability-map.yaml")
+        mcp_registry = set(capability_map.get("mcp_registry", []))
+        agent_registry = set(capability_map.get("agent_registry", []))
+        skill_registry = set(capability_map.get("skill_registry", []))
+        
         if not skill_registry:
             raise ValueError("skill_registry is missing or empty in mcp-agent-capability-map.yaml")
 
-        skill_mapping_section = self._extract_top_level_section(
-            capability_map,
-            "task_skill_mapping",
-        )
-        skill_mapping_match = re.search(
-            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
-            skill_mapping_section,
-            flags=re.MULTILINE,
-        )
-        if not skill_mapping_match:
+        task_skill_mapping = capability_map.get("task_skill_mapping", {})
+        if task_id not in task_skill_mapping:
             raise ValueError(f"Task ID not found in task_skill_mapping: {task_id}")
-        required_skills = self._parse_yaml_list(
-            self._extract_nested_section(skill_mapping_match.group(1), "required_skills", indent=4),
-            item_indent=6,
-        )
+            
+        required_skills = list(task_skill_mapping[task_id].get("required_skills", []))
         if not required_skills:
             raise ValueError(f"Task {task_id} has empty required_skills")
+            
         unknown_skills = sorted(set(required_skills) - skill_registry)
         if unknown_skills:
             raise ValueError(
                 f"Task {task_id} has unknown skill entries: {', '.join(unknown_skills)}"
             )
-        skill_catalog_section = self._extract_top_level_section(capability_map, "skill_catalog")
+            
+        skill_catalog = capability_map.get("skill_catalog", {})
         skill_registry_metadata = self._load_skill_registry_metadata()
         required_skill_cards: list[dict[str, Any]] = []
+        
         for skill_name in required_skills:
-            card_match = re.search(
-                rf"^\s{{2}}{re.escape(skill_name)}:\n((?:^\s{{4}}.*\n?)+)",
-                skill_catalog_section,
-                flags=re.MULTILINE,
-            )
-            if not card_match:
+            if skill_name not in skill_catalog:
                 raise ValueError(
                     f"Task {task_id} required skill missing catalog entry: {skill_name}"
                 )
-            card_block = card_match.group(1)
-            skill_file = self._parse_yaml_scalar(card_block, "file", indent=4)
-            category = self._parse_yaml_scalar(card_block, "category", indent=4)
-            focus = self._parse_yaml_scalar(card_block, "focus", indent=4)
-            default_outputs = self._parse_yaml_list(
-                self._extract_nested_section(card_block, "default_outputs", indent=4),
-                item_indent=6,
-            )
+            card_block = skill_catalog[skill_name]
+            skill_file = str(card_block.get("file", ""))
+            category = str(card_block.get("category", ""))
+            focus = str(card_block.get("focus", ""))
+            default_outputs = list(card_block.get("default_outputs", []))
+            
             if not skill_file:
                 raise ValueError(f"Skill catalog entry missing file for {skill_name}")
             if not category:
                 raise ValueError(f"Skill catalog entry missing category for {skill_name}")
             if not focus:
                 raise ValueError(f"Skill catalog entry missing focus for {skill_name}")
+                
             registry_metadata = skill_registry_metadata.get(skill_name, {})
             required_skill_cards.append(
                 {
@@ -1703,29 +1553,23 @@ Provide your verification assessment.
                 }
             )
 
-        task_section = self._extract_top_level_section(capability_map, "task_execution")
-        task_match = re.search(
-            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
-            task_section,
-            flags=re.MULTILINE,
-        )
-        if not task_match:
+        task_execution = capability_map.get("task_execution", {})
+        if task_id not in task_execution:
             raise ValueError(f"Task ID not found in mcp-agent-capability-map.yaml: {task_id}")
-        block = task_match.group(1)
-
-        required_mcp = self._parse_yaml_list(
-            self._extract_nested_section(block, "required_mcp", indent=4),
-            item_indent=6,
-        )
+            
+        block = task_execution[task_id]
+        required_mcp = list(block.get("required_mcp", []))
         if not required_mcp:
             raise ValueError(f"Task {task_id} has empty required_mcp")
+            
         unknown_mcp = sorted(set(required_mcp) - mcp_registry)
         if unknown_mcp:
             raise ValueError(f"Task {task_id} has unknown MCP entries: {', '.join(unknown_mcp)}")
 
-        primary_agent = self._parse_yaml_scalar(block, "primary_agent", indent=4)
-        review_agent = self._parse_yaml_scalar(block, "review_agent", indent=4)
-        fallback_agent = self._parse_yaml_scalar(block, "fallback_agent", indent=4)
+        primary_agent = str(block.get("primary_agent", ""))
+        review_agent = str(block.get("review_agent", ""))
+        fallback_agent = str(block.get("fallback_agent", ""))
+        
         for field_name, field_value in (
             ("primary_agent", primary_agent),
             ("review_agent", review_agent),
@@ -1738,10 +1582,7 @@ Provide your verification assessment.
                     f"Task {task_id} {field_name} must be in agent_registry: {field_value}"
                 )
 
-        quality_gates = self._parse_yaml_list(
-            self._extract_nested_section(block, "quality_gates", indent=4),
-            item_indent=6,
-        )
+        quality_gates = list(block.get("quality_gates", []))
         if not quality_gates:
             raise ValueError(f"Task {task_id} has empty quality_gates")
 
@@ -1853,11 +1694,8 @@ Provide your verification assessment.
                 )
 
         try:
-            capability_map = self._read_standard("mcp-agent-capability-map.yaml")
-            mcp_registry = self._parse_yaml_list(
-                self._extract_top_level_section(capability_map, "mcp_registry"),
-                item_indent=2,
-            )
+            capability_map = self._load_yaml("mcp-agent-capability-map.yaml")
+            mcp_registry = list(capability_map.get("mcp_registry", []))
         except (FileNotFoundError, ValueError) as exc:
             add_check(
                 "MCP registry",
@@ -3605,81 +3443,54 @@ Return sections:
 
     def _load_team_run_config(self, task_id: str) -> dict[str, Any]:
         """Load team_run_config for a specific task from capability map."""
-        capability_map = self._read_standard("mcp-agent-capability-map.yaml")
-        section = self._extract_top_level_section(capability_map, "team_run_config")
-        if not section:
+        capability_map = self._load_yaml("mcp-agent-capability-map.yaml")
+        team_run_config = capability_map.get("team_run_config", {})
+        if not team_run_config:
             raise ConfigError(
                 ERR_CFG_INVALID_TASK,
                 detail=f"team_run_config section missing in capability map",
             )
-        task_match = re.search(
-            rf"^\s{{2}}{re.escape(task_id)}:\n((?:^\s{{4}}.*\n?)+)",
-            section,
-            flags=re.MULTILINE,
-        )
-        if not task_match:
+            
+        if task_id not in team_run_config:
             raise ConfigError(
                 ERR_CFG_INVALID_TASK,
                 detail=f"Task {task_id} not found in team_run_config. MVP supports: B1, H3",
             )
-        block = task_match.group(1)
+        block = team_run_config[task_id]
+        
         config: dict[str, Any] = {
             "task_id": task_id,
-            "execution_mode": self._parse_yaml_scalar(block, "execution_mode", indent=4),
-            "partition_strategy": self._parse_yaml_scalar(block, "partition_strategy", indent=4),
-            "max_parallel_units": int(
-                self._parse_yaml_scalar(block, "max_parallel_units", indent=4) or "3"
-            ),
-            "planner_agent": self._parse_yaml_scalar(block, "planner_agent", indent=4) or "claude",
-            "merge_agent": self._parse_yaml_scalar(block, "merge_agent", indent=4) or "claude",
-            "consensus_policy": self._parse_yaml_scalar(block, "consensus_policy", indent=4),
+            "execution_mode": str(block.get("execution_mode", "")),
+            "partition_strategy": str(block.get("partition_strategy", "")),
+            "max_parallel_units": int(block.get("max_parallel_units", 3) or 3),
+            "planner_agent": str(block.get("planner_agent", "claude") or "claude"),
+            "merge_agent": str(block.get("merge_agent", "claude") or "claude"),
+            "consensus_policy": str(block.get("consensus_policy", "")),
         }
+        
         # Barrier rules
-        barrier_section = self._extract_nested_section(block, "barrier_rules", indent=4)
-        raw_min = self._parse_yaml_scalar(barrier_section, "min_success_ratio", indent=6) or "0.6"
-        raw_failure = self._parse_yaml_scalar(barrier_section, "on_failure", indent=6) or "degrade"
-        # Strip inline YAML comments (e.g. "degrade  # degrade | block | retry")
-        raw_min = raw_min.split("#")[0].strip()
-        raw_failure = raw_failure.split("#")[0].strip()
+        barrier_rules = block.get("barrier_rules", {})
         config["barrier_rules"] = {
-            "min_success_ratio": float(raw_min),
-            "on_failure": raw_failure,
+            "min_success_ratio": float(barrier_rules.get("min_success_ratio", 0.6)),
+            "on_failure": str(barrier_rules.get("on_failure", "degrade")),
         }
-        # Worker pool
-        worker_pool_section = self._extract_nested_section(block, "worker_pool", indent=4)
-        config["worker_pool"] = self._parse_yaml_list(worker_pool_section, item_indent=6) or [
-            "codex", "claude", "gemini"
-        ]
-        # Review pool
-        review_pool_section = self._extract_nested_section(block, "review_pool", indent=4)
-        config["review_pool"] = self._parse_yaml_list(review_pool_section, item_indent=6) or [
-            "codex", "gemini"
-        ]
+        
+        # Worker/Review pool
+        config["worker_pool"] = list(block.get("worker_pool", [])) or ["codex", "claude", "gemini"]
+        config["review_pool"] = list(block.get("review_pool", [])) or ["codex", "gemini"]
+        
         # Shard / canonical outputs
-        shard_section = self._extract_nested_section(block, "shard_outputs", indent=4)
-        config["shard_outputs"] = self._parse_yaml_list(shard_section, item_indent=6)
-        canonical_section = self._extract_nested_section(block, "canonical_outputs", indent=4)
-        config["canonical_outputs"] = self._parse_yaml_list(canonical_section, item_indent=6)
+        config["shard_outputs"] = list(block.get("shard_outputs", []) or [])
+        config["canonical_outputs"] = list(block.get("canonical_outputs", []) or [])
+        
         # Personas (H3)
-        personas: list[dict[str, str]] = []
-        persona_section = self._extract_nested_section(block, "personas", indent=4)
-        if persona_section:
-            # Handle flat YAML: "      - id: X\n        focus: Y"
-            for pm in re.finditer(
-                r"^\s*-\s+id:\s*(.+?)\s*$",
-                persona_section,
-                flags=re.MULTILINE,
-            ):
-                p_id = pm.group(1).strip().strip('"').strip("'")
-                # Find the focus line following this id line
-                rest = persona_section[pm.end():]
-                focus_match = re.match(r"\s*\n\s*focus:\s*(.+?)\s*$", rest, flags=re.MULTILINE)
-                p_focus = ""
-                if focus_match:
-                    p_focus = focus_match.group(1).strip().strip('"').strip("'")
-                if p_id:
-                    personas.append({"id": p_id, "focus": p_focus})
-        config["personas"] = personas
+        config["personas"] = []
+        for persona in block.get("personas", []):
+            if isinstance(persona, dict) and "id" in persona:
+                config["personas"].append({
+                    "id": str(persona["id"]),
+                    "focus": str(persona.get("focus", "")),
+                })
         return config
 
     def _generate_work_units(
@@ -4017,6 +3828,7 @@ Return sections:
         skills_strict: bool = False,
         profile_file: Path | None = None,
         profile: str = "default",
+        skip_validation: bool = False,
     ) -> CollaborationResult:
         """Run team-based fanout/fanin parallel execution for a research task.
 
@@ -4029,8 +3841,15 @@ Return sections:
         routing_notes: list[str] = []
         run_id = str(uuid.uuid4())[:8]
 
-        # 1. Load team-run config
-        team_config = self._load_team_run_config(normalized_task)
+        # 1. Load team-run
+        if skip_validation:
+            mcp_strict = False
+            skills_strict = False
+
+        try:
+            team_config = self._load_team_run_config(normalized_task)
+        except (FileNotFoundError, ValueError) as exc:
+            raise ConfigError(ERR_CFG_INVALID_TASK, detail=str(exc)) from exc
         if max_parallel_units is not None:
             team_config["max_parallel_units"] = max_parallel_units
         routing_notes.append(
@@ -4274,6 +4093,7 @@ Return sections:
         output_budget: int | None = None,
         research_depth: str = "standard",
         only_targets: list[str] | None = None,
+        skip_validation: bool = False,
     ) -> CollaborationResult:
         """Run task-level orchestration using capability map and contract."""
         normalized_task = task_id.strip().upper()
@@ -4507,6 +4327,11 @@ Return sections:
             fallback_chain=[agent_plan["fallback_agent"]],
         )
         routing_notes.extend(primary_notes)
+
+        # Skip validations if requested
+        if skip_validation:
+            mcp_strict = False
+            skills_strict = False
 
         draft_prompt = self._build_task_draft_prompt(
             packet,
@@ -5333,6 +5158,11 @@ def main():
         dest="only_targets",
         help="Target a specific actionable item from an existing Stage-I artifact. Repeat to focus multiple items.",
     )
+    task_run.add_argument(
+        "--skip-validation",
+        action="store_true",
+        help="Skip strict validation protocols for rapid research iteration.",
+    )
 
     team_run_parser = subparsers.add_parser(
         "team-run",
@@ -5370,6 +5200,11 @@ def main():
     team_run_parser.add_argument(
         "--profile", default="default",
         help="Base profile name (default: default)",
+    )
+    team_run_parser.add_argument(
+        "--skip-validation",
+        action="store_true",
+        help="Skip strict validation protocols for rapid research iteration.",
     )
 
     task_plan = subparsers.add_parser(
@@ -5437,6 +5272,7 @@ def main():
             output_budget=getattr(args, "output_budget", None),
             research_depth=getattr(args, "research_depth", "standard"),
             only_targets=getattr(args, "only_targets", None),
+            skip_validation=getattr(args, "skip_validation", False),
         )
     elif args.mode == "team-run":
         result = orchestrator.team_run(
@@ -5451,6 +5287,7 @@ def main():
             skills_strict=args.skills_strict,
             profile_file=getattr(args, "profile_file", None),
             profile=getattr(args, "profile", "default"),
+            skip_validation=getattr(args, "skip_validation", False),
         )
     elif args.mode == "task-plan":
         result = orchestrator.task_plan(

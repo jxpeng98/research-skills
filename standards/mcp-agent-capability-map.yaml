@@ -295,8 +295,32 @@ skill_registry:
   - "human-voice-rewriter"
   - "similarity-checker"
   - "final-proofreader"
+  - "discussion-writer"
+  - "limitation-auditor"
+  - "qualitative-coding"
 
 skill_catalog:
+  qualitative-coding:
+    file: "skills/E_synthesis/qualitative-coding.md"
+    category: "synthesis"
+    focus: "Extract phenomena, perform thematic/grounded theory coding, and build a codebook from qualitative transcripts or extracted text."
+    default_outputs:
+      - "data_dictionary.md"
+      - "thematic_codebook.md"
+  discussion-writer:
+    file: "skills/F_writing/discussion-writer.md"
+    category: "writing"
+    focus: "Drafts the Discussion section using a structured story spine, separating factual findings from theoretical implications."
+    default_outputs:
+      - "manuscript_fragments/06_discussion.md"
+      - "tools/discussion_story_spine.md"
+  limitation-auditor:
+    file: "skills/H_submission/limitation-auditor.md"
+    category: "submission"
+    focus: "Identifies and structures study constraints, ensuring rigorous self-critique without undermining the manuscript's core contribution."
+    default_outputs:
+      - "tools/limitations_audit.md"
+      - "tools/limitation_mitigations.md"
   question-refiner:
     file: "skills/A_framing/question-refiner.md"
     category: "framing"
@@ -1003,6 +1027,7 @@ task_skill_mapping:
     required_skills:
       - "quality-assessor"
       - "evidence-synthesizer"
+      - "qualitative-coding"
   E5:
     required_skills:
       - "evidence-synthesizer"
@@ -1021,6 +1046,7 @@ task_skill_mapping:
       - "manuscript-architect"
       - "analysis-interpreter"
       - "effect-size-interpreter"
+      - "discussion-writer"
       - "citation-formatter"
       - "reporting-checker"
       - "self-critique"
@@ -1080,6 +1106,7 @@ task_skill_mapping:
   H4:
     required_skills:
       - "fatal-flaw-detector"
+      - "limitation-auditor"
       - "self-critique"
 
   I1:

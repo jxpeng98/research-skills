@@ -206,6 +206,24 @@ artifact_types:
     produced_by: [quality-assessor]
     consumed_by: [evidence-synthesizer]
 
+  - name: ExtractedText
+    description: "Raw qualitative data or extracted quotes"
+    format: markdown_directory
+    produced_by: [paper-extractor, qualitative-coding]
+    consumed_by: [qualitative-coding]
+
+  - name: ResearchContext
+    description: "Research question and domain context"
+    format: markdown
+    produced_by: [question-refiner]
+    consumed_by: [qualitative-coding]
+
+  - name: ThematicCodebook
+    description: "Thematic codebook derived from qualitative data"
+    format: markdown
+    produced_by: [qualitative-coding]
+    consumed_by: [evidence-synthesizer]
+
   - name: GRADESummary
     description: "GRADE Summary of Findings table"
     format: markdown
@@ -255,6 +273,24 @@ artifact_types:
     produced_by: [effect-size-interpreter]
     consumed_by: [manuscript-architect, reporting-checker]
 
+  - name: ResultsSummary
+    description: "Summarized findings and statistical/thematic results"
+    format: markdown
+    produced_by: [analysis-interpreter, stats-engine]
+    consumed_by: [discussion-writer]
+
+  - name: DiscussionDraft
+    description: "Draft text for the discussion section separating findings from implications"
+    format: markdown
+    produced_by: [discussion-writer]
+    consumed_by: [manuscript-architect]
+
+  - name: StorySpine
+    description: "Structured narrative spine linking findings to literature"
+    format: markdown
+    produced_by: [discussion-writer]
+    consumed_by: [manuscript-architect]
+
   - name: FormattedTables
     description: "Publication-ready tables in draft and exportable formats"
     format: markdown_directory
@@ -293,6 +329,30 @@ artifact_types:
     consumed_by: [manuscript-architect]
 
   # ── H_submission outputs ──
+  - name: DraftManuscript
+    description: "The full manuscript draft including methods and discussion"
+    format: markdown
+    produced_by: [manuscript-architect]
+    consumed_by: [limitation-auditor]
+
+  - name: MethodologicalFramework
+    description: "The core research design and constraints"
+    format: markdown
+    produced_by: [study-designer]
+    consumed_by: [limitation-auditor]
+
+  - name: LimitationSection
+    description: "Audit output mapping limitations directly to research constraints"
+    format: markdown
+    produced_by: [limitation-auditor]
+    consumed_by: [submission-packager]
+
+  - name: MitigationStrategy
+    description: "Strategies to mitigate or justify each identified limitation"
+    format: markdown
+    produced_by: [limitation-auditor]
+    consumed_by: [submission-packager]
+
   - name: SubmissionPackage
     description: "Cover letter, disclosures, title page, and supplementary materials"
     format: markdown

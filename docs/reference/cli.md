@@ -286,7 +286,7 @@ Recommended:
 Also executable individually:
 
 ```bash
-./scripts/release_preflight.sh [--tag v0.1.0-beta.X] [--skip-smoke] [--no-strict]
+./scripts/release_preflight.sh [--tag v0.1.0-beta.X] [--skip-smoke] [--maintainer-smoke] [--no-strict]
 ./scripts/release_postflight.sh --tag v0.1.0-beta.X [--skip-remote] [--skip-ci-status] [--wait-ci] [--create-release]
 ```
 
@@ -294,9 +294,16 @@ Also executable individually:
 
 ```bash
 ./scripts/run_beta_smoke.sh
+./scripts/run_beta_smoke.sh --tier release
+./scripts/run_beta_smoke.sh --tier maintainer
 ```
 
-This smoke entrypoint now also runs the built-in literature pipeline smoke before the CLI/profile checks.
+This smoke entrypoint supports two tiers:
+
+- `release`: built-in literature pipeline smoke + `doctor`
+- `maintainer`: everything in `release`, plus `parallel` and `task-run` profile-path checks
+
+Release preflight now uses the `release` tier by default. Use `--maintainer-smoke` in release tooling when you explicitly want the heavier maintainer checks.
 
 ### 4.5 Literature smoke: `./scripts/run_literature_smoke.sh`
 

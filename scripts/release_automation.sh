@@ -58,7 +58,7 @@ Notes:
   - pre  -> runs scripts/release_preflight.sh
   - post -> runs scripts/release_postflight.sh
   - Run them in two phases: preflight before tagging, then postflight after the tag exists remotely.
-  - pre supports pass-through flags such as --from-tag, --skip-note-gen, --note-overwrite, --skip-smoke, and --no-strict.
+  - pre supports pass-through flags such as --from-tag, --skip-note-gen, --note-overwrite, --skip-smoke, --maintainer-smoke, and --no-strict.
   - publish -> runs release_ready, commits release-prep files, creates/pushes the tag, waits for CI, then runs postflight with release-page creation.
 EOF
 }
@@ -115,7 +115,7 @@ case "$MODE" in
           ready_args+=("$1")
           shift
           ;;
-        --skip-smoke|--no-strict|--skip-note-gen|--note-overwrite|--no-build|--no-install-smoke|--keep-dist)
+        --skip-smoke|--maintainer-smoke|--no-strict|--skip-note-gen|--note-overwrite|--no-build|--no-install-smoke|--keep-dist)
           ready_args+=("$1")
           shift
           ;;

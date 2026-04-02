@@ -3,7 +3,53 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_PROFILE="$(mktemp -t research-skills-smoke-profile.XXXXXX.json)"
+SMOKE_TIER="maintainer"
 trap 'rm -f "$TMP_PROFILE"' EXIT
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./scripts/run_beta_smoke.sh [--tier <release|maintainer>]
+
+Description:
+  release tier:
+    - builtin literature smoke
+    - orchestrator doctor
+
+  maintainer tier:
+    - everything in release tier
+    - parallel/profile path
+    - task-run/profile path
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tier)
+      [[ $# -ge 2 ]] || { echo "[smoke] missing value for --tier" >&2; exit 2; }
+      SMOKE_TIER="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[smoke] unknown option: $1" >&2
+      usage
+      exit 2
+      ;;
+  esac
+done
+
+case "$SMOKE_TIER" in
+  release|maintainer) ;;
+  *)
+    echo "[smoke] unsupported tier: $SMOKE_TIER" >&2
+    usage
+    exit 2
+    ;;
+esac
 
 contains_text() {
   local pattern="$1"
@@ -68,6 +114,7 @@ JSON
 
 cd "$ROOT_DIR"
 
+echo "[smoke] tier: $SMOKE_TIER"
 echo "[smoke] literature pipeline"
 # Success marker expected from the delegated smoke script: [literature-smoke] passed
 literature_output="$(./scripts/run_literature_smoke.sh 2>&1)"
@@ -81,28 +128,30 @@ echo "[smoke] doctor"
 run_and_assert_output "doctor" "Doctor Summary" \
   python3 -m bridges.orchestrator doctor --cwd .
 
-echo "[smoke] parallel/profile path"
-run_and_assert_output "parallel" "Parallel Execution" \
-  python3 -m bridges.orchestrator parallel \
-  --prompt "beta smoke: parallel" \
-  --cwd . \
-  --profile-file "$TMP_PROFILE" \
-  --profile smoke-fast \
-  --summarizer-profile smoke-fast \
-  --summarizer claude
+if [[ "$SMOKE_TIER" == "maintainer" ]]; then
+  echo "[smoke] parallel/profile path"
+  run_and_assert_output "parallel" "Parallel Execution" \
+    python3 -m bridges.orchestrator parallel \
+    --prompt "beta smoke: parallel" \
+    --cwd . \
+    --profile-file "$TMP_PROFILE" \
+    --profile smoke-fast \
+    --summarizer-profile smoke-fast \
+    --summarizer claude
 
-echo "[smoke] task-run/profile path"
-run_and_assert_output "task-run" "Agent Profiles" \
-  python3 -m bridges.orchestrator task-run \
-  --task-id F3 \
-  --paper-type empirical \
-  --topic beta-smoke \
-  --cwd . \
-  --profile-file "$TMP_PROFILE" \
-  --profile smoke-fast \
-  --draft-profile smoke-fast \
-  --review-profile smoke-fast \
-  --triad-profile smoke-fast \
-  --triad
+  echo "[smoke] task-run/profile path"
+  run_and_assert_output "task-run" "Agent Profiles" \
+    python3 -m bridges.orchestrator task-run \
+    --task-id F3 \
+    --paper-type empirical \
+    --topic beta-smoke \
+    --cwd . \
+    --profile-file "$TMP_PROFILE" \
+    --profile smoke-fast \
+    --draft-profile smoke-fast \
+    --review-profile smoke-fast \
+    --triad-profile smoke-fast \
+    --triad
+fi
 
 echo "[smoke] passed"

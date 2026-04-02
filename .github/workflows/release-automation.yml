@@ -28,6 +28,11 @@ on:
         required: false
         type: boolean
         default: false
+      maintainer_smoke:
+        description: "Run maintainer smoke tier in pre/publish mode"
+        required: false
+        type: boolean
+        default: false
       skip_note_gen:
         description: "Skip prerelease release-note draft generation in pre mode"
         required: false
@@ -119,6 +124,9 @@ jobs:
 
           if [[ "${{ inputs.skip_smoke }}" == "true" ]]; then
             args+=(--skip-smoke)
+          fi
+          if [[ "${{ inputs.maintainer_smoke }}" == "true" ]]; then
+            args+=(--maintainer-smoke)
           fi
           if [[ "${{ inputs.skip_note_gen }}" == "true" ]]; then
             args+=(--skip-note-gen)

@@ -50,7 +50,7 @@ When it succeeds, the repository is in a publish-ready state with synchronized v
 ./scripts/release_automation.sh pre --tag v0.1.0 --from-tag v0.1.0-beta.6
 ```
 
-Runs validator + repository unit tests + release smoke checks, verifies the tag is not already used, and then:
+Runs validator + repository unit tests + release-tier smoke checks, verifies the tag is not already used, and then:
 
 - beta / prerelease tags: auto-generate `release/<tag>.md` draft if missing
 - stable tags: verify the matching version section already exists in `CHANGELOG.md`
@@ -91,6 +91,7 @@ Runs local/remote consistency checks, attempts CI status verification, checks re
 
 - `--version <version>`: required by `publish`, accepts stable (`0.2.0`) and beta (`0.2.0b1`) forms.
 - `--skip-smoke`: skip smoke stage during preflight.
+- `--maintainer-smoke`: upgrade preflight smoke from the default release tier to the maintainer tier (`parallel` + `task-run` profile checks).
 - `--skip-note-gen`: skip prerelease draft generation of `release/<tag>.md`.
 - `--note-overwrite`: overwrite existing `release/<tag>.md` when generating prerelease draft.
 - `--from-tag <tag>`: choose baseline tag used for prerelease draft highlights.

@@ -59,8 +59,10 @@
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
 
-- `release_automation.sh pre`：运行 strict validator、仓库单元测试、release smoke，并校验 release 文档
+- `release_automation.sh pre`：运行 strict validator、仓库单元测试、release-tier smoke，并校验 release 文档
 - `pypi_preflight.sh`：构建包、执行 `twine check`，并对生成 wheel 做安装 smoke
+
+默认的 release smoke tier 是保守配置：内置 literature smoke + `doctor`。如果你还想在发版前补跑更重的 `parallel` / `task-run` profile 路径检查，再显式加 `--maintainer-smoke`。
 
 当前 release 文档策略：
 

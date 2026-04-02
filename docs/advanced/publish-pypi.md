@@ -59,8 +59,10 @@ Recommended one-command local flow:
 - `research-paper-workflow/VERSION`
 - `skills/registry.yaml`
 
-- `release_automation.sh pre` to run strict validator, repository unit tests, release smoke, and release doc checks
+- `release_automation.sh pre` to run strict validator, repository unit tests, release-tier smoke, and release doc checks
 - `pypi_preflight.sh` to build the package, run `twine check`, and install-smoke the generated wheel
+
+The default release smoke tier is intentionally conservative: builtin literature smoke + `doctor`. If you also want the heavier `parallel` / `task-run` profile-path checks before publishing, add `--maintainer-smoke`.
 
 Release doc policy:
 

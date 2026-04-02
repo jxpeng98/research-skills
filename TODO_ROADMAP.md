@@ -273,9 +273,9 @@ Key facts confirmed from current repo:
   - or enforce stronger YAML/MD equivalence validation
 
 - [ ] Expand integration smoke beyond the builtin literature baseline
-  - add real bridge command construction checks
-  - add recorded external-provider output parsing checks
-  - decide which smoke stages should be part of release gating versus optional maintainers' checks
+  - [x] add real bridge command construction checks
+  - [x] add recorded external-provider output parsing checks
+  - [x] decide which smoke stages should be part of release gating versus optional maintainers' checks
 
 - [ ] Add empirical acceptance / eval coverage for the refactored pipelines
   - `systematic-review-prisma`

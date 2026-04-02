@@ -33,6 +33,7 @@ Options:
   --skip-bump          Skip version sync and start from preflight/package checks.
   --allow-dirty        Allow existing local changes before running release prep.
   --skip-smoke         Pass through to release preflight.
+  --maintainer-smoke   Pass through to release preflight.
   --no-strict          Pass through to release preflight validator.
   --skip-note-gen      Pass through to release preflight.
   --note-overwrite     Pass through to release preflight.
@@ -132,7 +133,7 @@ while [[ $# -gt 0 ]]; do
       ALLOW_DIRTY=1
       shift
       ;;
-    --skip-smoke|--no-strict|--skip-note-gen|--note-overwrite)
+    --skip-smoke|--maintainer-smoke|--no-strict|--skip-note-gen|--note-overwrite)
       PRE_ARGS+=("$1")
       shift
       ;;

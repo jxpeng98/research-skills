@@ -54,6 +54,59 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(resolution.source, "builtin")
         self.assertTrue((resolution.native_script or "").endswith("mcp_fulltext_retrieval.py"))
 
+    def test_collect_external_provider_executes_quoted_env_command_with_space_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace with spaces"
+            workspace.mkdir(parents=True)
+            script = workspace / "screening stub.py"
+            fixture = workspace / "screening fixture.json"
+            fixture.write_text(
+                json.dumps(
+                    {
+                        "status": "ok",
+                        "summary": "screening stub ok",
+                        "provenance": ["fixture://screening"],
+                        "data": {"source": "fixture"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            script.write_text(
+                "from pathlib import Path\n"
+                "import json\n"
+                "import sys\n"
+                "payload = json.loads(sys.stdin.read())\n"
+                "response = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))\n"
+                "response['data']['provider'] = payload.get('provider')\n"
+                "response['data']['topic'] = payload.get('task_packet', {}).get('topic')\n"
+                "print(json.dumps(response))\n",
+                encoding="utf-8",
+            )
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "RESEARCH_MCP_SCREENING_TRACKER_CMD": current_python_command(
+                        str(script),
+                        str(fixture),
+                    )
+                },
+                clear=False,
+            ):
+                evidence = self.connector.collect(
+                    "screening-tracker",
+                    {"topic": "demo-topic"},
+                    workspace,
+                )
+
+        self.assertEqual(evidence.status, "ok")
+        self.assertEqual(evidence.summary, "screening stub ok")
+        self.assertEqual(evidence.provenance, ["fixture://screening"])
+        self.assertEqual(evidence.data["source"], "fixture")
+        self.assertEqual(evidence.data["provider"], "screening-tracker")
+        self.assertEqual(evidence.data["topic"], "demo-topic")
+
     def test_builtin_metadata_registry_normalizes_local_doi(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             root = Path(tmp_dir)
@@ -222,6 +275,60 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(record["field_provenance"]["venue"]["provider"], "openalex")
         self.assertEqual(record["field_provenance"]["doi"]["provider"], "search_results")
 
+    def test_builtin_metadata_registry_applies_recorded_crossref_fixture(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            project_root = root / "RESEARCH" / "demo-topic"
+            project_root.mkdir(parents=True)
+            (project_root / "search_results.csv").write_text(
+                "record_id,source,query_id,retrieved_at,title,authors,year,venue,doi,url,abstract\n"
+                "s2:1,semantic_scholar,q1,2026-03-25T00:00:00+00:00,Platform Governance in Practice,\"Smith, Alex\",2024,Org Science,10.1000/platform-governance,https://example.com/platform-governance,\n",
+                encoding="utf-8",
+            )
+            fixture_path = FIXTURES_DIR / "metadata_enrichment_crossref.json"
+            enrich_script = root / "metadata_enrich_fixture.py"
+            enrich_script.write_text(
+                "from pathlib import Path\n"
+                "import sys\n"
+                "sys.stdout.write(Path(sys.argv[1]).read_text(encoding='utf-8'))\n",
+                encoding="utf-8",
+            )
+            packet = {
+                "topic": "demo-topic",
+                "artifact_root": "RESEARCH/[topic]/",
+                "required_outputs": ["search_results.csv"],
+            }
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "RESEARCH_MCP_METADATA_REGISTRY_ENRICH_CMD": current_python_command(
+                        str(enrich_script),
+                        str(fixture_path),
+                    ),
+                },
+                clear=False,
+            ):
+                evidence = self.connector.collect("metadata-registry", packet, root)
+
+        self.assertEqual(evidence.status, "ok")
+        self.assertTrue(evidence.data["reference_state"]["external_enrichment"]["configured"])
+        self.assertEqual(
+            evidence.data["reference_state"]["external_enrichment"]["applied_count"],
+            1,
+        )
+        record = evidence.data["records"][0]
+        self.assertEqual(record["source_provider"], "crossref")
+        self.assertEqual(record["volume"], "35")
+        self.assertEqual(record["issue"], "2")
+        self.assertEqual(record["pages"], "123-145")
+        self.assertEqual(record["publisher"], "INFORMS")
+        self.assertEqual(record["url"], "https://doi.org/10.1000/platform-governance")
+        self.assertEqual(record["field_provenance"]["volume"]["provider"], "crossref")
+        self.assertEqual(record["field_provenance"]["pages"]["provider"], "crossref")
+        self.assertEqual(record["field_provenance"]["publisher"]["provider"], "crossref")
+        self.assertEqual(record["field_provenance"]["doi"]["provider"], "search_results")
+
     def test_builtin_fulltext_retrieval_prepares_manifest_without_bib(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             root = Path(tmp_dir)
@@ -302,6 +409,19 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(row["source_provider"], "zotero")
         self.assertEqual(row["fulltext_path"], "fulltext/platform-governance.pdf")
         self.assertEqual(row["license"], "CC-BY-4.0")
+        self.assertIn(
+            "Candidate access URL identified locally",
+            row["notes"],
+        )
+        self.assertIn("Resolved from Zotero attachment.", row["notes"])
+        self.assertEqual(
+            evidence.data["external_resolution"]["applied_count"],
+            1,
+        )
+        self.assertIn(
+            "zotero://select/library/items/ABC123",
+            evidence.data["external_resolution"]["provenance"],
+        )
 
 
 if __name__ == "__main__":

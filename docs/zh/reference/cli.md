@@ -286,7 +286,7 @@ mode 列表：
 也可单独运行：
 
 ```bash
-./scripts/release_preflight.sh [--tag v0.1.0-beta.X] [--skip-smoke] [--no-strict]
+./scripts/release_preflight.sh [--tag v0.1.0-beta.X] [--skip-smoke] [--maintainer-smoke] [--no-strict]
 ./scripts/release_postflight.sh --tag v0.1.0-beta.X [--skip-remote] [--skip-ci-status] [--wait-ci] [--create-release]
 ```
 
@@ -294,9 +294,16 @@ mode 列表：
 
 ```bash
 ./scripts/run_beta_smoke.sh
+./scripts/run_beta_smoke.sh --tier release
+./scripts/run_beta_smoke.sh --tier maintainer
 ```
 
-这个主 smoke 入口现在也会先运行一遍内置 literature pipeline smoke，再继续做 CLI / profile 路径检查。
+这个主 smoke 入口现在支持两档：
+
+- `release`：内置 literature pipeline smoke + `doctor`
+- `maintainer`：包含 `release` 全部内容，并额外执行 `parallel` 和 `task-run` 的 profile 路径检查
+
+release preflight 默认只跑 `release` 档。只有在你明确想补跑维护者级别检查时，才加 `--maintainer-smoke`。
 
 ### 4.5 Literature smoke：`./scripts/run_literature_smoke.sh`
 

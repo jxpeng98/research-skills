@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 RUN_SMOKE=1
+MAINTAINER_SMOKE=0
 STRICT_MODE=1
 TAG=""
 SKIP_NOTE_GEN=0
@@ -24,7 +25,8 @@ Description:
        stable: verify matching CHANGELOG.md section exists
     1) strict standard validator
     2) repository unit tests
-    3) release smoke script (literature pipeline + doctor + parallel + task-run)
+    3) release smoke tier (literature pipeline + doctor)
+    4) optional maintainer smoke tier (parallel + task-run profile paths)
 
 Options:
   --tag <tag>     Optional release tag to pre-check. If provided, script verifies
@@ -33,6 +35,7 @@ Options:
   --skip-note-gen Skip auto generation of release/<tag>.md draft for prerelease tags.
   --note-overwrite  Overwrite release/<tag>.md when auto-generating prerelease draft.
   --skip-smoke    Skip smoke test stage.
+  --maintainer-smoke  Run maintainer smoke tier instead of release smoke tier.
   --no-strict     Run validator without --strict.
   -h, --help      Show this message.
 EOF
@@ -60,6 +63,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-smoke)
       RUN_SMOKE=0
+      shift
+      ;;
+    --maintainer-smoke)
+      MAINTAINER_SMOKE=1
       shift
       ;;
     --no-strict)
@@ -143,12 +150,16 @@ else
 fi
 
 if [[ "$RUN_SMOKE" -eq 1 ]]; then
-  echo "[preflight] smoke"
-  ./scripts/run_beta_smoke.sh 2>&1 | tee "$smoke_log"
+  smoke_tier="release"
+  if [[ "$MAINTAINER_SMOKE" -eq 1 ]]; then
+    smoke_tier="maintainer"
+  fi
+  echo "[preflight] smoke (${smoke_tier} tier)"
+  ./scripts/run_beta_smoke.sh --tier "$smoke_tier" 2>&1 | tee "$smoke_log"
   if grep -q '\[smoke\] passed' "$smoke_log"; then
-    smoke_summary="passed"
+    smoke_summary="passed (${smoke_tier}-tier)"
   else
-    smoke_summary="completed"
+    smoke_summary="completed (${smoke_tier}-tier)"
   fi
 else
   echo "[preflight] smoke skipped"

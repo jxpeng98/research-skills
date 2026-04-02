@@ -37,8 +37,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 
 ## Important Boundaries
 
-- The current internal skill registry covers stages `A` through `I`, plus `K_presentation` and `Z_cross_cutting`.
-- `J`-level proofread and polishing entrypoints live at the workflow layer today; they are not a separate top-level skill stage in the internal registry.
+- The current internal skill registry covers stages `A` through `K` except there is no routed top-level `L` or beyond; `J_proofread`, `K_presentation`, and `Z_cross_cutting` are first-class registry stages.
 - Some markdown files under `skills/` are **supplemental cards** or **mirror copies** for the Stage-I code lane. They are documented below, but they are not all separate routed skills.
 
 ## Stage Overview
@@ -52,6 +51,7 @@ If you want scenario-driven routes such as "systematic review", "methods paper",
 | `E_synthesis` | evidence synthesis, quality, bias | 5 | "How do I combine and rate evidence?" |
 | `F_writing` | manuscript building, tables, figures, results writing | 7 | "How do I turn analysis into publishable text?" |
 | `G_compliance` | reporting checklists, tone, PRISMA | 3 | "Is this compliant and submission-ready?" |
+| `J_proofread` | AI detection, humanization, similarity, final polish | 4 | "How do I de-AI and finalize the manuscript?" |
 | `H_submission` | submission package, rebuttal, review simulation | 7 | "How do I package, defend, and stress-test the paper?" |
 | `I_code` | academic code, stats, reproducibility | 10 | "How do I implement and verify research code?" |
 | `K_presentation` | academic talks, slide planning, Slidev, Beamer | 4 | "How do I turn the paper into a defensible talk?" |
@@ -149,6 +149,17 @@ Use Stage G when the paper exists and now needs formal checklist coverage, tone 
 | `prisma-checker` | Verify PRISMA 2020 flow diagram and all 27 checklist items. | `PRISMAChecklist` |
 | `reporting-checker` | Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD reporting completeness. | `ReportingChecklist` |
 | `tone-normalizer` | Cut fluff, hedge words, and absolute claims for concise academic tone. | `ToneNormalization` |
+
+### J. Proofread
+
+Use Stage J when the draft is substantively complete and needs AI-fingerprint review, human-voice rewriting, similarity screening, or final proofreading before submission.
+
+| Skill | What it does | Produces |
+|---|---|---|
+| `ai-fingerprint-scanner` | Scan manuscript for AI-generation fingerprints including formulaic transitions, uniform rhythm, and generic hedging. | `AIDetectionReport` |
+| `human-voice-rewriter` | Rewrite AI-flagged passages to sound authentically human-authored while preserving scientific accuracy. | `HumanizedManuscript` |
+| `similarity-checker` | Identify text overlap including self-plagiarism, close paraphrasing, and boilerplate passages. | `SimilarityReport` |
+| `final-proofreader` | Language-level polish covering grammar, tense, acronyms, cross-references, and venue-specific formatting. | `ProofreadChecklist` |
 
 ### H. Submission
 

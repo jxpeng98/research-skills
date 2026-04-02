@@ -37,8 +37,7 @@
 
 ## 先记住几个边界
 
-- 当前 internal skill registry 覆盖的是 `A` 到 `I` 阶段，再加 `K_presentation` 和 `Z_cross_cutting`。
-- `J` 类 proofread / polish 入口目前主要在 workflow 层，不是单独的 top-level internal skill stage。
+- 当前 internal skill registry 已覆盖 `A` 到 `K` 的实际 routed stages，其中 `J_proofread`、`K_presentation` 和 `Z_cross_cutting` 都是一级 stage。
 - `skills/` 下面有一部分文件是**补充卡片**，还有一部分是 Stage-I 代码链路的**镜像目录**；它们都很有用，但不等于“独立的 canonical routed skill”。
 
 ## Stage 总览
@@ -52,6 +51,7 @@
 | `E_synthesis` | 证据综合、质量评估、发表偏倚 | 5 | “已有证据要怎么整合和评级？” |
 | `F_writing` | 结构、结果解释、表格、图、摘要 | 7 | “如何把分析结果写成论文？” |
 | `G_compliance` | PRISMA、报告规范、学术语气 | 3 | “论文是否已经满足提交前规范？” |
+| `J_proofread` | AI 痕迹检查、人声化改写、相似度、终稿校对 | 4 | “怎么在投稿前去 AI 痕迹并做终稿校对？” |
 | `H_submission` | 投稿包、回复审稿、模拟评审 | 7 | “投稿前后怎么打包和应对审稿？” |
 | `I_code` | 学术代码、统计、可复现性 | 10 | “研究代码如何实现、审查、复现？” |
 | `K_presentation` | 学术报告、幻灯片规划、Slidev、Beamer | 4 | “怎么把论文变成一个可讲、可答辩的学术报告？” |
@@ -149,6 +149,17 @@
 | `prisma-checker` | PRISMA检查 | 当系统综述或证据综合需要核对 PRISMA 完整性时使用。 | `PRISMAChecklist` |
 | `reporting-checker` | 报告规范检查 | 当你需要核查 CONSORT、STROBE、COREQ、SRQR 或 TRIPOD 时使用。 | `ReportingChecklist` |
 | `tone-normalizer` | 学术语气归一 | 当文本太松、太满、太绝对或废话过多时使用。 | `ToneNormalization` |
+
+### J. Proofread
+
+当稿件内容已经基本完成，下一步要做 AI 痕迹扫描、人声化改写、相似度检查和最终校对时，用 Stage J。
+
+| Skill | 中文名 | 适用场景 | 产出类型 |
+|---|---|---|---|
+| `ai-fingerprint-scanner` | AI指纹扫描 | 当需要识别稿件中可能被 AI 检测器标记的段落时使用。 | `AIDetectionReport` |
+| `human-voice-rewriter` | 人类风格改写 | 当 AI 检测报告中有高严重度段落需要改写时使用。 | `HumanizedManuscript` |
+| `similarity-checker` | 相似度检查 | 当需要在投稿前检查文本原创性和引用充分性时使用。 | `SimilarityReport` |
+| `final-proofreader` | 终审校对 | 当稿件内容已定稿，需要做投稿前最后一遍语言校对时使用。 | `ProofreadChecklist` |
 
 ### H. Submission
 

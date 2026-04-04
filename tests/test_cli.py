@@ -32,6 +32,20 @@ class InstallerCliTests(unittest.TestCase):
         self.assertEqual(options.parts, ("project",))
         self.assertEqual(options.target, "all")
 
+    def test_align_describes_global_first_upgrade_and_project_init(self) -> None:
+        args = argparse.Namespace(repo="owner/repo")
+
+        with mock.patch("builtins.print") as print_mock:
+            exit_code = cli_module.cmd_align(args)
+
+        self.assertEqual(exit_code, 0)
+        lines = [" ".join(str(part) for part in call.args) for call in print_mock.call_args_list]
+        joined = "\n".join(lines)
+        self.assertIn("What `", joined)
+        self.assertIn("upgrade` modifies by default", joined)
+        self.assertIn("Use `rsk init --project-dir .` for project bootstrap", joined)
+        self.assertIn("--parts project", joined)
+
     def test_upgrade_passes_parts_to_installer(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_root = Path(tmp_dir)

@@ -706,18 +706,22 @@ def cmd_align(args: argparse.Namespace) -> int:
     print("- A global CLI (per-user). It does NOT auto-modify your projects.")
     print("- CLI aliases: `research-skills`, `rsk`, `rsw` (same behavior).")
     print("")
-    print(f"What `{prog} upgrade` modifies:")
+    print(f"What `{prog} upgrade` modifies by default:")
     print("- Global skills: ~/.codex|~/.claude|~/.gemini under `skills/research-paper-workflow/`")
-    print("- One project: `<project>/.agent/workflows/`, `CLAUDE.md`, `.gemini/` (via --project-dir)")
+    print("- Shell CLI wrappers when `--install-cli` is used")
+    print("")
+    print("Project-facing assets are explicit:")
+    print("- Use `rsk init --project-dir .` for project bootstrap")
+    print("- Or add `--parts project` (optionally with `doctor`) during upgrade")
     print("")
     print("Typical usage:")
     print(f"1) Check:   {prog} check --repo {repo_hint}")
-    print(f"2) Upgrade: {prog} upgrade --repo {repo_hint} --project-dir . --target all --doctor")
+    print(f"2) Upgrade: {prog} upgrade --repo {repo_hint} --target all")
     print(f"3) Init:    {prog} init --project-dir . --target all")
     print(f"4) Doctor:  {prog} doctor --cwd .")
     print("")
     print("Tip:")
-    print(f"- Run `{prog} upgrade` from your project root to use `--project-dir .`.")
+    print(f"- Run `{prog} init --project-dir .` when you want project-local workflows and prompts.")
     print("- Set `RESEARCH_SKILLS_REPO=owner/repo` to avoid passing `--repo` every time.")
     print("- Or add `research-skills.toml` to your project root to persist the upstream repo.")
     return 0
@@ -776,7 +780,7 @@ def build_parser() -> argparse.ArgumentParser:
     upgrade.add_argument(
         "--project-dir",
         default=str(Path.cwd()),
-        help="Project directory for workflow integration (default: current dir)",
+        help="Project directory used when project surfaces are enabled (default: current dir)",
     )
     upgrade.add_argument("--install-cli", action="store_true", help="Install or refresh shell CLI wrappers")
     upgrade.add_argument("--no-cli", action="store_true", help="Skip shell CLI installation during upgrade")

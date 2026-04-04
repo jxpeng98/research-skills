@@ -15,7 +15,7 @@ CLI_DIR="${RESEARCH_SKILLS_BIN_DIR:-$HOME/.local/bin}"
 PARTS_SPEC=""
 PARTS_ACTIVE=0
 INSTALL_GLOBALS=1
-INSTALL_PROJECT=1
+INSTALL_PROJECT=0
 
 # ── ANSI colors (respects NO_COLOR) ──────────────────────────────────────────
 if [[ -z "${NO_COLOR:-}" ]] && [[ -t 1 ]]; then
@@ -64,13 +64,13 @@ Options:
   --profile <partial|full>             Install preset (partial: assets only, full: assets + shell CLI + doctor)
   --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy|link>                   Install mode (default: copy)
-  --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
+  --project-dir <path>                 Project directory used when project surfaces are enabled (default: current dir)
   --install-cli                        Install shell CLI commands (`research-skills`, `rsk`, `rsw`)
   --no-cli                             Skip shell CLI installation
   --cli-dir <path>                     Directory for shell CLI binaries (default: RESEARCH_SKILLS_BIN_DIR or ~/.local/bin)
   --parts <globals,project,cli,doctor>
-                                       Install only specific surfaces. If omitted, globals + project stay on,
-                                       while cli / doctor still follow profile flags and explicit switches.
+                                       Install only specific surfaces. If omitted, globals stay on by default,
+                                       while project/cli/doctor remain opt-in via --parts or explicit switches.
   --overwrite                           Overwrite existing installed files
   --doctor                              Run orchestrator doctor after install
   --dry-run                             Print actions without writing files
@@ -84,8 +84,8 @@ Environment overrides:
   RESEARCH_SKILLS_BIN_DIR Default: $HOME/.local/bin
 
 Profile behavior:
-  partial           Install workflow assets and project integration files only
-  full              Install workflow assets, shell CLI, and run doctor
+  partial           Install global workflow assets only
+  full              Install global workflow assets, shell CLI, and run doctor
 EOF
 }
 

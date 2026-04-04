@@ -135,7 +135,7 @@ class BootstrapResearchSkillTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
             self.assertIn("source:   local checkout", result.stdout)
-            self.assertTrue((project_dir / ".env").is_file())
+            self.assertFalse((project_dir / ".env").exists())
             self.assertFalse((cli_dir / "research-skills").exists())
 
     def test_missing_profile_in_noninteractive_mode_fails_fast(self) -> None:

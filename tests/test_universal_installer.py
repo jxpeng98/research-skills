@@ -49,7 +49,7 @@ class UniversalInstallerTests(unittest.TestCase):
             self.assertTrue((project_dir / ".gemini" / "research-skills.md").exists())
             self.assertTrue((project_dir / ".env").exists())
 
-    def test_partial_profile_installs_assets_without_shell_cli(self) -> None:
+    def test_partial_profile_installs_global_assets_without_project_files_or_shell_cli(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_root = Path(tmp_dir)
             project_dir = temp_root / "project"
@@ -79,10 +79,10 @@ class UniversalInstallerTests(unittest.TestCase):
             self.assertTrue((codex_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
             self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
             self.assertTrue((gemini_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
-            self.assertTrue((project_dir / ".agent" / "workflows" / "proofread.md").exists())
-            self.assertTrue((project_dir / ".gemini" / "research-skills.md").exists())
-            self.assertTrue((project_dir / ".agents" / "skills" / "research-paper-workflow" / "SKILL.md").exists())
-            self.assertTrue((project_dir / ".env").exists())
+            self.assertFalse((project_dir / ".agent" / "workflows" / "proofread.md").exists())
+            self.assertFalse((project_dir / ".gemini" / "research-skills.md").exists())
+            self.assertFalse((project_dir / ".agents" / "skills" / "research-paper-workflow" / "SKILL.md").exists())
+            self.assertFalse((project_dir / ".env").exists())
             self.assertFalse((temp_root / ".local" / "bin" / "research-skills").exists())
 
     def test_full_profile_allows_explicit_no_cli_and_preserves_existing_claude_md(self) -> None:
@@ -117,7 +117,7 @@ class UniversalInstallerTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             self.assertEqual((project_dir / "CLAUDE.md").read_text(encoding="utf-8"), "existing")
-            self.assertTrue((project_dir / "CLAUDE.research-skills.md").exists())
+            self.assertFalse((project_dir / "CLAUDE.research-skills.md").exists())
             self.assertFalse((cli_dir / "research-skills").exists())
 
 

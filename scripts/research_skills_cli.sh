@@ -305,13 +305,15 @@ cmd_align() {
   printf -- '- A standalone shell CLI (per-user).\n'
   printf -- '- CLI aliases: `research-skills`, `rsk`, `rsw`.\n'
   printf -- '- A bundled bootstrap helper used by `upgrade`.\n\n'
-  printf 'What `%s upgrade` modifies:\n' "$prog"
+  printf 'What `%s upgrade` modifies by default:\n' "$prog"
   printf -- '- Global skills: ~/.codex|~/.claude|~/.gemini and ~/.gemini/antigravity under `skills/research-paper-workflow/`\n'
-  printf -- '- One project: `<project>/.agent/workflows/`, `<project>/.agents/skills/`, `CLAUDE.md`, `.gemini/`\n'
   printf -- '- Shell CLI files in `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` when installed via bootstrap\n\n'
+  printf 'Project-facing assets are explicit:\n'
+  printf -- '- Use `rsk init --project-dir .` from the Python CLI when available\n'
+  printf -- '- Or pass `--parts project` during upgrade/bootstrap to refresh `.agent/workflows/`, `.agents/skills/`, `CLAUDE.md`, `.gemini/`, and `.env`\n\n'
   printf 'Typical usage:\n'
   printf '1) Check:   %s check --repo %s\n' "$prog" "$repo_hint"
-  printf '2) Upgrade: %s upgrade --repo %s --project-dir . --target all\n' "$prog" "$repo_hint"
+  printf '2) Upgrade: %s upgrade --repo %s --target all\n' "$prog" "$repo_hint"
   printf '\nTip:\n'
   printf -- '- Set `RESEARCH_SKILLS_REPO=owner/repo` to avoid passing `--repo` every time.\n'
   printf -- '- Or add `research-skills.toml` to your project root to persist the upstream repo.\n'

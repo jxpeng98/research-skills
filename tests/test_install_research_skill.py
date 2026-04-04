@@ -19,7 +19,7 @@ class InstallResearchSkillTests(unittest.TestCase):
         self.assertIn('doctor_cmd() {', content)
         self.assertIn('PYTHONPATH="$pythonpath" python3 -m bridges.orchestrator "$@"', content)
 
-    def test_claude_install_succeeds_under_system_bash(self) -> None:
+    def test_claude_install_defaults_to_global_only_under_system_bash(self) -> None:
         if not SYSTEM_BASH.exists():
             self.skipTest("/bin/bash is not available")
 
@@ -56,14 +56,14 @@ class InstallResearchSkillTests(unittest.TestCase):
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
-            self.assertTrue((project_dir / ".agent" / "workflows" / "proofread.md").exists())
-            self.assertTrue((project_dir / ".agent" / "workflows" / "study-design.md").exists())
-            self.assertTrue((project_dir / "CLAUDE.md").exists())
-            self.assertTrue((project_dir / ".env").exists())
-            self.assertIn("Env", result.stdout)
+            self.assertFalse((project_dir / ".agent" / "workflows" / "proofread.md").exists())
+            self.assertFalse((project_dir / ".agent" / "workflows" / "study-design.md").exists())
+            self.assertFalse((project_dir / "CLAUDE.md").exists())
+            self.assertFalse((project_dir / ".env").exists())
+            self.assertNotIn("Env", result.stdout)
             self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
 
-    def test_antigravity_install_writes_workspace_and_global_skill_when_cli_exists(self) -> None:
+    def test_antigravity_install_defaults_to_global_skill_only_when_cli_exists(self) -> None:
         if not SYSTEM_BASH.exists():
             self.skipTest("/bin/bash is not available")
 
@@ -108,12 +108,8 @@ class InstallResearchSkillTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
             self.assertIn("CLI", result.stdout)
             self.assertIn("antigravity", result.stdout)
-            self.assertTrue(
-                (project_dir / ".agents" / "skills" / "research-paper-workflow" / "SKILL.md").exists()
-            )
-            self.assertTrue(
-                (project_dir / ".agent" / "skills" / "research-paper-workflow" / "SKILL.md").exists()
-            )
+            self.assertFalse((project_dir / ".agents" / "skills" / "research-paper-workflow" / "SKILL.md").exists())
+            self.assertFalse((project_dir / ".agent" / "skills" / "research-paper-workflow" / "SKILL.md").exists())
             self.assertTrue(
                 (antigravity_home / "skills" / "research-paper-workflow" / "SKILL.md").exists()
             )

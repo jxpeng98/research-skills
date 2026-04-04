@@ -58,7 +58,7 @@ Options:
   --source-repo <path>                 Use a local checkout instead of downloading from GitHub
   --target <codex|claude|gemini|antigravity|all> Install target (default: all)
   --mode <copy>                        Install mode for remote bootstrap (default: copy)
-  --project-dir <path>                 Project directory for command/workflow integration (default: current dir)
+  --project-dir <path>                 Project directory used when project surfaces are enabled (default: current dir)
   --install-cli                        Install shell CLI commands into the bin dir (default: on)
   --no-cli                             Skip shell CLI installation
   --cli-dir <path>                     Directory for shell CLI binaries (default: RESEARCH_SKILLS_BIN_DIR or ~/.local/bin)
@@ -83,13 +83,13 @@ describe_profiles() {
 Choose an install profile:
 
   1) partial
-     - Installs workflow assets and project integration files only
+     - Installs global workflow assets only
      - Does not install shell CLI
      - Does not require Python
      - Does not run orchestrator doctor
 
   2) full
-     - Installs workflow assets and project integration files
+     - Installs global workflow assets
      - Installs shell CLI commands (`research-skills`, `rsk`, `rsw`)
      - Ensures Python 3.12 is available via mise if missing
      - Runs orchestrator doctor after install

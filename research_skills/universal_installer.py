@@ -399,7 +399,7 @@ def install(options: InstallOptions) -> int:
         raise ValueError(f"Unsupported mode: {options.mode}")
     selected_parts = normalize_parts(options.parts)
     install_globals = True if selected_parts is None else "globals" in selected_parts
-    install_project = True if selected_parts is None else "project" in selected_parts
+    install_project = False if selected_parts is None else "project" in selected_parts
     install_cli = bool(options.install_cli) if selected_parts is None else "cli" in selected_parts
     doctor = bool(options.doctor) if selected_parts is None else "doctor" in selected_parts
 

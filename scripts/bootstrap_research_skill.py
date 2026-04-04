@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--project-dir",
         default=str(Path.cwd()),
-        help="Project directory for workflow integration (default: current dir).",
+        help="Project directory used when project surfaces are enabled (default: current dir).",
     )
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing installed files.")
     parser.add_argument("--install-cli", action="store_true", help="Force shell CLI installation.")

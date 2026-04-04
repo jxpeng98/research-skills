@@ -23,7 +23,7 @@ The recommended first-install path is now the one-click bootstrap. You do not ne
 
 | Profile | Use when | Result |
 |---|---|---|
-| `partial` | You only want skills, workflows, and project integration files | Assets are installed; orchestrator is not ready |
+| `partial` | You only want the global skills installed first | Assets are installed; orchestrator is not ready |
 | `full` | You want the working runtime, shell CLI, and doctor checks | Bootstrap reuses `python3 >= 3.12` or installs `mise` + `python@3.12` automatically |
 
 If you omit `--profile`, bootstrap explains both options and prompts you to choose.

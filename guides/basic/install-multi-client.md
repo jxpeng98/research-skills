@@ -78,7 +78,7 @@ If you already have a repository checkout, you can run the installer directly:
 - Optional default upstream (omit `--repo`): set `RESEARCH_SKILLS_REPO=<owner>/<repo>`, or add `research-skills.toml` in your project root
 - Python-free refresh: rerun `bootstrap_research_skill.sh` with `--overwrite`
 - Check updates: `rsk check --repo <owner>/<repo>` (shell CLI or Python CLI; or `python3 scripts/research_skill_update.py check ...`)
-- Upgrade (no fork / no git clone required): `rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all` (shell CLI or Python CLI; or `python3 scripts/research_skill_update.py upgrade ...`)
+- Upgrade (no fork / no git clone required): `rsk upgrade --repo <owner>/<repo> --target all` for global refresh, then `rsk init --project-dir /path/to/project` when you want project-local assets (shell CLI or Python CLI; or `python3 scripts/research_skill_update.py upgrade ...`)
 - Full guide: `guides/basic/upgrade-research-skills.md`
 
 ## Verify

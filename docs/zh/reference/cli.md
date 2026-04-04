@@ -70,6 +70,7 @@ rsk check [--repo <owner/repo|url>] [--json] [--strict-network]
 用途：
 - 下载上游 release（默认 latest tag 的 tar.gz）
 - 解压后运行其中的 `scripts/install_research_skill.sh`
+- 默认只刷新全局 skill 目录；项目资产需要显式请求
 
 ```bash
 rsk upgrade \
@@ -84,7 +85,8 @@ rsk upgrade \
 ```
 
 说明：
-- `--project-dir` 用于写入项目内集成文件（例如 `.agent/workflows/`、`.agents/skills/`、`CLAUDE.md`、`.gemini/`）。
+- `--project-dir` 主要在你显式请求项目侧安装面时生效，例如 `--parts project`。
+- 现在默认的 `upgrade` 是全局刷新。项目接线建议走 `rsk init --project-dir .`；如果确实要在升级时重写项目文件，再显式加 `--parts project`。
 - Shell CLI 会通过随附的 bootstrap helper 执行升级，不依赖 Python。
 - 对 shell CLI 而言，`upgrade` 应视为 copy 模式刷新；如果你需要 `link` 软链接安装，请直接使用本地安装器。
 - 退出码为底层安装器返回码（若安装失败，沿用其错误码）。

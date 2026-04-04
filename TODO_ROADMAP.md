@@ -12,9 +12,9 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 27
+- Verified completed workstreams: 28
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 6
+- Active TODOs: 5
 - Deferred future bets: 5
 
 ---
@@ -62,6 +62,7 @@ Key facts confirmed from current repo:
 - `contribution-crafter`, `statement-generator`, `effect-size-calculator`, `qualitative-coding`, `discussion-writer`, and `limitation-auditor` already exist in the skill corpus
 - newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation decisions
 - the repo now includes a project-level academic context continuity layer with explicit artifacts, templates, stage refresh points, and an optional `task-run` update hook
+- install/upgrade now defaults to global skill refreshes; project-local wiring is explicit via `rsk init` or `--parts project`
 
 ---
 
@@ -220,6 +221,13 @@ Key facts confirmed from current repo:
 - [x] Passed part-level install control through `rsk upgrade`
 - [x] Added Python `rsk doctor` and `rsk init` entrypoints for project bootstrap and environment checks
 - [x] Added installer/CLI regression coverage for selective install surfaces and new subcommands
+
+### 28. Global-First Install Defaults
+
+- [x] Switched installer and bootstrap defaults to global-only skill refreshes
+- [x] Kept project-local workflow wiring explicit via `rsk init` or `--parts project`
+- [x] Updated align/help text and installer docs to reflect the new upgrade model
+- [x] Added regression coverage proving default upgrades no longer write into project directories
 
 ### 21. Literature Metadata Merge Hardening
 

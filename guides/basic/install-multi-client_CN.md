@@ -78,7 +78,7 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 - 可选默认上游（省略 `--repo`）：设置环境变量 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml` 文件
 - 无 Python 刷新：重新执行 `bootstrap_research_skill.sh --overwrite`
 - 检测更新：`rsk check --repo <owner>/<repo>`（shell CLI 或 Python CLI 均可；或使用源码脚本 `python3 scripts/research_skill_update.py check ...`）
-- 一键升级（无需 fork 或 git clone）：`rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all`（shell CLI 或 Python CLI 均可；或使用源码脚本 `python3 scripts/research_skill_update.py upgrade ...`）
+- 一键升级（无需 fork 或 git clone）：先执行 `rsk upgrade --repo <owner>/<repo> --target all` 刷新全局 skill，再在需要的项目里执行 `rsk init --project-dir /path/to/project` 接线项目资产（shell CLI 或 Python CLI 均可；或使用源码脚本 `python3 scripts/research_skill_update.py upgrade ...`）
 - 完整升级指南：`guides/basic/upgrade-research-skills_CN.md`
 
 ## 验证安装

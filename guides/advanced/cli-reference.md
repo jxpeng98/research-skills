@@ -93,7 +93,8 @@ rsk upgrade \
 ```
 
 Notes:
-- `--project-dir` tells the installer where to write the project-level integrations (e.g., `.agent/workflows/`, `.agents/skills/`, `CLAUDE.md`, `.gemini/`).
+- `upgrade` is now global-first. Use `rsk init --project-dir .` for project bootstrap, or `--parts project` when you explicitly want project files rewritten during upgrade.
+- `--project-dir` matters when project-facing surfaces are enabled (e.g., `--parts project`).
 - `--parts` narrows the install surface, for example `project` for project-only assets or `project,doctor` for a lightweight refresh plus validation.
 - `--mode link` is suitable for "maintaining a local clone" (symlink-based installation); `--mode copy` is best for one-off installs or CI.
 - Shell CLI uses the bundled bootstrap helper and does not require Python.

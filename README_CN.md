@@ -64,7 +64,7 @@
 
 | Profile | 你会得到什么 | 安装前是否要求 Python | 安装后结果 |
 |---|---|---|---|
-| `partial` | skills、workflows、项目集成文件 | 否 | 资产可用，但 orchestrator 还没准备好 |
+| `partial` | 仅全局 skills | 否 | 资产可用，但 orchestrator 还没准备好 |
 | `full` | `partial` + shell CLI + 缺失时自动补 Python 3.12 + `doctor` | 否 | orchestrator 运行时可直接使用 |
 
 `full` 模式的真实行为：
@@ -118,7 +118,7 @@ pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile
 这一步会安装：
 
 - Codex / Claude Code / Gemini 的 workflow 资产
-- 项目集成文件，例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`
+- 项目集成文件，例如 `.agent/workflows/`、`CLAUDE.md`、`.gemini/`，仅在执行 `rsk init` 或 `--parts project` 时写入
 - `full` 模式下的 shell CLI：`research-skills`、`rsk`、`rsw`
 
 ### 2. 可选：手动准备 Python
@@ -396,7 +396,7 @@ pipx install research-skills-installer
 | `--ref-type <tag|branch>` | 指定 `--ref` 是 tag 还是 branch | 默认 `tag` |
 | `--beta` | 在未传 `--ref` 时安装最新 beta / prerelease tag | 默认关闭，默认仍解析稳定版 latest release |
 | `--target <codex|claude|gemini|antigravity|all>` | 指定写入哪些客户端目录 | 默认 `all` |
-| `--project-dir <path>` | 指定项目集成文件的写入目录 | 默认当前目录 |
+| `--project-dir <path>` | 在启用项目侧安装面时，指定项目集成文件的写入目录 | 默认当前目录 |
 | `--install-cli` | 安装 shell CLI | 默认开启 |
 | `--no-cli` | 跳过 shell CLI 安装，只装 workflow 资产 | 与 `--install-cli` 相反 |
 | `--cli-dir <path>` | 指定 shell CLI 安装目录 | 默认 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
@@ -447,7 +447,7 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 |------|------|---------------|
 | `--target <codex|claude|gemini|antigravity|all>` | 指定写入哪些客户端目录 | 默认 `all` |
 | `--mode <copy|link>` | 复制文件或创建软链接 | 默认 `copy` |
-| `--project-dir <path>` | 指定项目集成文件写入目录 | 默认当前目录 |
+| `--project-dir <path>` | 在启用项目侧安装面时，指定项目集成文件写入目录 | 默认当前目录 |
 | `--install-cli` | 安装 shell CLI | 默认关闭 |
 | `--no-cli` | 跳过 shell CLI 安装 | 默认行为 |
 | `--cli-dir <path>` | 指定 shell CLI 安装目录 | 默认 `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
@@ -503,7 +503,8 @@ rsk check --json
 
 用途：
 - 下载上游 release/branch 压缩包
-- 调用安装器刷新 skills、项目集成文件，以及 shell CLI
+- 默认刷新全局 skill 安装，必要时再刷新 shell CLI
+- 项目集成文件改为通过 `rsk init` 或 `--parts project` 显式更新
 
 常用参数：
 
@@ -525,7 +526,7 @@ rsk check --json
 示例：
 
 ```bash
-rsk upgrade --project-dir . --target all --overwrite
+rsk upgrade --target all --overwrite
 rsk upgrade --project-dir . --parts project,doctor
 rsk upgrade --repo jxpeng98/research-skills --ref main --ref-type branch --project-dir . --target claude
 rsk upgrade --project-dir . --target codex --dry-run
@@ -546,6 +547,7 @@ rsk doctor --cwd .
 
 用途：
 - 直接从已安装的包初始化项目侧 workflow 资产，不需要重新下载 release 压缩包
+- 这是全局安装/升级之后给项目接线的默认入口
 
 常用参数：
 

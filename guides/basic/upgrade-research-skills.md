@@ -39,10 +39,11 @@ pipx install research-skills-installer
 # - rsw
 # You can also set `RESEARCH_SKILLS_REPO=<owner>/<repo>` to omit the --repo flag
 rsk check --repo <owner>/<repo>
-rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
+rsk upgrade --repo <owner>/<repo> --target all --doctor
+rsk init --project-dir /path/to/project
 ```
 
-> Note: pip installs/upgrades the "updater CLI." The actual process of overwriting the skill/workflow files into the client directories and your project is still performed by `rsk upgrade` (or `research-skills upgrade`). This keeps the process explicit and prevents background file modifications during a pip install.
+> Note: pip installs/upgrades the "updater CLI." The actual refresh of global client skill directories is still performed by `rsk upgrade` (or `research-skills upgrade`). Project-local files are now explicit: use `rsk init` or `rsk upgrade --parts project ...` when you want to rewrite them.
 
 ## 1) What exactly are you upgrading?
 
@@ -93,7 +94,8 @@ Afterward, you can run:
 
 ```bash
 rsk check
-rsk upgrade --project-dir . --target all --doctor
+rsk upgrade --target all --doctor
+rsk init --project-dir .
 ```
 
 ---
@@ -116,7 +118,6 @@ Or, if Python is available:
 # If RESEARCH_SKILLS_REPO is set, --repo can be omitted
 rsk upgrade \
   --repo <owner>/<repo> \
-  --project-dir /path/to/your/project \
   --target all \
   --mode copy \
   --doctor
@@ -124,7 +125,6 @@ rsk upgrade \
 # Or run within the repository (equivalent):
 python3 scripts/research_skill_update.py upgrade \
   --repo <owner>/<repo> \
-  --project-dir /path/to/your/project \
   --target all \
   --mode copy \
   --doctor
@@ -134,6 +134,7 @@ Key points:
 - This method **does not rely on git** and does not require you to clone the repository locally.
 - The shell bootstrap path **does not rely on Python**.
 - The shell CLI itself can run `check`, `upgrade`, and `align` without Python.
+- Default upgrade is now global-first. Add `--parts project` when you explicitly want to refresh project-local workflow assets.
 - For private repositories or if you hit API rate limits, it is recommended to set: `GITHUB_TOKEN` or `GH_TOKEN`.
 - It defaults to using the "latest release tag", but both shell bootstrap and `rsk upgrade` accept explicit refs:
   - `--ref v0.1.0-beta.6 --ref-type tag`
@@ -150,7 +151,8 @@ If you are willing to keep a local clone of the repository (no fork needed, just
 1) When installing, use `--mode link` (creates symlinks, meaning future updates don't require re-running the install script):
 
 ```bash
-./scripts/install_research_skill.sh --target all --mode link --project-dir /path/to/project --overwrite
+./scripts/install_research_skill.sh --target all --mode link --overwrite
+python3 -m research_skills.cli init --project-dir /path/to/project --target all --overwrite
 ```
 
 2) When updating, simply run:
@@ -173,7 +175,8 @@ rsk check --repo <owner>/<repo>
 ```
 2) If exit code is 1, execute upgrade:
 ```bash
-rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
+rsk upgrade --repo <owner>/<repo> --target all
+rsk init --project-dir /path/to/project
 ```
 
 If you want this upgrade detection integrated as a Codex Automation (run periodically and generate inbox results), just let me know the run frequency and target project paths.

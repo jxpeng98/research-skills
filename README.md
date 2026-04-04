@@ -66,7 +66,7 @@ The bootstrap installer now handles the environment setup for you. You do not ne
 
 | Profile | What you get | Python needed before install | Result after install |
 |---|---|---|---|
-| `partial` | skills, workflows, project integration files | No | Assets are ready; orchestrator is not |
+| `partial` | global skills only | No | Assets are ready; orchestrator is not |
 | `full` | `partial` + shell CLI + Python 3.12 when needed + `doctor` | No | Orchestrator runtime is ready |
 
 Behavior in `full` mode:
@@ -120,7 +120,7 @@ pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile
 This installs:
 
 - workflow assets for Codex / Claude Code / Gemini
-- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
+- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/` when you run `rsk init` or `--parts project`
 - shell CLI commands `research-skills`, `rsk`, `rsw` in `full` mode
 
 ### 2. Optional Manual Python Setup
@@ -338,7 +338,7 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 What it installs:
 - shell CLI: `research-skills`, `rsk`, `rsw`
 - `research-paper-workflow` skill into client skill directories
-- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
+- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/` when you run `rsk init` or `--parts project`
 
 Default CLI directory:
 - `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`
@@ -395,7 +395,7 @@ Common args:
 | `--ref-type <tag|branch>` | Tell the installer how to interpret `--ref` | Default `tag` |
 | `--beta` | Install the latest beta / prerelease tag when `--ref` is omitted | Off by default; stable latest release remains the default |
 | `--target <codex|claude|gemini|antigravity|all>` | Choose which client targets to write | Default `all` |
-| `--project-dir <path>` | Choose where project integration files are written | Default current directory |
+| `--project-dir <path>` | Choose where project integration files are written when project parts are enabled | Default current directory |
 | `--install-cli` | Install shell CLI commands | Enabled by default |
 | `--no-cli` | Skip shell CLI installation and install workflow assets only | Opposite of `--install-cli` |
 | `--cli-dir <path>` | Choose where the shell CLI is installed | Default `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
@@ -446,7 +446,7 @@ Common args:
 |-----|---------|-----------------|
 | `--target <codex|claude|gemini|antigravity|all>` | Choose which client targets to write | Default `all` |
 | `--mode <copy|link>` | Copy files or create symlinks | Default `copy` |
-| `--project-dir <path>` | Choose where project integration files are written | Default current directory |
+| `--project-dir <path>` | Choose where project integration files are written when project parts are enabled | Default current directory |
 | `--install-cli` | Install shell CLI | Off by default |
 | `--no-cli` | Skip shell CLI installation | This is the default behavior |
 | `--cli-dir <path>` | Choose where the shell CLI is installed | Default `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}` |
@@ -502,7 +502,8 @@ rsk check --json
 
 Purpose:
 - download an upstream release/branch archive
-- refresh skills, project integration files, and shell CLI
+- refresh globally installed skills by default, with optional shell CLI refresh
+- project integration files stay explicit via `rsk init` or `--parts project`
 
 Common args:
 
@@ -524,7 +525,7 @@ Common args:
 Examples:
 
 ```bash
-rsk upgrade --project-dir . --target all --overwrite
+rsk upgrade --target all --overwrite
 rsk upgrade --project-dir . --parts project,doctor
 rsk upgrade --repo jxpeng98/research-skills --ref main --ref-type branch --project-dir . --target claude
 rsk upgrade --project-dir . --target codex --dry-run
@@ -545,6 +546,7 @@ rsk doctor --cwd .
 
 Purpose:
 - initialize project-facing workflow assets from the installed package without downloading a fresh archive
+- this is the default way to wire a project after a global install/upgrade
 
 Common args:
 

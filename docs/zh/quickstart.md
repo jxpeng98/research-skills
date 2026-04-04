@@ -23,7 +23,7 @@
 
 | Profile | 适用场景 | 结果 |
 |---|---|---|
-| `partial` | 你只想安装 skills、workflows 和项目集成文件 | 资产可用，但 orchestrator 还没准备好 |
+| `partial` | 你想先只安装全局 skills | 资产可用，但 orchestrator 还没准备好 |
 | `full` | 你想直接拿到可运行的运行时、shell CLI 和 doctor 预检 | bootstrap 会复用现有 `python3 >= 3.12`，或自动安装 `mise` + `python@3.12` |
 
 如果你不传 `--profile`，bootstrap 会先解释两种模式，再提示你选择。
@@ -64,7 +64,7 @@ powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile
 | 入口 | 适用场景 | 命令 / 位置 |
 |---|---|---|
 | Claude Code 命令 | 你想在项目内用 slash-command 交互 | `.agent/workflows/*.md` |
-| 安装 / 升级 CLI | 你想安装或刷新 skill 与项目集成文件 | `research-skills` / `rsk` / `rsw` |
+| 安装 / 升级 CLI | 你想安装或刷新全局 skill，并在需要时显式初始化项目资产 | `research-skills` / `rsk` / `rsw` |
 | Orchestrator CLI | 你想显式按 Task ID 执行与校验 | `python3 -m bridges.orchestrator ...` |
 
 ## 3. 先做环境检查

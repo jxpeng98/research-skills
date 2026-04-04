@@ -93,7 +93,8 @@ rsk upgrade \
 ```
 
 说明：
-- `--project-dir` 用于写入项目内集成文件（例如 `.agent/workflows/`、`.agents/skills/`、`CLAUDE.md`、`.gemini/`）。
+- `upgrade` 现在默认是 global-first。项目接线建议走 `rsk init --project-dir .`；如果要在升级时顺手重写项目文件，再显式加 `--parts project`。
+- `--project-dir` 主要在开启项目侧安装面时生效，例如 `--parts project`。
 - `--parts` 用于收窄安装面，例如 `project` 表示只刷新项目资产，`project,doctor` 表示轻量刷新后立即校验。
 - `--mode link` 适合“长期维护一个本地 clone”的场景（软链接安装）；`--mode copy` 更适合一次性安装/CI。
 - Shell CLI 会通过随附的 bootstrap helper 执行升级，不依赖 Python。

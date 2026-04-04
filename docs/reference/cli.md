@@ -70,6 +70,7 @@ Exit Codes:
 Use Case:
 - Downloads the upstream release (defaults to latest tag `.tar.gz`).
 - Extracts it and executes `scripts/install_research_skill.sh`.
+- Defaults to refreshing global skill directories only; project assets are opt-in.
 
 ```bash
 rsk upgrade \
@@ -84,7 +85,8 @@ rsk upgrade \
 ```
 
 Notes:
-- `--project-dir` tells the installer where to write the project-level integrations (e.g., `.agent/workflows/`, `.agents/skills/`, `CLAUDE.md`, `.gemini/`).
+- `--project-dir` matters when you also request project-facing surfaces, such as `--parts project`.
+- Default `upgrade` now behaves as a global refresh. Use `rsk init --project-dir .` for project bootstrap, or `rsk upgrade --parts project ...` when you explicitly want project files rewritten.
 - Shell CLI uses the bundled bootstrap helper and does not require Python.
 - Treat shell-CLI `upgrade` as copy-mode refresh. If you need symlink-based `link` installs, use the local installer directly.
 - The command exits with the error code returned by the underlying installer.

@@ -18,7 +18,7 @@
 
 | Profile | 安装内容 | 安装前是否要求 Python | 安装后结果 |
 |---|---|---|---|
-| `partial` | skills、workflows、项目集成文件 | 否 | 资产可用，但 orchestrator 还没准备好 |
+| `partial` | 仅全局 skills | 否 | 资产可用，但 orchestrator 还没准备好 |
 | `full` | `partial` + shell CLI + 缺失时自动补 Python 3.12 + `doctor` | 否 | orchestrator 运行时可直接使用 |
 
 `full` 的真实行为：
@@ -95,7 +95,7 @@ pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile
 Bootstrap 会安装：
 
 - Codex / Claude Code / Gemini 的 workflow 资产
-- `.agent/workflows/`、`CLAUDE.md`、`.gemini/` 等项目集成文件
+- `.agent/workflows/`、`CLAUDE.md`、`.gemini/` 等项目集成文件，仅在执行 `rsk init` 或 `--parts project` 时写入
 - `full` 模式下的 shell CLI：`research-skills`、`rsk`、`rsw`
 
 ## 3. 可选：自己用 `mise` 准备 Python
@@ -155,12 +155,15 @@ python3 scripts/bootstrap_research_skill.py --profile full --project-dir .
 
 ```bash
 pipx install research-skills-installer
-rsk upgrade --target all --project-dir /path/to/project --doctor
+rsk upgrade --target all --doctor
+rsk init --project-dir /path/to/project
 ```
 
 ## 5. 目标环境行为
 
-- 项目级默认内容
+现在默认安装/升级是 global-first。只有执行 `rsk init` 或显式加 `--parts project` 时，才会写入项目内文件。
+
+- 项目级内容（显式启用）
   - 将 `.env.example` 复制为 `<project>/.env`。
 - `codex`
   - 将 `research-paper-workflow` 安装到 `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`。
@@ -195,7 +198,8 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 刷新已有安装：
 
 ```bash
-rsk upgrade --target all --project-dir . --doctor
+rsk upgrade --target all --doctor
+rsk init --project-dir .
 ```
 
 验证环境：

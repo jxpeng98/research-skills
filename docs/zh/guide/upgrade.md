@@ -37,10 +37,11 @@ pipx install research-skills-installer
 # - rsw
 # 你也可以设置 `RESEARCH_SKILLS_REPO=<owner>/<repo>` 后省略 --repo
 rsk check --repo <owner>/<repo>
-rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all --doctor
+rsk upgrade --repo <owner>/<repo> --target all --doctor
+rsk init --project-dir /path/to/project
 ```
 
-> 注意：pip 安装/升级的是“升级器 CLI”；真正把 skill/workflows 覆盖到三端目录与 project 的动作，仍由 `rsk upgrade`（等价于 `research-skills upgrade`）来执行（显式可控、不会在 pip 安装时偷偷写用户目录）。
+> 注意：pip 安装/升级的是“升级器 CLI”；真正刷新三端全局 skill 目录的动作，仍由 `rsk upgrade`（等价于 `research-skills upgrade`）来执行。项目内文件现在改为显式更新：需要时使用 `rsk init` 或 `rsk upgrade --parts project ...`。
 
 ## 1) 你需要升级的到底是什么？
 
@@ -91,7 +92,8 @@ repo = "<owner>/<repo>" # 或 Git URL
 
 ```bash
 rsk check
-rsk upgrade --project-dir . --target all --doctor
+rsk upgrade --target all --doctor
+rsk init --project-dir .
 ```
 
 ---
@@ -114,7 +116,6 @@ curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scrip
 # 如果已设置 RESEARCH_SKILLS_REPO，可省略 --repo
 rsk upgrade \
   --repo <owner>/<repo> \
-  --project-dir /path/to/your/project \
   --target all \
   --mode copy \
   --doctor
@@ -122,7 +123,6 @@ rsk upgrade \
 # 或在仓库内运行（等价）：
 python3 scripts/research_skill_update.py upgrade \
   --repo <owner>/<repo> \
-  --project-dir /path/to/your/project \
   --target all \
   --mode copy \
   --doctor
@@ -132,6 +132,7 @@ python3 scripts/research_skill_update.py upgrade \
 - 这个方式**不依赖 git**，也不要求你把仓库 clone 到本地。
 - shell bootstrap 路径**不依赖 Python**。
 - shell CLI 本身也可以在无 Python 环境下执行 `check`、`upgrade`、`align`。
+- 默认 upgrade 现在是 global-first；只有显式加 `--parts project` 时，才会刷新项目内 workflow 资产。
 - 私有仓库或遇到 API 限流时，建议设置：`GITHUB_TOKEN` 或 `GH_TOKEN`。
 - 默认使用“最新 release tag”；shell bootstrap 和 `rsk upgrade` 也都支持显式指定版本：
   - `--ref v0.1.0-beta.6 --ref-type tag`
@@ -148,7 +149,8 @@ python3 scripts/research_skill_update.py upgrade \
 1) 安装时用 `--mode link`（用软链接指向仓库，后续更新无需重复 install）：
 
 ```bash
-./scripts/install_research_skill.sh --target all --mode link --project-dir /path/to/project --overwrite
+./scripts/install_research_skill.sh --target all --mode link --overwrite
+python3 -m research_skills.cli init --project-dir /path/to/project --target all --overwrite
 ```
 
 2) 更新时只需：
@@ -171,7 +173,8 @@ rsk check --repo <owner>/<repo>
 ```
 2) 返回码为 1 时执行 upgrade：
 ```bash
-rsk upgrade --repo <owner>/<repo> --project-dir /path/to/project --target all
+rsk upgrade --repo <owner>/<repo> --target all
+rsk init --project-dir /path/to/project
 ```
 
 如果你希望我把这套升级检测做成 Codex Automation（定期跑并生成 inbox 结果），告诉我运行频率和要覆盖的 project 路径即可。

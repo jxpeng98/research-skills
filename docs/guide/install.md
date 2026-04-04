@@ -18,7 +18,7 @@ The bootstrap installers now explain these choices interactively if you omit `--
 
 | Profile | What it installs | Python required before install | Result after install |
 |---|---|---|---|
-| `partial` | skills, workflows, project integration files | No | Assets are ready; orchestrator is not |
+| `partial` | global skills only | No | Assets are ready; orchestrator is not |
 | `full` | `partial` + shell CLI + Python 3.12 when needed + `doctor` | No | Orchestrator runtime is ready |
 
 How `full` works:
@@ -95,7 +95,7 @@ pwsh -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Beta -Profile
 What bootstrap installs:
 
 - workflow assets for Codex / Claude Code / Gemini
-- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/`
+- project integration files such as `.agent/workflows/`, `CLAUDE.md`, `.gemini/` when you run `rsk init` or `--parts project`
 - shell CLI commands `research-skills`, `rsk`, `rsw` in `full` mode
 
 ## 3. Optional: Prepare Python Yourself With `mise`
@@ -155,12 +155,15 @@ The `pip` / `pipx` path is still available for the updater CLI, but it is no lon
 
 ```bash
 pipx install research-skills-installer
-rsk upgrade --target all --project-dir /path/to/project --doctor
+rsk upgrade --target all --doctor
+rsk init --project-dir /path/to/project
 ```
 
 ## 5. Target Behaviors
 
-- Project defaults
+Default install/upgrade behavior is now global-first. Project-local files are only written when you run `rsk init` or explicitly add `--parts project`.
+
+- Project-local surfaces (explicit)
   - Copies `.env.example` to `<project>/.env`.
 - `codex`
   - Installs `research-paper-workflow` into `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`.
@@ -195,7 +198,8 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 Refresh an existing install:
 
 ```bash
-rsk upgrade --target all --project-dir . --doctor
+rsk upgrade --target all --doctor
+rsk init --project-dir .
 ```
 
 Verify readiness:

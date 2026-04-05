@@ -43,8 +43,8 @@ class InstallerCliTests(unittest.TestCase):
         joined = "\n".join(lines)
         self.assertIn("What `", joined)
         self.assertIn("upgrade` modifies by default", joined)
-        self.assertIn("Use `rsk init --project-dir .` for project bootstrap", joined)
-        self.assertIn("--parts project", joined)
+        self.assertIn("Use `rsk init --project-dir .` to create project config", joined)
+        self.assertIn("rsk init", joined)
 
     def test_upgrade_passes_parts_to_installer(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

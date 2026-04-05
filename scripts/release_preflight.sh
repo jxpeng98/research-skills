@@ -119,6 +119,31 @@ if [[ -n "$TAG" ]]; then
   fi
 fi
 
+echo "[preflight] sync skill package"
+if [[ -x "$ROOT_DIR/scripts/sync_skill_package.sh" ]]; then
+  bash "$ROOT_DIR/scripts/sync_skill_package.sh"
+  # Verify package is self-contained
+  pkg_dir="$ROOT_DIR/research-paper-workflow"
+  sync_ok=1
+  for check_dir in skills templates standards roles; do
+    if [[ ! -d "$pkg_dir/$check_dir" ]]; then
+      echo "[preflight] missing bundled directory: $check_dir" >&2
+      sync_ok=0
+    fi
+  done
+  if [[ ! -f "$pkg_dir/skills-core.md" ]]; then
+    echo "[preflight] missing bundled file: skills-core.md" >&2
+    sync_ok=0
+  fi
+  if [[ "$sync_ok" -eq 0 ]]; then
+    echo "[preflight] FAIL: skill package is not self-contained" >&2
+    exit 1
+  fi
+  echo "[preflight] skill package verified self-contained"
+else
+  echo "[preflight] WARN: sync_skill_package.sh not found, skipping sync" >&2
+fi
+
 validate_cmd=(python3 scripts/validate_research_standard.py)
 if [[ "$STRICT_MODE" -eq 1 ]]; then
   validate_cmd+=(--strict)

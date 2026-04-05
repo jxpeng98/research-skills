@@ -99,10 +99,11 @@ RESEARCH/[topic]/
 
 ## Skill Loading Strategy
 
-Two-tier loading for token efficiency. All paths are relative to this skill package directory:
+Three-tier loading for token efficiency. All paths are relative to this skill package directory:
 
-1. **Default:** Use `skills-core.md` (in this directory) for consolidated skill reference (~19KB)
-2. **Detail:** Load full `skills/[stage]/[skill-name].md` (in this directory) only when edge cases, error recovery, or verbose templates are needed
+1. **Quick lookup (~3KB):** Use `skills-summary.md` — skill names + one-line descriptions per stage. Use this to identify which skill to invoke.
+2. **Default reference (~19KB):** Use `skills-core.md` — consolidated process descriptions, templates, and output formats. Use this when executing a skill.
+3. **Full specification:** Load `skills/[stage]/[skill-name].md` — detailed edge cases, error recovery, quality bars, and verbose templates. Use this only when the core reference is insufficient.
 
 ## Bundled Assets
 
@@ -113,6 +114,7 @@ This package includes the following subdirectories:
 | `workflows/` | 16 workflow definitions (slash commands) |
 | `references/` | Stage playbooks + workflow contract |
 | `skills/` | 71 detailed skill spec files across 13 stage directories |
+| `skills-summary.md` | Quick-reference skill index (~3KB) |
 | `skills-core.md` | Consolidated skill reference (~19KB) |
 | `templates/` | 44 output templates for manuscripts, submissions, ethics, etc. |
 | `standards/` | Canonical contract YAML + capability map + agent profiles |

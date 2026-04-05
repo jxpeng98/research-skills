@@ -18,6 +18,7 @@ docs/.vitepress/dist/
 # Canonical sources are the repo-root directories; do not edit these copies.
 research-paper-workflow/skills/
 research-paper-workflow/skills-core.md
+research-paper-workflow/skills-summary.md
 research-paper-workflow/templates/
 research-paper-workflow/standards/
 research-paper-workflow/roles/

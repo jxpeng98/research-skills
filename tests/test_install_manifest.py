@@ -112,6 +112,11 @@ class InstallManifestTests(unittest.TestCase):
         pkg = REPO_ROOT / "research-paper-workflow"
         # skills-core.md
         self.assertTrue((pkg / "skills-core.md").is_file(), msg="missing skills-core.md in skill package")
+        # skills-summary.md (3-tier loading: summary < core < full)
+        self.assertTrue((pkg / "skills-summary.md").is_file(), msg="missing skills-summary.md in skill package")
+        summary_size = (pkg / "skills-summary.md").stat().st_size
+        core_size = (pkg / "skills-core.md").stat().st_size
+        self.assertLess(summary_size, core_size, msg="skills-summary.md should be smaller than skills-core.md")
         # skills/ directory with stage subdirectories
         skills_dir = pkg / "skills"
         self.assertTrue(skills_dir.is_dir(), msg="missing skills/ directory in skill package")

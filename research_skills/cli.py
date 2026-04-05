@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import __version__
-from .universal_installer import PART_CHOICES, InstallOptions, clean, install
+from .universal_installer import PART_CHOICES, InstallOptions, clean, clean_workflow_symlinks, install
 
 TAG_PATTERN = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+)|b(\d+))?$")
 RELEASE_NOTE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
@@ -693,7 +693,11 @@ def cmd_init(args: argparse.Namespace) -> int:
 
 def cmd_clean(args: argparse.Namespace) -> int:
     project_dir = Path(args.project_dir).expanduser().resolve()
-    return clean(project_dir, dry_run=args.dry_run)
+    rc = clean(project_dir, dry_run=args.dry_run)
+    if getattr(args, "globals", False):
+        rc2 = clean_workflow_symlinks(dry_run=args.dry_run)
+        rc = rc or rc2
+    return rc
 
 def cmd_align(args: argparse.Namespace) -> int:
     repo_hint = (
@@ -859,6 +863,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Project directory to clean (default: current dir)",
     )
     clean_parser.add_argument("--dry-run", action="store_true", help="Show what would be removed without deleting")
+    clean_parser.add_argument("--globals", action="store_true", help="Also remove workflow discovery symlinks from global dirs")
 
     return parser
 

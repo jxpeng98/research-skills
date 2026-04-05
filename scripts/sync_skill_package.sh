@@ -40,6 +40,7 @@ SYNC_DIRS=(
 
 SYNC_FILES=(
   "skills-core.md"
+  "skills-summary.md"
 )
 
 # Exclude files that are project-bootstrap templates, not research output templates

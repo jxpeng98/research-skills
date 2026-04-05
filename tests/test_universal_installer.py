@@ -192,6 +192,139 @@ class CleanTests(unittest.TestCase):
             # File should still exist after dry-run
             self.assertTrue((workflows_dir / "paper.md").exists())
 
+    def test_clean_workflow_symlinks_removes_only_ours(self) -> None:
+        """clean_workflow_symlinks removes only symlinks pointing to research-paper-workflow."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            claude_home = temp_root / "claude-home"
+            commands_dir = claude_home / "commands"
+            commands_dir.mkdir(parents=True)
+
+            # Create a symlink pointing to research-paper-workflow (ours)
+            skill_wf = claude_home / "skills" / "research-paper-workflow" / "workflows"
+            skill_wf.mkdir(parents=True)
+            (skill_wf / "paper.md").write_text("workflow content")
+            our_link = commands_dir / "paper.md"
+            our_link.symlink_to(skill_wf / "paper.md")
+
+            # Create a user's own command (not a symlink)
+            (commands_dir / "my-custom.md").write_text("user command")
+            # Create a symlink pointing elsewhere (not ours)
+            other_target = temp_root / "other-skill" / "workflows" / "deploy.md"
+            other_target.parent.mkdir(parents=True)
+            other_target.write_text("other workflow")
+            other_link = commands_dir / "deploy.md"
+            other_link.symlink_to(other_target)
+
+            env = os.environ.copy()
+            env["CLAUDE_CODE_HOME"] = str(claude_home)
+            with mock.patch.dict(os.environ, env, clear=True):
+                from research_skills.universal_installer import clean_workflow_symlinks
+                result = clean_workflow_symlinks()
+
+            self.assertEqual(result, 0)
+            # Our symlink removed
+            self.assertFalse(our_link.exists())
+            # User's own command preserved
+            self.assertTrue((commands_dir / "my-custom.md").exists())
+            # Other symlink preserved
+            self.assertTrue(other_link.is_symlink())
+
+
+class SymlinkAndSummaryTests(unittest.TestCase):
+    """Test workflow symlinks and skills-summary bundling."""
+
+    def test_install_creates_workflow_symlinks(self) -> None:
+        """After install with target=all, Claude commands/ and Gemini workflows/ have symlinks."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            claude_home = temp_root / "claude-home"
+            gemini_home = temp_root / "gemini-home"
+            codex_home = temp_root / "codex-home"
+            antigravity_home = temp_root / "antigravity-home"
+            env = os.environ.copy()
+            env["CODEX_HOME"] = str(codex_home)
+            env["CLAUDE_CODE_HOME"] = str(claude_home)
+            env["GEMINI_HOME"] = str(gemini_home)
+            env["ANTIGRAVITY_HOME"] = str(antigravity_home)
+            env["PATH"] = ""
+
+            with mock.patch.dict(os.environ, env, clear=True):
+                result = install(
+                    InstallOptions(
+                        repo_root=REPO_ROOT,
+                        project_dir=project_dir,
+                        profile="partial",
+                        install_cli=False,
+                        doctor=False,
+                    )
+                )
+
+            self.assertEqual(result, 0)
+
+            # Claude: symlinks in commands/
+            claude_commands = claude_home / "commands"
+            self.assertTrue(claude_commands.is_dir(), "Claude commands/ dir should exist")
+            paper_link = claude_commands / "paper.md"
+            self.assertTrue(paper_link.is_symlink(), "paper.md should be a symlink")
+            self.assertTrue(paper_link.resolve().exists(), "symlink target should exist")
+            self.assertIn("research-paper-workflow", str(paper_link.resolve()))
+
+            # Gemini: symlinks in workflows/
+            gemini_workflows = gemini_home / "workflows"
+            self.assertTrue(gemini_workflows.is_dir(), "Gemini workflows/ dir should exist")
+            lit_link = gemini_workflows / "lit-review.md"
+            self.assertTrue(lit_link.is_symlink(), "lit-review.md should be a symlink")
+            self.assertTrue(lit_link.resolve().exists(), "symlink target should exist")
+
+            # All 16 workflows should have symlinks
+            expected_count = len(list((claude_home / "skills" / "research-paper-workflow" / "workflows").glob("*.md")))
+            self.assertEqual(len(list(claude_commands.glob("*.md"))), expected_count)
+            self.assertEqual(len(list(gemini_workflows.glob("*.md"))), expected_count)
+
+    def test_skills_summary_bundled_in_package(self) -> None:
+        """skills-summary.md should be synced into the skill package."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            claude_home = temp_root / "claude-home"
+            codex_home = temp_root / "codex-home"
+            gemini_home = temp_root / "gemini-home"
+            antigravity_home = temp_root / "antigravity-home"
+            env = os.environ.copy()
+            env["CODEX_HOME"] = str(codex_home)
+            env["CLAUDE_CODE_HOME"] = str(claude_home)
+            env["GEMINI_HOME"] = str(gemini_home)
+            env["ANTIGRAVITY_HOME"] = str(antigravity_home)
+            env["PATH"] = ""
+
+            with mock.patch.dict(os.environ, env, clear=True):
+                result = install(
+                    InstallOptions(
+                        repo_root=REPO_ROOT,
+                        project_dir=project_dir,
+                        profile="partial",
+                        install_cli=False,
+                        doctor=False,
+                    )
+                )
+
+            self.assertEqual(result, 0)
+            # skills-summary.md present in global skill dir
+            summary_path = claude_home / "skills" / "research-paper-workflow" / "skills-summary.md"
+            self.assertTrue(summary_path.exists(), "skills-summary.md should be bundled")
+            content = summary_path.read_text()
+            self.assertIn("Skills Summary", content)
+            self.assertIn("question-refiner", content)
+            # Should be smaller than skills-core.md
+            core_path = claude_home / "skills" / "research-paper-workflow" / "skills-core.md"
+            self.assertTrue(core_path.exists())
+            self.assertLess(summary_path.stat().st_size, core_path.stat().st_size,
+                            "skills-summary.md should be smaller than skills-core.md")
+
 
 if __name__ == "__main__":
     unittest.main()

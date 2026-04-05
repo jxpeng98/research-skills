@@ -12,7 +12,7 @@
 
 ## Snapshot
 
-- Verified completed workstreams: 28
+- Verified completed workstreams: 30
 - Verified-but-not-fully-accepted items: 2
 - Active TODOs: 6
 - Deferred future bets: 5
@@ -63,7 +63,10 @@ Key facts confirmed from current repo:
 - newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation decisions
 - the repo now includes a project-level academic context continuity layer with explicit artifacts, templates, stage refresh points, and an optional `task-run` update hook
 - install/upgrade now defaults to global skill refreshes; project-local wiring is explicit via `rsk init` or `--parts project`
-- live install/init comparison shows only Antigravity workspace skill copies are exact mirrors of the global skill tree; the remaining project-local assets are separate workflow/template/config files
+- live install/init comparison shows Antigravity workspace skill copies and Claude project workflows are the only remaining project-local mirrors
+- `rsk clean` removes stale project-local copies
+- all runtime assets (skills/, templates/, standards/, roles/, skills-core.md) are now synced into the self-contained global skill package at install time; no per-project initialization is required for AI agents to resolve skill references
+- `.agent/workflows/` at repo root still serves as the canonical development source; workflows are synced into the global skill package via `scripts/sync_skill_package.sh`
 
 ---
 
@@ -230,6 +233,18 @@ Key facts confirmed from current repo:
 - [x] Updated align/help text and installer docs to reflect the new upgrade model
 - [x] Added regression coverage proving default upgrades no longer write into project directories
 
+### 29. Self-Contained Global Skill Package
+
+- [x] Eliminated all static project-local assets from `rsk upgrade` (manifest: 12 → 5 entries)
+- [x] Bundled workflows into the skill directory (`research-paper-workflow/workflows/`)
+- [x] Created `scripts/sync_skill_package.sh` to populate the package with `skills/`, `templates/`, `standards/`, `roles/`, and `skills-core.md` before install
+- [x] Added `_sync_skill_package()` to the Python installer, called automatically before `dir-copy`
+- [x] Updated SKILL.md to reference all bundled assets with relative paths
+- [x] Added `.gitignore` entries for synced copies (repo-root dirs remain source of truth)
+- [x] Added `rsk clean` subcommand to remove stale project-local assets
+- [x] Updated validator, CI, and all tests for new global-only model (19 tests, 5422 validator checks)
+- [x] Package is now fully self-contained at ~1.4 MB — AI agents can resolve all references without repo access
+
 ### 21. Literature Metadata Merge Hardening
 
 - [x] Added field-aware merge policy for `OpenAlex` / `Crossref` metadata enrichment
@@ -311,12 +326,18 @@ Key facts confirmed from current repo:
 
 - [x] ~~Improve install/upgrade ergonomics~~ (Completed in Milestone 20)
 
-- [ ] Shrink project bootstrap toward minimal or zero static project assets
-  - keep global skill directories as the primary install target
-  - treat Antigravity workspace skill copies as removable mirrors unless a client hard-requires local copies
-  - evaluate whether `.agent/workflows/`, `CLAUDE.md`, and `.gemini/research-skills.md` can be replaced with thinner shims or pure documentation references
-  - decide whether `.env` should remain an init-time file or move to an explicit opt-in/config-generation command
-  - preserve project-local generation only for true runtime state and research outputs, not static workflow templates
+- [x] ~~Shrink project bootstrap toward minimal or zero static project assets~~ (Completed in Milestone 29)
+  - global skill directories are now the primary install target
+  - Antigravity workspace skill copies are removed via `rsk clean`
+  - `.agent/workflows/`, `CLAUDE.md`, and `.gemini/research-skills.md` are no longer installed project-locally
+  - `.env` remains as an opt-in project-level asset via `rsk init --parts project`
+  - all runtime assets bundled into the self-contained global skill package
+
+- [ ] Optimize workflow slash-command discovery across all AI clients
+  - **Claude Code**: workflows bundled inside `~/.claude/skills/research-paper-workflow/workflows/` → Claude reads SKILL.md and follows instructions, but individual `.md` files are NOT auto-registered as `/slash-commands`. They only become discoverable when the skill tells Claude to load them.
+  - **Gemini CLI**: expects workflows at `~/.gemini/workflows/<name>.md` for `/workflow:run <name>` discovery — currently workflows sit inside `~/.gemini/skills/research-paper-workflow/workflows/` which is a different path.
+  - **Antigravity**: discovers workflows from `{.agents,.agent}/workflows/` relative to workspace — workflow discovery is project-local only, but the current repo has `.agent/workflows/` at repo root which serves this purpose for the research-skills project itself.
+  - Decide whether to create thin symlink/shim layers from canonical workflow discovery paths → bundled workflows, or accept that workflows are accessed via SKILL.md instructions rather than direct slash-command discovery.
 
 - [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
 

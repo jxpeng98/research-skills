@@ -676,6 +676,41 @@ if [[ "$TARGET" == "antigravity" || "$TARGET" == "all" ]]; then
   fi
 fi
 
+# ── Workflow discovery symlinks ──────────────────────────────────────────────
+if [[ "$INSTALL_GLOBALS" -eq 1 ]]; then
+  section "Workflow Discovery"
+  create_workflow_symlinks() {
+    local skill_dest="$1"
+    local discovery_dir="$2"
+    local wf_dir="$skill_dest/workflows"
+    [[ -d "$wf_dir" ]] || return 0
+    mkdir -p "$discovery_dir"
+    local count=0
+    for wf in "$wf_dir"/*.md; do
+      [[ -f "$wf" ]] || continue
+      local name
+      name="$(basename "$wf")"
+      local link="$discovery_dir/$name"
+      if [[ "$DRY_RUN" -eq 1 ]]; then
+        skip "Symlink" "$name (dry-run)"
+        continue
+      fi
+      rm -f "$link"
+      ln -s "$wf" "$link"
+      count=$((count + 1))
+    done
+    if [[ "$count" -gt 0 ]]; then
+      ok "Symlinks" "$count workflows → $discovery_dir"
+    fi
+  }
+  if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
+    create_workflow_symlinks "$CLAUDE_SKILL_DEST" "${CLAUDE_SKILL_DEST%/skills/research-paper-workflow}/commands"
+  fi
+  if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
+    create_workflow_symlinks "$GEMINI_SKILL_DEST" "${GEMINI_SKILL_DEST%/skills/research-paper-workflow}/workflows"
+  fi
+fi
+
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   install_cli_assets
 fi

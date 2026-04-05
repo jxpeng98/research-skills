@@ -290,7 +290,7 @@ def _install_shell_cli(options: InstallOptions) -> None:
 # ── Sync skill package ───────────────────────────────────────────────────────
 
 _SYNC_DIRS = ("skills", "templates", "standards", "roles")
-_SYNC_FILES = ("skills-core.md",)
+_SYNC_FILES = ("skills-core.md", "skills-summary.md")
 _SYNC_EXCLUDE = {"CLAUDE.project.md"}
 
 
@@ -337,6 +337,66 @@ def _sync_skill_package(repo_root: Path, *, dry_run: bool = False) -> None:
             continue
         shutil.copy2(src, dest)
         _print_result("Sync", file_name, "ok")
+
+
+# ── Workflow symlink shims ───────────────────────────────────────────────────
+
+# Maps target → (discovery_dir_name, skill_dest_env_var_key)
+# Claude: ~/.claude/commands/<name>.md  (slash command discovery)
+# Gemini: ~/.gemini/workflows/<name>.md (workflow discovery)
+_SYMLINK_TARGETS: dict[str, tuple[str, str]] = {
+    "claude": ("commands", "CLAUDE_CODE_HOME"),
+    "gemini": ("workflows", "GEMINI_HOME"),
+}
+
+
+def _create_workflow_symlinks(
+    target: str,
+    skill_dest: Path,
+    *,
+    dry_run: bool = False,
+) -> None:
+    """Create symlinks from canonical workflow discovery paths to bundled workflows.
+
+    For Claude Code:  ~/.claude/commands/<name>.md → ~/.claude/skills/.../workflows/<name>.md
+    For Gemini CLI:   ~/.gemini/workflows/<name>.md → ~/.gemini/skills/.../workflows/<name>.md
+
+    This enables direct /slash-command invocation (e.g. /paper, /lit-review).
+    """
+    if target not in _SYMLINK_TARGETS:
+        return
+
+    dir_name, _env_key = _SYMLINK_TARGETS[target]
+    workflows_src = skill_dest / "workflows"
+    if not workflows_src.is_dir():
+        return
+
+    # Discovery dir is sibling to skills/ under the client home
+    # skill_dest = ~/.claude/skills/research-paper-workflow
+    # discovery_dir = ~/.claude/commands/
+    client_home = skill_dest.parent.parent  # ~/.claude or ~/.gemini
+    discovery_dir = client_home / dir_name
+    discovery_dir.mkdir(parents=True, exist_ok=True)
+
+    workflow_files = sorted(workflows_src.glob("*.md"))
+    created = 0
+    for wf in workflow_files:
+        link_path = discovery_dir / wf.name
+        target_path = wf  # absolute path to the bundled workflow
+
+        if dry_run:
+            _print_result("Symlink", f"{wf.name} (dry-run)", "skip")
+            continue
+
+        # Remove stale link or file if it exists
+        if link_path.is_symlink() or link_path.exists():
+            link_path.unlink()
+
+        link_path.symlink_to(target_path)
+        created += 1
+
+    if not dry_run and created > 0:
+        _print_result("Symlinks", f"{created} workflows → {discovery_dir}", "ok")
 
 
 def _print_cli_checks(target: str) -> bool:
@@ -489,6 +549,17 @@ def install(options: InstallOptions) -> int:
 
             raise ValueError(f"Unsupported manifest operation: {op}")
 
+    # Create workflow discovery symlinks (Claude: commands/, Gemini: workflows/)
+    if install_globals and not options.dry_run:
+        _print_section("Workflow Discovery")
+        target_dest_map = {
+            "claude": claude_dest,
+            "gemini": gemini_dest,
+        }
+        for sym_target, sym_dest in target_dest_map.items():
+            if options.target in {sym_target, "all"}:
+                _create_workflow_symlinks(sym_target, sym_dest, dry_run=options.dry_run)
+
     if install_cli:
         _install_shell_cli(options)
 
@@ -570,4 +641,34 @@ def clean(project_dir: Path, *, dry_run: bool = False, repo_root: Path | None = 
         print(f"\n[done] Cleaned {removed} stale asset(s) from {project_dir}")
     else:
         print(f"\n[done] No stale assets found in {project_dir}")
+    return 0
+
+
+def clean_workflow_symlinks(*, dry_run: bool = False) -> int:
+    """Remove workflow discovery symlinks created by the installer.
+
+    Cleans: ~/.claude/commands/<name>.md and ~/.gemini/workflows/<name>.md
+    Only removes symlinks that point into a research-paper-workflow directory.
+    """
+    removed = 0
+    _print_section("Clean workflow discovery symlinks")
+
+    for target, (dir_name, env_key) in _SYMLINK_TARGETS.items():
+        home = Path(os.environ.get(env_key, str(Path.home() / f".{target}")))
+        discovery_dir = home / dir_name
+        if not discovery_dir.is_dir():
+            continue
+        for link in sorted(discovery_dir.iterdir()):
+            if not link.is_symlink():
+                continue
+            target_path = str(link.resolve())
+            if "research-paper-workflow" in target_path:
+                _remove_path(link, dry_run)
+                _print_result("Removed", f"{link.name} → {target}", "ok")
+                removed += 1
+
+    if removed:
+        print(f"\n[done] Removed {removed} workflow symlink(s)")
+    else:
+        print(f"\n[done] No workflow symlinks found")
     return 0

@@ -632,6 +632,21 @@ case "$TARGET" in
     ;;
 esac
 
+# ── Sync skill package ───────────────────────────────────────────────────────
+if [[ "$INSTALL_GLOBALS" -eq 1 ]]; then
+  section "Sync Skill Package"
+  sync_script="$ROOT_DIR/scripts/sync_skill_package.sh"
+  if [[ -x "$sync_script" ]]; then
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      ok "Sync" "skill package (dry-run)"
+    else
+      bash "$sync_script"
+    fi
+  else
+    skip "Sync" "sync_skill_package.sh not found"
+  fi
+fi
+
 # ── Install targets ──────────────────────────────────────────────────────────
 if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
   if target_has_enabled_entries codex; then

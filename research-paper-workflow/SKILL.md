@@ -7,7 +7,7 @@ description: Standardized end-to-end workflow for academic paper production acro
 
 Run a model-agnostic paper workflow using shared Task IDs and artifact contracts.
 
-Treat this package as the portable entry skill for all clients. The canonical internal contract and routing layers live in `standards/` plus the referenced stage playbooks.
+This is a **self-contained skill package**. All assets needed for execution — workflows, skill specifications, output templates, standards, and agent roles — are bundled in subdirectories of this package. No external repo access is needed.
 
 ## Quick Start
 
@@ -90,19 +90,33 @@ RESEARCH/[topic]/
 
 - Use the canonical task and output definitions in `references/workflow-contract.md`.
 - Keep stage labels and task IDs unchanged across models.
-- Treat this package as an entry surface, not as a replacement for repo-internal skill specs or capability-map routing.
 - Do not infer stage order alphabetically when the contract exposes explicit ordering metadata.
 - If a requested output is missing prerequisites, create a gap note and ask whether to:
   1. continue with placeholders, or
   2. run the prerequisite task first.
 - Keep claims, methods, and evidence aligned (run integrity checks for stage `G`).
+- When a workflow references `templates/<name>.md`, load the template from the `templates/` subdirectory of this package.
 
 ## Skill Loading Strategy
 
-Two-tier loading for token efficiency:
+Two-tier loading for token efficiency. All paths are relative to this skill package directory:
 
-1. **Default:** Use `skills-core.md` for consolidated skill reference (~10KB)
-2. **Detail:** Load full `skills/[stage]/[skill-name].md` only when edge cases, error recovery, or verbose templates are needed
+1. **Default:** Use `skills-core.md` (in this directory) for consolidated skill reference (~19KB)
+2. **Detail:** Load full `skills/[stage]/[skill-name].md` (in this directory) only when edge cases, error recovery, or verbose templates are needed
+
+## Bundled Assets
+
+This package includes the following subdirectories:
+
+| Directory | Contents |
+|-----------|----------|
+| `workflows/` | 16 workflow definitions (slash commands) |
+| `references/` | Stage playbooks + workflow contract |
+| `skills/` | 71 detailed skill spec files across 13 stage directories |
+| `skills-core.md` | Consolidated skill reference (~19KB) |
+| `templates/` | 44 output templates for manuscripts, submissions, ethics, etc. |
+| `standards/` | Canonical contract YAML + capability map + agent profiles |
+| `roles/` | 10 agent role definitions for orchestrator execution |
 
 ## References
 

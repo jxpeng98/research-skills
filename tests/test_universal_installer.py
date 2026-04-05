@@ -87,6 +87,12 @@ class UniversalInstallerTests(unittest.TestCase):
             self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "workflows" / "paper.md").exists())
             self.assertTrue((gemini_home / "skills" / "research-paper-workflow" / "workflows" / "lit-review.md").exists())
             self.assertTrue((antigravity_home / "skills" / "research-paper-workflow" / "workflows" / "paper.md").exists())
+            # Synced bundled assets present in global skill directories
+            self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "skills-core.md").exists())
+            self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "skills" / "A_framing").is_dir())
+            self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "templates" / "manuscript-outline.md").exists())
+            self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "standards" / "research-workflow-contract.yaml").exists())
+            self.assertTrue((claude_home / "skills" / "research-paper-workflow" / "roles" / "pi.yaml").exists())
             # No project-local files
             self.assertFalse((project_dir / ".agent" / "workflows" / "proofread.md").exists())
             self.assertFalse((project_dir / ".gemini" / "research-skills.md").exists())

@@ -107,6 +107,39 @@ class InstallManifestTests(unittest.TestCase):
         actual_names = {f.name for f in workflow_files}
         self.assertTrue(expected_workflows.issubset(actual_names), msg=f"missing key workflows: {expected_workflows - actual_names}")
 
+    def test_skill_source_is_self_contained(self) -> None:
+        """After sync, the skill package must be self-contained with all required assets."""
+        pkg = REPO_ROOT / "research-paper-workflow"
+        # skills-core.md
+        self.assertTrue((pkg / "skills-core.md").is_file(), msg="missing skills-core.md in skill package")
+        # skills/ directory with stage subdirectories
+        skills_dir = pkg / "skills"
+        self.assertTrue(skills_dir.is_dir(), msg="missing skills/ directory in skill package")
+        for stage in ("A_framing", "B_literature", "F_writing", "I_code"):
+            self.assertTrue((skills_dir / stage).is_dir(), msg=f"missing skills/{stage}/ in skill package")
+        # templates/ directory
+        templates_dir = pkg / "templates"
+        self.assertTrue(templates_dir.is_dir(), msg="missing templates/ directory in skill package")
+        for tpl in ("manuscript-outline.md", "cover-letter.md", "ethics-irb-pack.md"):
+            self.assertTrue((templates_dir / tpl).is_file(), msg=f"missing templates/{tpl}")
+        # CLAUDE.project.md should NOT be in templates (excluded by sync)
+        self.assertFalse(
+            (templates_dir / "CLAUDE.project.md").exists(),
+            msg="CLAUDE.project.md should be excluded from bundled templates",
+        )
+        # standards/ directory
+        standards_dir = pkg / "standards"
+        self.assertTrue(standards_dir.is_dir(), msg="missing standards/ directory in skill package")
+        self.assertTrue((standards_dir / "research-workflow-contract.yaml").is_file())
+        self.assertTrue((standards_dir / "mcp-agent-capability-map.yaml").is_file())
+        # roles/ directory
+        roles_dir = pkg / "roles"
+        self.assertTrue(roles_dir.is_dir(), msg="missing roles/ directory in skill package")
+        self.assertGreaterEqual(
+            len(list(roles_dir.glob("*.yaml"))), 5,
+            msg="expected at least 5 role files",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

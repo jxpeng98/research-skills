@@ -287,6 +287,58 @@ def _install_shell_cli(options: InstallOptions) -> None:
 # inside the skill directory and installed globally with each dir-copy.
 
 
+# ── Sync skill package ───────────────────────────────────────────────────────
+
+_SYNC_DIRS = ("skills", "templates", "standards", "roles")
+_SYNC_FILES = ("skills-core.md",)
+_SYNC_EXCLUDE = {"CLAUDE.project.md"}
+
+
+def _sync_skill_package(repo_root: Path, *, dry_run: bool = False) -> None:
+    """Populate research-paper-workflow/ with bundled copies of repo assets.
+
+    The canonical source of truth remains the repo-root directories.
+    These copies are .gitignore'd and regenerated on every install/upgrade.
+    """
+    pkg_dir = repo_root / "research-paper-workflow"
+    if not pkg_dir.is_dir():
+        return
+
+    _print_section("Sync Skill Package")
+    for dir_name in _SYNC_DIRS:
+        src = repo_root / dir_name
+        dest = pkg_dir / dir_name
+        if not src.is_dir():
+            _print_result("Sync", f"{dir_name}/ (source not found)", "skip")
+            continue
+        if dry_run:
+            _print_result("Sync", f"{dir_name}/ (dry-run)", "skip")
+            continue
+        # Remove stale destination and copy fresh
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(
+            src, dest,
+            ignore=shutil.ignore_patterns(
+                ".DS_Store", "__pycache__", *_SYNC_EXCLUDE,
+            ),
+        )
+        file_count = sum(1 for _ in dest.rglob("*") if _.is_file())
+        _print_result("Sync", f"{dir_name}/ ({file_count} files)", "ok")
+
+    for file_name in _SYNC_FILES:
+        src = repo_root / file_name
+        dest = pkg_dir / file_name
+        if not src.is_file():
+            _print_result("Sync", f"{file_name} (source not found)", "skip")
+            continue
+        if dry_run:
+            _print_result("Sync", f"{file_name} (dry-run)", "skip")
+            continue
+        shutil.copy2(src, dest)
+        _print_result("Sync", file_name, "ok")
+
+
 def _print_cli_checks(target: str) -> bool:
     found_antigravity = False
     _print_section("CLI Checks")
@@ -403,6 +455,10 @@ def install(options: InstallOptions) -> int:
 
     _print_full_readiness(options)
     _print_cli_checks(options.target)
+
+    # Sync bundled assets into the skill package before dir-copy
+    if install_globals and not options.dry_run:
+        _sync_skill_package(repo_root, dry_run=options.dry_run)
 
     section_targets = ("codex", "claude", "gemini", "antigravity")
     for section_target in section_targets:

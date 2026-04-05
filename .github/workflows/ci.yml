@@ -66,6 +66,7 @@ jobs:
           bash -n scripts/release_automation.sh
           bash -n scripts/install_research_skill.sh
           bash -n scripts/inject_project_toml.sh
+          bash -n scripts/sync_skill_package.sh
 
       - name: Run standardized pre-release gates
         run: ./scripts/release_preflight.sh

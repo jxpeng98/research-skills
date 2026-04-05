@@ -245,6 +245,20 @@ Key facts confirmed from current repo:
 - [x] Updated validator, CI, and all tests for new global-only model (19 tests, 5422 validator checks)
 - [x] Package is now fully self-contained at ~1.4 MB — AI agents can resolve all references without repo access
 
+### 30. Workflow Discovery Symlinks & 3-Tier Skill Loading
+
+- [x] Implemented symlink shim layer: `rsk upgrade` creates 16 symlinks per client
+  - Claude Code: `~/.claude/commands/<name>.md` → bundled workflows
+  - Gemini CLI: `~/.gemini/workflows/<name>.md` → bundled workflows
+  - Users can invoke `/paper`, `/lit-review`, etc. directly without project-local setup
+- [x] Added `clean_workflow_symlinks()` and `rsk clean --globals` to cleanly remove only our symlinks
+- [x] Added symlink creation to both Python and shell installers
+- [x] Added release preflight sync verification: runs `sync_skill_package.sh` + self-contained check before validator
+- [x] Created `skills-summary.md` (~6KB) as a token-efficient quick-reference index of all skills
+- [x] Updated SKILL.md to 3-tier loading strategy: summary (~6KB) → core (~19KB) → full spec
+- [x] Added 3 new tests covering symlink creation, selective cleanup, and summary bundling
+- [x] Fixed 2 pre-existing test assertion drifts in `test_cli.py`
+
 ### 21. Literature Metadata Merge Hardening
 
 - [x] Added field-aware merge policy for `OpenAlex` / `Crossref` metadata enrichment
@@ -333,11 +347,11 @@ Key facts confirmed from current repo:
   - `.env` remains as an opt-in project-level asset via `rsk init --parts project`
   - all runtime assets bundled into the self-contained global skill package
 
-- [ ] Optimize workflow slash-command discovery across all AI clients
-  - **Claude Code**: workflows bundled inside `~/.claude/skills/research-paper-workflow/workflows/` → Claude reads SKILL.md and follows instructions, but individual `.md` files are NOT auto-registered as `/slash-commands`. They only become discoverable when the skill tells Claude to load them.
-  - **Gemini CLI**: expects workflows at `~/.gemini/workflows/<name>.md` for `/workflow:run <name>` discovery — currently workflows sit inside `~/.gemini/skills/research-paper-workflow/workflows/` which is a different path.
-  - **Antigravity**: discovers workflows from `{.agents,.agent}/workflows/` relative to workspace — workflow discovery is project-local only, but the current repo has `.agent/workflows/` at repo root which serves this purpose for the research-skills project itself.
-  - Decide whether to create thin symlink/shim layers from canonical workflow discovery paths → bundled workflows, or accept that workflows are accessed via SKILL.md instructions rather than direct slash-command discovery.
+- [x] ~~Optimize workflow slash-command discovery across all AI clients~~ (Completed in Milestone 30)
+  - Symlink shim layer creates 16 symlinks from `~/.claude/commands/` and `~/.gemini/workflows/` to bundled workflow files
+  - `rsk clean --globals` removes only our symlinks, preserving user commands
+  - Release preflight now verifies self-contained package before publishing
+  - Added 3-tier skill loading: `skills-summary.md` (6KB) → `skills-core.md` (19KB) → full spec
 
 - [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
 

@@ -26,7 +26,7 @@
 | **Functional Agents** | `roles/` | Research responsibility and quality ownership |
 | **Internal Skill Specs** | `skills/` | Reusable execution specs used by tasks and pipelines |
 | **Pipelines** | `pipelines/` | Abstract DAGs defining dependencies and handoffs |
-| **Workflows** | `.agent/workflows/` | Client-facing command entrypoints |
+| **Workflows** | `research-paper-workflow/workflows/` | Slash-command entrypoints (globally symlinked) |
 | **Bridges** | `bridges/` | Runtime adapters and orchestration |
 | **Portable Skill Package** | `research-paper-workflow/` | Cross-client installable entry skill |
 
@@ -171,7 +171,7 @@ All typed artifact names are defined in `schemas/artifact-types.yaml`. Use these
 | Layer | Directory | Purpose |
 |---|---|---|
 | **Pipelines** | `pipelines/` | Abstract DAGs defining step sequence + dependencies |
-| **Workflows** | `.agent/workflows/` | Claude Code slash-command execution layer |
+| **Workflows** | `research-paper-workflow/workflows/` | Slash-command entrypoints (symlinked to `~/.claude/commands/` and `~/.gemini/workflows/`) |
 
 Pipelines reference skill IDs; workflows call skills directly.
 

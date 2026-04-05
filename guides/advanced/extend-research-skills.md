@@ -26,8 +26,8 @@ Before editing anything, distinguish these layers clearly:
   - These are model executors selected by the capability map and bridges.
 - **Pipelines**: `pipelines/`
   - Abstract DAG definitions and handoff plans.
-- **Workflows**: `.agent/workflows/`
-  - Claude Code interaction layer and user entrypoints.
+- **Workflows**: `research-paper-workflow/workflows/`
+  - Slash-command entrypoints, globally symlinked to `~/.claude/commands/` and `~/.gemini/workflows/`.
 - **Bridges**: `bridges/`
   - Runtime adapters and orchestration behavior.
 
@@ -54,7 +54,7 @@ If you worked on an earlier version of the repo, use this map first:
 For users, the stable entrypoints are:
 
 - `research-paper-workflow/` as the portable client skill package
-- `.agent/workflows/*.md` as Claude Code command entrypoints
+- `/paper`, `/lit-review`, etc. as globally registered slash-commands (via symlinks from `~/.claude/commands/` and `~/.gemini/workflows/`)
 - `python3 -m bridges.orchestrator task-plan|task-run|doctor` as orchestration entrypoints
 
 For maintainers, the internal layers are:
@@ -135,7 +135,7 @@ Categorizing your changes will directly determine which file layer you should ed
 | How a reusable step behaves | `skills/*/*.md` | `templates/`, stage references |
 | A repeated table / markdown structure | `templates/` | Parent skill markdown |
 | External provider / search / stats connector | `bridges/` + MCP registry | capability map task bindings |
-| Claude slash-command menu or UX | `.agent/workflows/*.md` | `pipelines/`, README/quickstart |
+| Claude slash-command menu or UX | `research-paper-workflow/workflows/*.md` | `pipelines/`, README/quickstart |
 | Cross-client portable skill behavior | `research-paper-workflow/` | workflow references, README |
 
 ## 2.3) Domain Specialization: How to Customize a Direction

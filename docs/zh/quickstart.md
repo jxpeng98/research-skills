@@ -63,7 +63,7 @@ powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile
 
 | 入口 | 适用场景 | 命令 / 位置 |
 |---|---|---|
-| Claude Code 命令 | 你想在项目内用 slash-command 交互 | `.agent/workflows/*.md` |
+| Slash 命令 | 你想直接用 `/paper`、`/lit-review` 等命令 | `rsk upgrade` 后自动通过 symlink 注册到 `~/.claude/commands/` 和 `~/.gemini/workflows/` |
 | 安装 / 升级 CLI | 你想安装或刷新全局 skill，并在需要时显式初始化项目资产 | `research-skills` / `rsk` / `rsw` |
 | Orchestrator CLI | 你想显式按 Task ID 执行与校验 | `python3 -m bridges.orchestrator ...` |
 

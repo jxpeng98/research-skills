@@ -92,11 +92,10 @@ rsk upgrade \
   [--dry-run]
 ```
 
-Notes:
 - `upgrade` is now global-first. Use `rsk init --project-dir .` for project bootstrap, or `--parts project` when you explicitly want project files rewritten during upgrade.
+- After global install, `upgrade` creates workflow discovery symlinks: `~/.claude/commands/*.md` and `~/.gemini/workflows/*.md` → enables direct `/paper`, `/lit-review`, etc. invocation.
 - `--project-dir` matters when project-facing surfaces are enabled (e.g., `--parts project`).
 - `--parts` narrows the install surface, for example `project` for project-only assets or `project,doctor` for a lightweight refresh plus validation.
-- `--mode link` is suitable for "maintaining a local clone" (symlink-based installation); `--mode copy` is best for one-off installs or CI.
 - Shell CLI uses the bundled bootstrap helper and does not require Python.
 - The command exits with the error code returned by the underlying installer.
 
@@ -125,7 +124,21 @@ rsk init \
   [--doctor] \
   [--dry-run]
 ```
-### 2.5 `rsk align` (Quick Reference Guide)
+
+### 2.5 `rsk clean` (Remove Stale Assets)
+
+Use Case: Removes stale project-local assets left from older installations.
+
+```bash
+rsk clean [--project-dir <path>] [--dry-run] [--globals]
+```
+
+Flags:
+- `--project-dir`: Directory to clean (default: current dir).
+- `--globals`: Also remove workflow discovery symlinks from `~/.claude/commands/` and `~/.gemini/workflows/`. Only removes symlinks that point to `research-paper-workflow` — user-created commands are preserved.
+- `--dry-run`: Show what would be removed without deleting.
+
+### 2.6 `rsk align` (Quick Reference Guide)
 
 Use Case: Prints an overview of "what pipx installed / paths modified by upgrades / common commands".
 

@@ -87,8 +87,8 @@ rsk upgrade \
 说明：
 - `--project-dir` 主要在你显式请求项目侧安装面时生效，例如 `--parts project`。
 - 现在默认的 `upgrade` 是全局刷新。项目接线建议走 `rsk init --project-dir .`；如果确实要在升级时重写项目文件，再显式加 `--parts project`。
+- 全局安装后，`upgrade` 会自动创建工作流发现 symlink：`~/.claude/commands/*.md` 和 `~/.gemini/workflows/*.md`，可直接使用 `/paper`、`/lit-review` 等 slash 命令。
 - Shell CLI 会通过随附的 bootstrap helper 执行升级，不依赖 Python。
-- 对 shell CLI 而言，`upgrade` 应视为 copy 模式刷新；如果你需要 `link` 软链接安装，请直接使用本地安装器。
 - 退出码为底层安装器返回码（若安装失败，沿用其错误码）。
 
 ### 2.3 `rsk align`（快速参考）
@@ -97,6 +97,33 @@ rsk upgrade \
 
 ```bash
 rsk align [--repo <owner/repo|url>]
+```
+
+### 2.4 `rsk init`（项目初始化）
+
+用途：在项目目录中创建 `.env` 等项目配置。
+
+```bash
+rsk init [--project-dir <path>] [--target all|codex|claude|gemini] [--dry-run]
+```
+
+### 2.5 `rsk clean`（清理过期资产）
+
+用途：移除旧版本安装留下的项目本地资产。
+
+```bash
+rsk clean [--project-dir <path>] [--dry-run] [--globals]
+```
+
+参数说明：
+- `--project-dir`：要清理的目录（默认当前目录）。
+- `--globals`：同时移除全局工作流发现 symlink（`~/.claude/commands/` 和 `~/.gemini/workflows/`）。只移除指向 `research-paper-workflow` 的 symlink，用户自建的命令不受影响。
+- `--dry-run`：只显示将要移除的内容，不实际删除。
+
+### 2.6 `rsk doctor`（环境预检）
+
+```bash
+rsk doctor [--cwd <path>]
 ```
 
 ---

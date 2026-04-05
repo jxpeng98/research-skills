@@ -87,8 +87,8 @@ rsk upgrade \
 Notes:
 - `--project-dir` matters when you also request project-facing surfaces, such as `--parts project`.
 - Default `upgrade` now behaves as a global refresh. Use `rsk init --project-dir .` for project bootstrap, or `rsk upgrade --parts project ...` when you explicitly want project files rewritten.
+- After global install, `upgrade` creates workflow discovery symlinks: `~/.claude/commands/*.md` and `~/.gemini/workflows/*.md` → enables direct `/paper`, `/lit-review`, etc. invocation.
 - Shell CLI uses the bundled bootstrap helper and does not require Python.
-- Treat shell-CLI `upgrade` as copy-mode refresh. If you need symlink-based `link` installs, use the local installer directly.
 - The command exits with the error code returned by the underlying installer.
 
 ### 2.3 `rsk align` (Quick Reference Guide)
@@ -97,6 +97,39 @@ Use Case: Prints an overview of "what pipx installed / paths modified by upgrade
 
 ```bash
 rsk align [--repo <owner/repo|url>]
+```
+
+### 2.4 `rsk init` (Project Bootstrap)
+
+Use Case: Creates project-local `.env` configuration in your project directory.
+
+```bash
+rsk init [--project-dir <path>] [--target all|codex|claude|gemini] [--dry-run]
+```
+
+Notes:
+- Only creates project-facing assets (`.env`). Does not touch global skill directories.
+- Safe to run multiple times; will not overwrite existing files unless `--overwrite` is passed.
+
+### 2.5 `rsk clean` (Remove Stale Assets)
+
+Use Case: Removes stale project-local assets left from older installations.
+
+```bash
+rsk clean [--project-dir <path>] [--dry-run] [--globals]
+```
+
+Flags:
+- `--project-dir`: Directory to clean (default: current dir). Removes `.agent/workflows/`, `.agents/skills/research-paper-workflow/`, `CLAUDE.research-skills.md`, `.gemini/research-skills.md`, and template-matching `CLAUDE.md`.
+- `--globals`: Also remove workflow discovery symlinks from `~/.claude/commands/` and `~/.gemini/workflows/`. Only removes symlinks that point to `research-paper-workflow` — user-created commands are preserved.
+- `--dry-run`: Show what would be removed without deleting.
+
+### 2.6 `rsk doctor` (Environment Preflight)
+
+Use Case: Runs orchestrator preflight checks (CLIs, API keys, MCP wiring).
+
+```bash
+rsk doctor [--cwd <path>]
 ```
 
 ---

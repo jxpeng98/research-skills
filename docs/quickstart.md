@@ -63,7 +63,7 @@ Use one of these stable entrypoints:
 
 | Entry mode | Use when | Entry |
 |---|---|---|
-| Claude Code commands | You want slash-command UX inside a project | `.agent/workflows/*.md` commands such as `/paper`, `/lit-review`, `/paper-write` |
+| Slash commands | You want `/paper`, `/lit-review`, etc. | Auto-registered after `rsk upgrade` via symlinks to `~/.claude/commands/` and `~/.gemini/workflows/` |
 | Orchestrator CLI | You want explicit task routing and validation | `python3 -m bridges.orchestrator task-plan|task-run|doctor` |
 | Installer / updater CLI | You want install or refresh commands after bootstrap | `research-skills`, `rsk`, `rsw` |
 | Portable skill package | You want the cross-client installable entry skill | `research-paper-workflow/` |
@@ -143,9 +143,14 @@ Common options:
 - `--focus-output` and `--output-budget`: reduce auxiliary artifact spread for this run by keeping only a smaller active output set
 - `--research-depth deep` plus `--max-rounds`: force a narrower, more adversarial evidence-expansion and revision process
 
-## 7. Use Claude Code Commands When You Want UX
+## 7. Use Slash Commands When You Want UX
 
-If you prefer command entrypoints instead of explicit Task IDs, use the Claude workflow commands after installation into your project:
+After `rsk upgrade`, workflow slash-commands are globally registered via symlinks:
+
+- **Claude Code**: `~/.claude/commands/*.md`
+- **Gemini CLI**: `~/.gemini/workflows/*.md`
+
+No per-project setup required. Available commands:
 
 ```text
 /paper
@@ -159,6 +164,8 @@ If you prefer command entrypoints instead of explicit Task IDs, use the Claude w
 ```
 
 These commands are entry UX only. The canonical task and artifact truth still lives in `standards/`.
+
+To remove all symlinks: `rsk clean --globals`.
 
 ## 8. Know When to Switch to Maintainer Docs
 

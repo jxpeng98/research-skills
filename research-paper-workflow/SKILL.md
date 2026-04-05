@@ -38,6 +38,12 @@ These commands map to the same behavior across Codex, Claude Code, and Gemini:
 /academic-present [topic]            # Academic presentation preparation
 ```
 
+## Bundled Workflows
+
+Full workflow definitions are included in the `workflows/` subdirectory of this skill package. When a user invokes any command above (e.g. `/paper`, `/lit-review`), read the corresponding file from `workflows/<command-name>.md` for the complete execution instructions.
+
+The `workflows/paper.md` file is the **master router** — it maps every Task ID (A1–K4) to the correct sub-workflow or skill card. Start there for any task-ID-based request.
+
 ## Skill Directory Structure
 
 The skill system covers the full research lifecycle across 11 stages:

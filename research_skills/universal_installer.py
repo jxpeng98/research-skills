@@ -283,39 +283,8 @@ def _install_shell_cli(options: InstallOptions) -> None:
         print(f"  [warn] CLI installed to {cli_dir} but this directory is not on PATH")
 
 
-def _copy_workflows(repo_root: Path, project_dir: Path, options: InstallOptions) -> None:
-    workflows_src = repo_root / ".agent" / "workflows"
-    workflows_dest = project_dir / ".agent" / "workflows"
-    _ensure_dir(workflows_dest, options.dry_run)
-    copied = 0
-    skipped = 0
-    for workflow_file in sorted(workflows_src.glob("*.md")):
-        status, _ = _copy_path(
-            workflow_file,
-            workflows_dest / workflow_file.name,
-            options.mode,
-            options.overwrite,
-            options.dry_run,
-        )
-        if status == "ok":
-            copied += 1
-        else:
-            skipped += 1
-    if copied:
-        _print_result("Workflows", f"{workflows_dest}/ ({copied} files)", "ok")
-    else:
-        _print_result("Workflows", f"{workflows_dest}/ ({skipped} skipped)", "skip")
-
-
-def _install_project_env(repo_root: Path, project_dir: Path, options: InstallOptions) -> None:
-    _copy_display(repo_root / ".env.example", project_dir / ".env", "Env", options)
-
-
-def _write_gemini_quickstart(repo_root: Path, project_dir: Path, options: InstallOptions) -> None:
-    quickstart_dir = project_dir / ".gemini"
-    quickstart_path = quickstart_dir / "research-skills.md"
-    quickstart_src = repo_root / ".gemini" / "research-skills.md"
-    _copy_display(quickstart_src, quickstart_path, "Quickstart", options)
+# Legacy project-local copy helpers removed — workflows are now bundled
+# inside the skill directory and installed globally with each dir-copy.
 
 
 def _print_cli_checks(target: str) -> bool:
@@ -433,7 +402,7 @@ def install(options: InstallOptions) -> int:
         print(f"  cli:     install -> {options.cli_dir}")
 
     _print_full_readiness(options)
-    antigravity_cli_found = _print_cli_checks(options.target)
+    _print_cli_checks(options.target)
 
     section_targets = ("codex", "claude", "gemini", "antigravity")
     for section_target in section_targets:
@@ -458,30 +427,8 @@ def install(options: InstallOptions) -> int:
             src = repo_root / entry["source"]
             dest = _expand_path(entry["destination"], manifest_values)
 
-            if op == "dir-copy" or op == "file-copy":
+            if op in {"dir-copy", "file-copy"}:
                 _copy_display(src, dest, label, options)
-                continue
-
-            if op == "glob-copy":
-                _copy_workflows(repo_root, options.project_dir, options)
-                continue
-
-            if op == "claude-template":
-                claude_target = dest
-                if claude_target.exists() and not options.overwrite:
-                    claude_target = options.project_dir / "CLAUDE.research-skills.md"
-                _copy_display(src, claude_target, label, options)
-                continue
-
-            if op == "quickstart-file":
-                _write_gemini_quickstart(repo_root, options.project_dir, options)
-                continue
-
-            if op == "conditional-dir-copy":
-                if antigravity_cli_found:
-                    _copy_display(src, dest, label, options)
-                else:
-                    _print_result(label, f"{dest} (antigravity CLI not found)", "skip")
                 continue
 
             raise ValueError(f"Unsupported manifest operation: {op}")
@@ -503,4 +450,68 @@ def install(options: InstallOptions) -> int:
     if install_cli and options.cli_dir and not _on_path(options.cli_dir):
         print(f"       Add {options.cli_dir} to PATH to use research-skills / rsk / rsw")
     print("       Restart Codex / Claude Code / Gemini CLI to activate changes")
+    return 0
+
+
+# ── Clean stale project-local assets ─────────────────────────────────────────
+
+_CLEANABLE_GLOBS = (
+    ".agent/workflows/*.md",
+    ".agent/skills/research-paper-workflow",
+    ".agents/skills/research-paper-workflow",
+    "CLAUDE.research-skills.md",
+    ".gemini/research-skills.md",
+    ".gemini/agent-profiles.example.json",
+)
+
+_CLEANABLE_CONDITIONAL = (
+    # Only remove these if their content matches the template we used to install
+    "CLAUDE.md",
+)
+
+
+def _is_rsk_claude_md(path: Path, repo_root: Path | None) -> bool:
+    """Return True if `path` looks like a research-skills template CLAUDE.md."""
+    if not path.is_file():
+        return False
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    return "Academic Deep Research Skills" in text and "research-paper-workflow" in text
+
+
+def clean(project_dir: Path, *, dry_run: bool = False, repo_root: Path | None = None) -> int:
+    """Remove stale project-local research-skills assets."""
+    project_dir = _resolve(project_dir)
+    removed = 0
+
+    _print_section("Clean stale project-local assets")
+    for pattern in _CLEANABLE_GLOBS:
+        candidates = sorted(project_dir.glob(pattern))
+        for path in candidates:
+            _remove_path(path, dry_run)
+            _print_result("Removed", str(path), "ok")
+            removed += 1
+    # If no wildcard matches were found for the parent dir, it might be empty now
+    for parent in {"agent/workflows", "agent/skills", "agents/skills"}:
+        parent_path = project_dir / f".{parent}"
+        if parent_path.is_dir() and not any(parent_path.iterdir()):
+            _remove_path(parent_path, dry_run)
+            _print_result("Removed", f"{parent_path}/ (empty)", "ok")
+            removed += 1
+
+    # Conditional: CLAUDE.md only if it matches our template
+    claude_md = project_dir / "CLAUDE.md"
+    if _is_rsk_claude_md(claude_md, repo_root):
+        _remove_path(claude_md, dry_run)
+        _print_result("Removed", str(claude_md), "ok")
+        removed += 1
+    elif claude_md.exists():
+        _print_result("Kept", f"{claude_md} (user-customized)", "skip")
+
+    if removed:
+        print(f"\n[done] Cleaned {removed} stale asset(s) from {project_dir}")
+    else:
+        print(f"\n[done] No stale assets found in {project_dir}")
     return 0

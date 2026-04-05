@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import __version__
-from .universal_installer import PART_CHOICES, InstallOptions, install
+from .universal_installer import PART_CHOICES, InstallOptions, clean, install
 
 TAG_PATTERN = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+)|b(\d+))?$")
 RELEASE_NOTE_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.md$")
@@ -690,6 +690,11 @@ def cmd_init(args: argparse.Namespace) -> int:
         )
     )
 
+
+def cmd_clean(args: argparse.Namespace) -> int:
+    project_dir = Path(args.project_dir).expanduser().resolve()
+    return clean(project_dir, dry_run=args.dry_run)
+
 def cmd_align(args: argparse.Namespace) -> int:
     repo_hint = (
         args.repo.strip()
@@ -707,23 +712,25 @@ def cmd_align(args: argparse.Namespace) -> int:
     print("- CLI aliases: `research-skills`, `rsk`, `rsw` (same behavior).")
     print("")
     print(f"What `{prog} upgrade` modifies by default:")
-    print("- Global skills: ~/.codex|~/.claude|~/.gemini under `skills/research-paper-workflow/`")
+    print("- Global skills (with bundled workflows): ~/.codex|~/.claude|~/.gemini under `skills/research-paper-workflow/`")
+    print("- Workflows are bundled inside the skill directory (no project-local copies needed).")
     print("- Shell CLI wrappers when `--install-cli` is used")
     print("")
-    print("Project-facing assets are explicit:")
-    print("- Use `rsk init --project-dir .` for project bootstrap")
-    print("- Or add `--parts project` (optionally with `doctor`) during upgrade")
+    print("Project-facing assets are opt-in:")
+    print("- Use `rsk init --project-dir .` to create project config + .env")
+    print("- Use `rsk clean --project-dir .` to remove stale project-local assets")
     print("")
     print("Typical usage:")
     print(f"1) Check:   {prog} check --repo {repo_hint}")
     print(f"2) Upgrade: {prog} upgrade --repo {repo_hint} --target all")
-    print(f"3) Init:    {prog} init --project-dir . --target all")
-    print(f"4) Doctor:  {prog} doctor --cwd .")
+    print(f"3) Init:    {prog} init --project-dir .")
+    print(f"4) Clean:   {prog} clean --project-dir .")
+    print(f"5) Doctor:  {prog} doctor --cwd .")
     print("")
     print("Tip:")
-    print(f"- Run `{prog} init --project-dir .` when you want project-local workflows and prompts.")
+    print(f"- `{prog} upgrade` only touches global skill directories. No project-local files.")
+    print(f"- `{prog} clean` removes stale workflow copies / CLAUDE.md / .gemini quickstart.")
     print("- Set `RESEARCH_SKILLS_REPO=owner/repo` to avoid passing `--repo` every time.")
-    print("- Or add `research-skills.toml` to your project root to persist the upstream repo.")
     return 0
 
 
@@ -845,6 +852,14 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"Comma-separated install surfaces to apply (default: project): {', '.join(PART_CHOICES)}.",
     )
 
+    clean_parser = subparsers.add_parser("clean", help="Remove stale project-local research-skills assets")
+    clean_parser.add_argument(
+        "--project-dir",
+        default=str(Path.cwd()),
+        help="Project directory to clean (default: current dir)",
+    )
+    clean_parser.add_argument("--dry-run", action="store_true", help="Show what would be removed without deleting")
+
     return parser
 
 
@@ -861,6 +876,8 @@ def main() -> int:
         return cmd_doctor(args)
     if args.cmd == "init":
         return cmd_init(args)
+    if args.cmd == "clean":
+        return cmd_clean(args)
     raise RuntimeError(f"Unhandled command: {args.cmd}")
 
 

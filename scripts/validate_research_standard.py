@@ -2354,9 +2354,6 @@ def validate_release_artifacts(root: Path, report: ValidationReport) -> None:
             "--project-dir",
             "--doctor",
             "research-paper-workflow",
-            ".agent/workflows",
-            "research-skills.md",
-            ".agents/skills",
             "ANTIGRAVITY_HOME",
         ):
             report.check(

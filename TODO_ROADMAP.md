@@ -14,7 +14,7 @@
 
 - Verified completed workstreams: 28
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 5
+- Active TODOs: 6
 - Deferred future bets: 5
 
 ---
@@ -63,6 +63,7 @@ Key facts confirmed from current repo:
 - newly added workflow skills now align to canonical contract paths; remaining literature work is concentrated in provider-side consolidation decisions
 - the repo now includes a project-level academic context continuity layer with explicit artifacts, templates, stage refresh points, and an optional `task-run` update hook
 - install/upgrade now defaults to global skill refreshes; project-local wiring is explicit via `rsk init` or `--parts project`
+- live install/init comparison shows only Antigravity workspace skill copies are exact mirrors of the global skill tree; the remaining project-local assets are separate workflow/template/config files
 
 ---
 
@@ -309,6 +310,13 @@ Key facts confirmed from current repo:
 - [x] ~~Move more user-facing skill metadata out of markdown prose and into the registry~~ (Completed in Milestone 18)
 
 - [x] ~~Improve install/upgrade ergonomics~~ (Completed in Milestone 20)
+
+- [ ] Shrink project bootstrap toward minimal or zero static project assets
+  - keep global skill directories as the primary install target
+  - treat Antigravity workspace skill copies as removable mirrors unless a client hard-requires local copies
+  - evaluate whether `.agent/workflows/`, `CLAUDE.md`, and `.gemini/research-skills.md` can be replaced with thinner shims or pure documentation references
+  - decide whether `.env` should remain an init-time file or move to an explicit opt-in/config-generation command
+  - preserve project-local generation only for true runtime state and research outputs, not static workflow templates
 
 - [x] ~~Register 5 unregistered skills in `registry.yaml`~~ (Completed in Milestone 12)
 

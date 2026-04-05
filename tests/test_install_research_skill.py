@@ -199,9 +199,11 @@ class InstallResearchSkillTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
             self.assertIn("parts:   project", result.stdout)
-            self.assertTrue((project_dir / ".agent" / "workflows" / "proofread.md").exists())
-            self.assertTrue((project_dir / "CLAUDE.md").exists())
+            # Project parts now only installs .env
             self.assertTrue((project_dir / ".env").exists())
+            # Workflows and CLAUDE.md are no longer installed project-locally
+            self.assertFalse((project_dir / ".agent" / "workflows" / "proofread.md").exists())
+            self.assertFalse((project_dir / "CLAUDE.md").exists())
             self.assertFalse((claude_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
 
 

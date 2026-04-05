@@ -419,25 +419,7 @@ expand_manifest_path() {
   printf '%s\n' "$value"
 }
 
-copy_workflows_from_manifest() {
-  local workflows_src="$ROOT_DIR/.agent/workflows"
-  local workflows_dest="$1"
-  ensure_dir "$workflows_dest"
-  local count=0
-  local workflow_file
-  for workflow_file in "$workflows_src"/*.md; do
-    local ret=0
-    _copy_item "$workflow_file" "$workflows_dest/$(basename "$workflow_file")" || ret=$?
-    if [[ $ret -eq 0 ]]; then
-      count=$((count + 1))
-    fi
-  done
-  if [[ $count -gt 0 ]]; then
-    ok "Workflows" "$workflows_dest/ ($count files)"
-  else
-    skip "Workflows" "$workflows_dest/ (already up-to-date)"
-  fi
-}
+# Legacy copy_workflows_from_manifest removed — workflows now bundled in skill dir-copy
 
 apply_manifest_entry() {
   local op="$1"
@@ -452,30 +434,6 @@ apply_manifest_entry() {
     dir-copy|file-copy)
       copy_item_display "$src" "$dest" "$label"
       ;;
-    glob-copy)
-      copy_workflows_from_manifest "$dest"
-      ;;
-    claude-template)
-      if [[ -f "$PROJECT_DIR/CLAUDE.md" && "$OVERWRITE" -ne 1 ]]; then
-        copy_item_display "$src" "$PROJECT_DIR/CLAUDE.research-skills.md" "$label"
-      else
-        copy_item_display "$src" "$dest" "$label"
-      fi
-      ;;
-    quickstart-file)
-      if [[ -f "$src" ]]; then
-        copy_item_display "$src" "$dest" "$label"
-      else
-        write_gemini_quickstart
-      fi
-      ;;
-    conditional-dir-copy)
-      if [[ "$ANTIGRAVITY_CLI_FOUND" -eq 1 ]]; then
-        copy_item_display "$src" "$dest" "$label"
-      else
-        skip "$label" "$dest (antigravity CLI not found)"
-      fi
-      ;;
     *)
       err "Unsupported manifest operation: $op"
       exit 1
@@ -483,46 +441,7 @@ apply_manifest_entry() {
   esac
 }
 
-write_gemini_quickstart() {
-  local quickstart_dir="$PROJECT_DIR/.gemini"
-  local quickstart_path="$quickstart_dir/research-skills.md"
-  local profile_dest="$quickstart_dir/agent-profiles.example.json"
-  local quickstart_src="$ROOT_DIR/.gemini/research-skills.md"
-
-  if [[ -e "$quickstart_path" && "$OVERWRITE" -ne 1 ]]; then
-    skip "Quickstart" "$quickstart_path (use --overwrite)"
-  elif [[ -f "$quickstart_src" ]]; then
-    copy_item_display "$quickstart_src" "$quickstart_path" "Quickstart"
-  else
-    # Fallback: write minimal stub if source template is missing
-    ensure_dir "$quickstart_dir"
-    if [[ "$DRY_RUN" -eq 1 ]]; then
-      printf '[dry-run] write %q\n' "$quickstart_path"
-    else
-      cat >"$quickstart_path" <<'EOF'
-# Research Skills for Gemini Runtime
-
-Use this project through orchestrator for Codex/Claude/Gemini collaboration:
-
-```bash
-python3 -m bridges.orchestrator doctor --cwd .
-python3 -m bridges.orchestrator parallel --prompt "Analyze this study design" --cwd . --summarizer gemini
-python3 -m bridges.orchestrator task-run --task-id F3 --paper-type empirical --topic your-topic --cwd . --triad
-```
-EOF
-    fi
-    ok "Quickstart" "$quickstart_path (fallback stub)"
-  fi
-
-  copy_item_display "$ROOT_DIR/standards/agent-profiles.example.json" "$profile_dest" "Profiles"
-}
-
-install_antigravity_workspace() {
-  local primary_dest="$PROJECT_DIR/.agents/skills/research-paper-workflow"
-  local legacy_dest="$PROJECT_DIR/.agent/skills/research-paper-workflow"
-  copy_item_display "$SKILL_SRC" "$primary_dest" "Workspace Skill"
-  copy_item_display "$SKILL_SRC" "$legacy_dest" "Legacy Skill"
-}
+# Legacy project-local helpers removed — skills + workflows now global only
 
 install_manifest_target() {
   local wanted_target="$1"
@@ -537,15 +456,7 @@ install_manifest_target() {
   done < "$MANIFEST_PATH"
 }
 
-install_project_manifest() {
-  local manifest_target op label source_rel dest_tpl
-  while IFS=$'\t' read -r manifest_target op label source_rel dest_tpl; do
-    [[ -n "$manifest_target" ]] || continue
-    [[ "$manifest_target" == \#* ]] && continue
-    [[ "$manifest_target" == "project" ]] || continue
-    apply_manifest_entry "$op" "$label" "$source_rel" "$dest_tpl"
-  done < "$MANIFEST_PATH"
-}
+# Legacy install_project_manifest removed — only .env remains, opt-in via parts
 
 manifest_entry_part() {
   local dest_tpl="$1"
@@ -756,7 +667,13 @@ fi
 
 if [[ "$INSTALL_PROJECT" -eq 1 ]]; then
   section "Project Env"
-  install_project_manifest
+  manifest_target= op= label= source_rel= dest_tpl=
+  while IFS=$'\t' read -r manifest_target op label source_rel dest_tpl; do
+    [[ -n "$manifest_target" ]] || continue
+    [[ "$manifest_target" == \#* ]] && continue
+    [[ "$manifest_target" == "project" ]] || continue
+    apply_manifest_entry "$op" "$label" "$source_rel" "$dest_tpl"
+  done < "$MANIFEST_PATH"
 fi
 
 # ── Doctor ───────────────────────────────────────────────────────────────────

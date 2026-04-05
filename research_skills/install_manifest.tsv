@@ -1,12 +1,6 @@
 # target	op	label	source	destination
 codex	dir-copy	Skill	research-paper-workflow	${CODEX_HOME}/skills/research-paper-workflow
 claude	dir-copy	Skill	research-paper-workflow	${CLAUDE_CODE_HOME}/skills/research-paper-workflow
-claude	glob-copy	Workflows	.agent/workflows/*.md	${PROJECT_DIR}/.agent/workflows/
-claude	claude-template	CLAUDE.md	templates/CLAUDE.project.md	${PROJECT_DIR}/CLAUDE.md
 gemini	dir-copy	Skill	research-paper-workflow	${GEMINI_HOME}/skills/research-paper-workflow
-gemini	quickstart-file	Quickstart	.gemini/research-skills.md	${PROJECT_DIR}/.gemini/research-skills.md
-gemini	file-copy	Profiles	standards/agent-profiles.example.json	${PROJECT_DIR}/.gemini/agent-profiles.example.json
-antigravity	dir-copy	Workspace Skill	research-paper-workflow	${PROJECT_DIR}/.agents/skills/research-paper-workflow
-antigravity	dir-copy	Legacy Skill	research-paper-workflow	${PROJECT_DIR}/.agent/skills/research-paper-workflow
-antigravity	conditional-dir-copy	Global Skill	research-paper-workflow	${ANTIGRAVITY_HOME}/skills/research-paper-workflow
+antigravity	dir-copy	Skill	research-paper-workflow	${ANTIGRAVITY_HOME}/skills/research-paper-workflow
 project	file-copy	Env	.env.example	${PROJECT_DIR}/.env

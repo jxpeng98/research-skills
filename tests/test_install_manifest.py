@@ -41,14 +41,8 @@ class InstallManifestTests(unittest.TestCase):
         expected = {
             ("codex", "Skill"),
             ("claude", "Skill"),
-            ("claude", "Workflows"),
-            ("claude", "CLAUDE.md"),
             ("gemini", "Skill"),
-            ("gemini", "Quickstart"),
-            ("gemini", "Profiles"),
-            ("antigravity", "Workspace Skill"),
-            ("antigravity", "Legacy Skill"),
-            ("antigravity", "Global Skill"),
+            ("antigravity", "Skill"),
             ("project", "Env"),
         }
 
@@ -60,10 +54,6 @@ class InstallManifestTests(unittest.TestCase):
         allowed_ops = {
             "dir-copy",
             "file-copy",
-            "glob-copy",
-            "claude-template",
-            "quickstart-file",
-            "conditional-dir-copy",
         }
         allowed_vars = {
             "${PROJECT_DIR}",
@@ -76,11 +66,7 @@ class InstallManifestTests(unittest.TestCase):
         for entry in entries:
             self.assertIn(entry["op"], allowed_ops, msg=entry)
             source = REPO_ROOT / entry["source"]
-            if "*" in entry["source"]:
-                matches = list(REPO_ROOT.glob(entry["source"]))
-                self.assertTrue(matches, msg=f"glob did not match: {entry['source']}")
-            else:
-                self.assertTrue(source.exists(), msg=f"missing source: {entry['source']}")
+            self.assertTrue(source.exists(), msg=f"missing source: {entry['source']}")
 
             destination = entry["destination"]
             self.assertTrue(destination.startswith("${"), msg=f"destination should be templated: {destination}")
@@ -93,6 +79,33 @@ class InstallManifestTests(unittest.TestCase):
             key = (entry["target"], entry["destination"])
             self.assertNotIn(key, seen, msg=f"duplicate manifest destination: {key}")
             seen.add(key)
+
+    def test_all_global_skill_entries_use_dir_copy(self) -> None:
+        """All global skill entries should use dir-copy with the research-paper-workflow source."""
+        entries = _read_manifest()
+        for entry in entries:
+            if entry["target"] in {"codex", "claude", "gemini", "antigravity"}:
+                self.assertEqual(entry["op"], "dir-copy", msg=f"expected dir-copy for {entry}")
+                self.assertEqual(entry["source"], "research-paper-workflow", msg=f"unexpected source for {entry}")
+
+    def test_no_project_dir_in_global_entries(self) -> None:
+        """Global install entries must not reference PROJECT_DIR."""
+        entries = _read_manifest()
+        for entry in entries:
+            if entry["target"] in {"codex", "claude", "gemini", "antigravity"}:
+                self.assertNotIn("${PROJECT_DIR}", entry["destination"], msg=f"global entry references PROJECT_DIR: {entry}")
+
+    def test_skill_source_contains_bundled_workflows(self) -> None:
+        """The skill source directory must contain bundled workflows."""
+        skill_src = REPO_ROOT / "research-paper-workflow"
+        workflows_dir = skill_src / "workflows"
+        self.assertTrue(workflows_dir.is_dir(), msg="missing workflows directory in skill source")
+        workflow_files = list(workflows_dir.glob("*.md"))
+        self.assertGreaterEqual(len(workflow_files), 10, msg=f"expected at least 10 workflow files, found {len(workflow_files)}")
+        # Verify key workflows are present
+        expected_workflows = {"paper.md", "lit-review.md", "paper-read.md", "find-gap.md", "academic-write.md"}
+        actual_names = {f.name for f in workflow_files}
+        self.assertTrue(expected_workflows.issubset(actual_names), msg=f"missing key workflows: {expected_workflows - actual_names}")
 
 
 if __name__ == "__main__":

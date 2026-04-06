@@ -17,76 +17,42 @@ If you want the full system, install and configure all of the following:
 Without them, you can still install workflow assets and use shell `rsk check|upgrade|align`, but `doctor`, validators, tests, and full orchestrator execution will be limited.
 :::
 
-## 0. Choose `partial` Or `full`
+## 1. Global One-Click Install
 
-The recommended first-install path is now the one-click bootstrap. You do not need to preinstall Python first.
-
-| Profile | Use when | Result |
-|---|---|---|
-| `partial` | You only want the global skills installed first | Assets are installed; orchestrator is not ready |
-| `full` | You want the working runtime, shell CLI, and doctor checks | Bootstrap reuses `python3 >= 3.12` or installs `mise` + `python@3.12` automatically |
-
-If you omit `--profile`, bootstrap explains both options and prompts you to choose.
-
-## 1. Install With The One-Click Bootstrap
+The recommended path is the one-click bootstrap. You do not need to manually preinstall Python first or copy files into your projects.
 
 Linux / macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --target all
 ```
 
 Windows PowerShell:
 
 ```powershell
 Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Target all
 ```
 
-Want to skip the prompt:
+The bootstrap will install `research-paper-workflow` globally into the respective configuration directories of Codex, Claude Code, and Gemini. It will also create global symlinks for Slash commands.
 
-```bash
-# Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile partial --project-dir "$PWD" --target all
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
-```
+## 2. Zero-Config Usage
 
-```powershell
-# Windows PowerShell
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
-```
+Because the commands are registered globally, using the system is now instantaneous.
 
-## 2. Pick an Entry Mode
+1. **Create an empty workspace:** `mkdir my-new-paper && cd my-new-paper`
+2. **Start your AI agent:** Type `claude` or `gemini` in your terminal.
+3. **Execute a workflow:** Type `/paper` or `/lit-review`.
 
-Use one of these stable entrypoints:
+The AI will seamlessly fetch the global skill package in the background.
+
+## 3. Advanced Entry Modes
 
 | Entry mode | Use when | Entry |
 |---|---|---|
-| Slash commands | You want `/paper`, `/lit-review`, etc. | Auto-registered after `rsk upgrade` via symlinks to `~/.claude/commands/` and `~/.gemini/workflows/` |
-| Orchestrator CLI | You want explicit task routing and validation | `python3 -m bridges.orchestrator task-plan|task-run|doctor` |
+| Slash commands | You want `/paper`, `/lit-review`, etc. | Included by default via global symlinks |
+| Orchestrator CLI | You want explicit automated task routing and validation | `python3 -m bridges.orchestrator task-plan|task-run|doctor` |
 | Installer / updater CLI | You want install or refresh commands after bootstrap | `research-skills`, `rsk`, `rsw` |
-| Portable skill package | You want the cross-client installable entry skill | `research-paper-workflow/` |
-
-## 3. Validate Local Readiness
-
-From the repo root:
-
-```bash
-python3 -m bridges.orchestrator doctor --cwd .
-python3 scripts/validate_research_standard.py --strict
-```
-
-Use `doctor` to check runtime CLIs, API keys, and MCP command wiring.
-Use the validator to confirm the repo standards are internally consistent.
-
-Optional manual Python path:
-
-```bash
-mise install python@3.12
-mise use -g python@3.12
-python3 --version
-```
 
 ## 4. Choose a Paper Type
 

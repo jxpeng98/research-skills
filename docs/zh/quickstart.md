@@ -17,76 +17,42 @@
 如果缺少这些依赖，你仍然可以安装 workflow 资产并使用 shell `rsk check|upgrade|align`，但 `doctor`、validator、tests 与完整 orchestrator 执行链会受限。
 :::
 
-## 0. 先选 `partial` 还是 `full`
+## 1. 全局一键安装
 
-现在推荐的首装路径是一键 bootstrap，不需要你先手动装 Python。
-
-| Profile | 适用场景 | 结果 |
-|---|---|---|
-| `partial` | 你想先只安装全局 skills | 资产可用，但 orchestrator 还没准备好 |
-| `full` | 你想直接拿到可运行的运行时、shell CLI 和 doctor 预检 | bootstrap 会复用现有 `python3 >= 3.12`，或自动安装 `mise` + `python@3.12` |
-
-如果你不传 `--profile`，bootstrap 会先解释两种模式，再提示你选择。
-
-## 1. 用一键 bootstrap 安装
+目前推荐的首装路径是一键 bootstrap。你不需要手动预装 Python，也不需要往你的各个科研文件夹里复制配置文件。
 
 Linux / macOS：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --project-dir "$PWD" --target all
+curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --target all
 ```
 
 Windows PowerShell：
 
 ```powershell
 Invoke-WebRequest https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.ps1 -OutFile .\bootstrap_research_skill.ps1
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -ProjectDir "$PWD" -Target all
+powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Target all
 ```
 
-如果你想跳过交互：
+Bootstrap 会把 `research-paper-workflow` 下载并安装到你电脑上各类 AI 客户端（Codex, Claude, Gemini）的专属全局配置目录下，并自动创建相应的 Slash Command 软链接。
 
-```bash
-# Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile partial --project-dir "$PWD" --target all
-curl -fsSL https://raw.githubusercontent.com/jxpeng98/research-skills/main/scripts/bootstrap_research_skill.sh | bash -s -- --profile full --project-dir "$PWD" --target all
-```
+## 2. 极简开局（零配置）
 
-```powershell
-# Windows PowerShell
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile partial -ProjectDir "$PWD" -Target all
-powershell -ExecutionPolicy Bypass -File .\bootstrap_research_skill.ps1 -Profile full -ProjectDir "$PWD" -Target all
-```
+有了全局化命令注册，现在的开启流程完全可以做到肌肉记忆：
 
-## 2. 先选入口
+1. **新建一个空白文件夹：** `mkdir my-new-paper && cd my-new-paper`
+2. **唤出你惯用的 AI：** 敲击 `claude` 或 `gemini`
+3. **直接下发指令：** `输入 /paper` 或 `/lit-review` 等命令
 
-你通常只需要在下面三种入口里选一种：
+模型会自动寻址并调用全局后台存放的技能体系。
 
-| 入口 | 适用场景 | 命令 / 位置 |
+## 3. 进阶调用方式
+
+| 入口 | 适用场景 | 说明 |
 |---|---|---|
-| Slash 命令 | 你想直接用 `/paper`、`/lit-review` 等命令 | `rsk upgrade` 后自动通过 symlink 注册到 `~/.claude/commands/` 和 `~/.gemini/workflows/` |
-| 安装 / 升级 CLI | 你想安装或刷新全局 skill，并在需要时显式初始化项目资产 | `research-skills` / `rsk` / `rsw` |
-| Orchestrator CLI | 你想显式按 Task ID 执行与校验 | `python3 -m bridges.orchestrator ...` |
-
-## 3. 先做环境检查
-
-如果你的机器有 Python，建议先运行：
-
-```bash
-python3 -m bridges.orchestrator doctor --cwd .
-python3 scripts/validate_research_standard.py --strict
-```
-
-说明：
-- `doctor` 侧重运行时环境、CLI、API key、MCP wiring
-- validator 侧重仓库内部 contract / schema 一致性
-
-如果你想手动准备 Python，也可以直接执行：
-
-```bash
-mise install python@3.12
-mise use -g python@3.12
-python3 --version
-```
+| Slash 命令 | 你想直接用 `/paper`、`/lit-review` 等命令 | 基于全局软链接，开箱即可在任何目录触发 |
+| Orchestrator CLI | 你想结合自己的自动化脚本，或执行环境预检 | `python3 -m bridges.orchestrator task-plan|task-run|doctor` |
+| 安装 / 升级 CLI | 你想安装、刷新全局 skill 或卸载软链接 | `research-skills`、`rsk`、`rsw` |
 
 ## 4. 先确定 paper type
 

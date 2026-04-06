@@ -159,33 +159,23 @@ rsk upgrade --target all --doctor
 rsk init --project-dir /path/to/project
 ```
 
-## 5. Target Behaviors
+## 5. Global-First Behaviors & What Gets Installed
 
-Default install/upgrade behavior is now global-first. Project-local files are only written when you run `rsk init` or explicitly add `--parts project`.
+Default install/upgrade behavior is purely **global**. Your project directories remain completely clean.
 
-- Project-local surfaces (explicit)
-  - Copies `.env.example` to `<project>/.env`.
-- `codex`
-  - Installs `research-paper-workflow` into `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`.
-- `claude`
-  - Installs `research-paper-workflow` into `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`.
-  - Copies `.agent/workflows/*.md` into `<project>/.agent/workflows/`.
-  - Copies `CLAUDE.md` to `<project>/CLAUDE.md`, or `CLAUDE.research-skills.md` if `CLAUDE.md` already exists and `--overwrite` is not used.
-- `gemini`
-  - Installs `research-paper-workflow` into `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`.
-  - Copies `.gemini/research-skills.md` into `<project>/.gemini/research-skills.md`.
-  - Copies `standards/agent-profiles.example.json` to `<project>/.gemini/agent-profiles.example.json`.
-- `antigravity`
-  - Installs workspace skill into `<project>/.agents/skills/research-paper-workflow`.
-  - Installs backward-compatible workspace skill into `<project>/.agent/skills/research-paper-workflow`.
-  - Installs global skill into `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow` when the `antigravity` CLI is available.
+The installer does two things:
+1. **Installs the Core Package:** `research-paper-workflow` is placed into the specific home directories of your AI clients (e.g. `~/.claude/skills/`, `~/.gemini/skills/`).
+2. **Registers Slash Commands:** It drops lightweight symlinks into the client's discovery paths (e.g. `~/.claude/commands/paper.md` and `~/.gemini/workflows/lit-review.md`).
+
+This means commands like `/paper` and `/study-design` become natively recognized by the AI engines **no matter what folder you are working in**.
+
+_Project-local files (like `.env`) are only written when you explicitly run `rsk init --project-dir .`._
 
 ## 6. Common Flags
 
 - `--profile partial|full`: choose the install preset explicitly instead of using the prompt.
 - `--target codex|claude|gemini|antigravity|all`: limit installation scope.
 - `--beta`: install the latest beta / prerelease tag when `--ref` is omitted.
-- `--mode copy|link`: copy files or create symlinks. Bootstrap uses `copy`.
 - `--install-cli`: install shell CLI commands even outside `full`.
 - `--no-cli`: skip shell CLI installation even in `full`.
 - `--cli-dir <path>`: choose where the shell CLI is installed. Default: `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`.
@@ -193,23 +183,22 @@ Default install/upgrade behavior is now global-first. Project-local files are on
 - `--dry-run`: preview installation actions only.
 - `--doctor`: run `python3 -m bridges.orchestrator doctor --cwd <project>` after install.
 
-## 7. Upgrade And Verify
+## 7. Zero-Config Usage
 
-Refresh an existing install:
+Because commands are registered globally, using the system for a new paper is incredibly straightforward:
+
+1. Create an empty directory for your new paper: `mkdir my-new-paper && cd my-new-paper`
+2. Start the AI: `claude` or `gemini`
+3. Execute a workflow directly: type `/paper` or `/lit-review`.
+
+The model will seamlessly load the global skill assets without cluttering your workspace with boilerplate templates.
+
+## 8. Upgrading and Verifying
+
+To update everything to the latest global release across all AI clients (no need to navigate to each project):
 
 ```bash
 rsk upgrade --target all --doctor
-rsk init --project-dir .
 ```
 
-Verify readiness:
-
-```bash
-python3 -m bridges.orchestrator doctor --cwd /path/to/project
-python3 scripts/validate_research_standard.py --strict
-```
-
-Python boundary:
-
-- shell `rsk check|upgrade|align` do not require Python
-- `--doctor`, `python3 -m bridges.orchestrator ...`, validators, and tests still require Python
+_Note: The shell CLI (`rsk check`, `rsk upgrade`, `rsk clean`) runs without Python. However, `--doctor`, test validators, and `bridges.orchestrator` require a valid Python 3 environment._

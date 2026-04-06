@@ -112,7 +112,7 @@ A profile can define:
 
 ### B. Systematic Review Capabilities (`B1`)
 
-- Recommended skills: `academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`
+- Recommended skills: `academic-searcher`, `paper-screener`, `paper-extractor`, `prisma-checker`, `evidence-synthesizer`, `model-collaborator`
 - Recommended MCPs: `scholarly-search`, `screening-tracker`, `extraction-store`, `fulltext-retrieval`
 - Agent combination: Primary `claude`, Review `codex`
 
@@ -137,7 +137,7 @@ A profile can define:
 ### F. Submission and Rebuttal (`H1`~`H4`)
 
 - **Multi-Role Expert Cross-Review (H3-H4)**: Before final submission, use parallel invocations to simulate harsh reviewers (Methodologist, Domain Expert) across a cross-review (H3) and execute a Fatal Flaw Desktop-reject scan (H4).
-- Recommended skills: `submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`
+- Recommended skills: `submission-packager`, `rebuttal-assistant`, `peer-review-simulation`, `fatal-flaw-detector`, `model-collaborator`
 - Recommended MCPs: `submission-kit`, `metadata-registry`, `reporting-guidelines`
 - Agent combination: Primary `claude`, Review `gemini/codex`
 

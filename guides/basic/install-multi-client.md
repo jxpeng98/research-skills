@@ -22,6 +22,7 @@ Notes:
 - Use `--no-cli` if you only want the workflow assets.
 - Use `--cli-dir <path>` to install the shell CLI elsewhere.
 - `--doctor` is optional and only runs when `python3` is available.
+- Installer mode selection is `--mode copy|link`. Remote bootstrap only supports `--mode copy`.
 - Remote bootstrap only supports `--mode copy`. If you want `--mode link`, clone the repo and use the local installer below.
 
 ## 2. Optional Python CLI
@@ -52,6 +53,12 @@ The installer does two things:
 This means commands like `/paper` and `/study-design` become natively recognized by the AI engines **no matter what folder you are working in**.
 
 _Project-local files (like `.env`) are only written when you explicitly run `rsk init --project-dir .`._
+
+Home directory overrides:
+- `CODEX_HOME`: root directory for Codex skill installation.
+- `CLAUDE_CODE_HOME`: root directory for Claude Code skill installation.
+- `GEMINI_HOME`: root directory for Gemini skill installation.
+- `ANTIGRAVITY_HOME`: root directory for Antigravity global skill installation.
 
 ## Common flags
 

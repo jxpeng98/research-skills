@@ -688,12 +688,6 @@ function Install-FromRepo([string]$RepoRoot, [string]$ProjectRoot, [string]$Inst
         Install-ShellCliWindows $RepoRoot $cliRoot $bashPath
     }
 
-    Write-Host ""
-    Write-Host "== Project Env =="
-    foreach ($entry in $manifest | Where-Object { $_.Target -eq "project" }) {
-        Copy-InstallItem (Join-Path $RepoRoot $entry.Source) (Expand-ManifestPath $entry.Destination $manifestValues) $entry.Label
-    }
-
     if ($DoDoctor -and $PythonRuntime) {
         Write-Host ""
         Write-Host "== Doctor =="

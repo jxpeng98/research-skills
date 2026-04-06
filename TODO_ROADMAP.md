@@ -363,6 +363,7 @@ Key facts confirmed from current repo:
   - [x] add source-specific merge policy and provenance strategy for `OpenAlex` / `Crossref` enrichment
   - [x] decide whether `fulltext-retrieval` should remain a planning stub by default or grow a stronger resolver abstraction
   - [x] tighten external-provider handoff contracts so builtin literature artifacts can be consumed cleanly by bridge-level wrappers
+  - [ ] Evaluate if additional reinforcement is needed for full-text API reliability and rate-limiting fallbacks before closing
 
 - [x] Close the YAML <-> portable markdown contract gap
   - [x] auto-generate `research-paper-workflow/references/workflow-contract.md`
@@ -370,12 +371,13 @@ Key facts confirmed from current repo:
 
 - [x] ~~Add a skill-structure lint layer~~ (Completed in Milestone 26)
 
-- [ ] Define an external skill-set borrowing framework
-  - classify imported ideas into `provider`, `workflow`, `rubric`, `interaction`, or `canonical skill` before implementation
-  - require borrowed capabilities to map back to existing `task_id`, artifact paths, and provider-layer contracts instead of copying prompt bodies wholesale
-  - document when an external capability should become an MCP bridge versus a new canonical skill
-  - prioritize borrowing evaluation rubrics, review checklists, and workflow structure before borrowing prose-heavy skill bodies
-  - add a maintainer-facing intake checklist for assessing drift risk, overlap with existing skills, and canonicalization cost
+- [ ] **Milestone 31: Define an external skill-set borrowing framework** (In Progress)
+  - [x] Draft `guides/maintainer/external-borrowing.md` intake rubric
+  - [ ] classify imported ideas into `provider`, `workflow`, `rubric`, `interaction`, or `canonical skill` before implementation
+  - [ ] require borrowed capabilities to map back to existing `task_id`, artifact paths, and provider-layer contracts instead of copying prompt bodies wholesale
+  - [ ] document when an external capability should become an MCP bridge versus a new canonical skill
+  - [ ] prioritize borrowing evaluation rubrics, review checklists, and workflow structure before borrowing prose-heavy skill bodies
+  - [ ] finalize the maintainer-facing intake checklist for assessing drift risk, overlap with existing skills, and canonicalization cost
 
 ### P3 Strategic
 

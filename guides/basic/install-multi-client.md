@@ -41,29 +41,20 @@ If you already have a repository checkout, you can run the installer directly:
 ./scripts/install_research_skill.sh --target all --project-dir /path/to/project --install-cli --doctor
 ```
 
-## Target behaviors
+## Global-First Behaviors & What Gets Installed
 
-- project-level defaults
-  - Copies `.env.example` to `<project>/.env` by default so the project has a ready-to-edit runtime config template.
-- `codex`
-  - Installs `research-paper-workflow` into `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`.
-- `claude`
-  - Installs `research-paper-workflow` into `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`.
-  - Copies `.agent/workflows/*.md` into `<project>/.agent/workflows/`.
-  - Copies `CLAUDE.md` to `<project>/CLAUDE.md` (or `CLAUDE.research-skills.md` if `CLAUDE.md` already exists and `--overwrite` is not used).
-- `gemini`
-  - Installs `research-paper-workflow` into `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`.
-  - Creates `<project>/.gemini/research-skills.md` with orchestrator quickstart commands.
-  - Copies `standards/agent-profiles.example.json` to `<project>/.gemini/agent-profiles.example.json`.
-- `antigravity`
-  - Checks whether the `antigravity` CLI is present before writing the global install target.
-  - Installs workspace-local skills to `<project>/.agents/skills/research-paper-workflow`.
-  - Writes the backward-compatible workspace copy to `<project>/.agent/skills/research-paper-workflow`.
-  - Installs the global skill to `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow` when the CLI is available.
+Default install/upgrade behavior is purely **global**. Your project directories remain clean.
+
+The installer does two things:
+1. **Installs the Core Package:** `research-paper-workflow` is placed into the specific home directories of your AI clients (e.g. `~/.claude/skills/`, `~/.gemini/skills/`).
+2. **Registers Slash Commands:** It drops lightweight symlinks into the client's discovery paths (e.g. `~/.claude/commands/paper.md` and `~/.gemini/workflows/lit-review.md`).
+
+This means commands like `/paper` and `/study-design` become natively recognized by the AI engines **no matter what folder you are working in**.
+
+_Project-local files (like `.env`) are only written when you explicitly run `rsk init --project-dir .`._
 
 ## Common flags
 
-- `--mode copy|link`: copy files or create symlinks.
 - `--install-cli`: install shell CLI commands (`research-skills`, `rsk`, `rsw`).
 - `--no-cli`: skip shell CLI installation.
 - `--cli-dir <path>`: choose where the shell CLI is installed (default: `${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`).
@@ -71,14 +62,18 @@ If you already have a repository checkout, you can run the installer directly:
 - `--dry-run`: preview installation actions only.
 - `--doctor`: run `python3 -m bridges.orchestrator doctor --cwd <project>` after install when `python3` is available.
 
+## Zero-Config Usage
+
+Because commands are registered globally, using the system for a new paper is incredibly straightforward:
+
+1. Create an empty directory for your new paper: `mkdir my-new-paper && cd my-new-paper`
+2. Start the AI: `claude` or `gemini`
+3. Execute a workflow directly: type `/paper` or `/lit-review`.
+
 ## Upgrade
 
-- CLI aliases (after pipx install): `rsk` / `rsw` (same as `research-skills`)
-- Shell CLI aliases (after bootstrap install): `rsk` / `rsw` / `research-skills`
-- Optional default upstream (omit `--repo`): set `RESEARCH_SKILLS_REPO=<owner>/<repo>`, or add `research-skills.toml` in your project root
-- Python-free refresh: rerun `bootstrap_research_skill.sh` with `--overwrite`
-- Check updates: `rsk check --repo <owner>/<repo>` (shell CLI or Python CLI; or `python3 scripts/research_skill_update.py check ...`)
-- Upgrade (no fork / no git clone required): `rsk upgrade --repo <owner>/<repo> --target all` for global refresh, then `rsk init --project-dir /path/to/project` when you want project-local assets (shell CLI or Python CLI; or `python3 scripts/research_skill_update.py upgrade ...`)
+- Check updates: `rsk check --repo <owner>/<repo>`
+- Upgrade (no fork / no git clone required): `rsk upgrade --repo <owner>/<repo> --target all` for global refresh.
 - Full guide: `guides/basic/upgrade-research-skills.md`
 
 ## Verify

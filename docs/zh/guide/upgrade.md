@@ -45,21 +45,17 @@ rsk init --project-dir /path/to/project
 
 ## 1) 你需要升级的到底是什么？
 
-这个项目有两类“安装目标”：
+这个项目只有一类“安装目标”：
 
-- **本地 skill 安装目录**（让 Codex / Claude Code / Gemini / Antigravity 识别 skill）  
+- **全局 skill 安装目录**（让 Codex / Claude Code / Gemini / Antigravity 原生识别并支持全局 Slash 命令）  
   - Codex: `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`
   - Claude: `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`
   - Gemini: `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`
   - Antigravity（全局）: `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow`
-- **项目内集成文件**（让 Claude Code 的 `/...` 命令在你的项目里可用）  
-  - `<project>/.agent/workflows/*.md`
-  - `<project>/CLAUDE.md`（或 `CLAUDE.research-skills.md`）
-  - `<project>/.gemini/research-skills.md`
-  - `<project>/.agents/skills/research-paper-workflow`
-  - `<project>/.agent/skills/research-paper-workflow`
 
-升级的本质就是：**把这些目标路径覆盖为新版本**（通常需要 `--overwrite`）。
+升级的本质就是：**把这些目标路径覆盖为新版本**。
+
+_注：项目内文件（如 `.env`）只有在需要时显式执行 `rsk init --project-dir .` 或 `rsk upgrade --parts project` 才会更新。_
 
 ---
 

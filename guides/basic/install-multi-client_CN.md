@@ -41,29 +41,20 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 ./scripts/install_research_skill.sh --target all --project-dir /path/to/project --install-cli --doctor
 ```
 
-## 目标环境行为
+## 全局优先安装与修改产物
 
-- 项目级默认内容
-  - 默认将 `.env.example` 复制为 `<project>/.env`，方便你直接填写运行时配置。
-- `codex`
-  - 将 `research-paper-workflow` 安装到 `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`。
-- `claude`
-  - 将 `research-paper-workflow` 安装到 `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`。
-  - 将 `.agent/workflows/*.md` 复制到 `<project>/.agent/workflows/`。
-  - 将 `CLAUDE.md` 复制到 `<project>/CLAUDE.md`（如果 `CLAUDE.md` 已存在且未使用 `--overwrite`，则另存为 `CLAUDE.research-skills.md`）。
-- `gemini`
-  - 将 `research-paper-workflow` 安装到 `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`。
-  - 在 `<project>/.gemini/research-skills.md` 中创建 orchestrator 快速启动命令参考。
-  - 将 `standards/agent-profiles.example.json` 复制到 `<project>/.gemini/agent-profiles.example.json`。
-- `antigravity`
-  - 在写入全局目录前，先检查 `PATH` 中是否存在 `antigravity` CLI。
-  - 将 workspace-local skill 安装到 `<project>/.agents/skills/research-paper-workflow`。
-  - 同时写入兼容旧目录的 `<project>/.agent/skills/research-paper-workflow`。
-  - 若 CLI 可用，则把全局 skill 安装到 `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow`。
+目前系统所有的安装与升级**默认全部是全局操作（Global-first）**，你的项目目录会被保持绝对干净。
+
+安装器主要执行两步：
+1. **安装核心技能包：** 把 `research-paper-workflow` 下载存进你本地 AI 客户端所在的专属配置目录（例如 `~/.claude/skills/` 和 `~/.gemini/skills/`）。
+2. **注册快捷指令 (Slash Commands)：** 自动在客户端的发现路径里打下轻量级的软链接（例如 `~/.claude/commands/paper.md`）。
+
+这意味着像 `/paper`、`/study-design` 这样的命令，**无论你当前在电脑的哪个文件夹下工作，AI 都能原生识别**。
+
+_注：涉及你具体项目内文件的写入（比如需要注入 API Key 的 `.env`），只有在你显式运行 `rsk init --project-dir .` 时才会发生。_
 
 ## 常用参数
 
-- `--mode copy|link`：复制文件或创建软链接 (symlinks)。
 - `--install-cli`：安装 shell CLI 命令（`research-skills`、`rsk`、`rsw`）。
 - `--no-cli`：跳过 shell CLI 安装。
 - `--cli-dir <path>`：指定 shell CLI 安装目录（默认：`${RESEARCH_SKILLS_BIN_DIR:-~/.local/bin}`）。
@@ -71,14 +62,18 @@ rsk upgrade --target all --project-dir /path/to/project --doctor
 - `--dry-run`：仅预览安装操作。
 - `--doctor`：在安装后运行 `python3 -m bridges.orchestrator doctor --cwd <project>` 进行环境预检；若系统没有 `python3` 会自动跳过。
 
+## 极简使用指南（零配置）
+
+有了全局化命令注册，现在开启一篇新论文的研究步骤非常简单：
+
+1. 新建一个纯空目录：`mkdir my-new-paper && cd my-new-paper`
+2. 唤出终端里的 AI：输入 `claude` 或 `gemini`
+3. 直接调用命令：敲击 `/paper` 或 `/lit-review`
+
 ## 升级指南
 
-- 命令别名（pipx 安装后可用）：`rsk` / `rsw`（等价于 `research-skills`）
-- shell CLI 别名（bootstrap 安装后可用）：`rsk` / `rsw` / `research-skills`
-- 可选默认上游（省略 `--repo`）：设置环境变量 `RESEARCH_SKILLS_REPO=<owner>/<repo>`，或在项目根目录添加 `research-skills.toml` 文件
-- 无 Python 刷新：重新执行 `bootstrap_research_skill.sh --overwrite`
-- 检测更新：`rsk check --repo <owner>/<repo>`（shell CLI 或 Python CLI 均可；或使用源码脚本 `python3 scripts/research_skill_update.py check ...`）
-- 一键升级（无需 fork 或 git clone）：先执行 `rsk upgrade --repo <owner>/<repo> --target all` 刷新全局 skill，再在需要的项目里执行 `rsk init --project-dir /path/to/project` 接线项目资产（shell CLI 或 Python CLI 均可；或使用源码脚本 `python3 scripts/research_skill_update.py upgrade ...`）
+- 检测更新：`rsk check --repo <owner>/<repo>`
+- 一键升级（无需 fork 或 git clone）：`rsk upgrade --repo <owner>/<repo> --target all` 自动刷新全局环境。
 - 完整升级指南：`guides/basic/upgrade-research-skills_CN.md`
 
 ## 验证安装

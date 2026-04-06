@@ -47,21 +47,17 @@ rsk init --project-dir /path/to/project
 
 ## 1) What exactly are you upgrading?
 
-This project has two types of "installation targets":
+This project has one type of "installation target":
 
-- **Local skill directories for the supported clients** (so Codex / Claude Code / Gemini / Antigravity recognize the skill)
+- **Local skill directories for the supported clients** (so Codex / Claude Code / Gemini / Antigravity recognize the skill globally)
   - Codex: `${CODEX_HOME:-~/.codex}/skills/research-paper-workflow`
   - Claude: `${CLAUDE_CODE_HOME:-~/.claude}/skills/research-paper-workflow`
   - Gemini: `${GEMINI_HOME:-~/.gemini}/skills/research-paper-workflow`
   - Antigravity (global): `${ANTIGRAVITY_HOME:-~/.gemini/antigravity}/skills/research-paper-workflow`
-- **In-project integration files** (so Claude Code's `/...` commands work inside your project)
-  - `<project>/.agent/workflows/*.md`
-  - `<project>/CLAUDE.md` (or `CLAUDE.research-skills.md`)
-  - `<project>/.gemini/research-skills.md`
-  - `<project>/.agents/skills/research-paper-workflow`
-  - `<project>/.agent/skills/research-paper-workflow`
 
-Upgrading simply means **overwriting these target paths with the new version** (which usually requires `--overwrite`).
+Upgrading simply means **overwriting these target paths with the new version**.
+
+_Project-local integrations (like `.env`) are only refreshed when you explicitly run `rsk init --project-dir .` or add `--parts project`._
 
 ---
 

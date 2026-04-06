@@ -28,6 +28,9 @@ jobs:
         shell: bash
         run: bash scripts/inject_project_toml.sh
 
+      - name: Install Python dependencies
+        run: python -m pip install .
+
       - name: Compile critical modules
         run: python -m py_compile bridges/base_bridge.py bridges/orchestrator.py scripts/validate_research_standard.py tests/test_orchestrator_workflows.py tests/test_install_research_skill.py
 
@@ -52,6 +55,9 @@ jobs:
 
       - name: Inject packaged upstream defaults
         run: bash scripts/inject_project_toml.sh
+
+      - name: Install Python dependencies
+        run: python -m pip install .
 
       - name: Compile critical modules
         run: python -m py_compile bridges/base_bridge.py bridges/orchestrator.py scripts/validate_research_standard.py tests/test_orchestrator_workflows.py

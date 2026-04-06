@@ -48,10 +48,12 @@ jobs:
           test -f "$CODEX_HOME/skills/research-paper-workflow/SKILL.md"
           test -f "$CLAUDE_CODE_HOME/skills/research-paper-workflow/SKILL.md"
           test -f "$GEMINI_HOME/skills/research-paper-workflow/SKILL.md"
-          test -f "$project_dir/.agent/workflows/proofread.md"
-          test -f "$project_dir/.gemini/research-skills.md"
-          test -f "$project_dir/.env"
+          test -f "$CLAUDE_CODE_HOME/skills/research-paper-workflow/workflows/proofread.md"
+          test -f "$GEMINI_HOME/skills/research-paper-workflow/workflows/paper.md"
           test ! -e "$cli_dir/research-skills"
+          test ! -e "$project_dir/.agent"
+          test ! -e "$project_dir/.gemini"
+          test ! -e "$project_dir/.env"
 
       - name: Full bootstrap from checkout
         shell: bash
@@ -80,11 +82,8 @@ jobs:
             --overwrite
 
           test -f "$CODEX_HOME/skills/research-paper-workflow/SKILL.md"
-          if [[ ! -f "$project_dir/CLAUDE.md" && ! -f "$project_dir/CLAUDE.research-skills.md" ]]; then
-            echo "Missing Claude project integration file" >&2
-            exit 1
-          fi
-          test -f "$project_dir/.gemini/agent-profiles.example.json"
+          test -f "$CLAUDE_CODE_HOME/skills/research-paper-workflow/workflows/proofread.md"
+          test -f "$GEMINI_HOME/skills/research-paper-workflow/workflows/paper.md"
           test -f "$cli_dir/research-skills"
           test -x "$cli_dir/research-skills"
           if [[ ! -L "$cli_dir/rsk" && ! -f "$cli_dir/rsk" ]]; then
@@ -137,9 +136,8 @@ jobs:
             (Join-Path $env:CODEX_HOME "skills\research-paper-workflow\SKILL.md"),
             (Join-Path $env:CLAUDE_CODE_HOME "skills\research-paper-workflow\SKILL.md"),
             (Join-Path $env:GEMINI_HOME "skills\research-paper-workflow\SKILL.md"),
-            (Join-Path $projectDir ".agent\workflows\proofread.md"),
-            (Join-Path $projectDir ".gemini\research-skills.md"),
-            (Join-Path $projectDir ".env")
+            (Join-Path $env:CLAUDE_CODE_HOME "skills\research-paper-workflow\workflows\proofread.md"),
+            (Join-Path $env:GEMINI_HOME "skills\research-paper-workflow\workflows\paper.md")
           )
           foreach ($path in $checks) {
             if (-not (Test-Path $path)) {
@@ -148,6 +146,16 @@ jobs:
           }
           if (Test-Path (Join-Path $cliDir "research-skills")) {
             throw "Partial install should not create CLI files."
+          }
+          $unexpected = @(
+            (Join-Path $projectDir ".agent"),
+            (Join-Path $projectDir ".gemini"),
+            (Join-Path $projectDir ".env")
+          )
+          foreach ($path in $unexpected) {
+            if (Test-Path $path) {
+              throw "Partial install should not create project-local files: $path"
+            }
           }
 
       - name: Full bootstrap from checkout
@@ -170,8 +178,8 @@ jobs:
 
           $checks = @(
             (Join-Path $env:CODEX_HOME "skills\research-paper-workflow\SKILL.md"),
-            (Join-Path $projectDir ".agent\workflows\proofread.md"),
-            (Join-Path $projectDir ".gemini\agent-profiles.example.json"),
+            (Join-Path $env:CLAUDE_CODE_HOME "skills\research-paper-workflow\workflows\proofread.md"),
+            (Join-Path $env:GEMINI_HOME "skills\research-paper-workflow\workflows\paper.md"),
             (Join-Path $cliDir "research-skills.cmd"),
             (Join-Path $cliDir "rsk.cmd"),
             (Join-Path $cliDir "rsw.cmd")

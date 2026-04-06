@@ -371,13 +371,13 @@ Key facts confirmed from current repo:
 
 - [x] ~~Add a skill-structure lint layer~~ (Completed in Milestone 26)
 
-- [ ] **Milestone 31: Define an external skill-set borrowing framework** (In Progress)
+- [x] **Milestone 31: Define an external skill-set borrowing framework** (Completed)
   - [x] Draft `guides/maintainer/external-borrowing.md` intake rubric
-  - [ ] classify imported ideas into `provider`, `workflow`, `rubric`, `interaction`, or `canonical skill` before implementation
-  - [ ] require borrowed capabilities to map back to existing `task_id`, artifact paths, and provider-layer contracts instead of copying prompt bodies wholesale
-  - [ ] document when an external capability should become an MCP bridge versus a new canonical skill
-  - [ ] prioritize borrowing evaluation rubrics, review checklists, and workflow structure before borrowing prose-heavy skill bodies
-  - [ ] finalize the maintainer-facing intake checklist for assessing drift risk, overlap with existing skills, and canonicalization cost
+  - [x] classify imported ideas into `provider`, `workflow`, `rubric`, `interaction`, or `canonical skill` before implementation
+  - [x] require borrowed capabilities to map back to existing `task_id`, artifact paths, and provider-layer contracts instead of copying prompt bodies wholesale
+  - [x] document when an external capability should become an MCP bridge versus a new canonical skill
+  - [x] prioritize borrowing evaluation rubrics, review checklists, and workflow structure before borrowing prose-heavy skill bodies
+  - [x] finalize the maintainer-facing intake checklist for assessing drift risk, overlap with existing skills, and canonicalization cost
 
 ### P3 Strategic
 

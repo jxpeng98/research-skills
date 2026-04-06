@@ -8,14 +8,18 @@ This guide defines the rubric for assessing and integrating external ideas into 
 
 When evaluating a new external resource (e.g., a viral "Lit Review Prompt" or a new "Data Extraction Agent"), first classify what exactly you are borrowing:
 
-1. **Provider / Tool Requirement:** Does it rely on a specific API (like searching Semantic Scholar)? 
-   *➔ This belongs in the MCP bridge layer, not the prompt.*
-2. **Workflow Structure:** Is it a sequence of actions (e.g., "Draft outline -> critique -> rewrite")?
-   *➔ This belongs in the orchestrator pipeline definitions or multi-agent collaboration instructions.*
-3. **Evaluation Rubric:** Is it a set of criteria for what makes a "good" output?
+1. **Provider / Tool Requirement:** Does it rely on an external data source or execution environment (e.g., searching an API, running a regression)? 
+   *➔ This belongs in the MCP bridge layer.*
+2. **Workflow Structure:** Is it a macro-sequence of actions (e.g., "Draft outline -> critique -> rewrite")?
+   *➔ This belongs in the orchestrator pipeline definitions.*
+3. **Evaluation Rubric & Review Checklist:** Is it a set of criteria for what makes a "good" output?
    *➔ This should be merged into our `standards/` or the specific stage's quality gates.*
-4. **Canonical Skill (Prompt Body):** Is it deep domain expertise on how to execute a specific task?
+4. **Interaction Pattern:** Is it a specific way of prompting the user (e.g., "Ask me three questions before starting")?
+   *➔ This belongs in the `skills-core.md` behavioral rules.*
+5. **Canonical Skill (Prompt Body):** Is it deep domain expertise on how to execute a specific task?
    *➔ This can be adapted into a Native Skill Markdown file.*
+
+**Prioritization Rule:** Always prioritize extracting Evaluation Rubrics, Review Checklists, and Workflow Structures *before* copying prose-heavy skill bodies. A strong rubric applied to our existing templates is often more powerful (and creates less drift risk) than importing a massive opaque "mega-prompt".
 
 ## 2. The Golden Rule: Map to `task_id`
 
@@ -29,11 +33,12 @@ Every capability in this system is bound by the `workflow-contract`. If an exter
 
 Before opening a PR to merge borrowed capabilities, verify:
 
-- [ ] **Provenance:** Is the original author or system credited in the skill `metadata` or file comments?
+- [ ] **Provenance:** Is the original author, paper, or system credited in the skill `metadata` or file comments?
+- [ ] **Drift Risk Assessment:** Have you checked if this capability overlaps with an existing skill? Avoid creating `analyze_v2.md` if the logic can be cleanly merged into the existing `analyze.md`.
 - [ ] **Decoupling:** Have you removed any "Roleplay" or "You are a helpful assistant" fluff? (Our system's core templates handle identity).
-- [ ] **Token Efficiency:** Is the borrowed prompt condensed using our standard density practices?
-- [ ] **Format Consistency:** Does it use `<output_requirements>` instead of unstructured trailing instructions?
-- [ ] **Contract Alignment:** Does the prompt direct the model to save its output to the canonical path specified in the `task_id` contract?
+- [ ] **Token Efficiency:** Is the borrowed prompt condensed using our standard density practices? Have redundant explanations been stripped?
+- [ ] **Format Consistency:** Does it use `<output_requirements>` and XML tags instead of unstructured trailing instructions?
+- [ ] **Contract Alignment (Canonicalization Cost):** Does the prompt direct the model to save its output to the canonical path specified in the `task_id` contract? If it diverges wildly, is the cost of redefining the contract worth the new capability?
 
 ## 4. Native Skill vs. MCP Bridge
 

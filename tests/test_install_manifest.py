@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import unittest
 from pathlib import Path
 
@@ -7,6 +8,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = REPO_ROOT / "install" / "install_manifest.tsv"
 PACKAGED_MANIFEST_PATH = REPO_ROOT / "research_skills" / "install_manifest.tsv"
+SYNC_DIRS = ("skills", "templates", "standards", "roles")
+SYNC_FILES = ("skills-core.md", "skills-summary.md")
+SYNC_EXCLUDE = {"CLAUDE.project.md"}
 
 
 def _read_manifest() -> list[dict[str, str]]:
@@ -28,7 +32,36 @@ def _read_manifest() -> list[dict[str, str]]:
     return entries
 
 
+def _ensure_skill_package_synced() -> None:
+    pkg = REPO_ROOT / "research-paper-workflow"
+    for dir_name in SYNC_DIRS:
+        src = REPO_ROOT / dir_name
+        dest = pkg / dir_name
+        if not src.is_dir():
+            continue
+        shutil.copytree(
+            src,
+            dest,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(".DS_Store", "__pycache__", *SYNC_EXCLUDE),
+        )
+        for excluded in SYNC_EXCLUDE:
+            for path in dest.rglob(excluded):
+                path.unlink()
+    for file_name in SYNC_FILES:
+        src = REPO_ROOT / file_name
+        dest = pkg / file_name
+        if src.is_file():
+            shutil.copy2(src, dest)
+
+
 class InstallManifestTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        # The bundled skill package is generated and gitignored. Sync it explicitly
+        # so these assertions do not depend on leftover local state.
+        _ensure_skill_package_synced()
+
     def test_packaged_manifest_matches_repo_manifest(self) -> None:
         self.assertTrue(PACKAGED_MANIFEST_PATH.exists(), msg="missing packaged install manifest")
         self.assertEqual(

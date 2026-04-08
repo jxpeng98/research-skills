@@ -396,7 +396,7 @@ def _create_workflow_symlinks(
         created += 1
 
     if not dry_run and created > 0:
-        _print_result("Symlinks", f"{created} workflows → {discovery_dir}", "ok")
+        _print_result("Symlinks", f"{created} workflows -> {discovery_dir}", "ok")
 
 
 def _print_cli_checks(target: str) -> bool:
@@ -664,7 +664,7 @@ def clean_workflow_symlinks(*, dry_run: bool = False) -> int:
             target_path = str(link.resolve())
             if "research-paper-workflow" in target_path:
                 _remove_path(link, dry_run)
-                _print_result("Removed", f"{link.name} → {target}", "ok")
+                _print_result("Removed", f"{link.name} -> {target}", "ok")
                 removed += 1
 
     if removed:

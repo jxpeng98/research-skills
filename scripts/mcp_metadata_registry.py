@@ -113,7 +113,6 @@ def main() -> None:
                         "context_hints": context_hints,
                     },
                 },
-                ensure_ascii=False,
             )
         )
     except Exception as exc:
@@ -124,7 +123,6 @@ def main() -> None:
                     "summary": f"Metadata registry provider exception: {exc}",
                     "data": {"error": str(exc)},
                 },
-                ensure_ascii=False,
             )
         )
 

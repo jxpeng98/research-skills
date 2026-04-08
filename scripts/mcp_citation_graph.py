@@ -30,7 +30,7 @@ def main() -> None:
             citations_fn=get_citations,
             references_fn=get_references,
         )
-        print(json.dumps(output, ensure_ascii=False))
+        print(json.dumps(output))
     except Exception as e:
         print(json.dumps({
             "status": "error",

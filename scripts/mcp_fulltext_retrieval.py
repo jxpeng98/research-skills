@@ -25,7 +25,7 @@ def main() -> None:
             task_packet = {}
 
         result = run_fulltext_retrieval(task_packet, Path.cwd())
-        print(json.dumps(result, ensure_ascii=False))
+        print(json.dumps(result))
     except Exception as exc:
         print(
             json.dumps(
@@ -34,7 +34,6 @@ def main() -> None:
                     "summary": f"Fulltext retrieval provider exception: {exc}",
                     "data": {"error": str(exc)},
                 },
-                ensure_ascii=False,
             )
         )
 

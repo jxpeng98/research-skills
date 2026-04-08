@@ -373,7 +373,7 @@ def _check_pip_version() -> tuple[str, str]:
             parsed_current = Version.parse(__version__)
             if parsed_latest and parsed_current:
                 if parsed_latest.sort_key() > parsed_current.sort_key():
-                    return latest, "update available → pipx upgrade research-skills-installer"
+                    return latest, "update available -> pipx upgrade research-skills-installer"
                 return latest, "up-to-date"
             return latest, "unknown comparison"
     except Exception as e:
@@ -481,7 +481,7 @@ def cmd_check(args: argparse.Namespace) -> int:
     print("")
     print("2) Host CLIs & API Keys (System)")
     for k, v in sys_env.items():
-        icon = "✓" if v["status"] == "ok" else "✗"
+        icon = "ok" if v["status"] == "ok" else "x"
         print(f"   - {k}: {icon} {v['detail']}")
         
     print("")
@@ -631,7 +631,7 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
     _reset = "\033[0m" if _is_tty else ""
 
     beta_label = f" {_dim}(beta){_reset}" if getattr(args, "beta", False) else ""
-    print(f"\n{_bold}{_cyan}─── Upgrade {'─' * 33}{_reset}")
+    print(f"\n{_bold}{_cyan}--- Upgrade {'-' * 33}{_reset}")
     print(f"  {_dim}repo:{_reset}    {resolved_repo}")
     print(f"  {_dim}ref:{_reset}     {ref}{beta_label}")
     print(f"  {_dim}project:{_reset} {project_dir}")
@@ -644,9 +644,9 @@ def cmd_upgrade(args: argparse.Namespace) -> int:
     with tempfile.TemporaryDirectory(prefix="research-skills-upgrade-") as temp_dir:
         temp_root = Path(temp_dir)
         archive_path = temp_root / "repo.tar.gz"
-        print(f"  {_dim}↓ downloading...{_reset}", end="", flush=True)
+        print(f"  {_dim}downloading...{_reset}", end="", flush=True)
         _download(tar_url, archive_path)
-        print(f"\r  {_green}✓{_reset} downloaded      ")
+        print(f"\r  {_green}ok{_reset} downloaded      ")
         extracted_root = _extract_tarball(archive_path, temp_root / "src")
         install_script = extracted_root / "scripts" / "bootstrap_research_skill.py"
         if not install_script.exists():

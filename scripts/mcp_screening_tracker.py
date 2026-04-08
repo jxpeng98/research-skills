@@ -22,7 +22,7 @@ def main() -> None:
         task_packet = payload.get("task_packet", {})
         if not isinstance(task_packet, dict):
             task_packet = {}
-        print(json.dumps(run_screening_tracker(task_packet, Path.cwd()), ensure_ascii=False))
+        print(json.dumps(run_screening_tracker(task_packet, Path.cwd())))
     except Exception as exc:
         print(
             json.dumps(
@@ -31,7 +31,6 @@ def main() -> None:
                     "summary": f"Screening tracker provider exception: {exc}",
                     "data": {"error": str(exc)},
                 },
-                ensure_ascii=False,
             )
         )
 

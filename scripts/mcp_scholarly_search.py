@@ -24,7 +24,7 @@ def main() -> None:
             task_packet = {}
 
         output = run_scholarly_search(task_packet, search_paper)
-        print(json.dumps(output, ensure_ascii=False))
+        print(json.dumps(output))
     except Exception as e:
         print(json.dumps({
             "status": "error",

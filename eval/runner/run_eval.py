@@ -14,7 +14,7 @@ import re
 
 
 def load_case(path: str) -> dict:
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -67,13 +67,13 @@ def run_case(case_path: str, output_dir: str = None):
             # For directory artifacts, check any file inside
             files = [f for f in os.listdir(artifact_path) if f.endswith(('.md', '.py', '.r', '.R'))]
             if files:
-                with open(os.path.join(artifact_path, files[0])) as f:
+                with open(os.path.join(artifact_path, files[0]), encoding="utf-8") as f:
                     content = f.read()
             else:
                 print(f"  [{skill_id}] SKIP — directory empty: {artifact}")
                 continue
         else:
-            with open(artifact_path) as f:
+            with open(artifact_path, encoding="utf-8") as f:
                 content = f.read()
 
         must_contain = expected.get('must_contain', [])
@@ -83,12 +83,12 @@ def run_case(case_path: str, output_dir: str = None):
             failed += 1
             print(f"  [{skill_id}] FAIL")
             for f in failures:
-                print(f"    ✗ {f}")
+                print(f"    x {f}")
         else:
             passed += 1
             print(f"  [{skill_id}] PASS")
 
-    print(f"\n{'─'*40}")
+    print(f"\n{'-'*40}")
     print(f"Results: {passed}/{total} passed, {failed} failed, {total - passed - failed} skipped")
     return failed == 0
 

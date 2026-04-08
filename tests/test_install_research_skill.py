@@ -206,6 +206,77 @@ class InstallResearchSkillTests(unittest.TestCase):
             self.assertFalse((project_dir / "CLAUDE.md").exists())
             self.assertFalse((claude_home / "skills" / "research-paper-workflow" / "SKILL.md").exists())
 
+    def test_existing_managed_install_auto_upgrades_without_overwrite(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            home_dir = temp_root / "home"
+            home_dir.mkdir()
+            codex_home = temp_root / "codex-home"
+            cli_dir = temp_root / "bin"
+            cli_dir.mkdir()
+
+            existing_skill = codex_home / "skills" / "research-paper-workflow"
+            existing_skill.mkdir(parents=True)
+            (existing_skill / "SKILL.md").write_text(
+                "---\nname: research-paper-workflow\ndescription: legacy\n---\n",
+                encoding="utf-8",
+            )
+            (existing_skill / "VERSION").write_text("v0.4.0-beta.14\n", encoding="utf-8")
+
+            (cli_dir / "research-skills").write_text(
+                "#!/usr/bin/env bash\nCLI_FLAVOR=\"shell-bootstrap\"\n# legacy\nresearch-skills <command>\n",
+                encoding="utf-8",
+            )
+            (cli_dir / "research-skills-bootstrap").write_text(
+                "#!/usr/bin/env bash\nDEFAULT_REPO=\"jxpeng98/research-skills\"\n# legacy\n--profile <partial|full>\n",
+                encoding="utf-8",
+            )
+            (cli_dir / "rsk").symlink_to(cli_dir / "research-skills")
+            (cli_dir / "rsw").symlink_to(cli_dir / "research-skills")
+
+            env = os.environ.copy()
+            env["HOME"] = str(home_dir)
+            env["CODEX_HOME"] = str(codex_home)
+            env["RESEARCH_SKILLS_BIN_DIR"] = str(cli_dir)
+            env["PATH"] = f"{cli_dir}{os.pathsep}/usr/bin:/bin"
+            env["NO_COLOR"] = "1"
+
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(INSTALL_SCRIPT),
+                    "--target",
+                    "codex",
+                    "--mode",
+                    "copy",
+                    "--project-dir",
+                    str(project_dir),
+                    "--parts",
+                    "globals,cli",
+                ],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn("updated v0.4.0-beta.14", result.stdout)
+            self.assertIn("already linked", result.stdout)
+            self.assertEqual(
+                (existing_skill / "VERSION").read_text(encoding="utf-8").strip(),
+                (REPO_ROOT / "research-paper-workflow" / "VERSION").read_text(encoding="utf-8").strip(),
+            )
+            self.assertIn('CLI_FLAVOR="shell-bootstrap"', (cli_dir / "research-skills").read_text(encoding="utf-8"))
+            self.assertIn('DEFAULT_REPO="jxpeng98/research-skills"', (cli_dir / "research-skills-bootstrap").read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()

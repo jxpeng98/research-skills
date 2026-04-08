@@ -5,6 +5,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from functools import lru_cache
 from importlib import resources
 from dataclasses import dataclass
 from pathlib import Path
@@ -140,23 +141,94 @@ def _same_path(src: Path, dest: Path) -> bool:
         return False
 
 
+def _read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _read_bytes(path: Path) -> bytes:
+    try:
+        return path.read_bytes()
+    except OSError:
+        return b""
+
+
+def _read_version_file(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def _skill_package_version(path: Path) -> str:
+    if not path.is_dir():
+        return ""
+    skill_text = _read_text(path / "SKILL.md")
+    if "name: research-paper-workflow" not in skill_text:
+        return ""
+    return _read_version_file(path / "VERSION")
+
+
+@lru_cache(maxsize=None)
+def _managed_copy_markers(src_name: str) -> tuple[str, ...]:
+    markers = {
+        "research_skills_cli.sh": ('CLI_FLAVOR="shell-bootstrap"', 'research-skills <command>'),
+        "bootstrap_research_skill.sh": ('DEFAULT_REPO="jxpeng98/research-skills"', "--profile <partial|full>"),
+    }
+    return markers.get(src_name, ())
+
+
+def _is_managed_copy(src: Path, dest: Path) -> bool:
+    if not dest.is_file():
+        return False
+    markers = _managed_copy_markers(src.name)
+    if not markers:
+        return False
+    content = _read_text(dest)
+    return all(marker in content for marker in markers)
+
+
 def _copy_path(src: Path, dest: Path, mode: str, overwrite: bool, dry_run: bool) -> tuple[str, str]:
     if _same_path(src, dest):
-        return "skip", "same path"
+        return "skip", f"{dest} (same path)"
     if dest.exists() or dest.is_symlink():
+        auto_detail = ""
         if not overwrite:
-            return "skip", "exists (use --overwrite)"
+            src_version = _skill_package_version(src)
+            dest_version = _skill_package_version(dest)
+            if src_version and dest_version:
+                if src_version == dest_version:
+                    return "skip", f"{dest} (already installed {src_version})"
+                auto_detail = f"updated {dest_version} -> {src_version}"
+            elif src.is_file() and dest.is_file():
+                if _read_bytes(src) == _read_bytes(dest):
+                    return "skip", f"{dest} (already current)"
+                if _is_managed_copy(src, dest):
+                    auto_detail = "updated"
+                else:
+                    return "skip", f"{dest} (use --overwrite)"
+            elif mode == "link" and dest.is_symlink() and _same_path(src, dest):
+                return "skip", f"{dest} (already linked)"
+            else:
+                return "skip", f"{dest} (use --overwrite)"
+        else:
+            auto_detail = ""
         _remove_path(dest, dry_run)
+        detail_suffix = f" ({auto_detail})" if auto_detail else ""
+    else:
+        detail_suffix = ""
     _ensure_dir(dest.parent, dry_run)
     if dry_run:
-        return "ok", "dry-run"
+        return "ok", str(dest)
     if mode == "link":
         os.symlink(str(src), str(dest), target_is_directory=src.is_dir())
     elif src.is_dir():
         shutil.copytree(src, dest)
     else:
         shutil.copy2(src, dest)
-    return "ok", str(dest)
+    return "ok", f"{dest}{detail_suffix}"
 
 
 def _parse_manifest() -> list[dict[str, str]]:
@@ -219,12 +291,12 @@ def _print_section(title: str) -> None:
 
 def _copy_display(src: Path, dest: Path, label: str, options: InstallOptions) -> None:
     status, detail = _copy_path(src, dest, options.mode, options.overwrite, options.dry_run)
-    _print_result(label, str(dest) if status == "ok" else f"{dest} ({detail})", status)
+    _print_result(label, detail, status)
 
 
 def _install_alias_copy(src: Path, dest: Path, options: InstallOptions) -> None:
     status, detail = _copy_path(src, dest, "copy", options.overwrite, options.dry_run)
-    _print_result("Alias", str(dest) if status == "ok" else f"{dest} ({detail})", status)
+    _print_result("Alias", detail, status)
     if status == "ok":
         _set_executable(dest, options.dry_run)
 
@@ -262,8 +334,11 @@ def _install_shell_cli(options: InstallOptions) -> None:
         for name in ("rsk", "rsw"):
             alias_dest = cli_dir / name
             if alias_dest.exists() or alias_dest.is_symlink():
+                if alias_dest.is_symlink() and _same_path(cli_dest, alias_dest):
+                    _print_result("Alias", f"{alias_dest} (already linked)", "skip")
+                    continue
                 if not options.overwrite:
-                    _print_result("Alias", f"{alias_dest} (exists, use --overwrite)", "skip")
+                    _print_result("Alias", f"{alias_dest} (use --overwrite)", "skip")
                     continue
                 _remove_path(alias_dest, options.dry_run)
             _ensure_dir(alias_dest.parent, options.dry_run)

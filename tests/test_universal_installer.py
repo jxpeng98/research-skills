@@ -13,6 +13,71 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class UniversalInstallerTests(unittest.TestCase):
+    def test_existing_managed_skill_auto_updates_without_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            codex_home = temp_root / "codex-home"
+            existing_skill = codex_home / "skills" / "research-paper-workflow"
+            existing_skill.mkdir(parents=True)
+            (existing_skill / "SKILL.md").write_text(
+                "---\nname: research-paper-workflow\ndescription: legacy\n---\n",
+                encoding="utf-8",
+            )
+            (existing_skill / "VERSION").write_text("v0.4.0-beta.14\n", encoding="utf-8")
+            (existing_skill / "legacy.txt").write_text("old", encoding="utf-8")
+
+            env = os.environ.copy()
+            env["CODEX_HOME"] = str(codex_home)
+            env["PATH"] = ""
+
+            with mock.patch.dict(os.environ, env, clear=True):
+                result = install(
+                    InstallOptions(
+                        repo_root=REPO_ROOT,
+                        project_dir=project_dir,
+                        target="codex",
+                        profile="partial",
+                    )
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(
+                (existing_skill / "VERSION").read_text(encoding="utf-8").strip(),
+                (REPO_ROOT / "research-paper-workflow" / "VERSION").read_text(encoding="utf-8").strip(),
+            )
+            self.assertFalse((existing_skill / "legacy.txt").exists())
+            self.assertTrue((existing_skill / "skills-core.md").exists())
+
+    def test_existing_unmanaged_cli_requires_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            cli_dir = temp_root / "bin"
+            cli_dir.mkdir(parents=True)
+            existing_cli = cli_dir / "research-skills"
+            existing_cli.write_text("#!/usr/bin/env bash\necho custom\n", encoding="utf-8")
+
+            env = os.environ.copy()
+            env["PATH"] = ""
+
+            with mock.patch.dict(os.environ, env, clear=True):
+                result = install(
+                    InstallOptions(
+                        repo_root=REPO_ROOT,
+                        project_dir=project_dir,
+                        target="codex",
+                        profile="full",
+                        cli_dir=cli_dir,
+                        doctor=False,
+                    )
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(existing_cli.read_text(encoding="utf-8"), "#!/usr/bin/env bash\necho custom\n")
+
     def test_project_only_parts_skip_global_skill_install(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_root = Path(tmp_dir)
@@ -218,6 +283,7 @@ class CleanTests(unittest.TestCase):
 
             env = os.environ.copy()
             env["CLAUDE_CODE_HOME"] = str(claude_home)
+            env["GEMINI_HOME"] = str(temp_root / "gemini-home")
             with mock.patch.dict(os.environ, env, clear=True):
                 from research_skills.universal_installer import clean_workflow_symlinks
                 result = clean_workflow_symlinks()

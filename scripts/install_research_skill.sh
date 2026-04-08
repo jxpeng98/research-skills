@@ -311,21 +311,121 @@ path_contains_dir() {
   return 1
 }
 
+read_version_file() {
+  local path="$1"
+  [[ -f "$path" ]] || return 1
+  local raw
+  IFS= read -r raw < "$path" || true
+  raw="${raw#"${raw%%[![:space:]]*}"}"
+  raw="${raw%"${raw##*[![:space:]]}"}"
+  [[ -n "$raw" ]] || return 1
+  printf '%s\n' "$raw"
+}
+
+is_research_skill_package_dir() {
+  local path="$1"
+  [[ -d "$path" && -f "$path/SKILL.md" ]] || return 1
+  grep -q 'name: research-paper-workflow' "$path/SKILL.md"
+}
+
+skill_package_version() {
+  local path="$1"
+  is_research_skill_package_dir "$path" || return 1
+  read_version_file "$path/VERSION"
+}
+
+same_file_content() {
+  local src="$1"
+  local dest="$2"
+  [[ -f "$src" && -f "$dest" ]] || return 1
+  cmp -s "$src" "$dest"
+}
+
+is_managed_cli_copy() {
+  local path="$1"
+  [[ -f "$path" ]] || return 1
+  grep -q 'CLI_FLAVOR="shell-bootstrap"' "$path" && \
+    grep -q 'research-skills <command>' "$path"
+}
+
+is_managed_bootstrap_copy() {
+  local path="$1"
+  [[ -f "$path" ]] || return 1
+  grep -q 'DEFAULT_REPO="jxpeng98/research-skills"' "$path" && \
+    grep -q -- '--profile <partial|full>' "$path"
+}
+
+is_managed_copy_pair() {
+  local src="$1"
+  local dest="$2"
+  case "$(basename "$src")" in
+    research_skills_cli.sh) is_managed_cli_copy "$dest" ;;
+    bootstrap_research_skill.sh) is_managed_bootstrap_copy "$dest" ;;
+    *) return 1 ;;
+  esac
+}
+
+symlink_points_to() {
+  local link_path="$1"
+  local target_path="$2"
+  local raw_target resolved_link_target resolved_target
+
+  [[ -L "$link_path" ]] || return 1
+  raw_target="$(readlink "$link_path")" || return 1
+  if [[ "$raw_target" == /* ]]; then
+    resolved_link_target="$(resolve_abs "$raw_target")"
+  else
+    resolved_link_target="$(resolve_abs "$(dirname "$link_path")/$raw_target")"
+  fi
+  resolved_target="$(resolve_abs "$target_path")"
+  [[ "$resolved_link_target" == "$resolved_target" ]]
+}
+
 # ── Core copy logic (silent – callers handle display) ────────────────────────
+COPY_ITEM_STATUS=""
+COPY_ITEM_DETAIL=""
+
 _copy_item() {
   local src="$1"
   local dest="$2"
-  local src_abs dest_abs
+  local src_abs dest_abs src_version dest_version auto_detail=""
   src_abs="$(resolve_abs "$src")"
   dest_abs="$(resolve_abs "$dest")"
+  COPY_ITEM_STATUS="ok"
+  COPY_ITEM_DETAIL="$dest"
 
   if [[ "$src_abs" == "$dest_abs" ]]; then
-    return 1  # same-path skip
+    COPY_ITEM_STATUS="skip"
+    COPY_ITEM_DETAIL="$dest (same path)"
+    return 0
   fi
 
   if [[ -e "$dest" || -L "$dest" ]]; then
     if [[ "$OVERWRITE" -ne 1 ]]; then
-      return 2  # exists skip
+      src_version="$(skill_package_version "$src" || true)"
+      dest_version="$(skill_package_version "$dest" || true)"
+      if [[ -n "$src_version" && -n "$dest_version" ]]; then
+        if [[ "$src_version" == "$dest_version" ]]; then
+          COPY_ITEM_STATUS="skip"
+          COPY_ITEM_DETAIL="$dest (already installed $src_version)"
+          return 0
+        fi
+        auto_detail="updated $dest_version -> $src_version"
+      elif [[ -L "$dest" && "$MODE" == "link" && "$(resolve_abs "$dest")" == "$src_abs" ]]; then
+        COPY_ITEM_STATUS="skip"
+        COPY_ITEM_DETAIL="$dest (already linked)"
+        return 0
+      elif same_file_content "$src" "$dest"; then
+        COPY_ITEM_STATUS="skip"
+        COPY_ITEM_DETAIL="$dest (already current)"
+        return 0
+      elif is_managed_copy_pair "$src" "$dest"; then
+        auto_detail="updated"
+      else
+        COPY_ITEM_STATUS="skip"
+        COPY_ITEM_DETAIL="$dest (use --overwrite)"
+        return 0
+      fi
     fi
     run_cmd rm -rf "$dest"
   fi
@@ -337,6 +437,9 @@ _copy_item() {
   else
     run_cmd cp -R "$src_abs" "$dest"
   fi
+  if [[ -n "$auto_detail" ]]; then
+    COPY_ITEM_DETAIL="$dest ($auto_detail)"
+  fi
   return 0
 }
 
@@ -344,13 +447,12 @@ copy_item_display() {
   local src="$1"
   local dest="$2"
   local label="${3:-File}"
-  local ret=0
-  _copy_item "$src" "$dest" || ret=$?
-  case $ret in
-    0) ok "$label" "$dest" ;;
-    1) skip "$label" "$dest (same path)" ;;
-    2) skip "$label" "$dest (use --overwrite)" ;;
-  esac
+  _copy_item "$src" "$dest"
+  if [[ "$COPY_ITEM_STATUS" == "ok" ]]; then
+    ok "$label" "$COPY_ITEM_DETAIL"
+  else
+    skip "$label" "$COPY_ITEM_DETAIL"
+  fi
   return 0
 }
 
@@ -366,6 +468,10 @@ install_alias_link() {
   local dest="$2"
 
   if [[ -e "$dest" || -L "$dest" ]]; then
+    if symlink_points_to "$dest" "$target_path"; then
+      skip "Alias" "$dest (already linked)"
+      return 0
+    fi
     if [[ "$OVERWRITE" -ne 1 ]]; then
       skip "Alias" "$dest (use --overwrite)"
       return 0

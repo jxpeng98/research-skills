@@ -22,10 +22,21 @@ from bridges.gemini_bridge import GeminiBridge
 BROKER_URL_ENV = "RESEARCH_GEMINI_BROKER_URL"
 BROKER_TOKEN_ENV = "RESEARCH_GEMINI_BROKER_TOKEN"
 BROKER_BACKEND_CMD_ENV = "RESEARCH_GEMINI_BROKER_BACKEND_CMD"
+GEMINI_TRANSPORT_ENV = "RESEARCH_GEMINI_TRANSPORT"
 BROKER_PROTOCOL_VERSION = "research-gemini-broker/v1"
 DEFAULT_BROKER_TIMEOUT_SECONDS = 20.0
 DEFAULT_BIND_HOST = "127.0.0.1"
 DEFAULT_BIND_PORT = 8767
+VALID_GEMINI_TRANSPORTS = {"auto", "broker", "direct"}
+GEMINI_TRANSPORT_ALIASES = {
+    "auto": "auto",
+    "broker": "broker",
+    "mcp": "broker",
+    "resident": "broker",
+    "direct": "direct",
+    "cli": "direct",
+    "subprocess": "direct",
+}
 
 
 def gemini_cached_auth_files() -> list[Path]:
@@ -104,6 +115,28 @@ def gemini_noninteractive_auth_status() -> tuple[bool, str]:
         "or configure Vertex auth with GOOGLE_GENAI_USE_VERTEXAI plus "
         "GOOGLE_API_KEY/GOOGLE_APPLICATION_CREDENTIALS and project/location env vars.",
     )
+
+
+def normalize_gemini_transport(value: object) -> str:
+    raw = str(value or "").strip().lower()
+    if not raw:
+        return "auto"
+    return GEMINI_TRANSPORT_ALIASES.get(raw, "auto")
+
+
+def resolve_gemini_transport(
+    runtime_options: dict[str, Any] | None = None,
+) -> tuple[str, str]:
+    options = dict(runtime_options or {})
+    option_value = options.get("transport")
+    if option_value is not None and str(option_value).strip():
+        return normalize_gemini_transport(option_value), "runtime_options.transport"
+
+    env_value = os.environ.get(GEMINI_TRANSPORT_ENV, "").strip()
+    if env_value:
+        return normalize_gemini_transport(env_value), GEMINI_TRANSPORT_ENV
+
+    return "auto", "default"
 
 
 class GeminiBrokerClientError(RuntimeError):

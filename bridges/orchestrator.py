@@ -39,11 +39,13 @@ from .i18n import get_language, get_text
 from .critique_questions import get_critique_questions
 from .providers.research_collab import (
     DEFAULT_BROKER_TIMEOUT_SECONDS,
+    GEMINI_TRANSPORT_ENV,
     bridge_response_from_broker_payload,
     broker_client_from_env,
     broker_status_from_env,
     gemini_cached_auth_files,
     gemini_noninteractive_auth_status,
+    resolve_gemini_transport,
 )
 from .errors import (
     ResearchError,
@@ -116,7 +118,7 @@ class ModelOrchestrator:
             "runtime_options": {
                 "codex": {"sandbox": "read-only", "non_interactive": True},
                 "claude": {"permission_mode": "default", "non_interactive": True},
-                "gemini": {"sandbox": False, "non_interactive": True},
+                "gemini": {"sandbox": False, "non_interactive": True, "transport": "auto"},
             },
         },
         "strict-review": {
@@ -126,7 +128,7 @@ class ModelOrchestrator:
             "runtime_options": {
                 "codex": {"sandbox": "read-only", "non_interactive": True},
                 "claude": {"permission_mode": "default", "non_interactive": True},
-                "gemini": {"sandbox": True, "non_interactive": True},
+                "gemini": {"sandbox": True, "non_interactive": True, "transport": "auto"},
             },
         },
         "rapid-draft": {
@@ -136,7 +138,7 @@ class ModelOrchestrator:
             "runtime_options": {
                 "codex": {"sandbox": "workspace-write", "non_interactive": True},
                 "claude": {"permission_mode": "default", "non_interactive": True},
-                "gemini": {"sandbox": False, "non_interactive": True},
+                "gemini": {"sandbox": False, "non_interactive": True, "transport": "auto"},
             },
         },
         "focused-delivery": {
@@ -147,7 +149,7 @@ class ModelOrchestrator:
             "runtime_options": {
                 "codex": {"sandbox": "read-only", "non_interactive": True, "timeout_seconds": 240},
                 "claude": {"permission_mode": "default", "non_interactive": True, "timeout_seconds": 240},
-                "gemini": {"sandbox": False, "non_interactive": True, "timeout_seconds": 240},
+                "gemini": {"sandbox": False, "non_interactive": True, "transport": "auto", "timeout_seconds": 240},
             },
         },
         "deep-research": {
@@ -160,7 +162,7 @@ class ModelOrchestrator:
             "runtime_options": {
                 "codex": {"sandbox": "read-only", "non_interactive": True, "timeout_seconds": 480},
                 "claude": {"permission_mode": "default", "non_interactive": True, "timeout_seconds": 540},
-                "gemini": {"sandbox": True, "non_interactive": True, "timeout_seconds": 420},
+                "gemini": {"sandbox": True, "non_interactive": True, "transport": "auto", "timeout_seconds": 420},
             },
         },
     }
@@ -1806,24 +1808,42 @@ Provide your verification assessment.
                 )
 
             if cli_name == "gemini":
+                transport, transport_source = self._gemini_transport()
                 broker_status = self._gemini_broker_status()
-                if broker_status["configured"]:
-                    add_check(
-                        "Gemini broker",
-                        "ok" if broker_status["ok"] else "warning",
-                        broker_status["detail"],
-                        "Start scripts/gemini_session_broker.py or unset RESEARCH_GEMINI_BROKER_URL.",
-                    )
-                ok, detail = self._gemini_noninteractive_auth_status()
+                direct_ok, direct_detail = self._gemini_noninteractive_auth_status()
                 add_check(
-                    "Gemini non-interactive auth",
-                    "ok" if ok else "warning",
-                    detail,
-                    "Prefer GEMINI_API_KEY or Vertex env auth for orchestrated Gemini runs.",
+                    "Gemini transport",
+                    "ok",
+                    f"{transport} (source: {transport_source})",
+                )
+                broker_check_status, broker_detail, broker_recommendation = self._doctor_gemini_broker_check(
+                    transport=transport,
+                    broker_status=broker_status,
+                )
+                add_check(
+                    "Gemini broker",
+                    broker_check_status,
+                    broker_detail,
+                    broker_recommendation,
+                )
+                direct_check_status, direct_check_detail, direct_recommendation = self._doctor_gemini_direct_check(
+                    transport=transport,
+                    broker_status=broker_status,
+                    direct_ok=direct_ok,
+                    direct_detail=direct_detail,
+                )
+                add_check(
+                    "Gemini direct auth",
+                    direct_check_status,
+                    direct_check_detail,
+                    direct_recommendation,
                 )
                 for env_name in api_envs:
                     if os.environ.get(env_name, "").strip():
                         add_check(f"Env {env_name}", "ok", "configured")
+                transport_env = os.environ.get(GEMINI_TRANSPORT_ENV, "").strip()
+                if transport_env:
+                    add_check(f"Env {GEMINI_TRANSPORT_ENV}", "ok", transport_env)
                 continue
 
             configured_env = next(
@@ -2011,12 +2031,57 @@ Provide your verification assessment.
     def _gemini_noninteractive_auth_status(self) -> tuple[bool, str]:
         return gemini_noninteractive_auth_status()
 
+    def _gemini_transport(
+        self,
+        runtime_options: dict[str, Any] | None = None,
+    ) -> tuple[str, str]:
+        return resolve_gemini_transport(runtime_options)
+
     def _gemini_broker_status(
         self,
         *,
         timeout_seconds: float = DEFAULT_BROKER_TIMEOUT_SECONDS,
     ) -> dict[str, Any]:
         return broker_status_from_env(timeout_seconds=timeout_seconds)
+
+    def _doctor_gemini_broker_check(
+        self,
+        *,
+        transport: str,
+        broker_status: dict[str, Any],
+    ) -> tuple[str, str, str | None]:
+        detail = broker_status["detail"]
+        recommendation = "Start scripts/gemini_session_broker.py or unset RESEARCH_GEMINI_BROKER_URL."
+        if transport == "direct":
+            if broker_status["configured"]:
+                return "ok", f"configured but bypassed by transport=direct: {detail}", None
+            return "ok", "not selected (transport=direct)", None
+        if transport == "broker":
+            return ("ok" if broker_status["ok"] else "warning"), detail, recommendation
+        if broker_status["configured"]:
+            return ("ok" if broker_status["ok"] else "warning"), detail, recommendation
+        return "ok", "not configured; auto transport will use direct auth if available", None
+
+    def _doctor_gemini_direct_check(
+        self,
+        *,
+        transport: str,
+        broker_status: dict[str, Any],
+        direct_ok: bool,
+        direct_detail: str,
+    ) -> tuple[str, str, str | None]:
+        recommendation = "Prefer GEMINI_API_KEY or Vertex env auth for direct Gemini subprocess runs."
+        if transport == "broker":
+            if direct_ok:
+                return "ok", f"available but bypassed by transport=broker: {direct_detail}", None
+            return "ok", "not required for broker transport", None
+        if transport == "auto" and broker_status["configured"] and broker_status["ok"] and not direct_ok:
+            return "ok", "not required because auto transport resolves to broker", None
+        return (
+            "ok" if direct_ok else "warning",
+            direct_detail,
+            recommendation if not direct_ok else None,
+        )
 
     def _runtime_preflight_error(
         self,
@@ -2038,23 +2103,36 @@ Provide your verification assessment.
         # Gemini collaboration runs non-interactively in orchestrated flows, so
         # browser-based login is not a stable dependency. Fail fast and reroute.
         if agent_name == "gemini" and non_interactive:
+            transport, _transport_source = self._gemini_transport(options)
             broker_status = self._gemini_broker_status()
+            direct_ok, direct_detail = self._gemini_noninteractive_auth_status()
+            cli_path = shutil.which(agent_name)
+            if transport == "broker":
+                if broker_status["configured"] and broker_status["ok"]:
+                    return None
+                if broker_status["configured"]:
+                    return f"Gemini broker unavailable: {broker_status['detail']}"
+                return "Gemini broker transport selected but RESEARCH_GEMINI_BROKER_URL is not configured."
+            if transport == "direct":
+                if not cli_path:
+                    return f"{agent_name} CLI not found in PATH. Please install it first."
+                if direct_ok:
+                    return None
+                return direct_detail
             if broker_status["configured"] and broker_status["ok"]:
                 return None
-            cli_path = shutil.which(agent_name)
-            if not cli_path:
-                if broker_status["configured"]:
-                    return (
-                        f"Gemini broker unavailable: {broker_status['detail']}; "
-                        "gemini CLI not found in PATH."
-                    )
-                return f"{agent_name} CLI not found in PATH. Please install it first."
-            ok, detail = self._gemini_noninteractive_auth_status()
-            if ok:
+            if cli_path and direct_ok:
                 return None
             if broker_status["configured"]:
-                return f"Gemini broker unavailable: {broker_status['detail']}; {detail}"
-            return detail
+                if cli_path:
+                    return f"Gemini broker unavailable: {broker_status['detail']}; {direct_detail}"
+                return (
+                    f"Gemini broker unavailable: {broker_status['detail']}; "
+                    "gemini CLI not found in PATH."
+                )
+            if not cli_path:
+                return f"{agent_name} CLI not found in PATH. Please install it first."
+            return direct_detail
 
         cli_path = shutil.which(agent_name)
         if not cli_path:
@@ -2107,18 +2185,30 @@ Provide your verification assessment.
         if agent_name == "claude":
             return self.claude.execute(final_prompt, cwd, **options)
         if agent_name == "gemini":
-            broker_response = self._execute_gemini_via_broker(
-                final_prompt,
-                cwd,
-                options,
+            transport, _transport_source = self._gemini_transport(options)
+            if transport in {"broker", "auto"}:
+                broker_response = self._execute_gemini_via_broker(
+                    final_prompt,
+                    cwd,
+                    options,
+                )
+                if broker_response is not None:
+                    if broker_response.success:
+                        return broker_response
+                    direct_ok, _ = self._gemini_noninteractive_auth_status()
+                    if transport == "broker" or not direct_ok or not shutil.which("gemini"):
+                        return broker_response
+            if transport == "broker":
+                return BridgeResponse.from_error(
+                    "gemini",
+                    "Gemini broker transport selected but broker execution did not run.",
+                )
+            if transport == "direct" or transport == "auto":
+                return self.gemini.execute(final_prompt, cwd, **options)
+            return BridgeResponse.from_error(
+                "gemini",
+                f"Unsupported Gemini transport: {transport}",
             )
-            if broker_response is not None:
-                if broker_response.success:
-                    return broker_response
-                direct_ok, _ = self._gemini_noninteractive_auth_status()
-                if not direct_ok or not shutil.which("gemini"):
-                    return broker_response
-            return self.gemini.execute(final_prompt, cwd, **options)
         return BridgeResponse.from_error(
             agent_name,
             f"Unsupported runtime agent for this orchestrator: {agent_name}",

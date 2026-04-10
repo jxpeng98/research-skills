@@ -21,6 +21,7 @@
         "gemini": {
           "sandbox": false,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 300
         }
       }
@@ -44,6 +45,7 @@
         "gemini": {
           "sandbox": true,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 240
         }
       }
@@ -66,6 +68,7 @@
         "gemini": {
           "sandbox": false,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 180
         }
       }
@@ -89,6 +92,7 @@
         "gemini": {
           "sandbox": false,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 240
         }
       }
@@ -114,6 +118,7 @@
         "gemini": {
           "sandbox": true,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 420
         }
       }
@@ -137,6 +142,7 @@
         "gemini": {
           "sandbox": true,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 300
         }
       }
@@ -160,6 +166,7 @@
         "gemini": {
           "sandbox": false,
           "non_interactive": true,
+          "transport": "auto",
           "timeout_seconds": 300
         }
       }

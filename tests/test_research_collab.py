@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import types
 import unittest
@@ -19,9 +20,11 @@ except ModuleNotFoundError:
 from bridges.base_bridge import BridgeResponse
 from bridges.orchestrator import ModelOrchestrator
 from bridges.providers.research_collab import (
+    GEMINI_TRANSPORT_ENV,
     GeminiBrokerBackend,
     GeminiSessionBroker,
     bridge_response_from_broker_payload,
+    resolve_gemini_transport,
 )
 
 
@@ -116,6 +119,13 @@ class _BrokerRoutingOrchestrator(ModelOrchestrator):
 
 
 class ResearchCollabTests(unittest.TestCase):
+    def test_resolve_gemini_transport_prefers_runtime_options_over_env(self) -> None:
+        with mock.patch.dict(os.environ, {GEMINI_TRANSPORT_ENV: "broker"}, clear=False):
+            transport, source = resolve_gemini_transport({"transport": "direct"})
+
+        self.assertEqual(transport, "direct")
+        self.assertEqual(source, "runtime_options.transport")
+
     def test_broker_round_trip_tracks_session_and_reset(self) -> None:
         backend = _SuccessBackend()
         broker = GeminiSessionBroker(backend=backend, token="secret")
@@ -181,3 +191,69 @@ class ResearchCollabTests(unittest.TestCase):
 
         self.assertTrue(response.success)
         self.assertEqual(response.content, "broker:broker route test")
+
+    def test_preflight_broker_transport_accepts_healthy_broker_without_direct_auth(self) -> None:
+        orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")
+
+        with mock.patch.dict(os.environ, {GEMINI_TRANSPORT_ENV: "broker"}, clear=False):
+            with mock.patch.object(
+                orchestrator,
+                "_gemini_broker_status",
+                return_value={"configured": True, "ok": True, "detail": "broker ready", "data": {}},
+            ):
+                with mock.patch.object(
+                    orchestrator,
+                    "_gemini_noninteractive_auth_status",
+                    return_value=(False, "direct auth missing"),
+                ):
+                    error = orchestrator._runtime_preflight_error("gemini", REPO_ROOT, {})
+
+        self.assertIsNone(error)
+
+    def test_preflight_direct_transport_ignores_broker_and_requires_direct_auth(self) -> None:
+        orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")
+
+        with mock.patch.dict(os.environ, {GEMINI_TRANSPORT_ENV: "direct"}, clear=False):
+            with mock.patch.object(
+                orchestrator,
+                "_gemini_broker_status",
+                return_value={"configured": True, "ok": True, "detail": "broker ready", "data": {}},
+            ):
+                with mock.patch.object(
+                    orchestrator,
+                    "_gemini_noninteractive_auth_status",
+                    return_value=(False, "direct auth missing"),
+                ):
+                    with mock.patch("bridges.orchestrator.shutil.which", return_value="/tmp/gemini"):
+                        error = orchestrator._runtime_preflight_error("gemini", REPO_ROOT, {})
+
+        self.assertEqual(error, "direct auth missing")
+
+    def test_doctor_marks_direct_auth_ok_when_auto_transport_resolves_to_broker(self) -> None:
+        orchestrator = ModelOrchestrator(standards_dir=REPO_ROOT / "standards")
+
+        with mock.patch.dict(os.environ, {}, clear=False):
+            with mock.patch("bridges.orchestrator.shutil.which", side_effect=lambda name: f"/tmp/{name}"):
+                with mock.patch.object(
+                    orchestrator,
+                    "_check_command_available",
+                    return_value=(True, "/tmp/mock-command"),
+                ):
+                    with mock.patch.object(
+                        orchestrator,
+                        "_gemini_broker_status",
+                        return_value={"configured": True, "ok": True, "detail": "broker ready", "data": {}},
+                    ):
+                        with mock.patch.object(
+                            orchestrator,
+                            "_gemini_noninteractive_auth_status",
+                            return_value=(False, "direct auth missing"),
+                        ):
+                            result = orchestrator.doctor(REPO_ROOT)
+
+        self.assertIn("[OK] Gemini transport: auto (source: default)", result.merged_analysis)
+        self.assertIn("[OK] Gemini broker: broker ready", result.merged_analysis)
+        self.assertIn(
+            "[OK] Gemini direct auth: not required because auto transport resolves to broker",
+            result.merged_analysis,
+        )

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import shutil
 import subprocess
 import threading
+from collections import deque
 from dataclasses import asdict
 from datetime import datetime, timezone
 from http import HTTPStatus
@@ -23,8 +25,13 @@ BROKER_URL_ENV = "RESEARCH_GEMINI_BROKER_URL"
 BROKER_TOKEN_ENV = "RESEARCH_GEMINI_BROKER_TOKEN"
 BROKER_BACKEND_CMD_ENV = "RESEARCH_GEMINI_BROKER_BACKEND_CMD"
 GEMINI_TRANSPORT_ENV = "RESEARCH_GEMINI_TRANSPORT"
+GEMINI_ACP_COMMAND_ENV = "RESEARCH_GEMINI_ACP_CMD"
 BROKER_PROTOCOL_VERSION = "research-gemini-broker/v1"
 DEFAULT_BROKER_TIMEOUT_SECONDS = 20.0
+DEFAULT_ACP_COMMAND = "gemini --acp"
+DEFAULT_ACP_PROTOCOL_VERSION = 1
+DEFAULT_ACP_MODE = "plan"
+DEFAULT_ACP_REQUEST_TIMEOUT_SECONDS = 120.0
 DEFAULT_BIND_HOST = "127.0.0.1"
 DEFAULT_BIND_PORT = 8767
 VALID_GEMINI_TRANSPORTS = {"auto", "broker", "direct"}
@@ -372,6 +379,677 @@ class GeminiCLIBackend(GeminiBrokerBackend):
         options.setdefault("non_interactive", True)
         bridge = GeminiBridge(sandbox=sandbox, model=model)
         return bridge.execute(prompt, cwd, **options)
+
+
+class GeminiAcpClientError(RuntimeError):
+    pass
+
+
+class _GeminiACPProcessClient:
+    def __init__(
+        self,
+        command: str,
+        *,
+        startup_timeout_seconds: float = DEFAULT_BROKER_TIMEOUT_SECONDS,
+        request_timeout_seconds: float = DEFAULT_ACP_REQUEST_TIMEOUT_SECONDS,
+    ) -> None:
+        self.command = command.strip() or DEFAULT_ACP_COMMAND
+        self.startup_timeout_seconds = startup_timeout_seconds
+        self.request_timeout_seconds = request_timeout_seconds
+        self._process: subprocess.Popen[str] | None = None
+        self._stdout_thread: threading.Thread | None = None
+        self._stderr_thread: threading.Thread | None = None
+        self._write_lock = threading.RLock()
+        self._state_lock = threading.RLock()
+        self._request_counter = 0
+        self._pending: dict[str, queue.Queue[dict[str, Any]]] = {}
+        self._update_session_id: str | None = None
+        self._update_buffer: list[dict[str, Any]] | None = None
+        self._stderr_tail: deque[str] = deque(maxlen=40)
+        self._initialize_result: dict[str, Any] | None = None
+
+    def is_alive(self) -> bool:
+        return self._process is not None and self._process.poll() is None
+
+    def stderr_tail(self) -> list[str]:
+        with self._state_lock:
+            return list(self._stderr_tail)
+
+    def initialize(self) -> dict[str, Any]:
+        with self._state_lock:
+            if self._initialize_result is not None and self.is_alive():
+                return self._initialize_result
+        result = self.request(
+            "initialize",
+            {
+                "protocolVersion": DEFAULT_ACP_PROTOCOL_VERSION,
+                "clientCapabilities": {
+                    "auth": {"terminal": False},
+                    "fs": {"readTextFile": False, "writeTextFile": False},
+                    "terminal": False,
+                },
+                "clientInfo": {
+                    "name": "research-skills",
+                    "version": BROKER_PROTOCOL_VERSION,
+                },
+            },
+            timeout_seconds=self.startup_timeout_seconds,
+        )
+        with self._state_lock:
+            self._initialize_result = result
+        return result
+
+    def request(
+        self,
+        method: str,
+        params: dict[str, Any],
+        *,
+        timeout_seconds: float | None = None,
+        update_buffer: list[dict[str, Any]] | None = None,
+        update_session_id: str | None = None,
+    ) -> dict[str, Any]:
+        self._ensure_process_started()
+        request_id = self._next_request_id(method)
+        response_queue: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=1)
+        with self._state_lock:
+            self._pending[request_id] = response_queue
+            if update_buffer is not None:
+                self._update_buffer = update_buffer
+                self._update_session_id = str(update_session_id or "").strip() or None
+
+        payload = {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "method": method,
+            "params": params,
+        }
+        try:
+            self._write_message(payload)
+            timeout_value = timeout_seconds or self.request_timeout_seconds
+            response = response_queue.get(timeout=timeout_value)
+        except queue.Empty as exc:
+            self.close()
+            raise GeminiAcpClientError(
+                f"Gemini ACP request timed out after {timeout_value:.1f}s: {method}"
+            ) from exc
+        finally:
+            with self._state_lock:
+                self._pending.pop(request_id, None)
+                if update_buffer is not None and self._update_buffer is update_buffer:
+                    self._update_buffer = None
+                    self._update_session_id = None
+
+        error_payload = response.get("error")
+        if isinstance(error_payload, dict):
+            message = str(error_payload.get("message", "unknown ACP error")).strip()
+            raise GeminiAcpClientError(f"{method}: {message}")
+        result = response.get("result", {})
+        if not isinstance(result, dict):
+            raise GeminiAcpClientError(f"{method}: invalid ACP response payload")
+        return result
+
+    def close(self) -> None:
+        process = self._process
+        if process is not None and process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=2.0)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=2.0)
+        with self._state_lock:
+            self._process = None
+            self._stdout_thread = None
+            self._stderr_thread = None
+            self._initialize_result = None
+            pending = list(self._pending.values())
+            self._pending.clear()
+            self._update_buffer = None
+            self._update_session_id = None
+        for pending_queue in pending:
+            try:
+                pending_queue.put_nowait(
+                    {
+                        "error": {
+                            "message": "Gemini ACP process closed before the request completed."
+                        }
+                    }
+                )
+            except queue.Full:
+                pass
+
+    def _ensure_process_started(self) -> None:
+        if self.is_alive():
+            return
+        with self._state_lock:
+            if self.is_alive():
+                return
+            self._initialize_result = None
+            self._stderr_tail.clear()
+            try:
+                self._process = subprocess.Popen(
+                    split_command(self.command),
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    bufsize=1,
+                )
+            except OSError as exc:
+                raise GeminiAcpClientError(
+                    f"failed to start Gemini ACP command '{self.command}': {exc}"
+                ) from exc
+            self._stdout_thread = threading.Thread(
+                target=self._read_stdout_loop,
+                name="gemini-acp-stdout",
+                daemon=True,
+            )
+            self._stderr_thread = threading.Thread(
+                target=self._read_stderr_loop,
+                name="gemini-acp-stderr",
+                daemon=True,
+            )
+            self._stdout_thread.start()
+            self._stderr_thread.start()
+
+    def _next_request_id(self, method: str) -> str:
+        with self._state_lock:
+            self._request_counter += 1
+            return f"{method}-{self._request_counter}"
+
+    def _write_message(self, payload: dict[str, Any]) -> None:
+        process = self._process
+        if process is None or process.stdin is None or process.poll() is not None:
+            raise GeminiAcpClientError("Gemini ACP process is not running.")
+        line = json.dumps(payload, ensure_ascii=False)
+        with self._write_lock:
+            try:
+                process.stdin.write(line + "\n")
+                process.stdin.flush()
+            except OSError as exc:
+                self.close()
+                raise GeminiAcpClientError(
+                    f"failed to write to Gemini ACP process: {exc}"
+                ) from exc
+
+    def _read_stdout_loop(self) -> None:
+        process = self._process
+        if process is None or process.stdout is None:
+            return
+        try:
+            for raw_line in process.stdout:
+                line = raw_line.strip()
+                if not line:
+                    continue
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    with self._state_lock:
+                        self._stderr_tail.append(f"stdout(non-json): {line[:240]}")
+                    continue
+                if not isinstance(message, dict):
+                    continue
+                if "id" in message and ("result" in message or "error" in message):
+                    request_id = str(message.get("id"))
+                    pending_queue = self._pending.get(request_id)
+                    if pending_queue is not None:
+                        pending_queue.put(message)
+                    continue
+                if message.get("method") == "session/update":
+                    self._handle_session_update(message.get("params"))
+                    continue
+                if "id" in message and "method" in message:
+                    self._handle_agent_request(message)
+        finally:
+            self._fail_pending_requests(
+                self._process_exit_message("Gemini ACP process exited while waiting for a response.")
+            )
+
+    def _read_stderr_loop(self) -> None:
+        process = self._process
+        if process is None or process.stderr is None:
+            return
+        for raw_line in process.stderr:
+            line = raw_line.strip()
+            if not line:
+                continue
+            with self._state_lock:
+                self._stderr_tail.append(line[:400])
+
+    def _handle_session_update(self, params: Any) -> None:
+        if not isinstance(params, dict):
+            return
+        session_id = str(params.get("sessionId", "")).strip()
+        with self._state_lock:
+            if (
+                self._update_buffer is not None
+                and self._update_session_id
+                and session_id == self._update_session_id
+            ):
+                self._update_buffer.append(dict(params))
+
+    def _handle_agent_request(self, message: dict[str, Any]) -> None:
+        request_id = message.get("id")
+        if request_id is None:
+            return
+        method = str(message.get("method", "")).strip()
+        if method == "session/request_permission":
+            response = {"jsonrpc": "2.0", "id": request_id, "result": {"outcome": "cancelled"}}
+        else:
+            response = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": -32601,
+                    "message": f"ACP client capability not implemented for {method}",
+                },
+            }
+        try:
+            self._write_message(response)
+        except GeminiAcpClientError:
+            return
+
+    def _fail_pending_requests(self, message: str) -> None:
+        with self._state_lock:
+            pending_items = list(self._pending.items())
+            self._pending.clear()
+            self._process = None
+            self._initialize_result = None
+            self._update_buffer = None
+            self._update_session_id = None
+        for _request_id, pending_queue in pending_items:
+            try:
+                pending_queue.put_nowait({"error": {"message": message}})
+            except queue.Full:
+                pass
+
+    def _process_exit_message(self, default: str) -> str:
+        process = self._process
+        if process is None:
+            return default
+        returncode = process.poll()
+        stderr_tail = self.stderr_tail()
+        if stderr_tail:
+            return f"{default} {' | '.join(stderr_tail[-3:])}"
+        if returncode is not None:
+            return f"{default} Exit code: {returncode}."
+        return default
+
+
+class GeminiACPBackend(GeminiBrokerBackend):
+    name = "gemini-acp-resident"
+
+    def __init__(
+        self,
+        *,
+        command: str | None = None,
+        default_mode: str = DEFAULT_ACP_MODE,
+        default_model: str | None = None,
+        startup_timeout_seconds: float = DEFAULT_BROKER_TIMEOUT_SECONDS,
+        request_timeout_seconds: float = DEFAULT_ACP_REQUEST_TIMEOUT_SECONDS,
+        client_factory: Any | None = None,
+    ) -> None:
+        self.command = str(command or os.environ.get(GEMINI_ACP_COMMAND_ENV, DEFAULT_ACP_COMMAND)).strip()
+        self.default_mode = default_mode.strip() or DEFAULT_ACP_MODE
+        self.default_model = default_model
+        self.startup_timeout_seconds = startup_timeout_seconds
+        self.request_timeout_seconds = request_timeout_seconds
+        self._client_factory = client_factory
+        self._lock = threading.RLock()
+        self._client: _GeminiACPProcessClient | Any | None = None
+        self._initialize_result: dict[str, Any] | None = None
+        self._session_id: str | None = None
+        self._session_cwd: str = ""
+        self._current_mode: str = ""
+        self._current_model: str = ""
+        self._last_auth_method: str = ""
+
+    def health(self) -> dict[str, Any]:
+        command_name = split_command(self.command)[0] if self.command.strip() else "gemini"
+        if command_name == "gemini":
+            cli_path = shutil.which("gemini")
+            if not cli_path:
+                return {
+                    "status": "error",
+                    "summary": "gemini CLI not found in PATH.",
+                    "data": {"backend": self.name, "ready": False, "command": self.command},
+                }
+        else:
+            cli_path = shutil.which(command_name) or command_name
+
+        try:
+            initialize_result = self._ensure_initialized()
+        except GeminiAcpClientError as exc:
+            return {
+                "status": "warning",
+                "summary": f"Gemini ACP backend unavailable: {exc}",
+                "provenance": self._stderr_tail(),
+                "data": {
+                    "backend": self.name,
+                    "ready": False,
+                    "command": self.command,
+                    "cli_path": cli_path,
+                },
+            }
+
+        ready, auth_status = self._acp_auth_candidate_status(initialize_result)
+        with self._lock:
+            session_id = self._session_id or ""
+            current_mode = self._current_mode or self.default_mode
+            current_model = self._current_model or self.default_model or ""
+            auth_method = self._last_auth_method
+        summary = (
+            "Gemini ACP resident backend ready."
+            if ready
+            else auth_status
+        )
+        if session_id:
+            summary = f"Gemini ACP resident backend ready with active session {session_id}."
+        return {
+            "status": "ok" if ready else "warning",
+            "summary": summary,
+            "provenance": [cli_path, *self._stderr_tail()[:4]],
+            "data": {
+                "backend": self.name,
+                "ready": ready,
+                "command": self.command,
+                "cli_path": cli_path,
+                "session_id": session_id,
+                "auth_status": auth_status,
+                "auth_method": auth_method,
+                "current_mode": current_mode,
+                "current_model": current_model,
+                "auth_candidate": ready,
+            },
+        }
+
+    def prompt(
+        self,
+        *,
+        prompt: str,
+        cwd: Path,
+        session_id: str | None = None,
+        runtime_options: dict[str, Any] | None = None,
+    ) -> BridgeResponse:
+        options = dict(runtime_options or {})
+        try:
+            with self._lock:
+                active_session_id = self._ensure_session(
+                    cwd=cwd,
+                    requested_session_id=session_id,
+                    runtime_options=options,
+                )
+                session_mode = self._resolve_session_mode(options)
+                if session_mode and session_mode != self._current_mode:
+                    self._request(
+                        "session/set_mode",
+                        {"sessionId": active_session_id, "modeId": session_mode},
+                    )
+                    self._current_mode = session_mode
+                session_model = self._resolve_session_model(options)
+                if session_model and session_model != self._current_model:
+                    self._request(
+                        "session/set_model",
+                        {"sessionId": active_session_id, "modelId": session_model},
+                    )
+                    self._current_model = session_model
+
+                updates: list[dict[str, Any]] = []
+                self._request(
+                    "session/prompt",
+                    {
+                        "sessionId": active_session_id,
+                        "prompt": [{"type": "text", "text": prompt}],
+                    },
+                    update_buffer=updates,
+                    update_session_id=active_session_id,
+                )
+                content = _render_acp_updates(updates)
+                raw_messages = [
+                    json.dumps(item, ensure_ascii=False)
+                    for item in updates[-30:]
+                ]
+                return BridgeResponse(
+                    success=True,
+                    model=self._current_model or self.default_model or "gemini",
+                    session_id=active_session_id,
+                    content=content,
+                    raw_messages=raw_messages or None,
+                )
+        except GeminiAcpClientError as exc:
+            return BridgeResponse.from_error("gemini", str(exc))
+
+    def reset(self) -> dict[str, Any]:
+        with self._lock:
+            client = self._client
+            if client is not None:
+                try:
+                    client.close()
+                except Exception:
+                    pass
+            self._client = None
+            self._initialize_result = None
+            self._session_id = None
+            self._session_cwd = ""
+            self._current_mode = ""
+            self._current_model = ""
+            self._last_auth_method = ""
+        return {
+            "status": "ok",
+            "summary": "Gemini ACP resident backend reset.",
+            "data": {"backend": self.name, "ready": True},
+        }
+
+    def _client_instance(self) -> _GeminiACPProcessClient | Any:
+        client = self._client
+        if client is not None and getattr(client, "is_alive", lambda: True)():
+            return client
+        factory = self._client_factory
+        if factory is None:
+            client = _GeminiACPProcessClient(
+                self.command,
+                startup_timeout_seconds=self.startup_timeout_seconds,
+                request_timeout_seconds=self.request_timeout_seconds,
+            )
+        else:
+            client = factory()
+        self._client = client
+        return client
+
+    def _ensure_initialized(self) -> dict[str, Any]:
+        client = self._client_instance()
+        initialize_result = client.initialize()
+        if not isinstance(initialize_result, dict):
+            raise GeminiAcpClientError("Gemini ACP initialize returned an invalid payload.")
+        self._initialize_result = initialize_result
+        return initialize_result
+
+    def _ensure_session(
+        self,
+        *,
+        cwd: Path,
+        requested_session_id: str | None,
+        runtime_options: dict[str, Any],
+    ) -> str:
+        session_id = str(requested_session_id or self._session_id or "").strip()
+        target_cwd = str(cwd)
+        if session_id and session_id == (self._session_id or "") and self._session_cwd == target_cwd:
+            return session_id
+
+        initialize_result = self._ensure_initialized()
+        try:
+            session_payload = self._request(
+                "session/new",
+                {"cwd": target_cwd, "mcpServers": []},
+            )
+        except GeminiAcpClientError as exc:
+            if not _looks_like_acp_auth_required(str(exc)):
+                raise
+            self._authenticate(initialize_result, runtime_options)
+            session_payload = self._request(
+                "session/new",
+                {"cwd": target_cwd, "mcpServers": []},
+            )
+
+        session_id = str(session_payload.get("sessionId", "")).strip()
+        if not session_id:
+            raise GeminiAcpClientError("session/new did not return a sessionId.")
+        self._session_id = session_id
+        self._session_cwd = target_cwd
+        self._current_mode = str(
+            ((session_payload.get("modes") or {}) if isinstance(session_payload.get("modes"), dict) else {}).get(
+                "currentModeId",
+                "",
+            )
+        ).strip()
+        self._current_model = str(
+            ((session_payload.get("models") or {}) if isinstance(session_payload.get("models"), dict) else {}).get(
+                "currentModelId",
+                "",
+            )
+        ).strip()
+        return session_id
+
+    def _authenticate(
+        self,
+        initialize_result: dict[str, Any],
+        runtime_options: dict[str, Any],
+    ) -> None:
+        auth_method = self._select_auth_method(initialize_result, runtime_options)
+        if auth_method is None:
+            raise GeminiAcpClientError(
+                "Gemini ACP could not determine an auth method. Configure GEMINI_API_KEY, Vertex env auth, or keep a Google login cached under ~/.gemini."
+            )
+        payload: dict[str, Any] = {"methodId": str(auth_method.get("id", "")).strip()}
+        meta = self._auth_meta_for_method(auth_method)
+        if meta:
+            payload["_meta"] = meta
+        self._request("authenticate", payload)
+        self._last_auth_method = str(auth_method.get("name", "")).strip()
+
+    def _select_auth_method(
+        self,
+        initialize_result: dict[str, Any],
+        runtime_options: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        raw_methods = initialize_result.get("authMethods", [])
+        methods = [item for item in raw_methods if isinstance(item, dict)]
+        if not methods:
+            return None
+
+        preferred = str(runtime_options.get("auth_method", "")).strip().lower()
+        if preferred:
+            for method in methods:
+                method_id = str(method.get("id", "")).strip().lower()
+                method_name = str(method.get("name", "")).strip().lower()
+                if preferred in {method_id, method_name}:
+                    return method
+
+        gemini_api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if gemini_api_key:
+            selected = _find_auth_method(methods, include=("api key", "gemini"))
+            if selected is not None:
+                return selected
+
+        use_vertex = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        if use_vertex:
+            selected = _find_auth_method(methods, include=("vertex",))
+            if selected is not None:
+                return selected
+
+        if gemini_cached_auth_files():
+            selected = _find_auth_method(methods, include=("google",))
+            if selected is not None:
+                return selected
+
+        return methods[0]
+
+    def _auth_meta_for_method(self, auth_method: dict[str, Any]) -> dict[str, Any] | None:
+        method_name = str(auth_method.get("name", "")).strip().lower()
+        gemini_api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if gemini_api_key and "api key" in method_name and "vertex" not in method_name:
+            return {"api-key": gemini_api_key}
+        return None
+
+    def _request(
+        self,
+        method: str,
+        params: dict[str, Any],
+        *,
+        update_buffer: list[dict[str, Any]] | None = None,
+        update_session_id: str | None = None,
+    ) -> dict[str, Any]:
+        client = self._client_instance()
+        return client.request(
+            method,
+            params,
+            timeout_seconds=self.request_timeout_seconds,
+            update_buffer=update_buffer,
+            update_session_id=update_session_id,
+        )
+
+    def _resolve_session_mode(self, runtime_options: dict[str, Any]) -> str:
+        for key in ("approval_mode", "mode", "session_mode"):
+            value = str(runtime_options.get(key, "")).strip()
+            if value:
+                return value
+        return self.default_mode
+
+    def _resolve_session_model(self, runtime_options: dict[str, Any]) -> str:
+        for key in ("model", "session_model"):
+            value = str(runtime_options.get(key, "")).strip()
+            if value:
+                return value
+        return str(self.default_model or "").strip()
+
+    def _acp_auth_candidate_status(
+        self,
+        initialize_result: dict[str, Any],
+    ) -> tuple[bool, str]:
+        if self._session_id:
+            return True, "resident Gemini ACP session is active"
+        if os.environ.get("GEMINI_API_KEY", "").strip():
+            return True, "Gemini ACP will authenticate via GEMINI_API_KEY"
+        use_vertex = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        if use_vertex and (
+            os.environ.get("GOOGLE_API_KEY", "").strip()
+            or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
+        ):
+            return True, "Gemini ACP will authenticate via Vertex AI environment settings"
+        cached_files = gemini_cached_auth_files()
+        if cached_files:
+            auth_method = _find_auth_method(
+                [item for item in initialize_result.get("authMethods", []) if isinstance(item, dict)],
+                include=("google",),
+            )
+            if auth_method is not None:
+                return (
+                    True,
+                    "Gemini ACP detected cached Google login and can reuse it through the resident broker path",
+                )
+        return (
+            False,
+            "Gemini ACP did not find a usable auth candidate. Configure GEMINI_API_KEY, Vertex env auth, or login with Google before starting the resident broker.",
+        )
+
+    def _stderr_tail(self) -> list[str]:
+        client = self._client
+        if client is None:
+            return []
+        try:
+            return list(client.stderr_tail())[-4:]
+        except Exception:
+            return []
 
 
 class CommandJSONBackend(GeminiBrokerBackend):
@@ -745,7 +1423,7 @@ def build_default_broker_backend() -> GeminiBrokerBackend:
     backend_cmd = os.environ.get(BROKER_BACKEND_CMD_ENV, "").strip()
     if backend_cmd:
         return CommandJSONBackend(backend_cmd)
-    return GeminiCLIBackend()
+    return GeminiACPBackend()
 
 
 def create_broker_server(
@@ -789,3 +1467,51 @@ def _looks_like_auth_loss(error: str | None) -> bool:
             "auth",
         )
     )
+
+
+def _looks_like_acp_auth_required(error: str | None) -> bool:
+    text = str(error or "").lower()
+    if not text:
+        return False
+    return any(
+        marker in text
+        for marker in (
+            "authentication required",
+            "authentication failed",
+            "api key is missing",
+            "login",
+            "oauth",
+            "not configured",
+        )
+    )
+
+
+def _find_auth_method(
+    methods: list[dict[str, Any]],
+    *,
+    include: tuple[str, ...],
+) -> dict[str, Any] | None:
+    for method in methods:
+        haystack = " ".join(
+            str(method.get(field, "")).strip().lower()
+            for field in ("id", "name", "description")
+        )
+        if all(token in haystack for token in include):
+            return method
+    return None
+
+
+def _render_acp_updates(updates: list[dict[str, Any]]) -> str:
+    chunks: list[str] = []
+    for item in updates:
+        if str(item.get("sessionUpdate", "")).strip() != "agent_message_chunk":
+            continue
+        content = item.get("content", {})
+        if not isinstance(content, dict):
+            continue
+        if str(content.get("type", "")).strip() != "text":
+            continue
+        text = str(content.get("text", ""))
+        if text:
+            chunks.append(text)
+    return "".join(chunks).strip()

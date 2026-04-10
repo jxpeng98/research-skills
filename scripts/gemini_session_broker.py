@@ -12,9 +12,11 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from bridges.providers.research_collab import (
+    GEMINI_ACP_COMMAND_ENV,
     BROKER_BACKEND_CMD_ENV,
     BROKER_TOKEN_ENV,
     CommandJSONBackend,
+    GeminiACPBackend,
     GeminiCLIBackend,
     build_default_broker_backend,
     create_broker_server,
@@ -34,9 +36,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--backend",
-        choices=["auto", "cli", "command"],
+        choices=["auto", "acp", "cli", "command"],
         default="auto",
         help="Broker backend mode.",
+    )
+    parser.add_argument(
+        "--acp-cmd",
+        default=os.environ.get(GEMINI_ACP_COMMAND_ENV, ""),
+        help=f"ACP backend command; defaults to {GEMINI_ACP_COMMAND_ENV} or 'gemini --acp'",
     )
     parser.add_argument(
         "--backend-cmd",
@@ -50,6 +57,8 @@ def main() -> None:
         if not backend_cmd:
             raise SystemExit("--backend command requires --backend-cmd or RESEARCH_GEMINI_BROKER_BACKEND_CMD")
         backend = CommandJSONBackend(backend_cmd)
+    elif args.backend == "acp":
+        backend = GeminiACPBackend(command=str(args.acp_cmd or "").strip() or None)
     elif args.backend == "cli":
         backend = GeminiCLIBackend()
     else:

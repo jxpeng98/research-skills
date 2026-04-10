@@ -37,6 +37,14 @@ from .gemini_bridge import GeminiBridge
 from .mcp_connectors import MCPEvidence, MCPConnector
 from .i18n import get_language, get_text
 from .critique_questions import get_critique_questions
+from .providers.research_collab import (
+    DEFAULT_BROKER_TIMEOUT_SECONDS,
+    bridge_response_from_broker_payload,
+    broker_client_from_env,
+    broker_status_from_env,
+    gemini_cached_auth_files,
+    gemini_noninteractive_auth_status,
+)
 from .errors import (
     ResearchError,
     ConfigError,
@@ -566,8 +574,24 @@ class ModelOrchestrator:
             base_profile_cfg,
             stage="analysis",
         )
+        scheduled_agents: list[str] = []
+        parallel_notes: list[str] = []
 
-        with ThreadPoolExecutor(max_workers=len(requested_agents)) as executor:
+        for agent in requested_agents:
+            runtime_options = self._profile_runtime_options(base_profile_cfg, agent)
+            preflight_error = self._runtime_preflight_error(agent, cwd, runtime_options)
+            if preflight_error:
+                responses[agent] = BridgeResponse.from_error(
+                    agent,
+                    f"Preflight blocked execution: {preflight_error}",
+                )
+                parallel_notes.append(
+                    f"Parallel analyzer '{agent}' skipped: {preflight_error}"
+                )
+                continue
+            scheduled_agents.append(agent)
+
+        with ThreadPoolExecutor(max_workers=max(1, len(scheduled_agents))) as executor:
             futures = {
                 executor.submit(
                     self._execute_runtime_agent,
@@ -577,7 +601,7 @@ class ModelOrchestrator:
                     self._profile_runtime_options(base_profile_cfg, agent),
                     analysis_directive,
                 ): agent
-                for agent in requested_agents
+                for agent in scheduled_agents
             }
             for future in as_completed(futures):
                 agent = futures[future]
@@ -652,6 +676,8 @@ class ModelOrchestrator:
             f"- Base profile: {base_profile_name}",
             f"- Summarizer profile: {summarizer_profile_name}",
         ]
+        for note in parallel_notes:
+            merged_parts.append(f"- {note}")
         for note in synthesis_notes:
             merged_parts.append(f"- {note}")
 
@@ -843,13 +869,13 @@ Produce sections:
         gemini_resp = None
         
         if codex_task:
-            codex_resp = self.codex.execute(codex_task, cwd)
+            codex_resp = self._execute_runtime_agent("codex", codex_task, cwd)
         
         if claude_task:
-            claude_resp = self.claude.execute(claude_task, cwd)
+            claude_resp = self._execute_runtime_agent("claude", claude_task, cwd)
         
         if gemini_task:
-            gemini_resp = self.gemini.execute(gemini_task, cwd)
+            gemini_resp = self._execute_runtime_agent("gemini", gemini_task, cwd)
         
         # Merge outputs
         parts = []
@@ -1763,11 +1789,11 @@ Provide your verification assessment.
                 )
 
         runtime_registry = {
-            "codex": "OPENAI_API_KEY",
-            "claude": "ANTHROPIC_API_KEY",
-            "gemini": "GOOGLE_API_KEY",
+            "codex": ("OPENAI_API_KEY",),
+            "claude": ("ANTHROPIC_API_KEY",),
+            "gemini": ("GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS"),
         }
-        for cli_name, api_env in runtime_registry.items():
+        for cli_name, api_envs in runtime_registry.items():
             cli_path = shutil.which(cli_name)
             if cli_path:
                 add_check(f"CLI {cli_name}", "ok", cli_path)
@@ -1779,14 +1805,40 @@ Provide your verification assessment.
                     f"Install {cli_name} CLI or route tasks away from {cli_name}.",
                 )
 
-            if os.environ.get(api_env, "").strip():
-                add_check(f"Env {api_env}", "ok", "configured")
-            else:
+            if cli_name == "gemini":
+                broker_status = self._gemini_broker_status()
+                if broker_status["configured"]:
+                    add_check(
+                        "Gemini broker",
+                        "ok" if broker_status["ok"] else "warning",
+                        broker_status["detail"],
+                        "Start scripts/gemini_session_broker.py or unset RESEARCH_GEMINI_BROKER_URL.",
+                    )
+                ok, detail = self._gemini_noninteractive_auth_status()
                 add_check(
-                    f"Env {api_env}",
+                    "Gemini non-interactive auth",
+                    "ok" if ok else "warning",
+                    detail,
+                    "Prefer GEMINI_API_KEY or Vertex env auth for orchestrated Gemini runs.",
+                )
+                for env_name in api_envs:
+                    if os.environ.get(env_name, "").strip():
+                        add_check(f"Env {env_name}", "ok", "configured")
+                continue
+
+            configured_env = next(
+                (env_name for env_name in api_envs if os.environ.get(env_name, "").strip()),
+                "",
+            )
+            if configured_env:
+                add_check(f"Env {configured_env}", "ok", "configured")
+            else:
+                joined = " or ".join(api_envs)
+                add_check(
+                    f"Env {joined}",
                     "warning",
                     "not configured",
-                    f"Export {api_env} for {cli_name} runtime authentication.",
+                    f"Export {joined} for {cli_name} runtime authentication.",
                 )
 
         try:
@@ -1919,6 +1971,8 @@ Provide your verification assessment.
         preferred_agent: str,
         fallback_chain: list[str],
         exclude_agent: str | None = None,
+        cwd: Path | None = None,
+        runtime_options_by_agent: dict[str, dict[str, Any]] | None = None,
     ) -> tuple[str, list[str]]:
         notes: list[str] = []
         seen: set[str] = set()
@@ -1930,6 +1984,18 @@ Provide your verification assessment.
             if candidate == exclude_agent:
                 continue
             if candidate in self.RUNTIME_AGENTS:
+                if cwd is not None:
+                    candidate_options = dict((runtime_options_by_agent or {}).get(candidate, {}))
+                    preflight_error = self._runtime_preflight_error(
+                        candidate,
+                        cwd,
+                        candidate_options,
+                    )
+                    if preflight_error:
+                        notes.append(
+                            f"Runtime agent '{candidate}' unavailable: {preflight_error}"
+                        )
+                        continue
                 if candidate != preferred_agent:
                     notes.append(
                         f"Runtime routed agent '{preferred_agent}' to '{candidate}'."
@@ -1939,6 +2005,65 @@ Provide your verification assessment.
             f"No runtime agent available for preferred={preferred_agent}, exclude={exclude_agent}"
         )
 
+    def _gemini_cached_auth_files(self) -> list[Path]:
+        return gemini_cached_auth_files()
+
+    def _gemini_noninteractive_auth_status(self) -> tuple[bool, str]:
+        return gemini_noninteractive_auth_status()
+
+    def _gemini_broker_status(
+        self,
+        *,
+        timeout_seconds: float = DEFAULT_BROKER_TIMEOUT_SECONDS,
+    ) -> dict[str, Any]:
+        return broker_status_from_env(timeout_seconds=timeout_seconds)
+
+    def _runtime_preflight_error(
+        self,
+        agent_name: str,
+        cwd: Path,
+        runtime_options: dict[str, Any] | None = None,
+    ) -> str | None:
+        options = dict(runtime_options or {})
+        if not cwd.exists():
+            return f"Working directory does not exist: {cwd}"
+
+        non_interactive = bool(options.get("non_interactive", True))
+        require_api_key = bool(options.get("require_api_key", False))
+        auth_env = {
+            "codex": "OPENAI_API_KEY",
+            "claude": "ANTHROPIC_API_KEY",
+        }.get(agent_name)
+
+        # Gemini collaboration runs non-interactively in orchestrated flows, so
+        # browser-based login is not a stable dependency. Fail fast and reroute.
+        if agent_name == "gemini" and non_interactive:
+            broker_status = self._gemini_broker_status()
+            if broker_status["configured"] and broker_status["ok"]:
+                return None
+            cli_path = shutil.which(agent_name)
+            if not cli_path:
+                if broker_status["configured"]:
+                    return (
+                        f"Gemini broker unavailable: {broker_status['detail']}; "
+                        "gemini CLI not found in PATH."
+                    )
+                return f"{agent_name} CLI not found in PATH. Please install it first."
+            ok, detail = self._gemini_noninteractive_auth_status()
+            if ok:
+                return None
+            if broker_status["configured"]:
+                return f"Gemini broker unavailable: {broker_status['detail']}; {detail}"
+            return detail
+
+        cli_path = shutil.which(agent_name)
+        if not cli_path:
+            return f"{agent_name} CLI not found in PATH. Please install it first."
+
+        if require_api_key and auth_env and not os.environ.get(auth_env, "").strip():
+            return f"{auth_env} is required for {agent_name} runtime authentication but not configured."
+        return None
+
     def _execute_runtime_agent(
         self,
         agent_name: str,
@@ -1947,10 +2072,14 @@ Provide your verification assessment.
         runtime_options: dict[str, Any] | None = None,
         profile_directive: str | None = None,
     ) -> BridgeResponse:
+        options = dict(runtime_options or {})
+        preflight_error = self._runtime_preflight_error(agent_name, cwd, options)
+        if preflight_error:
+            return BridgeResponse.from_error(agent_name, preflight_error)
+
         final_prompt = prompt
         if profile_directive:
             final_prompt = f"{prompt}\n\n{profile_directive}"
-        options = runtime_options or {}
         
         if getattr(self, "interactive", False) and sys.stdin.isatty():
             print(f"\n\033[94m[Interactive Step]\033[0m Ready to execute agent: \033[1m{agent_name}\033[0m")
@@ -1978,11 +2107,50 @@ Provide your verification assessment.
         if agent_name == "claude":
             return self.claude.execute(final_prompt, cwd, **options)
         if agent_name == "gemini":
+            broker_response = self._execute_gemini_via_broker(
+                final_prompt,
+                cwd,
+                options,
+            )
+            if broker_response is not None:
+                if broker_response.success:
+                    return broker_response
+                direct_ok, _ = self._gemini_noninteractive_auth_status()
+                if not direct_ok or not shutil.which("gemini"):
+                    return broker_response
             return self.gemini.execute(final_prompt, cwd, **options)
         return BridgeResponse.from_error(
             agent_name,
             f"Unsupported runtime agent for this orchestrator: {agent_name}",
         )
+
+    def _execute_gemini_via_broker(
+        self,
+        prompt: str,
+        cwd: Path,
+        runtime_options: dict[str, Any] | None = None,
+    ) -> BridgeResponse | None:
+        options = dict(runtime_options or {})
+        timeout_seconds = options.get("timeout_seconds", DEFAULT_BROKER_TIMEOUT_SECONDS)
+        try:
+            timeout_value = float(timeout_seconds)
+        except (TypeError, ValueError):
+            timeout_value = DEFAULT_BROKER_TIMEOUT_SECONDS
+        client = broker_client_from_env(timeout_seconds=timeout_value)
+        if client is None:
+            return None
+        try:
+            payload = client.prompt(
+                prompt=prompt,
+                cwd=cwd,
+                runtime_options=options,
+            )
+        except Exception as exc:
+            return BridgeResponse.from_error(
+                "gemini",
+                f"Gemini broker request failed: {exc}",
+            )
+        return bridge_response_from_broker_payload(payload)
 
     def _normalize_topic(self, topic: str) -> str:
         normalized = re.sub(r"[^a-z0-9]+", "-", topic.strip().lower())
@@ -3682,7 +3850,15 @@ Return sections:
             team_config, task_packet, mcp_evidence, skill_cards, max_units,
         )
         planner_agent = team_config.get("planner_agent", "claude")
-        planner_runtime, _ = self._resolve_runtime_agent(planner_agent, ["claude", "gemini", "codex"])
+        planner_runtime, _ = self._resolve_runtime_agent(
+            planner_agent,
+            ["claude", "gemini", "codex"],
+            cwd=cwd,
+            runtime_options_by_agent={
+                agent: self._profile_runtime_options(profile_cfg, agent)
+                for agent in self.RUNTIME_AGENTS
+            },
+        )
         planner_resp = self._execute_runtime_agent(planner_runtime, planner_prompt, cwd)
 
         if planner_resp.success:
@@ -3833,7 +4009,15 @@ Return your shard deliverables as structured output.
 
         def execute_worker(idx: int, unit: dict[str, Any]) -> dict[str, Any]:
             agent_name = worker_pool[idx % len(worker_pool)]
-            runtime, _ = self._resolve_runtime_agent(agent_name, worker_pool)
+            runtime, _ = self._resolve_runtime_agent(
+                agent_name,
+                worker_pool,
+                cwd=cwd,
+                runtime_options_by_agent={
+                    agent: self._profile_runtime_options(profile_cfg, agent)
+                    for agent in self.RUNTIME_AGENTS
+                },
+            )
             prompt = self._build_worker_prompt(
                 unit, task_packet, mcp_evidence, skill_cards, team_config,
             )
@@ -4107,7 +4291,15 @@ Return sections:
         if barrier_status != "blocked" and successful_shards:
             merge_prompt = self._build_merge_prompt(successful_shards, packet, team_config)
             merge_agent = team_config.get("merge_agent", "claude")
-            merge_runtime, merge_notes = self._resolve_runtime_agent(merge_agent, ["claude", "gemini", "codex"])
+            merge_runtime, merge_notes = self._resolve_runtime_agent(
+                merge_agent,
+                ["claude", "gemini", "codex"],
+                cwd=cwd,
+                runtime_options_by_agent={
+                    agent: self._profile_runtime_options(profile_cfg, agent)
+                    for agent in self.RUNTIME_AGENTS
+                },
+            )
             routing_notes.extend(merge_notes)
             merge_resp = self._execute_runtime_agent(
                 merge_runtime,
@@ -4128,7 +4320,14 @@ Return sections:
             review_pool = team_config.get("review_pool", ["codex", "gemini"])
             preferred_reviewer = review_pool[0] if review_pool else "codex"
             review_runtime, review_notes = self._resolve_runtime_agent(
-                preferred_reviewer, review_pool, exclude_agent=merge_runtime,
+                preferred_reviewer,
+                review_pool,
+                exclude_agent=merge_runtime,
+                cwd=cwd,
+                runtime_options_by_agent={
+                    agent: self._profile_runtime_options(profile_cfg, agent)
+                    for agent in self.RUNTIME_AGENTS
+                },
             )
             routing_notes.extend(review_notes)
             review_prompt = self._build_task_review_prompt(
@@ -4520,9 +4719,24 @@ Return sections:
                 gemini_response=error_resp if "gemini" in str(exc).lower() else None,
             )
 
+        draft_runtime_options = {
+            agent: self._profile_runtime_options(draft_profile_cfg, agent)
+            for agent in self.RUNTIME_AGENTS
+        }
+        review_runtime_options = {
+            agent: self._profile_runtime_options(review_profile_cfg, agent)
+            for agent in self.RUNTIME_AGENTS
+        }
+        triad_runtime_options = {
+            agent: self._profile_runtime_options(triad_profile_cfg, agent)
+            for agent in self.RUNTIME_AGENTS
+        }
+
         primary_runtime, primary_notes = self._resolve_runtime_agent(
             preferred_agent=agent_plan["primary_agent"],
             fallback_chain=[agent_plan["fallback_agent"]],
+            cwd=cwd,
+            runtime_options_by_agent=draft_runtime_options,
         )
         routing_notes.extend(primary_notes)
 
@@ -4551,6 +4765,8 @@ Return sections:
             candidate_runtime, fallback_notes = self._resolve_runtime_agent(
                 preferred_agent=agent_plan["fallback_agent"],
                 fallback_chain=[agent_plan["review_agent"]],
+                cwd=cwd,
+                runtime_options_by_agent=draft_runtime_options,
             )
             routing_notes.extend(fallback_notes)
             if candidate_runtime != primary_runtime:
@@ -4580,6 +4796,8 @@ Return sections:
                 preferred_agent=agent_plan["review_agent"],
                 fallback_chain=[agent_plan["fallback_agent"]],
                 exclude_agent=draft_runtime,
+                cwd=cwd,
+                runtime_options_by_agent=review_runtime_options,
             )
             routing_notes.extend(review_notes)
 
@@ -4689,7 +4907,7 @@ Return sections:
                     triad_runtime,
                     triad_prompt,
                     cwd,
-                    self._profile_runtime_options(triad_profile_cfg, triad_runtime),
+                    triad_runtime_options.get(triad_runtime, {}),
                     self._build_profile_directive(
                         selected_profiles["triad"],
                         triad_profile_cfg,

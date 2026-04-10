@@ -61,6 +61,13 @@ class MCPConnectorTests(unittest.TestCase):
         self.assertEqual(resolution.source, "builtin")
         self.assertTrue((resolution.native_script or "").endswith("mcp_fulltext_retrieval.py"))
 
+    def test_resolve_provider_detects_builtin_research_collab(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=False):
+            resolution = self.connector.resolve_provider("research-collab")
+
+        self.assertEqual(resolution.source, "builtin")
+        self.assertTrue((resolution.native_script or "").endswith("mcp_research_collab.py"))
+
     def test_collect_external_provider_executes_quoted_env_command_with_space_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             root = Path(tmp_dir)

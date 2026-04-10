@@ -403,7 +403,7 @@ def _check_system_env() -> dict[str, dict[str, str]]:
             results[f"{cli} CLI"] = {"status": "error", "detail": hint}
 
     # 2. API Keys
-    for env in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY"):
+    for env in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
         if os.environ.get(env, "").strip():
             results[env] = {"status": "ok", "detail": "configured"}
         else:

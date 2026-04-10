@@ -16,7 +16,11 @@
 - **修复**：检查你的 `.env` 文件或直接在终端中导出密钥。
   - Claude: `export ANTHROPIC_API_KEY="sk-ant-..."`
   - Codex: `export OPENAI_API_KEY="sk-proj-..."`
-  - Gemini: `export GOOGLE_API_KEY="AIza..."`
+  - Gemini: `export GEMINI_API_KEY="..."`（headless 首选）
+  - Gemini / Vertex AI: `export GOOGLE_GENAI_USE_VERTEXAI=true`，再配合 `GOOGLE_API_KEY` 或 `GOOGLE_APPLICATION_CREDENTIALS`，以及 `GOOGLE_CLOUD_PROJECT`、`GOOGLE_CLOUD_LOCATION`
+  - Gemini / Google 登录订阅：先在桌面会话里启动 `python3 scripts/gemini_session_broker.py --host 127.0.0.1 --port 8767`，再导出 `RESEARCH_GEMINI_BROKER_URL=http://127.0.0.1:8767`
+- **补充说明**：在 `parallel`、`task-run`、`team-run` 这类非交互协作链路里，不要把“浏览器已登录”当成稳定前提。Gemini CLI 的缓存 OAuth 登录态在非交互 Python 子进程里可能不会被可靠复用；编排器应优先使用 `GEMINI_API_KEY` 或 Vertex 环境变量做快速预检，否则就直接降级到 fallback runtime，而不是把大 prompt 发出去后再卡在认证。
+- **broker 说明**：如果配置了 `RESEARCH_GEMINI_BROKER_URL`，编排器会先探测 broker，再决定是否回退到直连 Gemini CLI。当前内置 broker 默认仍走 Gemini CLI backend；如果你需要更稳定的 Google 登录常驻态，可以通过 `RESEARCH_GEMINI_BROKER_BACKEND_CMD` 挂接自定义 backend。
 
 ### `[ERR-RS-ENV-002]` 未安装所需的 CLI 工具或未将其添加到 PATH 中。
 - **原因**：尚未安装包含目标模型的 Node.js 二进制包装器。

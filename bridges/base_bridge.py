@@ -113,6 +113,15 @@ class BaseBridge(ABC):
         ModelType.CLAUDE: "ANTHROPIC_API_KEY",
         ModelType.GEMINI: "GOOGLE_API_KEY",
     }
+    AUTH_ENV_CANDIDATES_BY_MODEL = {
+        ModelType.CODEX: ("OPENAI_API_KEY",),
+        ModelType.CLAUDE: ("ANTHROPIC_API_KEY",),
+        ModelType.GEMINI: (
+            "GEMINI_API_KEY",
+            "GOOGLE_API_KEY",
+            "GOOGLE_APPLICATION_CREDENTIALS",
+        ),
+    }
     model_type: ModelType
     
     @abstractmethod
@@ -154,11 +163,17 @@ class BaseBridge(ABC):
         except ValueError as exc:
             return BridgeResponse.from_error(cli_name, str(exc))
         if require_api_key:
-            auth_env = self.AUTH_ENV_BY_MODEL.get(self.model_type)
-            if auth_env and not os.environ.get(auth_env, "").strip():
+            auth_candidates = self.AUTH_ENV_CANDIDATES_BY_MODEL.get(
+                self.model_type,
+                (),
+            )
+            if auth_candidates and not any(
+                os.environ.get(env_name, "").strip() for env_name in auth_candidates
+            ):
                 return BridgeResponse.from_error(
                     cli_name,
-                    f"{auth_env} is required for non-interactive execution but not configured.",
+                    "Non-interactive execution requires one of: "
+                    + ", ".join(auth_candidates),
                 )
 
         try:

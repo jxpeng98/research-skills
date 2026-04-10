@@ -23,6 +23,14 @@ class MockOrchestrator(ModelOrchestrator):
         super().__init__(standards_dir=REPO_ROOT / "standards")
         self.runtime_calls: list[dict[str, Any]] = []
 
+    def _runtime_preflight_error(
+        self,
+        agent_name: str,
+        cwd: Path,
+        runtime_options: dict[str, Any] | None = None,
+    ) -> str | None:
+        return None
+
     def _execute_runtime_agent(
         self,
         agent_name: str,
@@ -176,6 +184,31 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         self.assertIn("## 并发执行分析 (双重/Dual)", result.merged_analysis)
         self.assertIn("- 失败的 Agent: gemini", result.merged_analysis)
         self.assertIn("## 综合归纳 (Synthesis)", result.merged_analysis)
+
+    def test_parallel_skips_gemini_when_preflight_blocks_it(self) -> None:
+        class PreflightFailOrchestrator(MockOrchestrator):
+            def _runtime_preflight_error(
+                self,
+                agent_name: str,
+                cwd: Path,
+                runtime_options: dict[str, Any] | None = None,
+            ) -> str | None:
+                if agent_name == "gemini":
+                    return "cached Gemini OAuth credentials detected, but Gemini CLI cached login is unreliable in non-interactive Python subprocesses; prefer GEMINI_API_KEY or Vertex env auth."
+                return None
+
+        orchestrator = PreflightFailOrchestrator()
+        result = orchestrator.execute(
+            mode=CollaborationMode.PARALLEL,
+            cwd=REPO_ROOT,
+            prompt="preflight degrade test",
+            parallel_summarizer="claude",
+        )
+
+        called_agents = [call["agent"] for call in orchestrator.runtime_calls]
+        self.assertNotIn("gemini", called_agents)
+        self.assertIn("Parallel analyzer 'gemini' skipped:", result.merged_analysis)
+        self.assertIn("## 并发执行分析 (双重/Dual)", result.merged_analysis)
 
     def test_parallel_unknown_profile_returns_structured_error(self) -> None:
         from bridges.errors import ConfigError
@@ -337,6 +370,34 @@ class OrchestratorWorkflowTests(unittest.TestCase):
         directives = [call["profile_directive"] for call in orchestrator.runtime_calls]
         self.assertTrue(any("(stage: draft)" in directive for directive in directives))
         self.assertTrue(any("(stage: review)" in directive for directive in directives))
+
+    def test_task_run_reroutes_gemini_review_when_preflight_blocks_it(self) -> None:
+        class ReviewPreflightOrchestrator(MockOrchestrator):
+            def _runtime_preflight_error(
+                self,
+                agent_name: str,
+                cwd: Path,
+                runtime_options: dict[str, Any] | None = None,
+            ) -> str | None:
+                if agent_name == "gemini":
+                    return "cached Gemini OAuth credentials detected, but Gemini CLI cached login is unreliable in non-interactive Python subprocesses; prefer GEMINI_API_KEY or Vertex env auth."
+                return None
+
+        orchestrator = ReviewPreflightOrchestrator()
+        result = orchestrator.task_run(
+            task_id="I7",
+            paper_type="methods",
+            topic="reroute-review",
+            cwd=REPO_ROOT,
+        )
+
+        review_calls = [
+            call for call in orchestrator.runtime_calls
+            if "Review the draft" in call["prompt"]
+        ]
+        self.assertTrue(review_calls)
+        self.assertNotEqual(review_calls[0]["agent"], "gemini")
+        self.assertIn("Runtime agent 'gemini' unavailable:", result.merged_analysis)
 
     def test_task_run_emits_functional_routing_trace(self) -> None:
         orchestrator = MockOrchestrator()

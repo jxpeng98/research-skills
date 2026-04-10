@@ -14,7 +14,7 @@
 
 - Verified completed workstreams: 30
 - Verified-but-not-fully-accepted items: 2
-- Active TODOs: 6
+- Active TODOs: 7
 - Deferred future bets: 5
 
 ---
@@ -323,6 +323,14 @@ Key facts confirmed from current repo:
 ### P1 Near-Term
 
 - [x] ~~Add an academic context continuity layer~~ (Completed in Milestone 27)
+
+- [ ] Add a resident Gemini automation path for Google-login-only subscriptions
+  - establish a long-lived `gemini-session-broker` that is started from an already-authenticated interactive Gemini session instead of spawning fresh `gemini -p` subprocesses per task
+  - define broker health and control surfaces for `health`, `prompt`, `reset`, and explicit `auth_lost` / `needs_relogin` states so orchestrated runs can fail fast without burning model tokens
+  - add a `research-collab` MCP layer that calls the broker and exposes stable tools such as `gemini_health`, `gemini_review`, and `gemini_consensus` to the orchestrator
+  - route orchestrator collaboration through `MCP-first -> direct runtime fallback` for Gemini-specific review/consensus steps, with early downgrade when the broker is unavailable
+  - defer Gemini extension / plugin packaging until the broker + MCP path is stable, and use packaging only as a distribution shell rather than as the authentication mechanism
+  - add acceptance receipts and docs for the supported scope: local desktop semi-automation, broker restart behavior, auth-loss recovery, and explicit non-support for CI / fully headless server automation under Google-login-only plans
 
 - [x] ~~Replace regex-style YAML parsing in `bridges/orchestrator.py`~~ (Completed in Milestone 17)
 

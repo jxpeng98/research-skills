@@ -23,6 +23,7 @@ const enSidebar = {
       items: [
         { text: 'Overview', link: '/guide/' },
         { text: 'Quickstart', link: '/quickstart' },
+        { text: 'Multi-Agent Runtime Guide', link: '/guide/multi-agent' },
         { text: 'Task Recipes', link: '/guide/task-recipes' },
         { text: 'Install', link: '/guide/install' },
         { text: 'Upgrade', link: '/guide/upgrade' },
@@ -85,6 +86,7 @@ const zhSidebar = {
       items: [
         { text: '总览', link: '/zh/guide/' },
         { text: '快速开始', link: '/zh/quickstart' },
+        { text: '多 Agent 运行指南', link: '/zh/guide/multi-agent' },
         { text: '任务场景', link: '/zh/guide/task-recipes' },
         { text: '安装', link: '/zh/guide/install' },
         { text: '升级', link: '/zh/guide/upgrade' },

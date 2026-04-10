@@ -30,6 +30,7 @@ features:
 ## Documentation Map
 
 - [Guide](/guide/): start here for install, upgrade, troubleshooting, and quickstart.
+- [Multi-Agent Runtime Guide](/guide/multi-agent): understand runtime routing, Gemini broker/direct/auto transport, and environment-specific auth strategy.
 - [Task Recipes](/guide/task-recipes): choose stages and skills from real user goals such as review, writing, code, or rebuttal.
 - [Examples](/examples/): follow concrete paper-type playbooks for systematic review, empirical, qualitative, methods, and theory papers.
 - [Reference](/reference/): command reference, skills guide, conventions, and stable operator-facing entrypoints.

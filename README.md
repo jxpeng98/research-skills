@@ -32,7 +32,7 @@ A contract-driven academic workflow system for Codex, Claude Code, and Gemini, c
 > [!WARNING]
 > Full functionality requires a real Python runtime plus all three model CLIs in `PATH`:
 > `python3`, `codex`, `claude`, and `gemini`.
-> You also need the matching API credentials (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`) for orchestrator-driven multi-model execution.
+> You also need the matching runtime authentication. `codex` and `claude` use `OPENAI_API_KEY` and `ANTHROPIC_API_KEY`. Gemini `direct` mode requires non-interactive auth such as `GEMINI_API_KEY` or Vertex env auth, while Google-login-only automation should use the resident broker path described in [docs/guide/multi-agent.md](docs/guide/multi-agent.md).
 > Without them, you can still install assets and use shell `rsk check|upgrade|align`, but `doctor`, validators, tests, and the full orchestrator flow will be partial or unavailable.
 
 ## Design Lineage And Related Projects
@@ -56,6 +56,7 @@ This is the shortest stable path from “nothing installed” to “running a ca
 Start with the consolidated docs when you need detail:
 
 - [Quick Start](docs/quickstart.md)
+- [Multi-Agent Runtime Guide](docs/guide/multi-agent.md)
 - [Install Guide](docs/guide/install.md)
 - [CLI Reference](docs/reference/cli.md)
 - [Architecture](docs/architecture.md)
@@ -754,7 +755,7 @@ See [docs/advanced/agent-skill-collaboration.md](docs/advanced/agent-skill-colla
 ## Multi-Model Collaboration (`orchestrator`)
 
 You can coordinate Codex, Claude, and Gemini concurrently for cross-stage research tasks.
-*(Requires API Keys exposed: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`)*
+*(Requires runtime auth for each agent. Gemini may run through `direct`, `broker`, or `auto`; see [docs/guide/multi-agent.md](docs/guide/multi-agent.md).)*
 
 ```bash
 # Inspect task prerequisites and routing before execution

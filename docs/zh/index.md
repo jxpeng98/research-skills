@@ -30,6 +30,7 @@ features:
 ## 文档导航
 
 - [入门](/zh/guide/): 先看安装、升级、故障排除与快速开始。
+- [多 Agent 运行指南](/zh/guide/multi-agent): 集中说明 runtime 路由、Gemini 的 broker/direct/auto、以及不同环境下的认证策略。
 - [任务场景](/zh/guide/task-recipes): 按真实目标选择 stages、Task IDs 与 skills。
 - [示例](/zh/examples/): 查看按 systematic-review、empirical、qualitative、methods、theory 组织的标准路线图。
 - [参考](/zh/reference/): 查看 CLI 命令参考、Skills 指南与系统规范。

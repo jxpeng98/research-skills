@@ -5,14 +5,16 @@
 ## 推荐阅读顺序
 
 1. [快速开始](/zh/quickstart)
-2. [任务场景](/zh/guide/task-recipes)
-3. [安装](/zh/guide/install)
-4. [CLI 参考](/zh/reference/cli)
-5. [故障排除](/zh/guide/troubleshooting)
+2. [多 Agent 运行指南](/zh/guide/multi-agent)
+3. [任务场景](/zh/guide/task-recipes)
+4. [安装](/zh/guide/install)
+5. [CLI 参考](/zh/reference/cli)
+6. [故障排除](/zh/guide/troubleshooting)
 
 ## 内容说明
 
 - [快速开始](/zh/quickstart)：稳定入口、任务运行方式、什么时候切到维护者文档。
+- [多 Agent 运行指南](/zh/guide/multi-agent)：解释 broker / direct / auto、Gemini 认证矩阵、桌面 broker 启动方式与回退逻辑。
 - [任务场景](/zh/guide/task-recipes)：按“我要做什么”来选 stages、Task IDs 和 skills。
 - [示例](/zh/examples/)：按 systematic-review、empirical、qualitative、methods、theory 查看标准推荐路线。
 - [安装](/zh/guide/install)：shell bootstrap、本地仓库安装、Python CLI 安装。

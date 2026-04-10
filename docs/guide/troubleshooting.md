@@ -18,10 +18,11 @@ These errors occur when the Orchestrator cannot locate a required CLI binary (li
   - Codex: `export OPENAI_API_KEY="sk-proj-..."`
   - Gemini: `export GEMINI_API_KEY="..."` (preferred for headless Gemini CLI)
   - Gemini / Vertex AI: set `GOOGLE_GENAI_USE_VERTEXAI=true`, then provide `GOOGLE_API_KEY` or `GOOGLE_APPLICATION_CREDENTIALS`, plus `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`
-  - Gemini / Google-login subscription: start `python3 scripts/gemini_session_broker.py --host 127.0.0.1 --port 8767` in a desktop session, then export `RESEARCH_GEMINI_BROKER_URL=http://127.0.0.1:8767`
+  - Gemini / Google-login subscription: start `python3 scripts/gemini_session_broker.py --backend acp --host 127.0.0.1 --port 8767` in a desktop session, then export `RESEARCH_GEMINI_BROKER_URL=http://127.0.0.1:8767`
 - **Transport control**: set `RESEARCH_GEMINI_TRANSPORT=auto|broker|direct` to choose the Gemini execution path globally, or set `runtime_options.gemini.transport` in an agent profile to override it per profile.
 - **Additional note**: In `parallel`, `task-run`, and `team-run`, do not treat browser login as a stable dependency on the `direct` path. Gemini CLI cached OAuth can fail to carry over into non-interactive Python subprocesses, so direct subprocess runs should prefer `GEMINI_API_KEY` or Vertex auth.
-- **Broker note**: When `RESEARCH_GEMINI_TRANSPORT=auto`, the orchestrator probes the broker first and only falls back to direct Gemini CLI when the broker is unavailable and direct auth is still usable. The builtin broker defaults to a Gemini CLI backend; if you need a stronger resident Google-login path, attach a custom backend with `RESEARCH_GEMINI_BROKER_BACKEND_CMD`.
+- **Broker note**: When `RESEARCH_GEMINI_TRANSPORT=auto`, the orchestrator probes the broker first and only falls back to direct Gemini CLI when the broker is unavailable and direct auth is still usable. The builtin broker now defaults to a resident `gemini --acp` backend, so cached Google login is valid on the broker path even though it is still unreliable on the direct subprocess path.
+- **ACP customization**: Override the resident ACP command with `RESEARCH_GEMINI_ACP_CMD="..."`. Use `--backend cli` only when you intentionally want the old one-shot `gemini -p` behavior, or `RESEARCH_GEMINI_BROKER_BACKEND_CMD="..."` when you need a completely external broker backend.
 
 ### `[ERR-RS-ENV-002]` Required CLI tool is not installed or not in PATH.
 - **Cause**: The Node.js binary wrappers for the models are not installed.

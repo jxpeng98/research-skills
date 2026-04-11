@@ -7,6 +7,7 @@ build/
 *.egg-info/
 .env
 docs/.vitepress/dist/
+output/test_runtime/
 
 # Local agent artifacts generated during `rsk` install tests
 .gemini/
@@ -22,3 +23,6 @@ research-paper-workflow/skills-summary.md
 research-paper-workflow/templates/
 research-paper-workflow/standards/
 research-paper-workflow/roles/
+
+
+# Local agent artifacts generated during `rsk` install tests

@@ -3915,6 +3915,7 @@ Return sections:
         skill_cards: list[dict[str, Any]],
         cwd: Path,
         run_id: str,
+        profile_cfg: dict[str, Any],
     ) -> list[dict[str, Any]]:
         """Generate work units: persona-based (static) or planner-based (dynamic)."""
         partition = team_config.get("partition_strategy", "")
@@ -4356,7 +4357,7 @@ Return sections:
 
         # 4. Generate work units
         work_units = self._generate_work_units(
-            team_config, packet, mcp_evidence, skill_cards, cwd, run_id,
+            team_config, packet, mcp_evidence, skill_cards, cwd, run_id, profile_cfg,
         )
         routing_notes.append(f"Generated {len(work_units)} work units for run_id={run_id}.")
         for unit in work_units:

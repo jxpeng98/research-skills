@@ -48,6 +48,9 @@ class UniversalInstallerTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             rendered = stdout.getvalue()
+            self.assertIn("== Detected Versions ==", rendered)
+            self.assertIn(f"source:      {source_version}", rendered)
+            self.assertIn(f"codex       {source_version}", rendered)
             self.assertIn(f"current {source_version}; source {source_version}; already installed", rendered)
 
     def test_existing_managed_skill_auto_updates_without_overwrite(self) -> None:

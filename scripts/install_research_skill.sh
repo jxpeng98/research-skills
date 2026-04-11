@@ -408,19 +408,24 @@ skill_copy_detail() {
 
 print_detected_versions() {
   local source_version="$1"
+  local detected=""
   section "Detected Versions"
   info "source:      ${source_version:-unknown}"
   if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
-    info "codex:       $(skill_package_version "$CODEX_SKILL_DEST" || true)"
+    detected="$(skill_package_version "$CODEX_SKILL_DEST" || true)"; detected="${detected:-not installed}"
+    info "codex:       $detected"
   fi
   if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
-    info "claude:      $(skill_package_version "$CLAUDE_SKILL_DEST" || true)"
+    detected="$(skill_package_version "$CLAUDE_SKILL_DEST" || true)"; detected="${detected:-not installed}"
+    info "claude:      $detected"
   fi
   if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
-    info "gemini:      $(skill_package_version "$GEMINI_SKILL_DEST" || true)"
+    detected="$(skill_package_version "$GEMINI_SKILL_DEST" || true)"; detected="${detected:-not installed}"
+    info "gemini:      $detected"
   fi
   if [[ "$TARGET" == "antigravity" || "$TARGET" == "all" ]]; then
-    info "antigravity: $(skill_package_version "$ANTIGRAVITY_SKILL_DEST" || true)"
+    detected="$(skill_package_version "$ANTIGRAVITY_SKILL_DEST" || true)"; detected="${detected:-not installed}"
+    info "antigravity: $detected"
   fi
 }
 

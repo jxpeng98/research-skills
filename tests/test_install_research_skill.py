@@ -58,6 +58,9 @@ class InstallResearchSkillTests(unittest.TestCase):
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn("Detected Versions", result.stdout)
+            self.assertIn(f"source:      {source_version}", result.stdout)
+            self.assertIn(f"codex:       {source_version}", result.stdout)
             self.assertIn(f"current {source_version}; source {source_version}; already installed", result.stdout)
 
     def test_doctor_command_exports_repo_root_on_pythonpath(self) -> None:

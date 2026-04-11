@@ -32,7 +32,7 @@ A contract-driven academic workflow system for Codex, Claude Code, and Gemini, c
 > [!WARNING]
 > Full functionality requires a real Python runtime plus all three model CLIs in `PATH`:
 > `python3`, `codex`, `claude`, and `gemini`.
-> You also need the matching runtime authentication. `codex` and `claude` use `OPENAI_API_KEY` and `ANTHROPIC_API_KEY`. Gemini `direct` mode requires non-interactive auth such as `GEMINI_API_KEY` or Vertex env auth, while Google-login-only automation should use the resident broker path described in [docs/guide/multi-agent.md](docs/guide/multi-agent.md).
+> You also need the matching runtime authentication. `codex` can run with `OPENAI_API_KEY` or an existing ChatGPT/Codex login, `claude` uses `ANTHROPIC_API_KEY`, and Gemini `direct` mode requires non-interactive auth such as `GEMINI_API_KEY` or Vertex env auth. Google-login-only Gemini automation should use the resident broker path described in [docs/guide/multi-agent.md](docs/guide/multi-agent.md).
 > Without them, you can still install assets and use shell `rsk check|upgrade|align`, but `doctor`, validators, tests, and the full orchestrator flow will be partial or unavailable.
 
 ## Design Lineage And Related Projects
@@ -238,6 +238,12 @@ python3 -m bridges.orchestrator task-run \
   --topic ai-in-education \
   --cwd . \
   --triad
+```
+
+For a repeatable Codex-first local smoke test with optional Gemini broker coverage:
+
+```bash
+python3 scripts/smoke_multi_agent.py --cwd . --transport broker --start-broker
 ```
 
 Common controls:

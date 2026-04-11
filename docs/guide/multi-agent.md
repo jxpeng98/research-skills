@@ -150,6 +150,39 @@ That path does not preserve a resident Google-login session. Use it only for API
 
 ## Running Multi-Agent Workflows
 
+## Automated Smoke Harness
+
+If you want a repeatable local validation instead of running every check manually, use the Codex-first smoke harness:
+
+```bash
+python3 scripts/smoke_multi_agent.py \
+  --cwd . \
+  --transport broker \
+  --start-broker \
+  --run-parallel
+```
+
+What it does:
+
+- runs `doctor`
+- probes a real Codex runtime call
+- probes a real Gemini runtime call through the selected transport
+- optionally runs a Codex-synthesized `parallel` smoke
+- writes JSON and Markdown receipts under `output/test_runtime/`
+
+Recommended local variants:
+
+```bash
+# Google-login Gemini on desktop
+python3 scripts/smoke_multi_agent.py --cwd . --transport broker --start-broker
+
+# Broker first, direct fallback if available
+python3 scripts/smoke_multi_agent.py --cwd . --transport auto --start-broker --run-fallback-check
+
+# Direct Gemini only, for API-key or Vertex testing
+python3 scripts/smoke_multi_agent.py --cwd . --transport direct --strict-gemini
+```
+
 ### Preflight
 
 Run `doctor` before a larger workflow:

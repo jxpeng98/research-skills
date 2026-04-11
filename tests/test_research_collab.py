@@ -393,3 +393,41 @@ class ResearchCollabTests(unittest.TestCase):
         self.assertEqual(len(authenticate_calls), 1)
         self.assertEqual(authenticate_calls[0]["methodId"], "gemini-api-key")
         self.assertEqual(authenticate_calls[0]["_meta"]["api-key"], "test-key")
+
+    def test_acp_backend_extracts_text_from_nested_update_payload(self) -> None:
+        class _NestedUpdateClient(_FakeACPClient):
+            def request(
+                self,
+                method: str,
+                params: dict[str, object],
+                *,
+                timeout_seconds: float | None = None,
+                update_buffer: list[dict[str, object]] | None = None,
+                update_session_id: str | None = None,
+            ) -> dict[str, object]:
+                self.calls.append((method, dict(params)))
+                if method == "session/new":
+                    return {
+                        "sessionId": "acp-session-1",
+                        "modes": {"currentModeId": "default"},
+                        "models": {"currentModelId": "gemini-2.5-pro"},
+                    }
+                if method == "session/prompt":
+                    if update_buffer is not None:
+                        update_buffer.append(
+                            {
+                                "sessionId": update_session_id or "acp-session-1",
+                                "update": {
+                                    "sessionUpdate": "agent_message_chunk",
+                                    "content": {"type": "text", "text": "nested hello"},
+                                },
+                            }
+                        )
+                    return {"stopReason": "end_turn"}
+                return {}
+
+        backend = GeminiACPBackend(client_factory=lambda: _NestedUpdateClient())
+        response = backend.prompt(prompt="hello", cwd=REPO_ROOT, runtime_options={"approval_mode": "default"})
+
+        self.assertTrue(response.success)
+        self.assertEqual(response.content, "nested hello")

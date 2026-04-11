@@ -620,13 +620,14 @@ class _GeminiACPProcessClient:
         if not isinstance(params, dict):
             return
         session_id = str(params.get("sessionId", "")).strip()
+        normalized = _normalize_acp_update_payload(params)
         with self._state_lock:
             if (
                 self._update_buffer is not None
                 and self._update_session_id
                 and session_id == self._update_session_id
             ):
-                self._update_buffer.append(dict(params))
+                self._update_buffer.append(normalized)
 
     def _handle_agent_request(self, message: dict[str, Any]) -> None:
         request_id = message.get("id")
@@ -1504,9 +1505,10 @@ def _find_auth_method(
 def _render_acp_updates(updates: list[dict[str, Any]]) -> str:
     chunks: list[str] = []
     for item in updates:
-        if str(item.get("sessionUpdate", "")).strip() != "agent_message_chunk":
+        normalized = _normalize_acp_update_payload(item)
+        if str(normalized.get("sessionUpdate", "")).strip() != "agent_message_chunk":
             continue
-        content = item.get("content", {})
+        content = normalized.get("content", {})
         if not isinstance(content, dict):
             continue
         if str(content.get("type", "")).strip() != "text":
@@ -1515,3 +1517,14 @@ def _render_acp_updates(updates: list[dict[str, Any]]) -> str:
         if text:
             chunks.append(text)
     return "".join(chunks).strip()
+
+
+def _normalize_acp_update_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(payload)
+    nested_update = normalized.get("update")
+    if isinstance(nested_update, dict):
+        merged = dict(nested_update)
+        if "sessionId" not in merged and "sessionId" in normalized:
+            merged["sessionId"] = normalized["sessionId"]
+        return merged
+    return normalized

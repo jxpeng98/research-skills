@@ -148,6 +148,39 @@ python3 scripts/gemini_session_broker.py --backend cli --host 127.0.0.1 --port 8
 
 但这一条不会保住常驻的 Google 登录会话，只适合 API key 风格的自动化。
 
+## 自动化 Smoke Harness
+
+如果你不想每次都手工跑完整 checklist，可以直接用仓库里的 Codex-first smoke harness：
+
+```bash
+python3 scripts/smoke_multi_agent.py \
+  --cwd . \
+  --transport broker \
+  --start-broker \
+  --run-parallel
+```
+
+它会做这些事：
+
+- 跑一次 `doctor`
+- 做一次真实 Codex runtime 探针
+- 按指定 transport 做一次真实 Gemini runtime 探针
+- 可选地跑一次由 Codex 负责综合的 `parallel` smoke
+- 在 `output/test_runtime/` 下写出 JSON 和 Markdown 报告
+
+本地常用变体：
+
+```bash
+# 桌面 Google 登录 Gemini
+python3 scripts/smoke_multi_agent.py --cwd . --transport broker --start-broker
+
+# 优先 broker，broker 挂掉后检查 auto 回退
+python3 scripts/smoke_multi_agent.py --cwd . --transport auto --start-broker --run-fallback-check
+
+# 只测 direct，用于 API key 或 Vertex
+python3 scripts/smoke_multi_agent.py --cwd . --transport direct --strict-gemini
+```
+
 ## Multi-Agent 工作流里怎么用
 
 ### 预检

@@ -385,6 +385,45 @@ symlink_points_to() {
 COPY_ITEM_STATUS=""
 COPY_ITEM_DETAIL=""
 
+skill_copy_detail() {
+  local dest="$1"
+  local src_version="$2"
+  local dest_version="${3:-}"
+  local action="${4:-}"
+  case "$action" in
+    skip)
+      printf "%s (current %s; source %s; already installed)" "$dest" "$src_version" "$src_version"
+      ;;
+    update)
+      printf "%s (current %s; source %s; updated %s -> %s)" "$dest" "$dest_version" "$src_version" "$dest_version" "$src_version"
+      ;;
+    install)
+      printf "%s (installed %s)" "$dest" "$src_version"
+      ;;
+    *)
+      printf "%s" "$dest"
+      ;;
+  esac
+}
+
+print_detected_versions() {
+  local source_version="$1"
+  section "Detected Versions"
+  info "source:      ${source_version:-unknown}"
+  if [[ "$TARGET" == "codex" || "$TARGET" == "all" ]]; then
+    info "codex:       $(skill_package_version "$CODEX_SKILL_DEST" || true)"
+  fi
+  if [[ "$TARGET" == "claude" || "$TARGET" == "all" ]]; then
+    info "claude:      $(skill_package_version "$CLAUDE_SKILL_DEST" || true)"
+  fi
+  if [[ "$TARGET" == "gemini" || "$TARGET" == "all" ]]; then
+    info "gemini:      $(skill_package_version "$GEMINI_SKILL_DEST" || true)"
+  fi
+  if [[ "$TARGET" == "antigravity" || "$TARGET" == "all" ]]; then
+    info "antigravity: $(skill_package_version "$ANTIGRAVITY_SKILL_DEST" || true)"
+  fi
+}
+
 _copy_item() {
   local src="$1"
   local dest="$2"
@@ -407,10 +446,10 @@ _copy_item() {
       if [[ -n "$src_version" && -n "$dest_version" ]]; then
         if [[ "$src_version" == "$dest_version" ]]; then
           COPY_ITEM_STATUS="skip"
-          COPY_ITEM_DETAIL="$dest (already installed $src_version)"
+          COPY_ITEM_DETAIL="$(skill_copy_detail "$dest" "$src_version" "" "skip")"
           return 0
         fi
-        auto_detail="updated $dest_version -> $src_version"
+        auto_detail="$(skill_copy_detail "$dest" "$src_version" "$dest_version" "update")"
       elif [[ -L "$dest" && "$MODE" == "link" && "$(resolve_abs "$dest")" == "$src_abs" ]]; then
         COPY_ITEM_STATUS="skip"
         COPY_ITEM_DETAIL="$dest (already linked)"
@@ -438,7 +477,9 @@ _copy_item() {
     run_cmd cp -R "$src_abs" "$dest"
   fi
   if [[ -n "$auto_detail" ]]; then
-    COPY_ITEM_DETAIL="$dest ($auto_detail)"
+    COPY_ITEM_DETAIL="$auto_detail"
+  elif [[ -n "$src_version" ]]; then
+    COPY_ITEM_DETAIL="$(skill_copy_detail "$dest" "$src_version" "" "install")"
   fi
   return 0
 }
@@ -698,6 +739,7 @@ CLAUDE_SKILL_DEST="${CLAUDE_CODE_HOME:-$HOME/.claude}/skills/research-paper-work
 GEMINI_SKILL_DEST="${GEMINI_HOME:-$HOME/.gemini}/skills/research-paper-workflow"
 ANTIGRAVITY_SKILL_DEST="${ANTIGRAVITY_HOME:-$HOME/.gemini/antigravity}/skills/research-paper-workflow"
 ANTIGRAVITY_CLI_FOUND=0
+SOURCE_SKILL_VERSION="$(skill_package_version "$SKILL_SRC" || true)"
 
 # ── Header ───────────────────────────────────────────────────────────────────
 printf "\n${C_BOLD}Research Skills Installer${C_RESET}\n"
@@ -711,6 +753,7 @@ fi
 if [[ "$INSTALL_CLI" -eq 1 ]]; then
   info "cli:     install -> $CLI_DIR"
 fi
+print_detected_versions "$SOURCE_SKILL_VERSION"
 
 section "CLI Checks"
 case "$TARGET" in

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import os
 import tempfile
 import unittest
@@ -13,6 +15,41 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class UniversalInstallerTests(unittest.TestCase):
+    def test_same_version_install_reports_current_and_source_versions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            codex_home = temp_root / "codex-home"
+            existing_skill = codex_home / "skills" / "research-paper-workflow"
+            existing_skill.mkdir(parents=True)
+            source_version = (REPO_ROOT / "research-paper-workflow" / "VERSION").read_text(encoding="utf-8").strip()
+            (existing_skill / "SKILL.md").write_text(
+                "---\nname: research-paper-workflow\ndescription: current\n---\n",
+                encoding="utf-8",
+            )
+            (existing_skill / "VERSION").write_text(f"{source_version}\n", encoding="utf-8")
+
+            env = os.environ.copy()
+            env["CODEX_HOME"] = str(codex_home)
+            env["PATH"] = ""
+
+            stdout = io.StringIO()
+            with mock.patch.dict(os.environ, env, clear=True):
+                with contextlib.redirect_stdout(stdout):
+                    result = install(
+                        InstallOptions(
+                            repo_root=REPO_ROOT,
+                            project_dir=project_dir,
+                            target="codex",
+                            profile="partial",
+                        )
+                    )
+
+            self.assertEqual(result, 0)
+            rendered = stdout.getvalue()
+            self.assertIn(f"current {source_version}; source {source_version}; already installed", rendered)
+
     def test_existing_managed_skill_auto_updates_without_overwrite(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_root = Path(tmp_dir)

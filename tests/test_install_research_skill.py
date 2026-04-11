@@ -13,6 +13,53 @@ SYSTEM_BASH = Path("/bin/bash")
 
 
 class InstallResearchSkillTests(unittest.TestCase):
+    def test_same_version_install_reports_current_and_source_versions(self) -> None:
+        if not SYSTEM_BASH.exists():
+            self.skipTest("/bin/bash is not available")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            project_dir = temp_root / "project"
+            project_dir.mkdir(parents=True)
+            home_dir = temp_root / "home"
+            home_dir.mkdir()
+            codex_home = temp_root / "codex-home"
+            existing_skill = codex_home / "skills" / "research-paper-workflow"
+            existing_skill.mkdir(parents=True)
+            source_version = (REPO_ROOT / "research-paper-workflow" / "VERSION").read_text(encoding="utf-8").strip()
+            (existing_skill / "SKILL.md").write_text(
+                "---\nname: research-paper-workflow\ndescription: current\n---\n",
+                encoding="utf-8",
+            )
+            (existing_skill / "VERSION").write_text(f"{source_version}\n", encoding="utf-8")
+
+            env = os.environ.copy()
+            env["HOME"] = str(home_dir)
+            env["CODEX_HOME"] = str(codex_home)
+            env["NO_COLOR"] = "1"
+
+            result = subprocess.run(
+                [
+                    str(SYSTEM_BASH),
+                    str(INSTALL_SCRIPT),
+                    "--target",
+                    "codex",
+                    "--mode",
+                    "copy",
+                    "--project-dir",
+                    str(project_dir),
+                ],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stdout + "\n" + result.stderr)
+            self.assertIn(f"current {source_version}; source {source_version}; already installed", result.stdout)
+
     def test_doctor_command_exports_repo_root_on_pythonpath(self) -> None:
         content = INSTALL_SCRIPT.read_text(encoding="utf-8")
 

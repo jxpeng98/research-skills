@@ -171,6 +171,16 @@ def _skill_package_version(path: Path) -> str:
     return _read_version_file(path / "VERSION")
 
 
+def _skill_copy_detail(dest: Path, src_version: str, dest_version: str = "", action: str = "") -> str:
+    if action == "skip":
+        return f"{dest} (current {src_version}; source {src_version}; already installed)"
+    if action == "update" and dest_version:
+        return f"{dest} (current {dest_version}; source {src_version}; updated {dest_version} -> {src_version})"
+    if action == "install":
+        return f"{dest} (installed {src_version})"
+    return str(dest)
+
+
 @lru_cache(maxsize=None)
 def _managed_copy_markers(src_name: str) -> tuple[str, ...]:
     markers = {
@@ -191,17 +201,17 @@ def _is_managed_copy(src: Path, dest: Path) -> bool:
 
 
 def _copy_path(src: Path, dest: Path, mode: str, overwrite: bool, dry_run: bool) -> tuple[str, str]:
+    src_version = _skill_package_version(src)
     if _same_path(src, dest):
         return "skip", f"{dest} (same path)"
     if dest.exists() or dest.is_symlink():
         auto_detail = ""
         if not overwrite:
-            src_version = _skill_package_version(src)
             dest_version = _skill_package_version(dest)
             if src_version and dest_version:
                 if src_version == dest_version:
-                    return "skip", f"{dest} (already installed {src_version})"
-                auto_detail = f"updated {dest_version} -> {src_version}"
+                    return "skip", _skill_copy_detail(dest, src_version, action="skip")
+                auto_detail = _skill_copy_detail(dest, src_version, dest_version, action="update")
             elif src.is_file() and dest.is_file():
                 if _read_bytes(src) == _read_bytes(dest):
                     return "skip", f"{dest} (already current)"
@@ -216,7 +226,7 @@ def _copy_path(src: Path, dest: Path, mode: str, overwrite: bool, dry_run: bool)
         else:
             auto_detail = ""
         _remove_path(dest, dry_run)
-        detail_suffix = f" ({auto_detail})" if auto_detail else ""
+        detail_suffix = auto_detail
     else:
         detail_suffix = ""
     _ensure_dir(dest.parent, dry_run)
@@ -228,7 +238,13 @@ def _copy_path(src: Path, dest: Path, mode: str, overwrite: bool, dry_run: bool)
         shutil.copytree(src, dest)
     else:
         shutil.copy2(src, dest)
-    return "ok", f"{dest}{detail_suffix}"
+    if isinstance(detail_suffix, str) and detail_suffix.startswith(str(dest)):
+        return "ok", detail_suffix
+    if src_version and not detail_suffix:
+        return "ok", _skill_copy_detail(dest, src_version, action="install")
+    if detail_suffix:
+        return "ok", f"{dest} ({detail_suffix})"
+    return "ok", str(dest)
 
 
 def _parse_manifest() -> list[dict[str, str]]:
@@ -287,6 +303,16 @@ def _print_result(label: str, dest: str, status: str) -> None:
 
 def _print_section(title: str) -> None:
     print(f"\n== {title} ==")
+
+
+def _print_detected_versions(target: str, source_version: str, target_paths: dict[str, Path]) -> None:
+    _print_section("Detected Versions")
+    print(f"  source:      {source_version or 'unknown'}")
+    section_targets = TARGET_CHOICES[:-1] if target == "all" else (target,)
+    for item in section_targets:
+        dest_version = _skill_package_version(target_paths[item])
+        state = dest_version or "not installed"
+        print(f"  {item:<11} {state}")
 
 
 def _copy_display(src: Path, dest: Path, label: str, options: InstallOptions) -> None:
@@ -568,6 +594,7 @@ def install(options: InstallOptions) -> int:
     claude_dest = Path(os.environ.get("CLAUDE_CODE_HOME", str(Path.home() / ".claude"))) / "skills" / "research-paper-workflow"
     gemini_dest = Path(os.environ.get("GEMINI_HOME", str(Path.home() / ".gemini"))) / "skills" / "research-paper-workflow"
     antigravity_dest = Path(os.environ.get("ANTIGRAVITY_HOME", str(Path.home() / ".gemini" / "antigravity"))) / "skills" / "research-paper-workflow"
+    source_version = _skill_package_version(skill_src)
     manifest_values = {
         "PROJECT_DIR": str(options.project_dir),
         "CODEX_HOME": str(codex_dest.parent.parent),
@@ -588,6 +615,16 @@ def install(options: InstallOptions) -> int:
     if install_cli:
         print(f"  cli:     install -> {options.cli_dir}")
 
+    _print_detected_versions(
+        options.target,
+        source_version,
+        {
+            "codex": codex_dest,
+            "claude": claude_dest,
+            "gemini": gemini_dest,
+            "antigravity": antigravity_dest,
+        },
+    )
     _print_full_readiness(options)
     _print_cli_checks(options.target)
 

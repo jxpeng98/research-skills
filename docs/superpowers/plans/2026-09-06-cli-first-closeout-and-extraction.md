@@ -2059,3 +2059,21 @@ The pending research previews remain unapplied; acceptance status is unchanged.
 Whitespace, generated-index and frozen-source checks passed; runtime source did not
 change and existing source suites were not repeated. Next: a genuinely suitable
 clean-consumer environment and the pending actual Host/human research chain.
+
+
+## CLI-405 targeted main-paper review supplement
+
+Base `3695b0b4`; branch `codex/research-source-review-addendum`. Official REALM
+and RAG PDFs were read for methods, experimental setup and relevant results.
+The new private `target/cli405-two-source-review-10e1b36b/fulltext-review-addendum.md`
+(under `packages/qiongli-native/`) binds findings to sections/pages and distinguishes
+training stages, extractive/generative output and reported comparison from causal
+attribution. It records unread supplementary/code/data material, no reproduction
+and a failed RAG table screenshot request; it makes no numeric table claim.
+SHA-256: `0848acf81ea72cb7376e85a9c7ba04defeb4ec471650375ea505acc6a3d8f1a3`.
+This advances source review for P01 without claiming the entire B2 workflow or a
+Full Host handoff. The existing capture SHA-256 was rechecked unchanged and its
+history file remains absent. No approval was received, no capture was replaced,
+and no research state was applied. A richer future capture needs a fresh preview.
+Only this evidence note is committed; whitespace, generated-index and frozen-source
+checks passed. Existing runtime suites and unchanged package checks were not rerun.

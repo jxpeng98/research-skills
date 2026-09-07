@@ -19,9 +19,9 @@ use qiongli_platform::{
     approve_codex_plugin_bundle_target, approve_native_artifact_target,
     approve_native_portable_archive_target, build_native_release_candidate,
     build_native_release_envelope, compose_native_artifact, compose_native_portable_archive,
-    current_target_native_artifact_identity, extract_native_portable_archive,
-    launch_grant_signing_bytes, native_artifact_binary_path, native_artifact_id,
-    native_portable_archive_file_name, native_release_candidate_file_name,
+    current_target_native_artifact_identity, discover_native_candidate_managed_root,
+    extract_native_portable_archive, launch_grant_signing_bytes, native_artifact_binary_path,
+    native_artifact_id, native_portable_archive_file_name, native_release_candidate_file_name,
     native_release_candidate_signing_bytes, native_release_envelope_signing_bytes,
     native_release_notes_file_name, verify_claude_plugin_bundle, verify_codex_plugin_bundle,
 };
@@ -226,6 +226,7 @@ fn run() -> Result<(), &'static str> {
         &archive_path,
         &notes_path,
         &arguments.external_clients,
+        &artifact,
     )?;
     let evidence = json!({
         "schema_version": 1,
@@ -417,6 +418,7 @@ fn build_product(
             OsStr::new("qiongli"),
             OsStr::new("--bin"),
             OsStr::new("qiongli"),
+            OsStr::new("--no-default-features"),
             OsStr::new("--release"),
             OsStr::new("--locked"),
             OsStr::new("--target-dir"),
@@ -743,8 +745,10 @@ fn run_acceptance(
     archive: &Path,
     notes: &Path,
     external_clients: &ExternalClients,
+    artifact: &ArtifactIdentityV1,
 ) -> Result<AcceptanceOutcome, &'static str> {
     let product_home = create_child_directory(root, "product-home")?;
+    check_cli_entry(binary, root, &product_home)?;
     let version = run_product(binary, root, &product_home, [OsStr::new("--version")])?;
     let version_text = String::from_utf8(version.stdout)
         .map_err(|_| "candidate-acceptance-version-output-invalid")?;
@@ -1021,6 +1025,16 @@ fn run_acceptance(
             return Err("candidate-acceptance-verify-output-invalid");
         }
         assert_canaries_unchanged(&canaries)?;
+        discover_native_candidate_managed_root(&home).map_err(|error| error.reason_code())?;
+        let installed_binary = home
+            .join(".qiongli/native/payloads")
+            .join(native_artifact_id(artifact).map_err(|error| error.reason_code())?)
+            .join(native_artifact_binary_path(artifact).map_err(|error| error.reason_code())?);
+        check_cli_entry(&installed_binary, root, &home)?;
+        run_mcp(&installed_binary, root, &home)?;
+        // A fresh process must read the same installed resources after shutdown.
+        run_mcp(&installed_binary, root, &home)?;
+        assert_canaries_unchanged(&canaries)?;
         match target {
             "codex" => {
                 if let Some(client) = &external_clients.codex {
@@ -1075,6 +1089,10 @@ fn run_acceptance(
             "runtime_path": "empty",
             "checkout_boundary": "outside-checkout",
             "version": "passed",
+            "cli_empty_arguments": "passed",
+            "cli_window_refusal": "passed",
+            "installed_payload_runtime": "passed",
+            "installed_payload_restart": "passed",
             "embedded_skills": "passed",
             "ui_startup_preflight": "passed",
             "lite_mcp": "passed",
@@ -1509,6 +1527,21 @@ fn ensure_private_child_directory(root: &Path, leaf: &str) -> Result<PathBuf, &'
         create_private_directory(&path)?;
         Ok(path)
     }
+}
+
+fn check_cli_entry(binary: &Path, root: &Path, home: &Path) -> Result<(), &'static str> {
+    let help = run_product(binary, root, home, ["--help"])?;
+    let empty = run_product(binary, root, home, std::iter::empty::<&str>())?;
+    if help.stdout.is_empty() || help.stdout != empty.stdout {
+        return Err("candidate-acceptance-cli-help-invalid");
+    }
+    run_product_expected_failure(
+        binary,
+        root,
+        home,
+        ["ui"],
+        qiongli::DESKTOP_STARTUP_ERROR_CODE,
+    )
 }
 
 fn run_mcp(binary: &Path, root: &Path, home: &Path) -> Result<(), &'static str> {

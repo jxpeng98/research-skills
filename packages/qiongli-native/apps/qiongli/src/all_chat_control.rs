@@ -7,9 +7,9 @@
 )]
 //! Desktop session owner. Durable observations and project tools have separate owners.
 use crate::all_chat_history::{ChatHistory, ChatRecordKind};
-use crate::all_chat_research::{
-    ResearchContext, ResearchRequest, ResearchSession, ResearchSnapshot,
-};
+#[cfg(debug_assertions)]
+use crate::all_chat_research::ResearchContext;
+use crate::all_chat_research::{ResearchRequest, ResearchSession, ResearchSnapshot};
 use std::sync::{Arc, Mutex};
 
 use futures::channel::mpsc;

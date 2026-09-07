@@ -51,7 +51,7 @@ Typed Kernel、Evidence/Reproducibility 和机构级科研治理扩张。
   checklist marks in this file are presentation only；
 - 旧路线图和计划保留为历史设计与验收记录，不再通过追加“当前状态”来控制未来队列。
 
-## Current execution horizon — September 6, 2026
+## Current execution horizon — September 7, 2026
 
 The maintainer has selected **CLI-first delivery without a Qiongli App window**.
 [ADR 0218](../../architecture/decisions/0218-cli-first-local-host-collaboration.md)
@@ -61,8 +61,8 @@ product acceptance. CLI First is the product direction; CI remains verification.
 
 | Horizon | Ordered work |
 |---|---|
-| **CLOSEOUT** | Integrate completed App/ACP source and explicitly authorized Trellis workflow cleanup into `2.x`; retain the old plan/review as history. `PLT-404`—`PLT-408` are deferred, not accepted. |
-| **NOW** | `CLI-401` baseline/direction audit, then `CLI-402` pure CLI/MCP build and entry separation. |
+| **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
+| **NOW** | `CLI-403` installed CLI package baseline using existing signed native payload owners. `CLI-401/402` source integration is merged; program acceptance remains separate. |
 | **NEXT** | `CLI-403` independent trusted resources/install, `CLI-404` window-free Host integration and human approval, then `CLI-405` one Host's research journey and same-device handoff. `SEC-401`—`SEC-403` remain prerequisites for enabling research writes. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |

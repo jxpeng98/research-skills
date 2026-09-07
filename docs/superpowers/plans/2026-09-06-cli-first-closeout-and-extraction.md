@@ -222,6 +222,64 @@ changes or additional working-tree scope appeared at the pre-commit check.
 The PR records the frozen head and live check evidence. Program acceptance,
 merge and release remain separate from this integration check.
 
+## CLI-403 first increment — installed CLI package baseline
+
+PR #182 was reviewed with no actionable findings and merged to `2.x` as
+`c25fb2c1171f43455223eb7409aad8b1ec41a187` on September 7. Its tested head
+`7dafcbcde3948e031e0c5dcdb4cd62333498fda9` passed Native CI `34109163479`
+and Evaluation Truth `34109146661`. This closes its source integration,
+without inferring program or release acceptance.
+
+The next bounded increment reuses `native_candidate_acceptance.rs`, native
+artifact/archive composition, signed candidate verification and managed payload
+transactions. Its build explicitly selects no default features. It now checks
+help/window refusal on the extracted CLI and runs CLI/Lite MCP directly from each
+verified installed payload, including a second MCP process after shutdown.
+All runtime processes keep the existing empty PATH and isolated homes outside
+the checkout. Existing digest/partial-approval/conflict refusals, compensation,
+uninstall and user-data canaries remain.
+
+This is development verification with ephemeral test signing keys, not a public
+package or real Host qualification. The candidate is a development working-tree build based on the merge above;
+its source label is the merge commit, with the acceptance harness changes and
+a cfg-only unused-import correction on `codex/cli-native-package-baseline`.
+It is not an immutable release-source qualification.
+
+Remaining CLI-403 scope: standalone product authority for managed operations
+still assumes a Desktop manifest/App binding; define its legitimate independent
+identity before extending that verifier. Qualify update/version switching,
+rollback and live-process pinning separately. Source builds must remain
+inspection-only where product authority is required. No `verified=true` shortcut
+or new installer has been added. CLI-404/405 real human Host approval and research
+journeys remain later work.
+
+Fresh local validation on macOS:
+- The existing `native_candidate_acceptance` runner completed with
+  `candidate-acceptance-passed`, using an isolated private output directory,
+  ephemeral in-memory signing keys and no external clients.
+- All 21 reported checks passed, including the four added CLI/installed-runtime
+  checks. `publication_allowed=false`; real Codex/Claude, displayed window and
+  production signing gates remain `not-run`.
+- Evidence: `<external-output>/acceptance-evidence.json`, SHA-256
+  `c2d781b7495ec29effa78f2dbfadf4380c6308e7f57b58f2244e63aad221b38a`.
+- Five harness tests and 59 roadmap/release-automation tests passed.
+- The acceptance-harness Clippy check passed with the existing local Rust 1.98
+  `chunks_exact_to_as_chunks` exception; the corrected release build completed
+  without the unused `ResearchContext` import warning.
+- The first fixture run under `/private/tmp` was correctly refused because
+  explicitly approved installation targets reject writable ancestors. The
+  successful run used a user-owned private directory; no path validation was
+  relaxed. This is distinct from the passed package/runtime checks.
+- Linux/Windows execution of this new harness increment has not run; the
+  preceding CLI-402 CI is not reused as evidence for this changed harness.
+
+Integration follows the maintainer's updated local workflow: reviewed scoped
+commit on `codex/cli-native-package-baseline`, then fast-forward into local
+`2.x`. The frozen-source guard passed against `2.x`; unchanged focused results
+above are reused. No remote synchronization or release is part of this increment.
+CLI-403 remains active; the next increment is independent product authority,
+reusing signed native artifact verification without weakening source-build refusal.
+
 
 ## Development-flow simplification — September 7
 

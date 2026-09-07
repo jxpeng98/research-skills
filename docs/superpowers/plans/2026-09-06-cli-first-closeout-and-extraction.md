@@ -1917,3 +1917,48 @@ acceptance remains unchanged. The real human Inbox preview remains unapplied;
 CLI-404/405 research approval, live Host work and first-stage integration remain
 open. Next increment: continue those existing Host/research owners and remaining
 platform qualification without treating test receipts as human approval.
+
+
+## CLI-405 two-source research candidate — awaiting Inbox approval
+
+Base: `10e1b36b`; branch: `codex/two-source-research-preview`. The next research
+increment now has actual bounded scholarly content, rather than the older
+engineering-only Inbox observation. Native Codex web retrieval read the official
+[REALM proceedings abstract](https://proceedings.mlr.press/v119/guu20a.html) and
+[RAG proceedings abstract](https://proceedings.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html).
+The candidate compares training/output emphasis without a quantitative ranking.
+It explicitly records abstract-only coverage, unread full papers and no application
+recommendation. This is B2 preparation, not complete paper reading or P01 acceptance.
+
+Private fixture: `packages/qiongli-native/target/cli405-two-source-review-10e1b36b`.
+`REVIEW.md` states the exact write scope. `review-draft/RESEARCH/realm-rag/` contains
+paper notes, comparison summary/matrix, bibliography, retrieval manifest, claim
+ledger and boundary note outside the registered project. `capture.json` carries
+one literature change, two HTTPS evidence references, no decisions and two next
+actions. The isolated empty project was created using existing preview/apply
+owners; no prior research or pending engineering observation was changed.
+
+The existing named macOS alpha.5 candidate (the 8c6450f0 Full-cache qualification)
+validated this portable capture through the actual CLI with empty PATH and a fresh
+Home/config. Binary SHA-256:
+`60df1cc42a49aec90a71f7035b31d7bc4e5a01d2147c3f0bcd1b42b26b8c6259`.
+The receipt names this older binary; it is not current-head package qualification.
+Project `prj_5a00bc9a5788c19a0220a505bf4d7f24`, revision 1;
+capture `cap_d0d842b83874b2c0f51a7bf02a1277db53c0c1ede6d108143f3fa5c18b6c45c4`;
+plan digest `373815edc7074f98a9eaa65f41b057a8920df94cc30ea7771c5e90df6e1cf55b`;
+capture-file SHA-256 `292c6574a43564f400c820ae3c108d0ffdf8b17ecce956225c8848bb35f8f784`.
+Preview reports append-pending-history. A real apply without filesystem approval
+was rejected, Inbox was empty and the target history file remained absent.
+
+A fresh actual bundled `qiongli_orchestrator_route` call still returned Lite
+preview-only with project writes disabled. This candidate was reasoned about by
+the current Codex conversation, not passed through Full orchestration; no fabricated
+handoff/evidence authentication or model-child run was used. Human approval is still
+false in `review-evidence.json`; the new candidate and older engineering candidate
+both remain unapplied. The next human decision can authorize this exact Inbox
+append only. Canonical consolidation needs its own concrete owner-produced preview,
+followed by approved writing and real restart/same-device continuation. Existing
+skills explicitly require artifact apply approval; this is the real interaction
+under qualification, not a development phase sign-off. Ledger acceptance remains
+unchanged. Whitespace, generated-index and frozen-source checks passed; no runtime
+code changed and no unchanged suites were rerun.

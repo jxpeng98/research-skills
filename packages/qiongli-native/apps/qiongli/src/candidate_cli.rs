@@ -242,6 +242,10 @@ pub(crate) fn execute(
             if stage_approval_digest(&prepared.approval_digest_sha256) != expected_approval_digest {
                 return Err("native-candidate-stage-approval-digest-mismatch");
             }
+            let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+                home.ok_or("native-candidate-home-unavailable")?,
+                crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+            )?;
             let commit = qiongli_platform::stage_native_release_candidate_local(
                 content.pack(),
                 &prepared.verified,
@@ -285,6 +289,10 @@ pub(crate) fn execute(
             if prepared.approval_digest_sha256 != expected_approval_digest {
                 return Err("native-candidate-approval-digest-mismatch");
             }
+            let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+                home.ok_or("native-candidate-home-unavailable")?,
+                crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+            )?;
             let home = home.ok_or("native-candidate-home-unavailable")?;
             let commit = apply_native_release_candidate_local(
                 content.pack(),
@@ -307,6 +315,10 @@ pub(crate) fn execute(
             Ok(CandidateCliOutput::Verify(verify_output(verification)))
         }
         CandidateCliCommand::Remove(options) => {
+            let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+                home.ok_or("native-candidate-home-unavailable")?,
+                crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+            )?;
             let home = home.ok_or("native-candidate-home-unavailable")?;
             let commit = remove_native_release_candidate_local(
                 content.pack(),
@@ -652,6 +664,8 @@ pub fn prepare_native_candidate_activation(
     );
     crate::update_reconcile::prepare_reconciliation_transaction_root(&store, &transaction_id)?;
     let result = (|| {
+        let _home_lock = crate::update_reconcile::acquire_native_home_write_lock(product.home())?;
+        crate::update_reconcile::refuse_native_home_activation(product.home())?;
         let _lock = crate::update_reconcile::acquire_replacement_lock(&store)?;
         if store.load().map_err(|error| error.reason_code())? != loaded {
             return Err("native-activation-state-changed");

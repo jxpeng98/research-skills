@@ -975,3 +975,38 @@ activation/recovery commands with fresh signed-candidate and approval revalidati
 process checks and the existing bounded real CLI health callback. Real Host
 research/approval, native Windows state support and named package qualification
 remain open. First-stage and ledger acceptance remain incomplete; no publication.
+
+
+## CLI-403 nineteenth increment — shared Home write exclusion
+
+Base: `28a93d09`; branch: `codex/cli-install-write-exclusion`.
+Native activation/recovery/discard and preparation now take a fixed Home installation
+lock before the existing config replacement lock. A private copy of the existing
+journal-bound start record persists until outcome cleanup/state completion. A second
+config root sharing the Home therefore cannot use the participating managed writers
+while activation runs or awaits recovery. Recovery rejects a different marker and
+clears its own marker only after completion. Existing journal/record/public schemas
+are unchanged; Windows managed writes remain available while native activation
+continues to be unsupported there.
+
+The common managed-operation apply owner, candidate stage/apply/remove, and Desktop
+Skills/workflow/CLI/packaged Host confirmation paths use the shared guard. Read-only
+plans remain available. This increment does not claim complete writer coverage:
+legacy migration, engineering `install native`, the old Desktop replacement helper
+and other direct write dispatchers need the next inventory/guard pass. Public native
+activation remains unexposed until those paths and fresh authority/process checks
+are complete. The cooperative lock does not prevent arbitrary external file writes.
+
+Checks on macOS: 9 focused activation tests, 9 managed-operation tests, and 9 Skills
+consumer tests passed (sets overlap). The expanded CLI-pair case verifies Home-lock
+contention across config roots, refusal after health interruption and committed
+cleanup interruption, mismatched-marker preservation, recovery release and replay.
+The contention assertion is outside the expected-panic catcher so an assertion
+failure cannot masquerade as the simulated interruption. Signed-candidate integration
+and source-build authority-refusal subprocess checks passed. Library Clippy passed.
+These checks use synthetic activation/health fixtures, not SIGKILL or real Host
+qualification. No program acceptance or publication status is advanced.
+
+Next: finish the remaining writer inventory, then wire approved public activation
+and recovery through the existing signed-candidate, journal and real CLI health
+owners. First-stage integration and named package/real Host qualification remain open.

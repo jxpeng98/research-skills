@@ -920,6 +920,12 @@ fn apply_plan(
     }
     validate_approvals(&plan.approvals_required, approvals)?;
     let root = config_root(environment).map_err(|error| error.reason_code())?;
+    let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+        environment
+            .platform_home()
+            .ok_or("native-candidate-home-unavailable")?,
+        root.clone(),
+    )?;
     let result = match &plan.operation {
         ManagedOperationV1::SkillsReconcilePreset {
             preset,

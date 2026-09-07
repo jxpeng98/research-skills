@@ -179,6 +179,25 @@ overwriting historical records. The caller still owns fresh candidate/approval a
 process verification; public activation/recovery commands and competing-write
 exclusion remain pending.
 
+Native activation, recovery, discard and candidate preparation now acquire a fixed
+private `HOME/.qiongli/native/.installation.lock` before the config-root replacement
+lock. Activation copies its existing journal-bound start record to
+`active-installation.json` in that Home directory before live changes. Recovery
+requires the matching marker; successful cleanup/state completion removes it.
+Interrupted activation therefore excludes participating writers using a different
+config root even after the process lock is released. No new journal or public wire
+schema is introduced.
+
+The shared Unix managed-write guard covers managed-operation apply, candidate
+stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and packaged
+Host mutations. It rejects active update state and any Home activation marker, then
+rechecks state under the config lock. Read-only plans remain available for installed
+CLI health. Non-Unix managed writes retain their existing behavior. This is partial
+entry-point coverage: legacy migration, engineering `install native`, older Desktop
+replacement and other direct writers still need a final inventory/guard pass before
+public native activation is enabled. This lock coordinates participating processes;
+it is not an operating-system access boundary against unrelated writers.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

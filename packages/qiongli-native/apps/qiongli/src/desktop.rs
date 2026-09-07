@@ -8052,6 +8052,37 @@ impl DesktopService for NativeDesktopService {
                     .active_operation
                     .take()
                     .expect("validated active operation remains available");
+                let _write_guard = if matches!(
+                    &operation,
+                    PendingDesktopOperation::SkillsMaterialization { .. }
+                        | PendingDesktopOperation::SkillsRemoval { .. }
+                        | PendingDesktopOperation::SkillsDetach { .. }
+                        | PendingDesktopOperation::WorkflowVariantChange { .. }
+                        | PendingDesktopOperation::CliInstall { .. }
+                        | PendingDesktopOperation::CliRemove { .. }
+                        | PendingDesktopOperation::CliPathConfigure { .. }
+                        | PendingDesktopOperation::Activation { .. }
+                        | PendingDesktopOperation::Candidate { .. }
+                        | PendingDesktopOperation::PackagedProduct { .. }
+                        | PendingDesktopOperation::PackagedProductBatch { .. }
+                        | PendingDesktopOperation::IntegrationReconciliation { .. }
+                        | PendingDesktopOperation::PackagedProductRemoval { .. }
+                ) {
+                    let guard = (|| {
+                        crate::update_reconcile::acquire_managed_write_guard(
+                            self.environment
+                                .platform_home()
+                                .ok_or("native-candidate-home-unavailable")?,
+                            config_root(&self.environment).map_err(|error| error.reason_code())?,
+                        )
+                    })();
+                    match guard {
+                        Ok(guard) => guard,
+                        Err(code) => return DesktopEvent::Failed { code },
+                    }
+                } else {
+                    None
+                };
                 match operation {
                     PendingDesktopOperation::Blocked(_) => DesktopEvent::Failed {
                         code: "desktop-apply-unavailable",

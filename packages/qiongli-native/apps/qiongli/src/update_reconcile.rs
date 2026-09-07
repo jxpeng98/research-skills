@@ -295,16 +295,19 @@ pub(crate) fn prepare_update_reconciliation(
 
 #[cfg(unix)]
 pub(crate) fn acquire_replacement_lock(store: &UpdateStateStore) -> Result<File, &'static str> {
-    use std::fs::TryLockError;
-    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
-
     let updates_root = store
         .staging_root()
         .parent()
         .ok_or("native-update-staging-unavailable")?
         .to_path_buf();
-    let lock_path = updates_root.join(".replacement.lock");
-    if let Ok(metadata) = fs::symlink_metadata(&lock_path)
+    acquire_private_write_lock(&updates_root.join(".replacement.lock"))
+}
+
+#[cfg(unix)]
+fn acquire_private_write_lock(lock_path: &Path) -> Result<File, &'static str> {
+    use std::fs::TryLockError;
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+    if let Ok(metadata) = fs::symlink_metadata(lock_path)
         && (metadata.file_type().is_symlink()
             || !metadata.is_file()
             || metadata.uid() != rustix::process::geteuid().as_raw()
@@ -318,12 +321,12 @@ pub(crate) fn acquire_replacement_lock(store: &UpdateStateStore) -> Result<File,
         .read(true)
         .write(true)
         .mode(0o600)
-        .open(&lock_path)
+        .open(lock_path)
         .map_err(|_| "native-update-replacement-lock-unavailable")?;
     let opened = lock
         .metadata()
         .map_err(|_| "native-update-replacement-lock-unavailable")?;
-    let linked = fs::symlink_metadata(&lock_path)
+    let linked = fs::symlink_metadata(lock_path)
         .map_err(|_| "native-update-replacement-lock-unavailable")?;
     if opened.uid() != rustix::process::geteuid().as_raw()
         || opened.mode() & 0o077 != 0
@@ -342,6 +345,135 @@ pub(crate) fn acquire_replacement_lock(store: &UpdateStateStore) -> Result<File,
 #[cfg(not(unix))]
 pub(crate) fn acquire_replacement_lock(_store: &UpdateStateStore) -> Result<File, &'static str> {
     Err("native-update-target-unsupported")
+}
+
+const HOME_ACTIVATION_MARKER: &str = "active-installation.json";
+
+fn native_home_state_root(home: &Path) -> Result<PathBuf, &'static str> {
+    qiongli_platform::prepare_native_candidate_managed_root(home)
+        .map_err(|error| error.reason_code())?;
+    Ok(home.join(".qiongli/native"))
+}
+
+#[cfg(unix)]
+pub(crate) fn acquire_native_home_write_lock(home: &Path) -> Result<File, &'static str> {
+    acquire_private_write_lock(&native_home_state_root(home)?.join(".installation.lock"))
+}
+#[cfg(not(unix))]
+pub(crate) fn acquire_native_home_write_lock(_home: &Path) -> Result<File, &'static str> {
+    Err("native-update-target-unsupported")
+}
+
+pub(crate) fn refuse_native_home_activation(home: &Path) -> Result<(), &'static str> {
+    ensure_absent(&home.join(".qiongli/native").join(HOME_ACTIVATION_MARKER))
+        .map_err(|_| "native-activation-recovery-required")
+}
+
+// ponytail: serialize installation writes per Home; split only for proven disjoint targets.
+/// Unix native activation is excluded across all config roots sharing one Home.
+/// Other platforms retain existing behavior until native activation is supported.
+pub(crate) fn acquire_managed_write_guard(
+    home: &Path,
+    config: qiongli_config::ConfigRoot,
+) -> Result<Option<(File, File)>, &'static str> {
+    #[cfg(unix)]
+    {
+        let store =
+            UpdateStateStore::new(config.clone(), qiongli_config::UpdateStreamPreference::Beta);
+        if store
+            .load()
+            .map_err(|error| error.reason_code())?
+            .state
+            .active_transaction
+            .is_some()
+        {
+            return Err("native-update-transaction-active");
+        }
+        let home_lock = acquire_native_home_write_lock(home)?;
+        refuse_native_home_activation(home)?;
+        qiongli_config::GlobalSettingsStore::new(config)
+            .prepare_store()
+            .map_err(|error| error.reason_code())?;
+        ensure_private_directory(
+            store
+                .staging_root()
+                .parent()
+                .ok_or("native-update-staging-unavailable")?,
+        )?;
+        let update_lock = acquire_replacement_lock(&store)?;
+        if store
+            .load()
+            .map_err(|error| error.reason_code())?
+            .state
+            .active_transaction
+            .is_some()
+        {
+            return Err("native-update-transaction-active");
+        }
+        Ok(Some((home_lock, update_lock)))
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = (home, config);
+        Ok(None)
+    }
+}
+
+fn native_journal_home(journal: &ReconciliationJournalV1) -> Result<PathBuf, &'static str> {
+    let binary = journal
+        .operations
+        .iter()
+        .find(|operation| operation.surface == ReconciliationSurface::CliBinary)
+        .ok_or("native-activation-journal-mismatch")?;
+    let home = binary
+        .destination
+        .ancestors()
+        .nth(3)
+        .ok_or("native-activation-journal-mismatch")?;
+    if crate::cli_install::cli_target(home) != binary.destination {
+        return Err("native-activation-journal-mismatch");
+    }
+    Ok(home.to_path_buf())
+}
+
+fn bind_home_activation(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+) -> Result<(), &'static str> {
+    let home = native_journal_home(journal)?;
+    let marker = native_home_state_root(&home)?.join(HOME_ACTIVATION_MARKER);
+    let start = read_private_file(
+        &store
+            .staging_root()
+            .join(&journal.transaction_id)
+            .join(NATIVE_ACTIVATION_RECORD),
+        MAX_STATE_BYTES,
+    )?;
+    if marker
+        .try_exists()
+        .map_err(|_| "native-activation-record-invalid")?
+    {
+        if read_private_file(&marker, MAX_STATE_BYTES)? != start {
+            return Err("native-activation-recovery-required");
+        }
+    } else {
+        ensure_absent(&marker)?;
+        write_new_private_file(&marker, &start)?;
+        sync_directory(marker.parent().ok_or("native-activation-record-invalid")?)?;
+    }
+    Ok(())
+}
+
+fn clear_home_activation(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+) -> Result<(), &'static str> {
+    bind_home_activation(store, journal)?;
+    let marker = native_journal_home(journal)?
+        .join(".qiongli/native")
+        .join(HOME_ACTIVATION_MARKER);
+    fs::remove_file(&marker).map_err(|_| "native-activation-record-invalid")?;
+    sync_directory(marker.parent().ok_or("native-activation-record-invalid")?)
 }
 
 const NATIVE_ACTIVATION_RECORD: &str = "native-activation.json";
@@ -371,13 +503,16 @@ pub fn activate_native_reconciliation(
     expected_journal_sha256: &str,
     health: impl FnOnce() -> Result<(), &'static str>,
 ) -> Result<NativeActivationOutcome, &'static str> {
-    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    let initial_journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     store.load().map_err(|error| error.reason_code())?;
+    let home = native_journal_home(&initial_journal)?;
+    let _home_lock = acquire_native_home_write_lock(&home)?;
     let _lock = acquire_replacement_lock(store)?;
     let journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     if refuse_other_activation(store, &journal)? {
         return Err("native-activation-recovery-required");
     }
+    refuse_native_home_activation(&home)?;
     if native_record_exists(store, transaction_id, NATIVE_ACTIVATION_RECORD)? {
         return Err("native-activation-recovery-required");
     }
@@ -390,6 +525,7 @@ pub fn activate_native_reconciliation(
     }
     verify_prepared_reconciliation(&journal)?;
     write_native_activation_record(store, &journal, expected_journal_sha256, None)?;
+    bind_home_activation(store, &journal)?;
     set_native_activation_phase(
         store,
         &journal,
@@ -406,6 +542,7 @@ pub fn activate_native_reconciliation(
     };
     write_native_activation_record(store, &journal, expected_journal_sha256, Some(outcome))?;
     finish_native_activation(store, &journal, outcome)?;
+    clear_home_activation(store, &journal)?;
     attempt.map(|()| outcome)
 }
 
@@ -416,8 +553,10 @@ pub fn recover_native_reconciliation(
     transaction_id: &str,
     expected_journal_sha256: &str,
 ) -> Result<NativeActivationOutcome, &'static str> {
-    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    let initial_journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     store.load().map_err(|error| error.reason_code())?;
+    let home = native_journal_home(&initial_journal)?;
+    let _home_lock = acquire_native_home_write_lock(&home)?;
     let _lock = acquire_replacement_lock(store)?;
     let journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     refuse_other_activation(store, &journal)?;
@@ -427,6 +566,7 @@ pub fn recover_native_reconciliation(
         expected_journal_sha256,
         NATIVE_ACTIVATION_RECORD,
     )?;
+    bind_home_activation(store, &journal)?;
     let outcome = if native_record_exists(store, transaction_id, NATIVE_ACTIVATION_OUTCOME)? {
         read_native_activation_record(
             store,
@@ -446,6 +586,7 @@ pub fn recover_native_reconciliation(
         NativeActivationOutcome::RolledBack
     };
     finish_native_activation(store, &journal, outcome)?;
+    clear_home_activation(store, &journal)?;
     Ok(outcome)
 }
 
@@ -456,9 +597,12 @@ pub fn discard_native_reconciliation(
     transaction_id: &str,
     expected_journal_sha256: &str,
 ) -> Result<(), &'static str> {
-    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    let initial_journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     store.load().map_err(|error| error.reason_code())?;
+    let home = native_journal_home(&initial_journal)?;
+    let _home_lock = acquire_native_home_write_lock(&home)?;
     let _lock = acquire_replacement_lock(store)?;
+    refuse_native_home_activation(&home)?;
     let journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     if store
         .load()
@@ -2438,6 +2582,15 @@ mod tests {
                 .product_version,
             "2.0.0-alpha.5"
         );
+        let other_config =
+            qiongli_config::resolve_config_root(Some(root.join("other-config").as_os_str()), &root)
+                .unwrap();
+        let held = acquire_managed_write_guard(&root, other_config.clone()).unwrap();
+        assert_eq!(
+            acquire_native_home_write_lock(&root).unwrap_err(),
+            "native-update-replacement-active"
+        );
+        drop(held);
         for (index, mode) in [
             "failed-health",
             "interrupted-health",
@@ -2514,13 +2667,20 @@ mod tests {
                     Err("test-health-failed")
                 ),
                 "interrupted-health" => {
+                    let mut competing_write_error = None;
                     let interrupted =
                         std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                             let _ = activate_native_reconciliation(&store, &id, &digest, || {
+                                competing_write_error =
+                                    acquire_managed_write_guard(&root, other_config.clone()).err();
                                 panic!("simulated-process-interruption")
                             });
                         }));
                     assert!(interrupted.is_err());
+                    assert_eq!(
+                        competing_write_error,
+                        Some("native-update-replacement-active")
+                    );
                     assert!(store.load().unwrap().state.active_transaction.is_some());
                     assert_eq!(fs::read(&plan.target).unwrap(), b"coordinated-cli");
                 }
@@ -2542,7 +2702,22 @@ mod tests {
                     Ok(NativeActivationOutcome::Committed)
                 ),
             }
+            if mode == "interrupted-health" || mode == "committed-cleanup-interrupted" {
+                assert_eq!(
+                    acquire_managed_write_guard(&root, other_config.clone()).unwrap_err(),
+                    "native-activation-recovery-required"
+                );
+            }
             if mode == "interrupted-health" {
+                let marker = root.join(".qiongli/native").join(HOME_ACTIVATION_MARKER);
+                let original_marker = fs::read(&marker).unwrap();
+                fs::write(&marker, b"another-transaction").unwrap();
+                assert_eq!(
+                    recover_native_reconciliation(&store, &id, &digest),
+                    Err("native-activation-recovery-required")
+                );
+                assert_eq!(fs::read(&plan.target).unwrap(), b"coordinated-cli");
+                fs::write(&marker, original_marker).unwrap();
                 let record_path = store
                     .staging_root()
                     .join(&id)
@@ -2568,6 +2743,13 @@ mod tests {
             );
             let recovered = store.load().unwrap();
             assert!(recovered.state.active_transaction.is_none());
+            assert!(
+                !root
+                    .join(".qiongli/native")
+                    .join(HOME_ACTIVATION_MARKER)
+                    .exists()
+            );
+            drop(acquire_managed_write_guard(&root, other_config.clone()).unwrap());
             assert_eq!(
                 recover_native_reconciliation(&store, &id, &digest),
                 Ok(expected)

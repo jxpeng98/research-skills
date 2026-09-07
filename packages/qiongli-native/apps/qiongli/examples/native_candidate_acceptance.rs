@@ -855,13 +855,13 @@ impl Arguments {
         let codex = match (codex_binary, plugin_validator, plugin_validator_python) {
             (None, None, None) => None,
             (Some(binary), Some(validator), Some(validator_python)) => Some(CodexClient {
-                binary: valid_external_file(binary)?,
+                binary: valid_external_command(binary)?,
                 validator: valid_external_file(validator)?,
-                validator_python: valid_external_file(validator_python)?,
+                validator_python: valid_external_command(validator_python)?,
             }),
             _ => return Err("candidate-acceptance-usage-invalid"),
         };
-        let claude = claude_binary.map(valid_external_file).transpose()?;
+        let claude = claude_binary.map(valid_external_command).transpose()?;
         if !output.is_absolute()
             || output.exists()
             || !valid_source_commit(&source_commit)
@@ -877,6 +877,12 @@ impl Arguments {
             predecessor_manifest,
         })
     }
+}
+
+fn valid_external_command(path: PathBuf) -> Result<PathBuf, &'static str> {
+    valid_external_file(path.clone())?;
+    // Preserve virtual-environment and argv[0] behavior of the requested command.
+    Ok(path)
 }
 
 fn valid_external_file(path: PathBuf) -> Result<PathBuf, &'static str> {
@@ -2673,6 +2679,28 @@ fn now_unix() -> Result<u64, &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn external_commands_preserve_symlink_invocation_paths() {
+        let root =
+            env::temp_dir().join(format!("qiongli-command-path-test-{}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        let target = root.join("interpreter");
+        let command = root.join("venv-python");
+        fs::write(&target, b"test interpreter").unwrap();
+        std::os::unix::fs::symlink(&target, &command).unwrap();
+        assert_eq!(valid_external_command(command.clone()).unwrap(), command);
+        assert_eq!(
+            valid_external_file(command.clone()).unwrap(),
+            fs::canonicalize(&target).unwrap()
+        );
+        fs::remove_file(target).unwrap();
+        assert!(valid_external_command(command).is_err());
+        assert!(valid_external_command(root.clone()).is_err());
+        assert!(valid_external_command(PathBuf::from("relative-python")).is_err());
+        fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn predecessor_manifest_is_explicit_and_optional() {

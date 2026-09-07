@@ -1636,3 +1636,42 @@ approved test sources and human decisions. Existing user installation/account
 settings were inspected only for public version/launch metadata and not modified;
 no credentials, private research, remote push or publication were used. Whitespace,
 generated-index and frozen-source checks passed for this evidence-only update.
+
+
+## CLI-404 candidate-backed real clients and virtual-environment invocation
+
+Base/product source: `b5e2f6f008d6cf03f94f79a1ef2703c59a1baefb`;
+branch: `codex/candidate-real-host-qualification`.
+Preparing the existing runner with the installed Plugin Creator validator exposed
+an invocation bug: `valid_external_file` canonicalized virtual-environment Python
+symlinks, bypassing the environment containing PyYAML. The new command-path wrapper
+reuses existing absolute/nonempty/regular-file resolution validation but preserves
+the supplied invocation path for Codex, Claude and Python. Data inputs still use
+canonical paths. A Unix regression checks preserved command paths, canonical data
+paths, and rejection of dangling links, directories and relative paths. Seven
+runner tests and example Clippy passed.
+
+The actual candidate runner completed successfully with both real clients and the
+repository's existing Python virtual environment; no dependency was added. Evidence:
+`/Users/pengjiaxin/Work/qiongli-cli404-candidate-real-hosts-b5e2f6f0/acceptance-evidence.json`;
+SHA-256 `c32889c07532fa15b9e0e77479cdf58309d524af15938d75e8be9f0c16cc100d`.
+macOS aarch64 alpha.5 archive SHA-256:
+`08f3d65d81619f92d9b7fee6bfdb7ed114973180192893a14f8701251927f105`;
+candidate SHA-256:
+`3250e7f946d8b8d68dc1ce3f8544a642b4a313ab329c5de0e8a08aff7e8a454a`.
+The source commit labels product code; only the acceptance runner changed here.
+
+All 27 baseline fields and the candidate-backed real-client gate passed. Codex
+0.153.4 passed Plugin Creator validation, install/list/cache/empty-PATH MCP/removal;
+Claude Code 2.1.263 passed strict validation, local marketplace install/list/cache/
+empty-PATH MCP/removal. Both used fresh Home/config roots. Test keys stayed in memory,
+`publication_allowed=false`; no existing user installation was changed.
+
+Review found an important scope limit: this runner's cached MCP probe asserts the
+14-tool Lite contract and config status, not Full routing or model research. Earlier
+source fixture Full checks remain separate evidence. Next: extend this same owner
+to verify the candidate's actual Full route before using it for Host research.
+Native two-version activation was not rerun because no predecessor was provided;
+prior SIGKILL evidence remains separately scoped. Clean-machine qualification,
+production signing, human-approved academic writing and first-stage acceptance are
+still open. Whitespace, generated-index and frozen-source checks passed.

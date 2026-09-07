@@ -297,7 +297,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-07",
-      "blocker": "Named test candidate passes both real-client caches and Full route checks. Current conversation still uses alpha.3; an authorized model research session, human approval and SEC qualification remain open."
+      "blocker": "Candidate dfebb17c passes isolated Codex/Claude install/cache/remove and Full MCP checks; one real Codex model read of an empty synthetic fixture passed. Research disclosure, exact Inbox approval, scholarly continuation and SEC qualification remain open."
     },
     {
       "id": "CLI-405",

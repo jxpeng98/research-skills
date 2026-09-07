@@ -2305,3 +2305,42 @@ research Host disclosure remain unapproved; synthetic-fixture approval does not
 cover either. Canonical consolidation, actual research continuation and named
 package qualification remain unproved. Windows stays partially complete/paused.
 The first-stage goal is not achieved and no acceptance record changes.
+
+
+## CLI-403/404 current-source macOS candidate qualification
+
+The pending research capture and absent history file were revalidated unchanged;
+automatic continuation did not authorize disclosure or Inbox writing. Independent
+CLI-410 preparation could still advance: the existing `native_candidate_acceptance`
+owner rebuilt source `dfebb17c30b6748ee72ac0485f24d11ed9405205` offline and generated
+a fresh macOS aarch64 alpha.5 test candidate. Branch: `codex/current-macos-candidate-evidence`.
+
+Two failed setup attempts were preserved. `/private/tmp` was rejected by the
+explicit-target ancestor permission policy after successful compilation. A private
+Work directory passed that boundary, but mise shims failed Codex version discovery
+under the isolated Home. The successful run uses installed executable paths from
+`mise which`, the existing `.venv/bin/python` and Plugin Creator validator. No
+permission check was weakened, global tool installed, or existing client modified.
+
+Final evidence: `/Users/pengjiaxin/Work/qiongli-cli-baseline-dfebb17c-real-clients/acceptance-evidence.json`,
+SHA-256 `90211013b558c3b3f85842ca6bcac54c9bb8815be2d12b96615243959b6f3b10`.
+All 27 baseline fields passed their declared checks/environment observations. Codex
+0.153.4 and Claude Code 2.1.263 each passed isolated install/cache/remove, 14 Lite
+and 32 Full tools, and Full routing. Artifact hashes were independently rechecked:
+archive `8ba271c3f9021497d2fd9049eaa0ef4f33b24e4161cff64211dff0676545198c`;
+candidate `57b1a9549f9ea134ed68d7b28cbd4ff297e2fc31d118bd32ac4a2c023c2e9cc6`.
+The release binary SHA-256 is
+`1a3ba25cf36026cb29c6e2fc1e8e40ca33b9d3600bd000287498b29ee552946d`.
+Signing keys stayed ephemeral/in-memory and `publication_allowed=false`. Native
+activation was not run without a predecessor; prior activation evidence stays scoped
+to its earlier source. Isolated Home installation is not clean-machine qualification.
+
+A real authenticated Codex model then called this candidate's Full project-read
+tool against the already-authorized empty synthetic fixture. Exactly one call
+completed, returning the expected project/revision. Before/after project/config
+hashes matched. Private invocation, events and receipt are under
+`packages/qiongli-native/target/cli404-current-candidate-dfebb17c/`. This updates
+model-read evidence to the new candidate, not scholarly continuation or approval.
+The ledger's CLI-404 blocker now reflects that precise progress. No acceptance
+count changed. Research disclosure/Inbox approval remains pending; canonical
+consolidation and real research handoff remain unproved. Windows remains paused.

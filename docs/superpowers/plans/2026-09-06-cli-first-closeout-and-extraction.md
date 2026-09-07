@@ -2197,3 +2197,39 @@ Private invocation, JSONL events and receipt are under
 candidate, not current-head package qualification. Windows remains paused and no
 acceptance state changes. Only this evidence note is committed; runtime suites
 are unchanged.
+
+
+## CLI-404 authorized model reads across independent Host sessions
+
+Base `ca4f5396`; branch `codex/verified-live-host-read`. The maintainer explicitly
+authorized the previously described automatic approval mode and its workspace-write
+sandbox for the new empty engineering fixture. Two authenticated ephemeral Codex
+sessions used the existing `8c6450f0` macOS candidate through process-scoped Full
+MCP. Each model called only `qiongli_test.qiongli_project_read` once for
+`prj_67c275569f1d50bfbffe8089a8ff8cd2`. Both calls completed successfully with
+structured project results, no tool error and no fallback. The second session
+started after the first process exited and had a different session identity.
+
+Both returned exactly the same project state: semantic/library revision 1, article,
+idea/active, empty research overview. Neither model invented continuity artifacts
+or research handoff status absent from the response. SHA-256 snapshots of every
+project/config file matched before and after both runs, including the file set.
+The actual invocation records retain the automatic approval option; no persistent
+user configuration or product authorization check was changed. Host startup stderr
+included unrelated plugin OAuth/state-database warnings; these did not prevent the
+observed Qiongli calls and are not claimed as clean Host startup evidence.
+
+Private evidence remains under
+`packages/qiongli-native/target/cli404-live-read-4b201c62/`: the authorized/restart
+invocations, JSONL event logs, before snapshot and `authorized-receipt.json`. The
+runnable `verify-authorized-read.py` passed checks for exact tool identity, one
+successful call per session, distinct sessions, identical structured results and
+unchanged files. This establishes real model-initiated reads and same-Host restart
+access for an empty fixture on an older named candidate. It does not establish
+checkpoint recovery, second-Host research handoff, current-head qualification or
+research acceptance. Prior research disclosure/write approvals remain pending.
+
+Next bounded increment: exercise the existing checkpoint owner on synthetic inputs
+before any real research continuation. Keep Windows qualification paused and reuse
+existing candidate/build results until their inputs change. Only this evidence
+note changes tracked files; no runtime source fix was required.

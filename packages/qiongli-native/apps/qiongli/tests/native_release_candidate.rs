@@ -795,6 +795,11 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
     });
     let receipt_bytes = serde_json::to_vec(&receipt).unwrap();
     fs::write(&cli_receipt, &receipt_bytes).unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&cli_receipt, fs::Permissions::from_mode(0o600)).unwrap();
+    }
     let activation =
         || qiongli::preview_native_candidate_activation(&next_product, &next_verified, previous_id);
     let first = serde_json::to_value(activation().unwrap()).unwrap();
@@ -834,6 +839,86 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
     );
     fs::write(&cli_receipt, receipt_bytes).unwrap();
 
+    #[cfg(unix)]
+    {
+        let configured = fixture.root.join("activation-config");
+        let config =
+            qiongli_config::resolve_config_root(Some(configured.as_os_str()), &home).unwrap();
+        let embedded = qiongli_content::EmbeddedContent::load(
+            Box::leak(built_pack.core_bytes().to_vec().into_boxed_slice()),
+            built_pack.pack_sha256(),
+        )
+        .unwrap();
+        let digest = first["preflight_digest_sha256"].as_str().unwrap();
+        let prepare_activation = |expected: &str| {
+            qiongli::prepare_native_candidate_activation(
+                &next_product,
+                &next_verified,
+                previous_id,
+                expected,
+                &embedded,
+                config.clone(),
+                NOW + 5,
+            )
+        };
+        assert!(prepare_activation(&"0".repeat(64)).is_err());
+        assert!(!configured.exists());
+        let store = qiongli_config::UpdateStateStore::new(
+            config.clone(),
+            qiongli_config::UpdateStreamPreference::Beta,
+        );
+        let initial = store.load().unwrap();
+        let prepared = serde_json::to_value(prepare_activation(digest).unwrap()).unwrap();
+        assert_eq!(prepared["operation_count"], 4);
+        assert_eq!(
+            prepared["surfaces"],
+            json!([
+                "codex-plugin-bundle",
+                "codex-registration",
+                "cli-binary",
+                "cli-receipt"
+            ])
+        );
+        assert_ne!(
+            prepared["approval_digest_sha256"],
+            first["preflight_digest_sha256"]
+        );
+        assert_eq!(store.load().unwrap(), initial);
+        assert_eq!(
+            fs::read(&command).unwrap(),
+            fs::read(&installed_binary).unwrap()
+        );
+        assert_eq!(serde_json::to_value(activation().unwrap()).unwrap(), first);
+        let transaction_id = prepared["transaction_id"].as_str().unwrap();
+        let journal = store
+            .staging_root()
+            .join(transaction_id)
+            .join("reconciliation-journal.json");
+        let bytes = fs::read(&journal).unwrap();
+        assert!(prepare_activation(digest).is_err());
+        assert_eq!(fs::read(&journal).unwrap(), bytes);
+        let mut blocked = initial.state.clone();
+        blocked.active_transaction = Some(qiongli_config::UpdateActiveTransaction {
+            transaction_id: format!("update-{}", "f".repeat(32)),
+            target_version: next_artifact.version.clone(),
+            phase: qiongli_config::UpdateTransactionPhase::Activating,
+        });
+        store.replace(initial.revision, blocked).unwrap();
+        assert!(matches!(
+            prepare_activation(digest),
+            Err("native-update-replacement-active")
+        ));
+        let current = store.load().unwrap();
+        let mut blocked = current.state.clone();
+        blocked.active_transaction = None;
+        blocked.last_accepted_generation = next_verified.candidate().generation;
+        store.replace(current.revision, blocked).unwrap();
+        assert!(matches!(
+            prepare_activation(digest),
+            Err("native-activation-generation-rejected")
+        ));
+        assert_eq!(fs::read(&journal).unwrap(), bytes);
+    }
     let root = qiongli_platform::discover_native_candidate_managed_root(&home).unwrap();
     let executor = qiongli_platform::ManagedNativePayloadExecutor::new(root);
     let staged_binary_bytes = fs::read(&next_binary).unwrap();

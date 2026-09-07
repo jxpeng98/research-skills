@@ -39,7 +39,7 @@ const MAX_JOURNAL_BYTES: u64 = 1024 * 1024;
 const MAX_OPERATIONS: usize = 136;
 const MAX_STATE_BYTES: u64 = 1024 * 1024;
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ReconciliationSurface {
     Skills,

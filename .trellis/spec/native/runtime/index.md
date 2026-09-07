@@ -134,6 +134,20 @@ activation preparation must bind those separately and revalidate all observed st
 The public contract is Rust-generated `candidate-activation-preview-v1`; existing
 candidate preview/stage/apply wire formats remain unchanged.
 
+`install candidate activate-prepare` accepts the same release and predecessor inputs,
+`--expected-preflight-digest`, and filesystem-write approval. It creates the state
+root through `GlobalSettingsStore`, rechecks identities under the replacement lock,
+and uses the existing reconciliation owner to stage registered Skills, the selected
+Host, and the CLI binary/receipt pair. Active update transactions and non-increasing
+release generations refuse. It leaves active destinations and update state unchanged.
+The output lists staged surfaces and binds the candidate, preflight, journal, update
+revision and workflow revision/variant into a separate activation approval digest.
+Workflow/update state is rechecked after staging. An existing transaction refuses
+without overwriting its journal. Fresh failed preparation uses existing guarded
+cleanup. The Rust-generated public contract is `candidate-activation-prepared-v1`;
+reconciliation v2 wire semantics remain unchanged. Actual activation, prepared-state
+discard and native recovery command wiring remain separate pending work.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

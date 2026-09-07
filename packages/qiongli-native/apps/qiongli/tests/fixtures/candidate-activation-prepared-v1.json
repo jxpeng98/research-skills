@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "command": "install-candidate-activate-prepare",
+  "transaction_id": "update-11111111111111111111111111111111",
+  "candidate_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "preflight_digest_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "journal_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+  "approval_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+  "update_state_revision": 0,
+  "workflow_revision": 0,
+  "workflow_variant_sha256": null,
+  "operation_count": 4,
+  "surfaces": [
+    "codex-plugin-bundle",
+    "codex-registration",
+    "cli-binary",
+    "cli-receipt"
+  ],
+  "approvals_required": [
+    "filesystem-write",
+    "client-config-change",
+    "host-trust"
+  ]
+}

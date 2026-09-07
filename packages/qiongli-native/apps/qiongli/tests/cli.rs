@@ -4090,6 +4090,16 @@ fn source_build_has_no_release_authority_and_cannot_preview_native_install() {
             "a".repeat(64).into(),
             "--approve-filesystem-write".into(),
         ],
+        vec![
+            "install".into(),
+            "candidate".into(),
+            "activate-prepare".into(),
+            "--previous-install-id".into(),
+            format!("native-payload-{}", "a".repeat(64)).into(),
+            "--expected-preflight-digest".into(),
+            "b".repeat(64).into(),
+            "--approve-filesystem-write".into(),
+        ],
         vec![OsString::from("ui")],
     ] {
         let mut args = prefix;

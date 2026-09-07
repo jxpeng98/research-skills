@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateActivationPreparedOutput",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "command": {
+      "$ref": "#/$defs/ActivationPrepareCommand"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^update-[0-9a-f]{32}$"
+    },
+    "candidate_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "preflight_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "journal_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "approval_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "update_state_revision": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0
+    },
+    "workflow_revision": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0
+    },
+    "workflow_variant_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "operation_count": {
+      "type": "integer",
+      "format": "uint",
+      "minimum": 2,
+      "maximum": 138
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ReconciliationSurface"
+      }
+    },
+    "approvals_required": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ActivationApproval"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "transaction_id",
+    "candidate_digest_sha256",
+    "preflight_digest_sha256",
+    "journal_sha256",
+    "approval_digest_sha256",
+    "update_state_revision",
+    "workflow_revision",
+    "operation_count",
+    "surfaces",
+    "approvals_required"
+  ],
+  "$defs": {
+    "ActivationPrepareCommand": {
+      "type": "string",
+      "enum": [
+        "install-candidate-activate-prepare"
+      ]
+    },
+    "ReconciliationSurface": {
+      "type": "string",
+      "enum": [
+        "skills",
+        "managed-content-registry",
+        "codex-plugin-bundle",
+        "codex-registration",
+        "claude-plugin-bundle",
+        "claude-skills-plugin-bundle",
+        "claude-registration",
+        "cli-binary",
+        "cli-receipt"
+      ]
+    },
+    "ActivationApproval": {
+      "type": "string",
+      "enum": [
+        "filesystem-write",
+        "client-config-change",
+        "host-trust"
+      ]
+    }
+  }
+}

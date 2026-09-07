@@ -52,7 +52,7 @@ const UPDATE_USAGE: &str = "Qiongli native update\n\nUsage:\n  qiongli update st
 
 const MCP_USAGE: &str = "Qiongli native MCP\n\nUsage:\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli mcp --help\n\nFull profile adds redacted Research Library, capture, academic graph, and local checkpoint controls. The connected host owns model execution and returns revision-bound candidates through the host handoff contract.\n";
 
-const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
+const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
 
 const MIGRATION_USAGE: &str = "Qiongli 1.x replacement migration\n\nUsage:\n  qiongli migrate-1x inspect\n  qiongli migrate-1x preview [--provider-resolution <provider>=<keep-v2|use-legacy|merge-compatible>]...\n  qiongli migrate-1x apply --migration-id <id> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change] [--approve-secret-store-write]\n  qiongli migrate-1x continue --migration-id <id> --confirm-host-activation\n  qiongli migrate-1x continue --migration-id <id> --approve-cleanup\n  qiongli migrate-1x continue --migration-id <id> --finalize\n  qiongli migrate-1x status --migration-id <id>\n  qiongli migrate-1x recover --migration-id <id>\n  qiongli migrate-1x --help\n";
 
@@ -496,7 +496,7 @@ pub(crate) fn prepare_action_with_release_authority(
                 command,
                 authority,
                 crate::embedded_source_commit(),
-                environment.platform_home(),
+                environment,
                 content,
             ) {
                 Ok(output) => json_output(&output, 0),
@@ -1185,10 +1185,19 @@ fn parse_candidate_install_args(args: &[OsString]) -> Result<CandidateCliCommand
         ));
     };
     match subcommand {
-        "activate-preview" => {
+        "activate-preview" | "activate-prepare" => {
+            let prepare = subcommand == "activate-prepare";
             let mut release_args = Vec::new();
             let mut predecessor = None;
-            for pair in args[1..].chunks(2) {
+            let mut remaining = &args[1..];
+            while !remaining.is_empty() {
+                let width = if remaining[0] == "--approve-filesystem-write" {
+                    1
+                } else {
+                    2.min(remaining.len())
+                };
+                let (pair, rest) = remaining.split_at(width);
+                remaining = rest;
                 if pair[0] == "--previous-install-id" {
                     if predecessor.is_some() || pair.len() != 2 {
                         return Err(install_usage_error(
@@ -1209,16 +1218,34 @@ fn parse_candidate_install_args(args: &[OsString]) -> Result<CandidateCliCommand
                     if predecessor.is_none() {
                         return Err(install_usage_error("previous install id is invalid"));
                     }
+                } else if prepare && pair[0] == "--expected-preflight-digest" {
+                    release_args.push("--expected-approval-digest".into());
+                    release_args.extend_from_slice(&pair[1..]);
+                } else if pair[0] == "--expected-approval-digest" {
+                    return Err(install_usage_error(
+                        "activation preparation requires a preflight digest",
+                    ));
                 } else {
                     release_args.extend_from_slice(pair);
                 }
             }
-            let parsed = parse_candidate_release_options(&release_args, false)?;
-            Ok(CandidateCliCommand::ActivatePreview {
-                options: parsed.options,
-                previous_install_id: predecessor
-                    .ok_or_else(|| install_usage_error("previous install id is required"))?,
-            })
+            let parsed = parse_candidate_release_options_inner(&release_args, prepare, true)?;
+            let previous_install_id = predecessor
+                .ok_or_else(|| install_usage_error("previous install id is required"))?;
+            if prepare {
+                Ok(CandidateCliCommand::ActivatePrepare {
+                    options: parsed.options,
+                    previous_install_id,
+                    expected_preflight_digest: parsed.expected_approval_digest.ok_or_else(
+                        || install_usage_error("expected preflight digest is required"),
+                    )?,
+                })
+            } else {
+                Ok(CandidateCliCommand::ActivatePreview {
+                    options: parsed.options,
+                    previous_install_id,
+                })
+            }
         }
         "stage-preview" => parse_candidate_release_options_inner(&args[1..], false, true)
             .map(|parsed| CandidateCliCommand::StagePreview(parsed.options)),
@@ -2881,6 +2908,24 @@ mod tests {
         invalid = args.clone();
         invalid.extend_from_slice(&args[args.len() - 2..]);
         assert!(super::parse_candidate_install_args(&invalid).is_err());
+        let mut prepared = args.clone();
+        prepared[0] = "activate-prepare".into();
+        prepared.extend(["--expected-preflight-digest".into(), "a".repeat(64).into()]);
+        assert!(super::parse_candidate_install_args(&prepared).is_err());
+        prepared.insert(1, "--approve-filesystem-write".into());
+        assert!(matches!(
+            super::parse_candidate_install_args(&prepared),
+            Ok(super::CandidateCliCommand::ActivatePrepare { .. })
+        ));
+        for flag in [
+            "--approve-filesystem-write",
+            "--approve-host-trust",
+            "--approve-client-config-change",
+        ] {
+            let mut invalid = prepared.clone();
+            invalid.push(flag.into());
+            assert!(super::parse_candidate_install_args(&invalid).is_err());
+        }
         *args.last_mut().unwrap() = "../foreign".into();
         assert!(super::parse_candidate_install_args(&args).is_err());
     }

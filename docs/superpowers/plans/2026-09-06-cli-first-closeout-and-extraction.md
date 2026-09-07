@@ -854,3 +854,45 @@ explicitly not activation authorization. Successful packaged command execution,
 real Hosts and platform qualification remain outstanding. First-stage integration
 and program acceptance remain incomplete; no accepted ledger or publication state
 changed.
+
+
+## CLI-403 sixteenth increment — approved activation preparation
+
+Base: `3e781644`; branch: `codex/cli-activation-prepare`.
+`install candidate activate-prepare` joins the preflight to the existing v2
+reconciliation owner. Signed release inputs, the previous install ID, exact preflight
+digest and filesystem-write approval are required. State-root creation uses
+`GlobalSettingsStore`. Preparation checks active transactions/release generation,
+rechecks the preflight under the replacement lock, stages registered Skills,
+selected Host sources/receipts and the CLI pair, then rechecks workflow/update state.
+The output lists actual surfaces and a separate activation approval digest binding
+the journal, candidate, preflight and update/workflow revisions. It grants no
+activation and does not reserve or alter active update state. Existing transaction
+roots refuse without replacement; failed fresh preparation uses guarded cleanup.
+
+Checks on macOS: 7 affected activation/parser/schema/reconciliation unit tests
+passed, the signed-candidate integration test passed, and the source-build CLI
+refusal test passed. The integration case staged four Codex/CLI operations, preserved
+old command/Host identities and update state, rejected incorrect preview digests,
+kept an existing journal on retry, and refused foreign active transactions and an
+already-accepted release generation. Existing reconciliation unit coverage includes
+registered Skills and CLI-pair rollback. This new integration fixture uses synthetic
+binary bytes and does not execute a packaged cross-version CLI command or live Host.
+
+First-run testing exposed missing configuration ancestors; using the existing
+settings owner fixed the production path. The manually created CLI receipt fixture
+also needed the real owner's private file mode. A later test passed an unnecessary
+borrow to `UpdateStateStore::replace`; fixed before the final passing run. Temporary
+diagnostics were removed. Library/generator Clippy passed with the existing Rust
+1.98 exception; public schema validation and 12 policy tests passed. The new Draft
+2020-12 schema and golden fixture are Rust-generated and recorded as additive.
+Formatting, whitespace and generated-roadmap checks passed; final review found no
+remaining actionable issue in the preparation scope.
+
+Next: expose guarded discard for an unactivated preparation; bind signed release
+outcome and last-known-good metadata, exclude competing managed writers, and connect
+actual activation/recovery commands to the coordinator and process health check.
+The prepared approval digest must be revalidated against the same journal and
+state revisions before any live rename. Cross-platform state support, real Host
+research/approval and named package qualification remain open. First-stage
+integration and ledger acceptance remain incomplete; no publication occurred.

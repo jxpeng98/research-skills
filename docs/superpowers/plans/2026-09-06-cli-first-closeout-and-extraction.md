@@ -688,3 +688,36 @@ outcome/health handling and current-process/version checks remain required befor
 calling this an end-user update/rollback flow. Real Host/human approval, CLI-405,
 platform qualification and first-stage acceptance remain open. No accepted ledger
 row, public CLI JSON or release/publication claim changed.
+
+## CLI-403 eleventh increment — resumable reconciliation cleanup
+
+Base: `206dea01`; branch: `codex/cli-reconciliation-cleanup-recovery`.
+Tracing the durable activation outcome exposed a missing recovery case: committed
+cleanup required all old backups, so an interruption after deleting one prevented
+replay. Rolled-back cleanup likewise required every staged file and recursively
+removed its whole staging container. A regression reproduced deletion of an extra
+file in that container without an error.
+
+Both outcomes now use one cleanup implementation: validate the whole journal,
+retained destinations and every remaining owned cleanup target before deletion;
+accept already removed cleanup targets; reject unexpected container entries;
+remove containers only when empty. Discard uses this same resumable path and keeps
+its journal on failure. Missing journal replay still succeeds, but a dangling
+journal link is not treated as absence. Existing journal versions are unchanged.
+
+On macOS, reconciliation tests (3), direct replacement-owner tests (10), formatting
+and library Clippy passed with the existing Rust 1.98 exception. The final focused
+case also exercised an actual private persisted journal through load/discard,
+confirmed that an extra-file refusal retains the journal and other staged files,
+then resumed after one staged file had been deleted. Committed cleanup resumed
+after one backup deletion; both modes replayed successfully with correct active
+CLI/receipt bytes. The initial failing check demonstrated the extra-file deletion;
+final review and whitespace checks found no actionable issue in this scope.
+
+Next remains the standalone activation/recovery coordinator and its approved CLI
+entry point: reserve the existing update state, hold the replacement lock, persist
+the journal/outcome, activate the CLI/content set, then recover or finish cleanup
+from that durable outcome. Neither this cleanup fix nor the prior file-pair owner
+constitutes that complete command flow. Process/version checks, real signed-version
+execution, Host approval/research journey and first-stage acceptance remain open;
+no ledger acceptance or remote/publication state changed.

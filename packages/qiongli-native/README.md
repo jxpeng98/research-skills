@@ -1131,6 +1131,12 @@ order before app rollback. Before the first rollback rename, the shared executor
 verifies every old backup and active/staged identity in the rollback set. Damaged
 content or dangling backup links fail without moving another surface. Recovery
 supports interruptions between either pair of renames and repeated rollback.
+Committed and rolled-back cleanup revalidates every retained surface and remaining
+owned cleanup target before deleting anything. Already removed targets support
+interrupted cleanup and replay. Staging containers may contain only the expected
+staged entry; extra files or links refuse cleanup, and the recovery journal remains
+until cleanup succeeds. Containers are removed only when empty.
+
 Config, secret references, research data, unmanaged host bytes, and 1.x content
 are outside this transaction.
 

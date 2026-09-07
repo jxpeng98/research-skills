@@ -372,24 +372,67 @@ pub(crate) fn rollback_active_reconciliation(
 pub(crate) fn cleanup_committed_reconciliation(
     journal: &ReconciliationJournalV1,
 ) -> Result<(), &'static str> {
-    verify_active_reconciliation(journal)?;
-    for operation in &journal.operations {
-        remove_path(&operation.backup)?;
-        remove_empty_or_staged_container(&operation.staging_container)?;
-        sync_operation_parent(operation)?;
-    }
-    Ok(())
+    cleanup_reconciliation(journal, true)
 }
 
 pub(crate) fn cleanup_rolled_back_reconciliation(
     journal: &ReconciliationJournalV1,
 ) -> Result<(), &'static str> {
+    cleanup_reconciliation(journal, false)
+}
+
+fn cleanup_reconciliation(
+    journal: &ReconciliationJournalV1,
+    committed: bool,
+) -> Result<(), &'static str> {
     validate_journal(journal)?;
+    // Check the complete retained state and every remaining cleanup target before
+    // deletion. Missing targets are valid after an interrupted cleanup.
     for operation in &journal.operations {
-        verify_operation_identity(operation, &operation.destination, false)?;
-        verify_operation_identity(operation, &operation.staged, true)?;
-        ensure_absent(&operation.backup)?;
-        remove_empty_or_staged_container(&operation.staging_container)?;
+        verify_operation_identity(operation, &operation.destination, committed)?;
+        let (remaining, absent) = if committed {
+            (&operation.backup, &operation.staged)
+        } else {
+            (&operation.staged, &operation.backup)
+        };
+        ensure_absent(absent)?;
+        if remaining.exists() {
+            verify_operation_identity(operation, remaining, !committed)?;
+        } else {
+            ensure_absent(remaining)?;
+        }
+        match fs::symlink_metadata(&operation.staging_container) {
+            Ok(metadata) if metadata.is_dir() && !metadata.file_type().is_symlink() => {
+                for entry in fs::read_dir(&operation.staging_container)
+                    .map_err(|_| "native-update-reconciliation-cleanup-required")?
+                {
+                    let entry =
+                        entry.map_err(|_| "native-update-reconciliation-cleanup-required")?;
+                    if committed || entry.path() != operation.staged {
+                        return Err("native-update-reconciliation-cleanup-required");
+                    }
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            _ => return Err("native-update-reconciliation-cleanup-required"),
+        }
+    }
+    for operation in &journal.operations {
+        let remaining = if committed {
+            &operation.backup
+        } else {
+            &operation.staged
+        };
+        if remaining.exists() {
+            remove_path(remaining)?;
+        } else {
+            ensure_absent(remaining)?;
+        }
+        match fs::remove_dir(&operation.staging_container) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(_) => return Err("native-update-reconciliation-cleanup-required"),
+        }
         sync_operation_parent(operation)?;
     }
     Ok(())
@@ -404,11 +447,10 @@ pub(crate) fn discard_prepared_reconciliation(
         .join(transaction_id)
         .join(RECONCILIATION_JOURNAL_FILE);
     if !path.exists() {
-        return Ok(());
+        return ensure_absent(&path);
     }
     let journal = load_reconciliation_journal(store, transaction_id)?;
-    verify_prepared_reconciliation(&journal)?;
-    cleanup_staging_operations(&journal.operations);
+    cleanup_rolled_back_reconciliation(&journal)?;
     fs::remove_file(&path).map_err(|_| "native-update-reconciliation-cleanup-required")?;
     sync_directory(
         path.parent()
@@ -1825,7 +1867,53 @@ mod tests {
         rollback_active_reconciliation(&journal).unwrap();
         assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
         assert_eq!(fs::read(&initial.receipt_path).unwrap(), old_receipt);
+        let config = qiongli_config::resolve_config_root(Some(root.as_os_str()), &root).unwrap();
+        let store = UpdateStateStore::new(config, qiongli_config::UpdateStreamPreference::Beta);
+        prepare_reconciliation_transaction_root(&store, transaction).unwrap();
+        let journal_path = store
+            .staging_root()
+            .join(transaction)
+            .join(RECONCILIATION_JOURNAL_FILE);
+        write_new_private_file(&journal_path, &canonical_json(&journal).unwrap()).unwrap();
+        let journal = load_reconciliation_journal(&store, transaction).unwrap();
+        let canary = journal.operations[1]
+            .staging_container
+            .join("foreign-canary");
+        fs::write(&canary, b"keep-this-file").unwrap();
+        assert!(discard_prepared_reconciliation(&store, transaction).is_err());
+        assert!(journal_path.exists());
+        assert!(journal.operations[0].staged.exists());
+        assert_eq!(fs::read(&canary).unwrap(), b"keep-this-file");
+        fs::remove_file(canary).unwrap();
+        // Resume after the first owned staged file was already deleted.
+        remove_path(&journal.operations[0].staged).unwrap();
+        discard_prepared_reconciliation(&store, transaction).unwrap();
+        discard_prepared_reconciliation(&store, transaction).unwrap();
+        assert!(!journal_path.exists());
         cleanup_rolled_back_reconciliation(&journal).unwrap();
+        let mut next = journal.clone();
+        next.operations.clear();
+        prepare_cli_update_operations(
+            &plan,
+            transaction,
+            &"1".repeat(64),
+            &"2".repeat(64),
+            &mut next.operations,
+        )
+        .unwrap();
+        activate_prepared_reconciliation(&next).unwrap();
+        // Resume committed cleanup after deleting only one old backup.
+        remove_path(&next.operations[0].backup).unwrap();
+        cleanup_committed_reconciliation(&next).unwrap();
+        cleanup_committed_reconciliation(&next).unwrap();
+        assert_eq!(fs::read(&initial.target).unwrap(), b"new-cli");
+        assert_eq!(
+            crate::cli_install::read_receipt(&initial.receipt_path)
+                .unwrap()
+                .unwrap()
+                .product_version,
+            "2.0.0-alpha.5"
+        );
         fs::remove_dir_all(root).unwrap();
     }
 

@@ -2115,3 +2115,35 @@ Next: exercise the Windows artifact in a declared Windows environment and qualif
 its actual package/consumer behavior. Existing human research approval remains
 pending. Local whitespace, generated-index and frozen-source checks passed; no
 unchanged source tests were rerun. Publication remains unauthorized.
+
+## CLI-403 Parallels Windows installation test
+
+Base `dee4d81c`; branch `codex/parallels-windows-install-test`. The maintainer
+requested installation testing in Parallels Desktop. Resumed the existing Windows
+11 Enterprise ARM64 guest (10.0.26200.8037) and tested the preceding static-CRT
+x64 executable under Windows x64 emulation. Its SHA-256 matched
+`4c0a2f692a2543a305a672124ea4b270ff4186d9d9b9a7101119a1c433224de1`.
+Commands ran as the interactive user in an isolated test-owned directory, with
+private HOME/config overrides and an empty child PATH; real research and Host
+configuration were not changed.
+
+Thirteen command observations matched their expected outcomes: version/help,
+embedded content, deliberate UI refusal, install status, installation-plan
+refusal, Full MCP initialize/list/route, project creation preview, refusal without
+filesystem approval, approved empty-project creation, reading in a new process,
+and export preview/apply. Full MCP exposed 32 tools and routed through the Full
+runtime. The exported portable manifest existed. No missing-runtime-DLL startup
+failure occurred. This is process restart evidence, not a Windows reboot test.
+
+Managed installation did **not** succeed: `qiongli app plan cli-install` returned
+`source-build-read-only`. This source executable has no embedded release authority,
+source identity or candidate identity. Its trust gate was preserved; copying and
+running the executable is not a completed supported installation.
+
+Private raw outputs, PowerShell probes and `installation-test-receipt.json` are
+under `packages/qiongli-native/target/parallels-install-dee4d81c/`. This existing
+guest is not a clean consumer VM; x64 emulation is not native x64 hardware evidence.
+No signed candidate, actual model Host integration, Windows update qualification,
+research approval or program acceptance is claimed. Next: prepare a trusted Windows
+test candidate through the existing release owner and repeat managed installation.
+Only this evidence note changes tracked files; unchanged runtime suites are reused.

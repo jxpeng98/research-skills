@@ -1712,3 +1712,50 @@ Host session, the pending human decision, canonical note writing and same-device
 continuation. No scientific correctness, SEC acceptance or first-stage completion
 is inferred from the successful route. Prior update/recovery evidence retains its
 separate scope; it was not rerun here.
+
+
+## CLI-403 Linux ARM64 build and clean-container consumer evidence
+
+Source: `458c3caa`; branch: `codex/linux-arm64-consumer-evidence`.
+Read-only environment inventory found three suspended Parallels guests and a
+running Podman machine. No guest was resumed and no existing container was changed.
+Two existing ARM64 images enabled independent validation while human approval
+remains pending. The build used Rust 1.97 (the workspace minimum), no network,
+read-only source and the active mise Cargo registry cache. Command:
+`cargo build --manifest-path /src/packages/qiongli-native/Cargo.toml -p qiongli
+--no-default-features --release --locked --offline --target-dir /build`.
+It passed in 1m16s. Rust image ID:
+`72db5382ffef4a5dbf89a125ee07bf0073404cee718902ed4ef0d6da99b0261a`.
+Initial attempts failed before compilation due to using an image ID as a repository
+digest, then mounting an unused default Cargo cache; corrected without downloads.
+
+A separate Debian 12 ARM64 image, ID
+`61c44d586ac3463e3f9160e3cf6190e96b0769c58707517c313bb451095495a4`,
+received only the executable and isolated test state. It had no source mount and
+asserted absence of Python, Python3, Node, npm, Cargo and rustc. `ldd` showed libc,
+libgcc and the Linux loader, with no GUI libraries. Twelve recorded checks passed:
+environment, version/help, embedded content, UI refusal, project preview,
+missing-approval refusal with no created project, approved fixture creation,
+project read in a fresh container, Full MCP 32-tool/route checks, and export
+preview/apply. Each command exited in its own disposable network-disabled container.
+This is a source binary and an empty fixture project, not research completion.
+
+Evidence and runnable local probe script are under
+`packages/qiongli-native/target/cli-linux-native-458c3caa/`.
+`consumer-evidence/receipt.json` SHA-256:
+`fdcf3b570b15f2ceae05a617dcda99ec26d63fe05cc7b200421117227b16c21e`.
+Linux executable SHA-256:
+`31f69845508e4ec3431710595f590b14d13753498919cc84fa7547235bc28f4f`.
+The first MCP probe omitted Podman's stdin forwarding and returned no messages;
+its failed output is retained separately. Added `-i` and reran only MCP/export,
+reusing completed checks. Final response parsing confirmed 32 Full tools and the
+Full route. Project/export outputs were reviewed; semantic revision remains 1,
+and export contains the portable project manifest.
+
+This is stronger than clearing PATH, but still a clean container rather than a
+clean VM. Signed Linux packaging/install/update/recovery, desktop sessions,
+additional architectures and real Host research remain unqualified. The pending
+human preview remains unchanged and unapplied. No new production code, dependency,
+program acceptance or publication was introduced. Whitespace, generated-index and
+frozen-source checks passed. Continue platform/candidate qualification and the
+human research interaction without claiming first-stage completion.

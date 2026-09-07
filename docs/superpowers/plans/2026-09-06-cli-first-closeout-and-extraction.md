@@ -1255,3 +1255,35 @@ Next: expose approved recovery through CLI with process checks, then connect nat
 activation using fresh candidate/approval verification and installed CLI health. Real
 process-kill qualification and cleanup interrupted inside an application tree remain
 open; unverifiable partial trees still refuse. First-stage integration is incomplete.
+
+
+## CLI-403 twenty-eighth increment — inspect live applications before recovery
+
+Base: `d3e25b03`; branch: `codex/cli-recovery-process-guard`.
+Both recovery library owners now inspect the current user's mapped application files
+before mutation. They reuse the bounded Host child collector with fixed native lsof,
+empty inherited environment, 30 seconds and 8 MiB per stream. Existing probes keep
+512 KiB. Error exit, stderr, malformed/empty/truncated or invalid-encoding output
+refuses recovery. Destination, backup, staged and failed application paths are checked
+by components, so a similarly named neighboring directory is not mistaken for a match.
+No existing user process is stopped.
+
+Real local inspection showed lsof adds ftxt fields and produced about 2 MiB, exceeding
+the Host-probe default; its protocol and bound were adjusted explicitly. A real Chinese
+path test exposed C-locale hexadecimal UTF-8 escaping. Matching now encodes target bytes
+as documented in the installed lsof manual, while control-character targets refuse.
+The Clippy exception is local to fixed native lsof inspection; external model-runtime
+launch policy is unchanged.
+
+Checks on macOS: 15 replacement/process tests passed with process-read permission.
+The final controlled live-process case passed for a path containing Chinese and spaces:
+it detects a copied system sleep binary while running and allows the path after that
+test child exits. Parser negatives and the existing bounded Host failure test passed
+after the final matching change. Library Clippy passed. Only aggregate protocol metadata
+was inspected outside tests, without exposing other process paths. This proves process
+inspection, not a real update/SIGKILL recovery or cross-platform qualification.
+
+Remaining: public recovery approval/output contracts, native activation command wiring
+and real package/Host qualification. The check is a current-user snapshot and cannot
+prevent a subsequent launch or attest to other users' processes. First-stage integration
+is incomplete; no push, publication or acceptance advancement.

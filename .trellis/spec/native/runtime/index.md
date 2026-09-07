@@ -258,7 +258,7 @@ store, checks the canonical reconciliation journal/digest, backup ownership and 
 installed new canonical binary hash. It reserves RecoveryRequired through state CAS
 before rollback so late legacy health cannot commit, then reuses Host/application
 rollback, cleanup and exact marker clearing. It does not rerun health. Caller-owned
-filesystem approval/process checks and a public CLI entry point remain pending, as
+filesystem approval and a public CLI entry point remain pending, as
 does real process-kill qualification. Unsupported layouts/states refuse rather than guessing a completed recovery.
 
 Legacy rollback persists private `legacy-rollback-v1.json` before moving the application.
@@ -285,8 +285,20 @@ with its old handoff contract to allow a fresh attempt.
 
 Committed cleanup retains transaction evidence/downloads and supports an already
 removed backup. Cleanup stopped inside a backup tree still refuses if identity can no
-longer be established. Bounded garbage collection and public approval/process wiring
+longer be established. Bounded garbage collection and public approval wiring
 remain separate work; retaining evidence does not claim complete package qualification.
+
+Both legacy recovery owners inspect the current user's mapped application files under
+the installation locks before changing state/files. A fixed `/usr/sbin/lsof` invocation
+uses the existing bounded child collector with a 30-second deadline and separate 8 MiB
+stdout/stderr limits; existing Host probes retain 512 KiB. Nonzero exit, stderr,
+malformed/empty output, invalid encoding or an exceeded bound refuses recovery. Matching
+covers destination, backup, staged and failed-application directories by path components.
+C-locale hexadecimal encoding of non-ASCII path bytes is accounted for; target control
+characters refuse because reliable matching is unavailable. No processes are killed.
+This is a current-user snapshot, not prevention of launches after inspection or a claim
+of visibility into other users' processes. CLI approval and full process qualification
+remain pending.
 
 ## Quality Check
 

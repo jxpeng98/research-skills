@@ -10953,18 +10953,47 @@ pub(crate) fn native_cli_health_output(
         .map_err(|_| "native-activation-health-process-failed")
 }
 
-fn run_bounded_command(
+#[cfg(target_os = "macos")]
+#[allow(
+    clippy::disallowed_methods,
+    reason = "fixed native lsof utility performs read-only installation process inspection"
+)]
+pub(crate) fn installation_process_output() -> Result<String, &'static str> {
+    let mut command = Command::new("/usr/sbin/lsof");
+    command
+        .env_clear()
+        .env("LC_ALL", "C")
+        .args(["-n", "-P", "-a", "-u"])
+        .arg(rustix::process::geteuid().as_raw().to_string())
+        .args(["-d", "txt", "-F0pn"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let (stdout, stderr) =
+        run_bounded_command_output(command, Duration::from_secs(30), 8 * 1024 * 1024)
+            .map_err(|_| "native-update-process-inspection-failed")?;
+    if !stderr.is_empty() {
+        return Err("native-update-process-inspection-failed");
+    }
+    Ok(stdout)
+}
+
+fn run_bounded_command(command: Command, timeout: Duration) -> Result<String, HostCommandFailure> {
+    run_bounded_command_output(command, timeout, 512 * 1024).map(|(stdout, _)| stdout)
+}
+
+fn run_bounded_command_output(
     mut command: Command,
     timeout: Duration,
-) -> Result<String, HostCommandFailure> {
-    const MAX_HOST_PROBE_OUTPUT_BYTES: usize = 512 * 1024;
+    maximum_output_bytes: usize,
+) -> Result<(String, String), HostCommandFailure> {
     let mut child = command.spawn().map_err(|_| HostCommandFailure::Spawn)?;
     let stdout = child.stdout.take().ok_or(HostCommandFailure::OutputRead)?;
     let stderr = child.stderr.take().ok_or(HostCommandFailure::OutputRead)?;
     let stdout_reader =
-        thread::spawn(move || read_bounded_host_output(stdout, MAX_HOST_PROBE_OUTPUT_BYTES));
+        thread::spawn(move || read_bounded_host_output(stdout, maximum_output_bytes));
     let stderr_reader =
-        thread::spawn(move || read_bounded_host_output(stderr, MAX_HOST_PROBE_OUTPUT_BYTES));
+        thread::spawn(move || read_bounded_host_output(stderr, maximum_output_bytes));
     let deadline = Instant::now() + timeout;
     let status = loop {
         match child.try_wait() {
@@ -10992,8 +11021,8 @@ fn run_bounded_command(
         return Err(HostCommandFailure::NonZeroExit);
     }
     let stdout = String::from_utf8(stdout).map_err(|_| HostCommandFailure::InvalidUtf8)?;
-    String::from_utf8(stderr).map_err(|_| HostCommandFailure::InvalidUtf8)?;
-    Ok(stdout)
+    let stderr = String::from_utf8(stderr).map_err(|_| HostCommandFailure::InvalidUtf8)?;
+    Ok((stdout, stderr))
 }
 
 fn read_bounded_host_output(

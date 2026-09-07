@@ -439,6 +439,92 @@ fn legacy_rollback_record(
     Ok(record)
 }
 
+#[cfg(target_os = "macos")]
+fn refuse_running_replacement_applications(
+    store: &UpdateStateStore,
+    journal: &ReplacementJournalV1,
+) -> Result<(), &'static str> {
+    let output = crate::desktop::installation_process_output()?;
+    let failed = store
+        .staging_root()
+        .join(&journal.transaction_id)
+        .join(FAILED_APPLICATION_DIRECTORY);
+    refuse_mapped_application_paths(
+        &output,
+        &[
+            &journal.destination_application,
+            &journal.backup_application,
+            &journal.staged_application,
+            &failed,
+        ],
+    )
+}
+
+#[cfg(target_os = "macos")]
+fn refuse_mapped_application_paths(
+    output: &str,
+    applications: &[&Path],
+) -> Result<(), &'static str> {
+    use std::os::unix::ffi::OsStrExt;
+    let applications: Vec<PathBuf> = applications
+        .iter()
+        .map(|path| {
+            let mut encoded = String::new();
+            for byte in path.as_os_str().as_bytes() {
+                if byte.is_ascii_control() {
+                    return Err("native-update-process-inspection-failed");
+                }
+                if byte.is_ascii() {
+                    encoded.push(char::from(*byte));
+                } else {
+                    use std::fmt::Write;
+                    write!(&mut encoded, "\\x{byte:02x}")
+                        .map_err(|_| "native-update-process-inspection-failed")?;
+                }
+            }
+            Ok(PathBuf::from(encoded))
+        })
+        .collect::<Result<_, _>>()?;
+    let mut process_seen = false;
+    let mut path_seen = false;
+    if !output.ends_with('\n') {
+        return Err("native-update-process-inspection-failed");
+    }
+    for field in output.split('\0') {
+        let field = field.strip_prefix('\n').unwrap_or(field);
+        if field.is_empty() {
+            continue;
+        }
+        if let Some(pid) = field.strip_prefix('p') {
+            if pid.parse::<u32>().ok().is_none_or(|value| value == 0) {
+                return Err("native-update-process-inspection-failed");
+            }
+            process_seen = true;
+        } else if field == "ftxt" {
+            if !process_seen {
+                return Err("native-update-process-inspection-failed");
+            }
+        } else if let Some(name) = field.strip_prefix('n') {
+            if !process_seen || !Path::new(name).is_absolute() {
+                return Err("native-update-process-inspection-failed");
+            }
+            path_seen = true;
+            if applications
+                .iter()
+                .any(|application| Path::new(name).starts_with(application))
+            {
+                return Err("native-update-application-running");
+            }
+        } else {
+            return Err("native-update-process-inspection-failed");
+        }
+    }
+    if !process_seen || !path_seen {
+        return Err("native-update-process-inspection-failed");
+    }
+    Ok(())
+}
+
 /// Finish only a durably committed legacy update; never rerun health or roll back.
 /// The caller owns filesystem-write approval and process checks.
 pub fn recover_legacy_committed_cleanup(
@@ -465,6 +551,7 @@ pub fn recover_legacy_committed_cleanup(
         let journal: ReplacementJournalV1 =
             serde_json::from_slice(&marker).map_err(|_| "native-update-journal-invalid")?;
         validate_journal(&journal, store, &journal.transaction_id)?;
+        refuse_running_replacement_applications(store, &journal)?;
         let reconciliation = load_reconciliation_journal(store, &journal.transaction_id)?;
         if reconciliation_journal_sha256(&reconciliation)? != journal.reconciliation_journal_sha256
             || reconciliation.target_version != journal.target_version
@@ -504,6 +591,7 @@ pub fn recover_legacy_health_interruption(
         let journal: ReplacementJournalV1 =
             serde_json::from_slice(&marker).map_err(|_| "native-update-journal-invalid")?;
         validate_journal(&journal, store, &journal.transaction_id)?;
+        refuse_running_replacement_applications(store, &journal)?;
         let loaded = store.load().map_err(|error| error.reason_code())?;
         if loaded
             .state
@@ -1929,6 +2017,72 @@ mod tests {
             assert_rolled_back(&fixture);
             fs::remove_dir_all(fixture.root).unwrap();
         }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn process_snapshot_requires_valid_fields_and_exact_application_components() {
+        let applications = [Path::new("/Applications/Qiongli.app")];
+        assert_eq!(
+            refuse_mapped_application_paths(
+                "p42\0\nftxt\0n/bin/test\0\n",
+                &[Path::new("/Applications/Qiongli\n.app")]
+            ),
+            Err("native-update-process-inspection-failed")
+        );
+        assert_eq!(
+            refuse_mapped_application_paths(
+                "p42\0\nftxt\0n/Applications/Qiongli.app/Contents/MacOS/qiongli-cli\0\n",
+                &applications
+            ),
+            Err("native-update-application-running")
+        );
+        assert!(
+            refuse_mapped_application_paths(
+                "p42\0\nn/Applications/Qiongli.app-copy/Contents/MacOS/qiongli-cli\0\n",
+                &applications
+            )
+            .is_ok()
+        );
+        for invalid in [
+            "",
+            "p0\0\nn/bin/test\0\n",
+            "n/bin/test\0\n",
+            "p42\0\nnrelative\0\n",
+            "p42\0\n",
+            "p42\0\nn/bin/test",
+        ] {
+            assert_eq!(
+                refuse_mapped_application_paths(invalid, &applications),
+                Err("native-update-process-inspection-failed")
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn process_inspection_detects_a_live_application_and_allows_it_after_exit() {
+        let root = test_root("live-process-inspection");
+        let application = root.join("Qiongli 测试.app");
+        let macos = application.join("Contents/MacOS");
+        create_private_tree(&macos);
+        let executable = macos.join("test-sleep");
+        fs::copy("/bin/sleep", &executable).unwrap();
+        let mut child = Command::new(&executable)
+            .arg("30")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let running = crate::desktop::installation_process_output()
+            .and_then(|output| refuse_mapped_application_paths(&output, &[&application]));
+        let _ = child.kill();
+        child.wait().unwrap();
+        assert_eq!(running, Err("native-update-application-running"));
+        let output = crate::desktop::installation_process_output().unwrap();
+        assert!(refuse_mapped_application_paths(&output, &[&application]).is_ok());
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "macos")]

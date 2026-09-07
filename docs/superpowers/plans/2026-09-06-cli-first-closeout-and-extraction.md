@@ -2344,3 +2344,43 @@ model-read evidence to the new candidate, not scholarly continuation or approval
 The ledger's CLI-404 blocker now reflects that precise progress. No acceptance
 count changed. Research disclosure/Inbox approval remains pending; canonical
 consolidation and real research handoff remain unproved. Windows remains paused.
+
+
+## CLI-405 authorized research review and Inbox intake
+
+Base `8134b085`; branch `codex/approved-research-inbox`. The maintainer explicitly
+replied “授权” to external Codex validation of the existing REALM/RAG draft and its
+exact Inbox preview. Capture bytes remained SHA-256
+`292c6574a43564f400c820ae3c108d0ffdf8b17ecce956225c8848bb35f8f784`. The current
+`dfebb17c` candidate returned the unchanged revision-1 intake digest
+`373815edc7074f98a9eaa65f41b057a8920df94cc30ea7771c5e90df6e1cf55b`.
+
+An authenticated Codex session used that candidate's Full project-read tool on the
+actual isolated scholarly project and reviewed the supplied draft/capture. Exactly
+one MCP read succeeded; project/config hashes were unchanged. Its bounded textual
+review found no internal contradiction or unsupported performance ranking, while
+explicitly declining independent source/full-paper verification. It neither wrote
+research files nor converted the portable capture to connected delivery.
+
+The existing CLI intake owner then applied the exact approved digest once. A fresh
+process confirmed one pending-review entry, two sources, zero decisions, no stale
+or conflicting capture, zero consolidated entries and project revision 1. The
+expected capture history file exists. No `context/research_state.md` exists yet.
+Private authorization, Host events/review, fresh preview, intake commit and receipt
+are under `packages/qiongli-native/target/cli405-approved-8134b085/`.
+
+Consolidation preview is ready with no conflicts: create the 1955-byte research-state
+artifact, advance revision 1 to 2 and record the consolidation receipt. Digest:
+`73f09cc56bf8a9f04740997f07d3b28042f2d24cfd7a3ddf08f02bcc5286ad37`; fixed
+reviewedAtUnix `1788820817`; proposed artifact SHA-256
+`fc687bfbce6fcef41e492123bf3f51b1aeb83b37cbb6f6c5a02ef181455500b6`.
+`CONSOLIDATION-REVIEW.md` links the exact owner preview and source capture. The CLI
+preview exposes artifact metadata/digest rather than full proposed body bytes.
+Consolidation remains unapplied: the authorization covered Inbox intake only and
+explicitly reserved a concrete consolidation preview. The later fulltext addendum
+is not silently included in the unchanged abstract-level capture.
+
+CLI-405 becomes active with this evidence; CLI-404's blocker now reflects completed
+research disclosure/intake and remaining consolidation/continuation. No acceptance
+record changes. Next: the concrete academic review decision, then canonical writing
+and same-device continuation; named research qualification remains incomplete.

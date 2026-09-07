@@ -16,10 +16,10 @@ Markdown checkboxes are presentation only.
 | State | Count | Meaning |
 |---|---:|---|
 | `accepted` | 46 | Exact repository evidence, commit and CI run are recorded. |
-| `active` | 7 | The bounded task is currently being implemented or integrated. |
+| `active` | 8 | The bounded task is currently being implemented or integrated. |
 | `blocked` | 14 | Work cannot advance until the recorded blocker clears. |
 | `deferred` | 157 | Intentionally held behind a milestone or policy gate. |
-| `proposed` | 25 | Ordered work that has not entered implementation. |
+| `proposed` | 24 | Ordered work that has not entered implementation. |
 | `superseded` | 0 | Replaced by another recorded task or decision. |
 
 ## Tasks
@@ -61,8 +61,8 @@ Markdown checkboxes are presentation only.
 | `CLI-401` | `active` | `CLI` | Audit the current branch, GUI dependencies and retained source; adopt the CLI-first direction and close the App development stage (LF-Q01). | — | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
 | `CLI-402` | `active` | `CLI` | Separate a pure native CLI/MCP target from graphical build, test and launch dependencies while preserving command and service behavior (LF-Q02). | `CLI-401` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
 | `CLI-403` | `active` | `CLI` | Qualify independent resources, package identity, trust, installation, update and rollback without an App bundle (LF-Q03). | `CLI-402` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Windows partially complete; maintainer paused this lane after cross-build and Parallels x64-emulation runtime checks. Trusted installation rejected the source build; signed Windows candidate, installation/update and native x64 qualification remain open. Other CLI work may continue. |
-| `CLI-404` | `active` | `CLI` | Provide window-free Host integration and a verified human approval path using existing preview/apply owners (LF-Q04). | `CLI-403`<br>`SEC-403` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Candidate dfebb17c passes isolated Codex/Claude install/cache/remove and Full MCP checks; one real Codex model read of an empty synthetic fixture passed. Research disclosure, exact Inbox approval, scholarly continuation and SEC qualification remain open. |
-| `CLI-405` | `proposed` | `CLI` | Complete one real Host research journey and same-device handoff with source-bound candidates, approved writes and restart recovery (LF-Q05). | `CLI-404` | — |
+| `CLI-404` | `active` | `CLI` | Provide window-free Host integration and a verified human approval path using existing preview/apply owners (LF-Q04). | `CLI-403`<br>`SEC-403` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Current candidate and real Codex research-project read/text review passed; the exact human-authorized Inbox intake completed. Academic consolidation, real research continuation and SEC qualification remain open. |
+| `CLI-405` | `active` | `CLI` | Complete one real Host research journey and same-device handoff with source-bound candidates, approved writes and restart recovery (LF-Q05). | `CLI-404` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Authorized REALM/RAG draft review and exact Inbox intake completed. Concrete consolidation preview awaits academic approval; canonical note and same-device scholarly continuation remain open. |
 | `CLI-406` | `proposed` | `CLI` | Extend existing task/checkpoint owners with atomic local claims, isolated candidates and exact-digest review contracts (LF-Q06). | `CLI-405` | — |
 | `CLI-407` | `proposed` | `CLI` | Complete two actual local Host sessions performing bounded work and candidate review before human commit (LF-Q07). | `CLI-406` | — |
 | `CLI-408` | `proposed` | `CLI` | Prove local claim conflict, stale sources/reviews, cancellation, duplicate commit, crash recovery and approval revocation cases (LF-Q08). | `CLI-406` | — |

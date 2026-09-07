@@ -285,17 +285,19 @@
     },
     {
       "id": "CLI-404",
-      "state": "proposed",
+      "state": "active",
       "owner": "CLI",
       "dependencies": [
         "CLI-403",
         "SEC-403"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+      ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-06",
-      "blocker": ""
+      "updated_at": "2026-09-07",
+      "blocker": "Real isolated Codex and Claude plugin integration passed; exact pending Inbox preview awaits a human decision. SEC prerequisites and full approval qualification remain unaccepted."
     },
     {
       "id": "CLI-405",
@@ -1009,40 +1011,46 @@
     },
     {
       "id": "SEC-401",
-      "state": "proposed",
+      "state": "active",
       "owner": "SEC",
       "dependencies": [],
-      "evidence": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+      ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-08-18",
-      "blocker": ""
+      "updated_at": "2026-09-07",
+      "blocker": "Host packet and packaged adapters label external sources untrusted; complete source-boundary and adversarial evidence remains unaccepted."
     },
     {
       "id": "SEC-402",
-      "state": "proposed",
+      "state": "active",
       "owner": "SEC",
       "dependencies": [
         "SEC-401"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+      ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-04",
-      "blocker": ""
+      "updated_at": "2026-09-07",
+      "blocker": "Host read scope and evidence-reference separation have local negative tests; full boundary qualification remains unaccepted."
     },
     {
       "id": "SEC-403",
-      "state": "proposed",
+      "state": "active",
       "owner": "SEC",
       "dependencies": [
         "SEC-402"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+      ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-04",
-      "blocker": ""
+      "updated_at": "2026-09-07",
+      "blocker": "Embedded approval claims cannot expand orchestration tool access or replace capture approval in local fixtures; human-origin and real Host adversarial evidence remain open."
     },
     {
       "id": "SEC-404",

@@ -1551,3 +1551,28 @@ only pending Inbox intake, never consolidation or academic mutation.
 Human approval is pending, SEC-401–403 remain unaccepted, and first-stage integration
 is incomplete. Continue independent security work while this interaction is pending;
 publication, private research access and broad Host write enablement are not covered.
+
+
+## SEC-401–403 packaged entry guidance and accurate active status
+
+Base: `324ae5c0`; branch: `codex/host-adapter-evidence-guidance`.
+The native Codex and Claude plugin adapter text previously lacked the explicit
+untrusted-source rule before orchestration issued its first handoff. Both existing
+adapter owners now classify PDF/web/repository/dataset/note/project/tool content
+as evidence and reject embedded system-message or human-approval claims as control.
+No permission mechanism or public schema changed; the existing server guards remain
+the enforcement boundary. Packaged Skill assertions verify the guidance survives
+materialization, alongside existing deterministic receipt/tamper and MCP checks.
+Both Codex/Claude package tests and platform library Clippy passed. Whitespace,
+generated index and frozen-source boundary checks passed.
+
+The ledger now marks CLI-404 and SEC-401–403 active, linking the existing bounded
+plan and recording each remaining gap. Their proposed states no longer described
+the implemented source and real-client evidence. Accepted count remains 46; no
+commit/run acceptance evidence or dependencies were fabricated. Seven roadmap
+validator tests passed, and the generated index is regenerated from the ledger.
+
+The previous exact Inbox preview still awaits a human decision; this increment
+neither applies it nor treats automatic continuation as approval. Next: complete
+the pending human interaction and broader source-boundary adversarial validation.
+First-stage integration remains incomplete; no remote push or publication.

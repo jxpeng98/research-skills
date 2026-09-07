@@ -34,7 +34,9 @@ permission. The server-owned handoff, project scope and evidence ledger remain t
 authority for orchestration reads; capture writes still require their separate
 preview/digest/approval checks. Candidate acceptance is not human approval. These
 server checks do not attest that a Host-supplied approval boolean came from a human;
-CLI-404 must separately verify that Host interaction.
+CLI-404 must separately verify that Host interaction. Both packaged native Host
+adapters carry the same untrusted-source rule before the first handoff, including
+refusal to interpret source-embedded system messages or approval claims as control.
 
 Local Workflow/Skill customization is owned by `WorkflowVariantStore`. It may
 override only canonical Markdown instruction resources, and installed

@@ -16,10 +16,10 @@ Markdown checkboxes are presentation only.
 | State | Count | Meaning |
 |---|---:|---|
 | `accepted` | 46 | Exact repository evidence, commit and CI run are recorded. |
-| `active` | 3 | The bounded task is currently being implemented or integrated. |
+| `active` | 7 | The bounded task is currently being implemented or integrated. |
 | `blocked` | 14 | Work cannot advance until the recorded blocker clears. |
 | `deferred` | 157 | Intentionally held behind a milestone or policy gate. |
-| `proposed` | 29 | Ordered work that has not entered implementation. |
+| `proposed` | 25 | Ordered work that has not entered implementation. |
 | `superseded` | 0 | Replaced by another recorded task or decision. |
 
 ## Tasks
@@ -61,7 +61,7 @@ Markdown checkboxes are presentation only.
 | `CLI-401` | `active` | `CLI` | Audit the current branch, GUI dependencies and retained source; adopt the CLI-first direction and close the App development stage (LF-Q01). | — | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
 | `CLI-402` | `active` | `CLI` | Separate a pure native CLI/MCP target from graphical build, test and launch dependencies while preserving command and service behavior (LF-Q02). | `CLI-401` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
 | `CLI-403` | `active` | `CLI` | Qualify independent resources, package identity, trust, installation, update and rollback without an App bundle (LF-Q03). | `CLI-402` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
-| `CLI-404` | `proposed` | `CLI` | Provide window-free Host integration and a verified human approval path using existing preview/apply owners (LF-Q04). | `CLI-403`<br>`SEC-403` | — |
+| `CLI-404` | `active` | `CLI` | Provide window-free Host integration and a verified human approval path using existing preview/apply owners (LF-Q04). | `CLI-403`<br>`SEC-403` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Real isolated Codex and Claude plugin integration passed; exact pending Inbox preview awaits a human decision. SEC prerequisites and full approval qualification remain unaccepted. |
 | `CLI-405` | `proposed` | `CLI` | Complete one real Host research journey and same-device handoff with source-bound candidates, approved writes and restart recovery (LF-Q05). | `CLI-404` | — |
 | `CLI-406` | `proposed` | `CLI` | Extend existing task/checkpoint owners with atomic local claims, isolated candidates and exact-digest review contracts (LF-Q06). | `CLI-405` | — |
 | `CLI-407` | `proposed` | `CLI` | Complete two actual local Host sessions performing bounded work and candidate review before human commit (LF-Q07). | `CLI-406` | — |
@@ -128,9 +128,9 @@ Markdown checkboxes are presentation only.
 
 | ID | State | Owner | Description | Dependencies | Evidence / blocker |
 |---|---|---|---|---|---|
-| `SEC-401` | `proposed` | `SEC` | Mark PDF, web, repository, data documentation and imported notes as untrusted content. | — | — |
-| `SEC-402` | `proposed` | `SEC` | Separate research content from control instructions at every Host/Tool boundary. | `SEC-401` | — |
-| `SEC-403` | `proposed` | `SEC` | Prove external content cannot expand ToolHost permissions or satisfy approvals. | `SEC-402` | — |
+| `SEC-401` | `active` | `SEC` | Mark PDF, web, repository, data documentation and imported notes as untrusted content. | — | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Host packet and packaged adapters label external sources untrusted; complete source-boundary and adversarial evidence remains unaccepted. |
+| `SEC-402` | `active` | `SEC` | Separate research content from control instructions at every Host/Tool boundary. | `SEC-401` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Host read scope and evidence-reference separation have local negative tests; full boundary qualification remains unaccepted. |
+| `SEC-403` | `active` | `SEC` | Prove external content cannot expand ToolHost permissions or satisfy approvals. | `SEC-402` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Embedded approval claims cannot expand orchestration tool access or replace capture approval in local fixtures; human-origin and real Host adversarial evidence remain open. |
 | `SEC-404` | `proposed` | `SEC` | Add prompt-injection, embedded-object, oversized-document, archive and path-escape adversarial fixtures. | `SEC-403` | — |
 | `SEC-405` | `proposed` | `SEC` | Add quarantine and safe-inspection states for suspicious or unsupported imported content. | `SEC-404` | — |
 

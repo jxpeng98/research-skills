@@ -462,6 +462,143 @@ pub(crate) fn refuse_running_installation_paths(paths: &[&Path]) -> Result<(), &
     refuse_mapped_application_paths(&output, paths)
 }
 
+#[cfg(target_os = "linux")]
+pub(crate) fn refuse_running_installation_paths(paths: &[&Path]) -> Result<(), &'static str> {
+    refuse_running_linux_paths(Path::new("/proc"), paths)
+}
+
+#[cfg(target_os = "linux")]
+fn refuse_running_linux_paths(proc_root: &Path, paths: &[&Path]) -> Result<(), &'static str> {
+    use rustix::fs::{Mode, OFlags};
+    use std::os::unix::ffi::{OsStrExt, OsStringExt};
+    const FAILED: &str = "native-update-process-inspection-failed";
+    if paths.iter().any(|path| {
+        !path.is_absolute()
+            || path
+                .components()
+                .any(|part| matches!(part, Component::ParentDir))
+            || path.as_os_str().as_bytes().iter().any(u8::is_ascii_control)
+    }) {
+        return Err(FAILED);
+    }
+    // hidepid=4 can hide even same-user processes that cannot be ptraced.
+    let mut mounts = Vec::new();
+    File::open(proc_root.join("self/mountinfo"))
+        .map_err(|_| FAILED)?
+        .take(1024 * 1024 + 1)
+        .read_to_end(&mut mounts)
+        .map_err(|_| FAILED)?;
+    if mounts.len() > 1024 * 1024 {
+        return Err(FAILED);
+    }
+    let mounts = std::str::from_utf8(&mounts).map_err(|_| FAILED)?;
+    let mut proc_mounts = mounts
+        .lines()
+        .filter(|line| line.split_whitespace().nth(4) == Some("/proc"));
+    let proc_mount = proc_mounts.next().ok_or(FAILED)?;
+    if proc_mounts.next().is_some() {
+        return Err(FAILED);
+    }
+    let (_, details) = proc_mount.split_once(" - ").ok_or(FAILED)?;
+    let fields: Vec<_> = details.split_whitespace().collect();
+    if fields.len() != 3
+        || fields[0] != "proc"
+        || fields[2].split(',').any(|option| {
+            option.starts_with("hidepid=")
+                && !matches!(
+                    option,
+                    "hidepid=0"
+                        | "hidepid=1"
+                        | "hidepid=2"
+                        | "hidepid=off"
+                        | "hidepid=noaccess"
+                        | "hidepid=invisible"
+                )
+        })
+    {
+        return Err(FAILED);
+    }
+    let started = Instant::now();
+    let uid = rustix::process::geteuid().as_raw();
+    for (index, entry) in fs::read_dir(proc_root).map_err(|_| FAILED)?.enumerate() {
+        if index >= 65_536 || started.elapsed() > Duration::from_secs(10) {
+            return Err(FAILED);
+        }
+        let entry = entry.map_err(|_| FAILED)?;
+        let name = entry.file_name();
+        if name.as_bytes().is_empty() || !name.as_bytes().iter().all(u8::is_ascii_digit) {
+            continue;
+        }
+        let directory = match rustix::fs::open(
+            entry.path(),
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC | OFlags::NOFOLLOW,
+            Mode::empty(),
+        ) {
+            Ok(directory) => directory,
+            Err(rustix::io::Errno::NOENT) => continue,
+            Err(_) => return Err(FAILED),
+        };
+        // Anchor both reads to one proc directory, so PID reuse cannot retarget them.
+        let status = match rustix::fs::openat(
+            &directory,
+            "status",
+            OFlags::RDONLY | OFlags::CLOEXEC | OFlags::NOFOLLOW,
+            Mode::empty(),
+        ) {
+            Ok(status) => status,
+            Err(rustix::io::Errno::NOENT) => continue,
+            Err(_) => return Err(FAILED),
+        };
+        let mut bytes = Vec::new();
+        File::from(status)
+            .take(65_537)
+            .read_to_end(&mut bytes)
+            .map_err(|_| FAILED)?;
+        if bytes.len() > 65_536 {
+            return Err(FAILED);
+        }
+        let mut uid_lines = bytes
+            .split(|byte| *byte == b'\n')
+            .filter_map(|line| line.strip_prefix(b"Uid:"));
+        let values = std::str::from_utf8(uid_lines.next().ok_or(FAILED)?).map_err(|_| FAILED)?;
+        if uid_lines.next().is_some() {
+            return Err(FAILED);
+        }
+        let ids = values
+            .split_whitespace()
+            .map(str::parse::<u32>)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| FAILED)?;
+        if ids.len() != 4 {
+            return Err(FAILED);
+        }
+        if !ids.contains(&uid) {
+            continue;
+        }
+        if bytes
+            .split(|byte| *byte == b'\n')
+            .any(|line| line == b"Kthread:\t1")
+        {
+            continue;
+        }
+        let executable =
+            rustix::fs::readlinkat(&directory, "exe", Vec::new()).map_err(|_| FAILED)?;
+        let raw = executable.as_bytes();
+        // A missing or unreadable exe is ambiguous (including an exited main thread).
+        // Keep both forms: a literal filename can itself end with " (deleted)".
+        for value in [raw, raw.strip_suffix(b" (deleted)").unwrap_or(raw)] {
+            let executable = PathBuf::from(OsString::from_vec(value.to_vec()));
+            if !executable.is_absolute() {
+                return Err(FAILED);
+            }
+            if paths.iter().any(|path| executable.starts_with(path)) {
+                return Err("native-update-application-running");
+            }
+        }
+    }
+    Ok(())
+}
+
 #[cfg(target_os = "macos")]
 fn refuse_mapped_application_paths(
     output: &str,
@@ -1851,6 +1988,86 @@ fn health_failure_reason(error: &'static str) -> &'static str {
 
 #[cfg(test)]
 mod tests {
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_process_guard_rejects_ambiguous_and_deleted_executables() {
+        use std::os::unix::fs::symlink;
+        let root =
+            std::env::temp_dir().join(format!("qiongli-linux-proc-fixture-{}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        fs::create_dir(root.join("self")).unwrap();
+        let mounts = root.join("self/mountinfo");
+        fs::write(&mounts, b"1 2 0:1 / /proc rw - proc proc rw\n").unwrap();
+        fs::create_dir(root.join("123")).unwrap();
+        let uid = rustix::process::geteuid().as_raw();
+        let status = format!("Uid:\t{uid}\t{uid}\t{uid}\t{uid}\n");
+        fs::write(root.join("123/status"), &status).unwrap();
+        let paths = [Path::new("/managed/qiongli")];
+        assert_eq!(
+            refuse_running_linux_paths(&root, &paths),
+            Err("native-update-process-inspection-failed")
+        );
+        for (target, blocked) in [
+            ("/managed/qiongli", true),
+            ("/managed/qiongli (deleted)", true),
+            ("/managed/qiongli-extra", false),
+        ] {
+            symlink(target, root.join("123/exe")).unwrap();
+            let result = refuse_running_linux_paths(&root, &paths);
+            if blocked {
+                assert_eq!(result, Err("native-update-application-running"));
+            } else {
+                assert!(result.is_ok());
+            }
+            fs::remove_file(root.join("123/exe")).unwrap();
+        }
+        symlink("/managed/qiongli", root.join("123/exe")).unwrap();
+        fs::write(root.join("123/status"), format!("{status}{status}")).unwrap();
+        assert_eq!(
+            refuse_running_linux_paths(&root, &paths),
+            Err("native-update-process-inspection-failed")
+        );
+        let other = uid.wrapping_add(1);
+        fs::write(
+            root.join("123/status"),
+            format!("Uid:\t{other}\t{other}\t{other}\t{other}\n"),
+        )
+        .unwrap();
+        assert!(refuse_running_linux_paths(&root, &paths).is_ok());
+        fs::write(&mounts, b"1 2 0:1 / /proc rw - proc proc rw,hidepid=4\n").unwrap();
+        assert_eq!(
+            refuse_running_linux_paths(&root, &paths),
+            Err("native-update-process-inspection-failed")
+        );
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_process_guard_observes_a_live_and_unlinked_child() {
+        let root =
+            std::env::temp_dir().join(format!("qiongli-linux-live-proc-{}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        let executable = root.join("sleep-copy");
+        fs::copy("/bin/sleep", &executable).unwrap();
+        let mut child = Command::new(&executable)
+            .arg("30")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let live = refuse_running_installation_paths(&[&executable]);
+        fs::remove_file(&executable).unwrap();
+        let unlinked = refuse_running_installation_paths(&[&executable]);
+        let _ = child.kill();
+        child.wait().unwrap();
+        assert_eq!(live, Err("native-update-application-running"));
+        assert_eq!(unlinked, Err("native-update-application-running"));
+        assert!(refuse_running_installation_paths(&[&executable]).is_ok());
+        fs::remove_dir_all(root).unwrap();
+    }
     use super::*;
     #[cfg(target_os = "macos")]
     use crate::update_reconcile::empty_reconciliation_journal;

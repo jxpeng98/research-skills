@@ -27,7 +27,14 @@ Native reconciliation uses atomic no-replace renames on macOS and Linux for
 activation, compensation and rollback. A concurrently created target, including a
 symlink, must not be overwritten; losing source files remain intact. Unsupported
 kernel/filesystem operations fail closed. This does not enable the public Linux
-activation/recovery commands, which still require platform process inspection.
+activation/recovery commands, which still require platform update qualification.
+
+Linux internal reconciliation inspects current-user executables through the visible
+`/proc` PID namespace, anchoring status/executable reads to one process directory.
+Deleted executable paths still count as running. Ambiguous executable access,
+malformed identity, ptrace-only visibility and exceeded scan bounds fail closed.
+The scan is a snapshot: it neither prevents later launches nor inspects processes
+outside the visible namespace. It does not stop processes or confer write approval.
 
 Public writes use preview, digest-bound approval, revalidation, and fail-closed
 errors. `qiongli_project_capture_apply` is a real Full MCP project write and

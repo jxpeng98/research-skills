@@ -526,9 +526,9 @@ struct NativeActivationRecord {
     outcome: Option<NativeActivationOutcome>,
 }
 
-// Native process inspection currently has a macOS implementation only.
+// Public activation remains separately gated; internal moves also inspect Linux processes.
 fn refuse_running_native_cli(journal: &ReconciliationJournalV1) -> Result<(), &'static str> {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
         let paths: Vec<&Path> = journal
             .operations
@@ -544,7 +544,7 @@ fn refuse_running_native_cli(journal: &ReconciliationJournalV1) -> Result<(), &'
             .collect();
         crate::native_update_replace::refuse_running_installation_paths(&paths)
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     {
         let _ = journal;
         Ok(())

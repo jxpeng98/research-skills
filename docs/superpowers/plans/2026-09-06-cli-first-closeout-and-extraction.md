@@ -1834,3 +1834,41 @@ to enable public activation/recovery. Those commands remain macOS-only. The earl
 candidate receipts predate this product change and retain that scope; no new
 package/Host acceptance is implied. Human approval and first-stage completion
 remain open, with the pending Inbox preview still unapplied.
+
+
+## CLI-403 Linux current-user process inspection prerequisite
+
+Base: `503426f7`; branch: `codex/linux-process-update-guard`.
+Internal reconciliation now routes Linux CLI paths through the existing shared
+installation-process guard. The Linux implementation reads `/proc` directly with
+stdlib/rustix and adds no runtime utility dependency. It bounds mount data, status,
+entry count and scan time; checks real/effective/saved/filesystem UIDs; and anchors
+status/executable reads to an open process directory to avoid PID-reuse retargeting.
+Other users and identified kernel threads are excluded. Ambiguous executable access,
+invalid status/mount data and ptrace-only process visibility fail closed.
+
+Both the literal executable link and its possible ` (deleted)` suffix form are
+checked by path components. This follows the Linux
+[proc executable documentation](https://man7.org/linux/man-pages/man5/proc_pid_exe.5.html)
+and [kernel proc filesystem contract](https://www.kernel.org/doc/html/v6.15/filesystems/proc.html):
+an unlinked executable may still run, while an unavailable executable link does not
+prove process exit. These are current-user observations in the visible PID namespace,
+not prevention of later launches, namespace-independent host coverage or protection
+against arbitrary same-user execution. No process is terminated by product code.
+
+Two Linux tests passed: a real test-owned copied sleep executable was detected both
+before and after unlink, then allowed after kill/reap; a proc fixture rejects missing
+exe, duplicate UID records and hidepid=4, distinguishes neighboring paths and skips
+other-user records. Four Linux update/reconciliation tests also passed after hookup,
+including activation/recovery, atomic moves and non-product canaries. macOS library
+Clippy passed. The existing Linux Rust 1.97.1 image lacked Clippy; installing only
+that official toolchain component inside a disposable container allowed Linux
+release Clippy to pass with `-D warnings`. No project dependency changed.
+
+Runtime documentation, whitespace, generated-index and frozen-source checks passed.
+Public Linux activation/recovery remain unsupported pending complete platform
+qualification. Prior named package receipts predate this code and are not upgraded
+by these tests. Next: exercise the Linux process guard at the public activation
+boundary and qualify actual commit/recovery before enabling that path. Human
+approval and first-stage integration remain incomplete; no user process, current
+Host installation, research data or publication was changed.

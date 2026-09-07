@@ -17,14 +17,13 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::update_reconcile::{
-    activate_prepared_reconciliation, cleanup_committed_reconciliation,
+    acquire_replacement_lock, activate_prepared_reconciliation, cleanup_committed_reconciliation,
     cleanup_rolled_back_reconciliation, load_reconciliation_journal, reconciliation_journal_sha256,
     rollback_active_reconciliation, verify_active_reconciliation, verify_prepared_reconciliation,
 };
 
 const JOURNAL_FILE: &str = "replacement-journal.json";
 const HEALTH_TOKEN_FILE: &str = "replacement-health-token";
-const REPLACEMENT_LOCK_FILE: &str = ".replacement.lock";
 const FAILED_APPLICATION_DIRECTORY: &str = "failed-application";
 const APPLICATION_NAME: &str = "Qiongli.app";
 const CANONICAL_BINARY_NAME: &str = "qiongli-cli";
@@ -1111,52 +1110,6 @@ fn run_bounded_child(command: &mut Command) -> Result<(), &'static str> {
             return Err("native-update-child-timeout");
         }
         thread::sleep(POLL_INTERVAL);
-    }
-}
-
-#[cfg(target_os = "macos")]
-fn acquire_replacement_lock(store: &UpdateStateStore) -> Result<File, &'static str> {
-    use std::fs::TryLockError;
-    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
-
-    let updates_root = store
-        .staging_root()
-        .parent()
-        .ok_or("native-update-staging-unavailable")?
-        .to_path_buf();
-    let lock_path = updates_root.join(REPLACEMENT_LOCK_FILE);
-    if let Ok(metadata) = fs::symlink_metadata(&lock_path)
-        && (metadata.file_type().is_symlink()
-            || !metadata.is_file()
-            || metadata.uid() != rustix::process::geteuid().as_raw()
-            || metadata.mode() & 0o077 != 0)
-    {
-        return Err("native-update-replacement-lock-unsafe");
-    }
-    let lock = OpenOptions::new()
-        .create(true)
-        .truncate(false)
-        .read(true)
-        .write(true)
-        .mode(0o600)
-        .open(&lock_path)
-        .map_err(|_| "native-update-replacement-lock-unavailable")?;
-    let opened = lock
-        .metadata()
-        .map_err(|_| "native-update-replacement-lock-unavailable")?;
-    let linked = fs::symlink_metadata(&lock_path)
-        .map_err(|_| "native-update-replacement-lock-unavailable")?;
-    if opened.uid() != rustix::process::geteuid().as_raw()
-        || opened.mode() & 0o077 != 0
-        || opened.dev() != linked.dev()
-        || opened.ino() != linked.ino()
-    {
-        return Err("native-update-replacement-lock-unsafe");
-    }
-    match lock.try_lock() {
-        Ok(()) => Ok(lock),
-        Err(TryLockError::WouldBlock) => Err("native-update-replacement-active"),
-        Err(TryLockError::Error(_)) => Err("native-update-replacement-lock-unavailable"),
     }
 }
 

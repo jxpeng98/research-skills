@@ -1149,8 +1149,19 @@ Version 2 reconciliation journals require this pair. Existing version 1 journals
 and their operation digests retain their format and recovery behavior; unknown
 versions fail closed. Activation and rollback use the same executor as content and
 registration. This internal capability is not yet enabled by existing integration
-commands: a separately approved activation entry point, transaction locking and
-process/version checks remain necessary before standalone update qualification.
+commands: a separately approved activation entry point, CLI-wide mutation exclusion
+and process/version checks remain necessary before standalone update qualification.
+
+The native reconciliation library exposes activation and recovery for an already
+approved v2 journal and its exact digest. Both hold the existing replacement lock,
+also used by the macOS helper, and reserve the existing update state. Canonical
+private `native-activation.json` and `native-activation-outcome.json` records bind
+the journal digest and retain the committed or rolled-back outcome. Recovery rolls
+back an undecided activation; a committed outcome only resumes cleanup. Completed
+recovery does not advance the state revision again. The journal/outcome remain for
+replay. This owner leaves release generation and last-known-good package metadata
+unchanged; signed-candidate validation, approval, process pinning and the real
+health check belong to the command integration still to be completed.
 
 
 R3O Batch 5 exposes that same updater through the Overview Update card. The

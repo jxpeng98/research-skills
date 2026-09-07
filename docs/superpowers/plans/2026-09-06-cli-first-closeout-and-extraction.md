@@ -721,3 +721,38 @@ from that durable outcome. Neither this cleanup fix nor the prior file-pair owne
 constitutes that complete command flow. Process/version checks, real signed-version
 execution, Host approval/research journey and first-stage acceptance remain open;
 no ledger acceptance or remote/publication state changed.
+
+## CLI-403 twelfth increment — persistent activation and recovery coordinator
+
+Base: `f8f8560a`; branch: `codex/cli-native-activation-transaction`.
+The native reconciliation library now activates an approved v2 journal under the
+existing replacement lock and update-state reservation. The macOS helper uses the
+same relocated lock owner. Activation rechecks the exact journal digest under the
+lock, writes an immutable start record, reserves the transaction, activates the
+linked surfaces and runs its caller-supplied health check. Failed health restores
+the old surfaces; success records a committed decision before cleanup. Recovery
+uses the persisted decision and never reruns activation or health. It retains the
+journal and outcome after clearing the reservation, allowing idempotent replay.
+Other active transactions, wrong digests, malformed records and attempted fresh
+activation of an existing transaction refuse.
+
+Validation on macOS: reconciliation tests passed (3), direct macOS replacement
+owner tests passed (10), and Clippy passed with the existing Rust 1.98 exception.
+The expanded file-pair case exercised failed health, panic/unwind during health
+with a durable active reservation, successful activation, and committed cleanup
+failure caused by an extra file. Recovery restored undecided state, finished
+committed cleanup and replayed without incrementing state revision. It also checked
+lock contention, a foreign active transaction and malformed persisted start data
+without overwriting those states. Final additions reran only that focused case and
+Clippy; format and whitespace checks passed. Review found no actionable issue in
+this bounded coordinator. Panic/unwind is an interruption fixture, not evidence of
+SIGKILL or a real cross-process signed-version health journey.
+
+Next: connect the command boundary to signed candidate/predecessor verification,
+preview/approval and this coordinator, with real child-process health, current
+process/version checks and exclusion of competing managed writes. Existing user
+commands remain unchanged. The coordinator deliberately preserves release-generation
+and last-known-good package fields; committing those requires the signed release
+identity in the next command-level integration. Native Windows update-state support,
+real Host approval/research recovery, named candidate qualification and first-stage
+acceptance remain open. No accepted ledger row or publication state changed.

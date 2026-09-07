@@ -231,6 +231,300 @@ pub(crate) fn prepare_update_reconciliation(
     result
 }
 
+#[cfg(unix)]
+pub(crate) fn acquire_replacement_lock(store: &UpdateStateStore) -> Result<File, &'static str> {
+    use std::fs::TryLockError;
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
+    let updates_root = store
+        .staging_root()
+        .parent()
+        .ok_or("native-update-staging-unavailable")?
+        .to_path_buf();
+    let lock_path = updates_root.join(".replacement.lock");
+    if let Ok(metadata) = fs::symlink_metadata(&lock_path)
+        && (metadata.file_type().is_symlink()
+            || !metadata.is_file()
+            || metadata.uid() != rustix::process::geteuid().as_raw()
+            || metadata.mode() & 0o077 != 0)
+    {
+        return Err("native-update-replacement-lock-unsafe");
+    }
+    let lock = OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .read(true)
+        .write(true)
+        .mode(0o600)
+        .open(&lock_path)
+        .map_err(|_| "native-update-replacement-lock-unavailable")?;
+    let opened = lock
+        .metadata()
+        .map_err(|_| "native-update-replacement-lock-unavailable")?;
+    let linked = fs::symlink_metadata(&lock_path)
+        .map_err(|_| "native-update-replacement-lock-unavailable")?;
+    if opened.uid() != rustix::process::geteuid().as_raw()
+        || opened.mode() & 0o077 != 0
+        || opened.dev() != linked.dev()
+        || opened.ino() != linked.ino()
+    {
+        return Err("native-update-replacement-lock-unsafe");
+    }
+    match lock.try_lock() {
+        Ok(()) => Ok(lock),
+        Err(TryLockError::WouldBlock) => Err("native-update-replacement-active"),
+        Err(TryLockError::Error(_)) => Err("native-update-replacement-lock-unavailable"),
+    }
+}
+
+#[cfg(not(unix))]
+pub(crate) fn acquire_replacement_lock(_store: &UpdateStateStore) -> Result<File, &'static str> {
+    Err("native-update-target-unsupported")
+}
+
+const NATIVE_ACTIVATION_RECORD: &str = "native-activation.json";
+const NATIVE_ACTIVATION_OUTCOME: &str = "native-activation-outcome.json";
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum NativeActivationOutcome {
+    Committed,
+    RolledBack,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct NativeActivationRecord {
+    schema_version: u32,
+    transaction_id: String,
+    journal_sha256: String,
+    outcome: Option<NativeActivationOutcome>,
+}
+
+/// Executes an already approved v2 reconciliation journal. The caller owns
+/// candidate trust, human approval, process pinning and the health check.
+pub fn activate_native_reconciliation(
+    store: &UpdateStateStore,
+    transaction_id: &str,
+    expected_journal_sha256: &str,
+    health: impl FnOnce() -> Result<(), &'static str>,
+) -> Result<NativeActivationOutcome, &'static str> {
+    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    store.load().map_err(|error| error.reason_code())?;
+    let _lock = acquire_replacement_lock(store)?;
+    let journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    if refuse_other_activation(store, &journal)? {
+        return Err("native-activation-recovery-required");
+    }
+    if native_record_exists(store, transaction_id, NATIVE_ACTIVATION_RECORD)? {
+        return Err("native-activation-recovery-required");
+    }
+    verify_prepared_reconciliation(&journal)?;
+    write_native_activation_record(store, &journal, expected_journal_sha256, None)?;
+    set_native_activation_phase(
+        store,
+        &journal,
+        Some(qiongli_config::UpdateTransactionPhase::Activating),
+    )?;
+    let attempt = activate_prepared_reconciliation(&journal).and_then(|()| health());
+    let outcome = if attempt.is_ok() {
+        verify_active_reconciliation(&journal)?;
+        NativeActivationOutcome::Committed
+    } else {
+        rollback_active_reconciliation(&journal)?;
+        NativeActivationOutcome::RolledBack
+    };
+    write_native_activation_record(store, &journal, expected_journal_sha256, Some(outcome))?;
+    finish_native_activation(store, &journal, outcome)?;
+    attempt.map(|()| outcome)
+}
+
+/// Recovers the same approved journal without re-running health or activation.
+/// A durable committed outcome authorizes cleanup only; otherwise restore old state.
+pub fn recover_native_reconciliation(
+    store: &UpdateStateStore,
+    transaction_id: &str,
+    expected_journal_sha256: &str,
+) -> Result<NativeActivationOutcome, &'static str> {
+    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    store.load().map_err(|error| error.reason_code())?;
+    let _lock = acquire_replacement_lock(store)?;
+    let journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    refuse_other_activation(store, &journal)?;
+    read_native_activation_record(
+        store,
+        &journal,
+        expected_journal_sha256,
+        NATIVE_ACTIVATION_RECORD,
+    )?;
+    let outcome = if native_record_exists(store, transaction_id, NATIVE_ACTIVATION_OUTCOME)? {
+        read_native_activation_record(
+            store,
+            &journal,
+            expected_journal_sha256,
+            NATIVE_ACTIVATION_OUTCOME,
+        )?
+        .ok_or("native-activation-record-invalid")?
+    } else {
+        rollback_active_reconciliation(&journal)?;
+        write_native_activation_record(
+            store,
+            &journal,
+            expected_journal_sha256,
+            Some(NativeActivationOutcome::RolledBack),
+        )?;
+        NativeActivationOutcome::RolledBack
+    };
+    finish_native_activation(store, &journal, outcome)?;
+    Ok(outcome)
+}
+
+fn checked_native_journal(
+    store: &UpdateStateStore,
+    transaction_id: &str,
+    expected: &str,
+) -> Result<ReconciliationJournalV1, &'static str> {
+    let journal = load_reconciliation_journal(store, transaction_id)?;
+    if journal.schema_version != CLI_JOURNAL_SCHEMA_VERSION
+        || !valid_sha256(expected)
+        || reconciliation_journal_sha256(&journal)? != expected
+    {
+        return Err("native-activation-journal-mismatch");
+    }
+    Ok(journal)
+}
+
+fn refuse_other_activation(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+) -> Result<bool, &'static str> {
+    let loaded = store.load().map_err(|error| error.reason_code())?;
+    if loaded
+        .state
+        .active_transaction
+        .as_ref()
+        .is_some_and(|active| {
+            active.transaction_id != journal.transaction_id
+                || active.target_version != journal.target_version
+                || active.phase != qiongli_config::UpdateTransactionPhase::Activating
+        })
+    {
+        return Err("native-update-transaction-active");
+    }
+    Ok(loaded.state.active_transaction.is_some())
+}
+
+fn set_native_activation_phase(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+    phase: Option<qiongli_config::UpdateTransactionPhase>,
+) -> Result<(), &'static str> {
+    let loaded = store.load().map_err(|error| error.reason_code())?;
+    if loaded
+        .state
+        .active_transaction
+        .as_ref()
+        .is_some_and(|active| {
+            active.transaction_id != journal.transaction_id
+                || active.target_version != journal.target_version
+                || active.phase != qiongli_config::UpdateTransactionPhase::Activating
+        })
+    {
+        return Err("native-update-transaction-active");
+    }
+    if phase.is_none() && loaded.state.active_transaction.is_none() {
+        return Ok(());
+    }
+    let mut state = loaded.state;
+    state.active_transaction = phase.map(|phase| qiongli_config::UpdateActiveTransaction {
+        transaction_id: journal.transaction_id.clone(),
+        target_version: journal.target_version.clone(),
+        phase,
+    });
+    let result = store
+        .replace(loaded.revision, state)
+        .map_err(|error| error.reason_code())?;
+    if result.cleanup_required {
+        return Err("native-update-state-cleanup-required");
+    }
+    Ok(())
+}
+
+fn finish_native_activation(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+    outcome: NativeActivationOutcome,
+) -> Result<(), &'static str> {
+    match outcome {
+        NativeActivationOutcome::Committed => cleanup_committed_reconciliation(journal)?,
+        NativeActivationOutcome::RolledBack => cleanup_rolled_back_reconciliation(journal)?,
+    }
+    // Keep the immutable journal/outcome for bounded replay; clearing reservation
+    // never removes the only durable evidence of the completed decision.
+    set_native_activation_phase(store, journal, None)
+}
+
+fn native_record_exists(
+    store: &UpdateStateStore,
+    transaction_id: &str,
+    file: &str,
+) -> Result<bool, &'static str> {
+    let path = store.staging_root().join(transaction_id).join(file);
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        _ => Err("native-activation-record-invalid"),
+    }
+}
+
+fn write_native_activation_record(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+    digest: &str,
+    outcome: Option<NativeActivationOutcome>,
+) -> Result<(), &'static str> {
+    let root = store.staging_root().join(&journal.transaction_id);
+    let record = NativeActivationRecord {
+        schema_version: 1,
+        transaction_id: journal.transaction_id.clone(),
+        journal_sha256: digest.into(),
+        outcome,
+    };
+    write_new_private_file(
+        &root.join(if outcome.is_some() {
+            NATIVE_ACTIVATION_OUTCOME
+        } else {
+            NATIVE_ACTIVATION_RECORD
+        }),
+        &canonical_json(&record)?,
+    )?;
+    sync_directory(&root)
+}
+
+fn read_native_activation_record(
+    store: &UpdateStateStore,
+    journal: &ReconciliationJournalV1,
+    digest: &str,
+    file: &str,
+) -> Result<Option<NativeActivationOutcome>, &'static str> {
+    let path = store
+        .staging_root()
+        .join(&journal.transaction_id)
+        .join(file);
+    let bytes = read_private_file(&path, MAX_STATE_BYTES)?;
+    let record: NativeActivationRecord =
+        serde_json::from_slice(&bytes).map_err(|_| "native-activation-record-invalid")?;
+    if record.schema_version != 1
+        || record.transaction_id != journal.transaction_id
+        || record.journal_sha256 != digest
+        || canonical_json(&record)? != bytes
+        || (file == NATIVE_ACTIVATION_RECORD) != record.outcome.is_none()
+    {
+        return Err("native-activation-record-invalid");
+    }
+    Ok(record.outcome)
+}
+
 pub(crate) fn prepare_reconciliation_transaction_root(
     store: &UpdateStateStore,
     transaction_id: &str,
@@ -1914,6 +2208,155 @@ mod tests {
                 .product_version,
             "2.0.0-alpha.5"
         );
+        for (index, mode) in [
+            "failed-health",
+            "interrupted-health",
+            "committed-cleanup-interrupted",
+            "committed",
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            fs::write(&source, b"coordinated-cli").unwrap();
+            let plan = preview_cli_install(&root, &source, "2.0.0-alpha.6").unwrap();
+            let id = format!("update-{:032x}", index + 1);
+            prepare_reconciliation_transaction_root(&store, &id).unwrap();
+            let mut operations = Vec::new();
+            prepare_cli_update_operations(
+                &plan,
+                &id,
+                &"2".repeat(64),
+                &"3".repeat(64),
+                &mut operations,
+            )
+            .unwrap();
+            let journal = ReconciliationJournalV1 {
+                document_kind: JOURNAL_DOCUMENT_KIND.into(),
+                schema_version: CLI_JOURNAL_SCHEMA_VERSION,
+                transaction_id: id.clone(),
+                target_version: plan.product_version.clone(),
+                target_pack_sha256: "3".repeat(64),
+                operations,
+            };
+            write_new_private_file(
+                &store
+                    .staging_root()
+                    .join(&id)
+                    .join(RECONCILIATION_JOURNAL_FILE),
+                &canonical_json(&journal).unwrap(),
+            )
+            .unwrap();
+            let digest = reconciliation_journal_sha256(&journal).unwrap();
+            assert_eq!(
+                activate_native_reconciliation(&store, &id, &"0".repeat(64), || Ok(())),
+                Err("native-activation-journal-mismatch")
+            );
+            assert!(!native_record_exists(&store, &id, NATIVE_ACTIVATION_RECORD).unwrap());
+            let held = acquire_replacement_lock(&store).unwrap();
+            assert_eq!(
+                activate_native_reconciliation(&store, &id, &digest, || Ok(())),
+                Err("native-update-replacement-active")
+            );
+            drop(held);
+            if index == 0 {
+                let before = store.load().unwrap();
+                let mut other = before.state.clone();
+                other.active_transaction = Some(qiongli_config::UpdateActiveTransaction {
+                    transaction_id: "update-ffffffffffffffffffffffffffffffff".into(),
+                    target_version: "2.0.0-alpha.6".into(),
+                    phase: qiongli_config::UpdateTransactionPhase::Activating,
+                });
+                let changed = store.replace(before.revision, other.clone()).unwrap();
+                assert_eq!(
+                    activate_native_reconciliation(&store, &id, &digest, || Ok(())),
+                    Err("native-update-transaction-active")
+                );
+                assert_eq!(store.load().unwrap().state, other);
+                assert!(!native_record_exists(&store, &id, NATIVE_ACTIVATION_RECORD).unwrap());
+                store.replace(changed.revision, before.state).unwrap();
+            }
+            match mode {
+                "failed-health" => assert_eq!(
+                    activate_native_reconciliation(&store, &id, &digest, || Err(
+                        "test-health-failed"
+                    )),
+                    Err("test-health-failed")
+                ),
+                "interrupted-health" => {
+                    let interrupted =
+                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                            let _ = activate_native_reconciliation(&store, &id, &digest, || {
+                                panic!("simulated-process-interruption")
+                            });
+                        }));
+                    assert!(interrupted.is_err());
+                    assert!(store.load().unwrap().state.active_transaction.is_some());
+                    assert_eq!(fs::read(&plan.target).unwrap(), b"coordinated-cli");
+                }
+                "committed-cleanup-interrupted" => {
+                    let canary = journal.operations[1].staging_container.join("late-canary");
+                    assert_eq!(
+                        activate_native_reconciliation(&store, &id, &digest, || {
+                            fs::write(&canary, b"late-file").unwrap();
+                            Ok(())
+                        }),
+                        Err("native-update-reconciliation-cleanup-required")
+                    );
+                    assert!(native_record_exists(&store, &id, NATIVE_ACTIVATION_OUTCOME).unwrap());
+                    assert_eq!(fs::read(&plan.target).unwrap(), b"coordinated-cli");
+                    fs::remove_file(canary).unwrap();
+                }
+                _ => assert_eq!(
+                    activate_native_reconciliation(&store, &id, &digest, || Ok(())),
+                    Ok(NativeActivationOutcome::Committed)
+                ),
+            }
+            if mode == "interrupted-health" {
+                let record_path = store
+                    .staging_root()
+                    .join(&id)
+                    .join(NATIVE_ACTIVATION_RECORD);
+                let original = fs::read(&record_path).unwrap();
+                fs::write(&record_path, b"invalid-private-record").unwrap();
+                assert_eq!(
+                    recover_native_reconciliation(&store, &id, &digest),
+                    Err("native-activation-record-invalid")
+                );
+                assert_eq!(fs::read(&plan.target).unwrap(), b"coordinated-cli");
+                assert!(store.load().unwrap().state.active_transaction.is_some());
+                fs::write(&record_path, original).unwrap();
+            }
+            let expected = if mode.starts_with("committed") {
+                NativeActivationOutcome::Committed
+            } else {
+                NativeActivationOutcome::RolledBack
+            };
+            assert_eq!(
+                recover_native_reconciliation(&store, &id, &digest),
+                Ok(expected)
+            );
+            let recovered = store.load().unwrap();
+            assert!(recovered.state.active_transaction.is_none());
+            assert_eq!(
+                recover_native_reconciliation(&store, &id, &digest),
+                Ok(expected)
+            );
+            assert_eq!(store.load().unwrap().revision, recovered.revision);
+            assert_eq!(
+                fs::read(&plan.target).unwrap(),
+                if mode.starts_with("committed") {
+                    b"coordinated-cli".as_slice()
+                } else {
+                    b"new-cli".as_slice()
+                }
+            );
+            assert_eq!(
+                activate_native_reconciliation(&store, &id, &digest, || panic!(
+                    "must not rerun health"
+                )),
+                Err("native-activation-recovery-required")
+            );
+        }
         fs::remove_dir_all(root).unwrap();
     }
 

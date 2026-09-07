@@ -1486,3 +1486,42 @@ SEC-401–403 remain unaccepted. Next: inspect the actual Host approval interact
 and isolated read-only client integration before qualifying research writes. No
 private research data, remote publication or program acceptance was authorized or
 changed; first-stage integration remains incomplete.
+
+
+## CLI-404 first real-client baseline — isolated Codex and Claude installation
+
+Product source: `8ffacfe1`; branch: `codex/real-host-client-baseline`.
+Ran the existing ignored integration tests against actual installed clients using
+explicit executable paths and fixture-owned Home/config roots. No model prompt,
+private research input, publication or user-profile registration was involved.
+Both tests completed successfully, including removal of temporary client entries.
+
+- Codex `0.153.4`: `real_codex_clean_client_installs_enables_caches_and_launches_bundle`
+  passed (44.10 s). Local plugin installation, enablement, inventory, cache receipt,
+  customized Skill bytes, Lite registration/removal and plugin removal passed.
+  Bundle receipt SHA-256:
+  `fafae1302449a2e081f6a98d54c60f41e5f347020afdf6d6757651bd3cb898b8`.
+  Codex MCP evidence is paired client inventory plus independently launched exact
+  protocol, not a model-initiated tool call. The optional Plugin Creator validator
+  was not configured (`plugin_creator_valid=false`); it is not counted as passed.
+- Claude Code `2.1.263`: `real_claude_clean_client_discovers_and_installs_both_local_forms`
+  passed (65.18 s). Strict plugin validation, direct Skill discovery, local marketplace
+  installation, inventory, cache receipt, customized Skill bytes and cleanup passed.
+  Direct and marketplace receipt SHA-256:
+  `4bf27e05710b140faf8414e6e0b80cebef99d5da4f7b6b316592282bd10e2c3a`.
+  The real Claude client reported its Lite MCP connection as connected.
+
+Commands used `cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli`
+with `--test codex_plugin_bundle` / `--test claude_plugin_bundle`, the exact names
+above, `--locked --offline -- --ignored --nocapture`, and `QIONGLI_CODEX_BIN` /
+`QIONGLI_CLAUDE_BIN` pointing to the actual mise installation executables rather than
+Home-dependent shims. Both also passed cached MCP execution with empty PATH,
+14 Lite / 32 Full tool contracts and the Full Host route, using the existing test
+signing authority. This source-build fixture evidence does not qualify an immutable
+standalone release candidate or production signing.
+
+Review confirmed the tests launch protocol probes separately from model execution;
+therefore no human approval, authenticated research reasoning, same-device Host
+handoff or SEC program acceptance is claimed. Next: prepare the real research
+preview and verify human-origin approval through an available Host interaction,
+while completing SEC prerequisites. First-stage integration remains incomplete.

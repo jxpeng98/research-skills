@@ -384,7 +384,8 @@ pub(crate) fn read_native_artifact_payload(
 ) -> Result<NativeArtifactPayload, NativeArtifactError> {
     validate_resource_pack(pack)?;
     revalidate_target(target)?;
-    let payload = read_artifact_tree_payload(target.path(), target.artifact_id(), pack)?;
+    let payload = read_artifact_tree_payload(target.path(), target.artifact_id())?;
+    verify_manifest_pack(pack, &payload.verified.manifest)?;
     if payload.verified.manifest.artifact != target.artifact {
         return Err(NativeArtifactError::ArtifactDrift);
     }
@@ -455,13 +456,14 @@ fn verify_artifact_tree(
     expected_artifact_id: &str,
     expected_pack: &LoadedResourcePack<'_>,
 ) -> Result<VerifiedNativeArtifact, NativeArtifactError> {
-    Ok(read_artifact_tree_payload(root, expected_artifact_id, expected_pack)?.verified)
+    let payload = read_artifact_tree_payload(root, expected_artifact_id)?;
+    verify_manifest_pack(expected_pack, &payload.verified.manifest)?;
+    Ok(payload.verified)
 }
 
 fn read_artifact_tree_payload(
     root: &Path,
     expected_artifact_id: &str,
-    expected_pack: &LoadedResourcePack<'_>,
 ) -> Result<NativeArtifactPayload, NativeArtifactError> {
     verify_directory(root, true)?;
     let root_entries = directory_entries(root)?;
@@ -479,7 +481,7 @@ fn read_artifact_tree_payload(
         NativeArtifactError::ManifestMissing,
         NativeArtifactError::ManifestInvalid,
     )?;
-    let manifest = verify_manifest_bytes(expected_pack, expected_artifact_id, &manifest_bytes)?;
+    let manifest = parse_manifest_bytes(expected_artifact_id, &manifest_bytes)?;
 
     let binary_relative = Path::new(&manifest.binary_path);
     let binary_name = binary_relative
@@ -499,12 +501,7 @@ fn read_artifact_tree_payload(
         NativeArtifactError::ArtifactDrift,
         NativeArtifactError::ArtifactDrift,
     )?;
-    let verified = verify_native_artifact_payload(
-        expected_pack,
-        expected_artifact_id,
-        &manifest_bytes,
-        &binary_bytes,
-    )?;
+    let verified = verify_manifest_binary(manifest, &manifest_bytes, &binary_bytes)?;
 
     Ok(NativeArtifactPayload {
         verified,
@@ -520,6 +517,14 @@ pub(crate) fn verify_native_artifact_payload(
     binary_bytes: &[u8],
 ) -> Result<VerifiedNativeArtifact, NativeArtifactError> {
     let manifest = verify_manifest_bytes(expected_pack, expected_artifact_id, manifest_bytes)?;
+    verify_manifest_binary(manifest, manifest_bytes, binary_bytes)
+}
+
+fn verify_manifest_binary(
+    manifest: NativeArtifactManifestV1,
+    manifest_bytes: &[u8],
+    binary_bytes: &[u8],
+) -> Result<VerifiedNativeArtifact, NativeArtifactError> {
     let entry = &manifest.entries[0];
     if binary_bytes.len() as u64 != entry.size_bytes || sha256_hex(binary_bytes) != entry.sha256 {
         return Err(NativeArtifactError::ArtifactDrift);
@@ -535,7 +540,15 @@ fn verify_manifest_bytes(
     expected_artifact_id: &str,
     manifest_bytes: &[u8],
 ) -> Result<NativeArtifactManifestV1, NativeArtifactError> {
-    validate_resource_pack(expected_pack)?;
+    let manifest = parse_manifest_bytes(expected_artifact_id, manifest_bytes)?;
+    verify_manifest_pack(expected_pack, &manifest)?;
+    Ok(manifest)
+}
+
+fn parse_manifest_bytes(
+    expected_artifact_id: &str,
+    manifest_bytes: &[u8],
+) -> Result<NativeArtifactManifestV1, NativeArtifactError> {
     if manifest_bytes.len() as u64 > MAX_MANIFEST_BYTES {
         return Err(NativeArtifactError::ManifestInvalid);
     }
@@ -548,6 +561,14 @@ fn verify_manifest_bytes(
     if native_artifact_id(&manifest.artifact)? != expected_artifact_id {
         return Err(NativeArtifactError::ArtifactDrift);
     }
+    Ok(manifest)
+}
+
+fn verify_manifest_pack(
+    expected_pack: &LoadedResourcePack<'_>,
+    manifest: &NativeArtifactManifestV1,
+) -> Result<(), NativeArtifactError> {
+    validate_resource_pack(expected_pack)?;
     let pack_manifest = expected_pack.manifest();
     if manifest.content.profile != ProfileId::MarketplaceLite
         || manifest.content.pack_id != pack_manifest.pack_id
@@ -558,7 +579,22 @@ fn verify_manifest_bytes(
     {
         return Err(NativeArtifactError::ArtifactDrift);
     }
-    Ok(manifest)
+    Ok(())
+}
+
+/// Checks receipt-owned bytes only; this does not establish signed launch authority.
+pub(crate) fn verify_receipt_owned_native_artifact(
+    target: &NativeArtifactTarget,
+    expected_manifest_sha256: &str,
+) -> Result<VerifiedNativeArtifact, NativeArtifactError> {
+    revalidate_target(target)?;
+    let verified = read_artifact_tree_payload(target.path(), target.artifact_id())?.verified;
+    if verified.manifest.artifact != target.artifact
+        || verified.manifest_sha256 != expected_manifest_sha256
+    {
+        return Err(NativeArtifactError::ArtifactDrift);
+    }
+    Ok(verified)
 }
 
 fn write_artifact_tree(

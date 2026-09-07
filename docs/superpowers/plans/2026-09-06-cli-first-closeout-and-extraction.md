@@ -792,3 +792,31 @@ expose recovery. This health function validates the current candidate build and
 native startup; it does not establish cross-version update selection, real Host
 activation, research writes or cross-platform qualification. First-stage acceptance
 and ledger acceptance remain open and unchanged.
+
+## CLI-403 fourteenth increment — receipt-owned predecessor integrity
+
+Base: `9f877607`; branch: `codex/cli-predecessor-payload-verification`.
+A successor's embedded resource pack cannot validate a predecessor's different
+pack. The payload executor now exposes a read-only receipt-owned check that reuses
+canonical manifest parsing, strict artifact tree validation, binary hashing and
+exact receipt bindings. Existing install, repair, lifecycle and signed-product
+paths retain their pack-bound checks. No public CLI or persisted schema changed.
+This check supplies integrity evidence only, never launch or write authority.
+
+Focused macOS checks passed: 22 platform native tests, then the expanded predecessor
+case with pending-journal and symlink negatives. The case also covers distinct
+resource packs, changed binary bytes, foreign files, mismatched manifest receipts,
+linked receipts and removed payloads while preserving refused state. Platform
+library Clippy passed with the existing local Rust 1.98 exception; formatting,
+whitespace and generated roadmap index checks passed. A test initially called the
+binary-path helper with the OS instead of the artifact; fixed before passing runs.
+The affected artifact (2), portable archive (1), and signed candidate (1)
+integration tests also passed. Final review found no actionable issue in this
+bounded integrity change.
+
+Next: bind the predecessor payload receipt to the existing Host and CLI receipts
+in the candidate activation preview, then connect explicit approvals, signed
+outcome/last-known-good metadata, process and competing-write guards, and recovery.
+The current check is not a cross-version executable health journey or activation
+command. Real Hosts, Windows runtime and named candidate qualification remain
+unverified. First-stage and ledger acceptance remain open; no publication occurred.

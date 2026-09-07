@@ -114,6 +114,14 @@ apply retains its original source/registration compensation and metadata commit
 ordering. Staging alone does not switch the active command/integration or qualify
 live-process update and rollback; public update command wiring remains pending.
 
+`ManagedNativePayloadExecutor::verify_receipt_owned` verifies an active predecessor
+payload without requiring the successor's embedded resource pack. It reuses strict
+artifact tree, canonical manifest, binary and receipt checks, and refuses pending
+recovery. Its result proves receipt-owned integrity only; it never supplies signed
+candidate, launch or write authority. Install, repair, removal and running-product
+verification retain their existing pack-bound and signature checks. Activation must
+also bind this predecessor evidence to the selected Host and managed CLI receipts.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

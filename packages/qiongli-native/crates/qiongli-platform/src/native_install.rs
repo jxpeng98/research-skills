@@ -360,6 +360,35 @@ impl ManagedNativePayloadExecutor {
         Ok(NativePayloadInstallVerification { receipt })
     }
 
+    /// Verifies the complete active payload against its persisted receipt, including
+    /// older resource packs. This is ownership evidence, not signed launch authority.
+    pub fn verify_receipt_owned(
+        &self,
+        install_id: &str,
+    ) -> Result<NativePayloadInstallVerification, TransactionError> {
+        self.root.validate()?;
+        ensure_no_journal(self.root.path(), install_id)?;
+        let state =
+            load_state(self.root.path(), install_id)?.ok_or(TransactionError::ReceiptMissing)?;
+        let receipt = state.active.ok_or(TransactionError::ReceiptMissing)?;
+        receipt.validate()?;
+        if receipt.operation.root_id != self.root.root_id() {
+            return Err(TransactionError::ManagedStateDrift);
+        }
+        let target = approve_native_artifact_target(
+            self.root.path().join(&receipt.operation.relative_path),
+            &receipt.artifact,
+        )
+        .map_err(|_| TransactionError::ManagedStateDrift)?;
+        let verified = crate::native_artifact::verify_receipt_owned_native_artifact(
+            &target,
+            &receipt.operation.manifest_sha256,
+        )
+        .map_err(|_| TransactionError::ManagedStateDrift)?;
+        verify_artifact_against_receipt(&target, &receipt, verified)?;
+        Ok(NativePayloadInstallVerification { receipt })
+    }
+
     pub fn remove(
         &self,
         install_id: &str,
@@ -1021,6 +1050,14 @@ fn verify_target_against_receipt(
 ) -> Result<VerifiedNativeArtifact, TransactionError> {
     let verified =
         verify_native_artifact(pack, target).map_err(|_| TransactionError::ManagedStateDrift)?;
+    verify_artifact_against_receipt(target, receipt, verified)
+}
+
+fn verify_artifact_against_receipt(
+    target: &NativeArtifactTarget,
+    receipt: &NativePayloadInstallReceiptV1,
+    verified: VerifiedNativeArtifact,
+) -> Result<VerifiedNativeArtifact, TransactionError> {
     let manifest = verified.manifest();
     if target.artifact() != &receipt.artifact
         || target.artifact_id() != receipt.operation.relative_path
@@ -1822,6 +1859,100 @@ mod tests {
                 .unwrap()
                 .disposition,
             LifecycleDisposition::AlreadyRemoved
+        );
+    }
+
+    #[test]
+    fn receipt_owned_predecessor_verification_preserves_pack_bound_authority() {
+        let fixture = Fixture::new("predecessor");
+        let prepared = prepare(&fixture);
+        let loaded =
+            load_resource_pack(prepared.built.core_bytes(), prepared.built.pack_sha256()).unwrap();
+        let (release, plan, approval) = verified_plan(&prepared);
+        let executor = ManagedNativePayloadExecutor::new(fixture.approved_root());
+        let applied = executor
+            .apply(&plan, &approval, &loaded, &release, NOW + 1)
+            .unwrap();
+
+        let successor = Fixture::new("successor");
+        let successor = prepare(&successor);
+        let next_pack =
+            load_resource_pack(successor.built.core_bytes(), successor.built.pack_sha256())
+                .unwrap();
+        assert_ne!(loaded.pack_sha256(), next_pack.pack_sha256());
+        assert_eq!(
+            executor.verify(&prepared.install_id, &next_pack),
+            Err(TransactionError::ManagedStateDrift)
+        );
+        assert_eq!(
+            executor
+                .verify_receipt_owned(&prepared.install_id)
+                .unwrap()
+                .receipt,
+            applied.receipt
+        );
+
+        let binary = fixture
+            .managed
+            .join(&prepared.artifact_id)
+            .join(native_artifact_binary_path(&applied.receipt.artifact).unwrap());
+        let original = fs::read(&binary).unwrap();
+        fs::write(&binary, b"changed predecessor").unwrap();
+        assert_eq!(
+            executor.verify_receipt_owned(&prepared.install_id),
+            Err(TransactionError::ManagedStateDrift)
+        );
+        assert_eq!(fs::read(&binary).unwrap(), b"changed predecessor");
+        fs::write(&binary, original).unwrap();
+
+        let foreign = fixture
+            .managed
+            .join(&prepared.artifact_id)
+            .join("foreign.txt");
+        fs::write(&foreign, b"preserve me").unwrap();
+        assert!(executor.verify_receipt_owned(&prepared.install_id).is_err());
+        assert_eq!(fs::read(&foreign).unwrap(), b"preserve me");
+        fs::remove_file(foreign).unwrap();
+
+        let journal = journal_path(&fixture.managed);
+        fs::write(&journal, b"unfinished transaction").unwrap();
+        assert_eq!(
+            executor.verify_receipt_owned(&prepared.install_id),
+            Err(TransactionError::RecoveryRequired)
+        );
+        assert_eq!(fs::read(&journal).unwrap(), b"unfinished transaction");
+        fs::remove_file(journal).unwrap();
+        #[cfg(unix)]
+        {
+            let saved = fixture.container.join("saved-binary");
+            fs::rename(&binary, &saved).unwrap();
+            std::os::unix::fs::symlink(&saved, &binary).unwrap();
+            assert!(executor.verify_receipt_owned(&prepared.install_id).is_err());
+            fs::remove_file(&binary).unwrap();
+            fs::rename(saved, &binary).unwrap();
+        }
+
+        let state_file = state_path(&fixture.managed, &prepared.install_id);
+        let original = fs::read(&state_file).unwrap();
+        let mut state = NativePayloadInstallStateV1::from_json(&original).unwrap();
+        state.active.as_mut().unwrap().operation.manifest_sha256 = "a".repeat(64);
+        fs::write(&state_file, state.to_canonical_json().unwrap()).unwrap();
+        assert!(executor.verify_receipt_owned(&prepared.install_id).is_err());
+        fs::write(&state_file, original).unwrap();
+        let link = fixture.container.join("linked-receipt");
+        fs::hard_link(&state_file, &link).unwrap();
+        assert_eq!(
+            executor.verify_receipt_owned(&prepared.install_id),
+            Err(TransactionError::InvalidReceipt)
+        );
+        fs::remove_file(link).unwrap();
+        assert!(executor.verify_receipt_owned(&prepared.install_id).is_ok());
+        executor
+            .remove(&prepared.install_id, &loaded, NOW + 2)
+            .unwrap();
+        assert_eq!(
+            executor.verify_receipt_owned(&prepared.install_id),
+            Err(TransactionError::ReceiptMissing)
         );
     }
 

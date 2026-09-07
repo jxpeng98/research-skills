@@ -654,3 +654,37 @@ journal does not yet include the CLI pair; its schema must evolve explicitly if
 those surfaces are added, retaining old journal recovery. This preflight CAS check
 is not a cross-process lock or complete multi-file transaction and does not claim
 those guarantees. First-stage and program acceptance remain open and unchanged.
+
+## CLI-403 tenth increment — CLI pair in the shared recovery journal
+
+Base: `e61068e0`; branch: `codex/cli-reconciliation-pair`.
+The reconciliation owner can now prepare an installed managed CLI binary and its
+receipt as two linked operations, alongside its existing content/registration
+operations. Preparation reuses the CLI owner's exact preflight and receipt
+construction; direct CLI install retains its behavior. The caller supplies a
+verified predecessor pack identity, and the journal binds both receipt hashes,
+binary hashes and versions. Partial or mismatched pairs cannot activate. Journal
+v2 requires the pair, while existing callers continue creating v1 and existing v1
+operation/registration digest domains remain unchanged. Reusing a prepared journal
+with a different target version, pack or CLI identity refuses.
+
+Checks on macOS: CLI install tests passed (22); reconciliation tests passed (3),
+including an actual file-pair activation, recovery after only the binary committed,
+receipt-drift refusal, rollback/replay, and v1/future/incomplete-pair refusal.
+The existing real-materialization test now includes the CLI pair with Skills and
+registry state, verifies canonical non-empty v1 compatibility, and restores every
+old surface plus unrelated canaries. Direct replacement-owner tests passed (10).
+Clippy initially requested a collapsed condition; the version/pair check was
+simplified to a slice match, then its focused test and Clippy passed with the
+existing Rust 1.98 exception. Format and whitespace checks passed. Final review
+found no actionable issue in this internal capability. Fixtures use small CLI
+byte payloads, not two published or production-signed executable versions.
+
+Next: expose a digest-bound standalone activation/recovery flow that supplies this
+optional CLI plan and retains one transaction outcome for the chosen Host surfaces.
+Existing integration commands intentionally pass no CLI update: their approvals
+do not authorize silently adding command replacement. A transaction lock, durable
+outcome/health handling and current-process/version checks remain required before
+calling this an end-user update/rollback flow. Real Host/human approval, CLI-405,
+platform qualification and first-stage acceptance remain open. No accepted ledger
+row, public CLI JSON or release/publication claim changed.

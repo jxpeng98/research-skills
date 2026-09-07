@@ -6277,6 +6277,7 @@ impl NativeDesktopService {
         }
         let prepared = crate::update_reconcile::prepare_update_reconciliation(
             &crate::update_reconcile::ReconciliationPreparation {
+                cli_update: None,
                 store: &store,
                 transaction_id: &transaction_id,
                 target_version: &product.artifact().version,

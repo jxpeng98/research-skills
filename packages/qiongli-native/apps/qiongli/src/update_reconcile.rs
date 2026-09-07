@@ -34,6 +34,7 @@ use crate::managed_content::{
 pub(crate) const RECONCILIATION_JOURNAL_FILE: &str = "reconciliation-journal.json";
 const JOURNAL_DOCUMENT_KIND: &str = "qiongli-update-reconciliation";
 const JOURNAL_SCHEMA_VERSION: u32 = 1;
+const CLI_JOURNAL_SCHEMA_VERSION: u32 = 2;
 const MAX_JOURNAL_BYTES: u64 = 1024 * 1024;
 const MAX_OPERATIONS: usize = 136;
 const MAX_STATE_BYTES: u64 = 1024 * 1024;
@@ -48,6 +49,8 @@ pub(crate) enum ReconciliationSurface {
     ClaudePluginBundle,
     ClaudeSkillsPluginBundle,
     ClaudeRegistration,
+    CliBinary,
+    CliReceipt,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -100,6 +103,8 @@ pub(crate) struct ReconciliationPreparation<'a> {
     pub(crate) workflow_overrides: Option<&'a WorkflowOverrides>,
     pub(crate) targets: &'a [ClientActivationTarget],
     pub(crate) now_unix: u64,
+    // The old pack digest must come from the verified predecessor product.
+    pub(crate) cli_update: Option<(&'a crate::cli_install::CliInstallPlan, &'a str)>,
 }
 
 #[cfg(test)]
@@ -133,7 +138,7 @@ pub(crate) fn prepare_update_reconciliation(
             != ClientActivationTarget::Codex.integration_scope()
         || preparation.claude_grant.authorized_scope()
             != ClientActivationTarget::ClaudeCode.integration_scope()
-        || preparation.targets.is_empty()
+        || (preparation.targets.is_empty() && preparation.cli_update.is_none())
         || preparation.targets.len() > 2
         || preparation
             .targets
@@ -150,6 +155,26 @@ pub(crate) fn prepare_update_reconciliation(
     let journal_path = transaction_root.join(RECONCILIATION_JOURNAL_FILE);
     if journal_path.exists() {
         let journal = load_reconciliation_journal(preparation.store, preparation.transaction_id)?;
+        if journal.target_version != preparation.target_version
+            || journal.target_pack_sha256 != preparation.content.pack().pack_sha256()
+            || (journal.schema_version == CLI_JOURNAL_SCHEMA_VERSION)
+                != preparation.cli_update.is_some()
+        {
+            return Err("native-update-reconciliation-identity-mismatch");
+        }
+        if let Some((plan, old_pack)) = preparation.cli_update {
+            let binary = journal
+                .operations
+                .iter()
+                .find(|op| op.surface == ReconciliationSurface::CliBinary)
+                .ok_or("native-update-reconciliation-identity-mismatch")?;
+            if binary.destination != plan.target
+                || binary.old_pack_sha256 != old_pack
+                || binary.new_content_sha256 != plan.source_sha256
+            {
+                return Err("native-update-reconciliation-identity-mismatch");
+            }
+        }
         verify_prepared_reconciliation(&journal)?;
         return Ok(PreparedReconciliation {
             operation_count: journal.operations.len(),
@@ -169,9 +194,22 @@ pub(crate) fn prepare_update_reconciliation(
         {
             prepare_claude(preparation, &mut operations)?;
         }
+        if let Some((plan, old_pack)) = preparation.cli_update {
+            prepare_cli_update_operations(
+                plan,
+                preparation.transaction_id,
+                old_pack,
+                preparation.content.pack().pack_sha256(),
+                &mut operations,
+            )?;
+        }
         let journal = ReconciliationJournalV1 {
             document_kind: JOURNAL_DOCUMENT_KIND.to_string(),
-            schema_version: JOURNAL_SCHEMA_VERSION,
+            schema_version: if preparation.cli_update.is_some() {
+                CLI_JOURNAL_SCHEMA_VERSION
+            } else {
+                JOURNAL_SCHEMA_VERSION
+            },
             transaction_id: preparation.transaction_id.to_string(),
             target_version: preparation.target_version.to_string(),
             target_pack_sha256: preparation.content.pack().pack_sha256().to_string(),
@@ -376,6 +414,64 @@ pub(crate) fn discard_prepared_reconciliation(
         path.parent()
             .ok_or("native-update-reconciliation-invalid")?,
     )
+}
+
+fn prepare_cli_update_operations(
+    plan: &crate::cli_install::CliInstallPlan,
+    transaction_id: &str,
+    old_pack: &str,
+    new_pack: &str,
+    operations: &mut Vec<ReconciliationOperationV1>,
+) -> Result<(), &'static str> {
+    if !valid_sha256(old_pack) || !valid_sha256(new_pack) {
+        return Err("native-update-reconciliation-identity-mismatch");
+    }
+    let old_bytes = read_private_file(&plan.receipt_path, MAX_STATE_BYTES)?;
+    let old =
+        crate::cli_install::read_receipt(&plan.receipt_path)?.ok_or("qiongli-cli-not-managed")?;
+    let binary = prepare_directory_paths(transaction_id, "cli-binary", &plan.target, "qiongli")?;
+    let mut containers = vec![binary.staging_container.clone()];
+    let result = (|| {
+        let receipt = prepare_file_paths(transaction_id, "cli-receipt", &plan.receipt_path)?;
+        containers.push(receipt.staging_container.clone());
+        crate::cli_install::stage_cli_update(plan, &binary.staged, &receipt.staged)?;
+        let new_bytes = read_private_file(&receipt.staged, MAX_STATE_BYTES)?;
+        let new =
+            crate::cli_install::read_receipt(&receipt.staged)?.ok_or("qiongli-cli-not-managed")?;
+        let old_digest = sha256_hex(&old_bytes);
+        let new_digest = sha256_hex(&new_bytes);
+        let mut pair = Vec::new();
+        for (id, surface, paths) in [
+            ("cli-binary", ReconciliationSurface::CliBinary, binary),
+            ("cli-receipt", ReconciliationSurface::CliReceipt, receipt),
+        ] {
+            pair.push(directory_operation(
+                id.to_string(),
+                surface,
+                paths,
+                &old.product_version,
+                &plan.product_version,
+                old_pack,
+                new_pack,
+                &old_digest,
+                &new_digest,
+                &old.installed_sha256,
+                &new.installed_sha256,
+            )?);
+        }
+        for operation in &pair {
+            verify_operation_identity(operation, &operation.destination, false)?;
+            verify_operation_identity(operation, &operation.staged, true)?;
+        }
+        operations.extend(pair);
+        Ok(())
+    })();
+    if result.is_err() {
+        for container in containers {
+            let _ = remove_empty_or_staged_container(&container);
+        }
+    }
+    result
 }
 
 fn prepare_registered_skills(
@@ -1120,11 +1216,43 @@ fn validate_journal(journal: &ReconciliationJournalV1) -> Result<(), &'static st
     validate_transaction_id(&journal.transaction_id)?;
     validate_v2_version(&journal.target_version)?;
     if journal.document_kind != JOURNAL_DOCUMENT_KIND
-        || journal.schema_version != JOURNAL_SCHEMA_VERSION
+        || !matches!(
+            journal.schema_version,
+            JOURNAL_SCHEMA_VERSION | CLI_JOURNAL_SCHEMA_VERSION
+        )
         || !valid_sha256(&journal.target_pack_sha256)
-        || journal.operations.len() > MAX_OPERATIONS
+        || journal.operations.len()
+            > MAX_OPERATIONS
+                + if journal.schema_version == CLI_JOURNAL_SCHEMA_VERSION {
+                    2
+                } else {
+                    0
+                }
     {
         return Err("native-update-reconciliation-invalid");
+    }
+    let cli = journal
+        .operations
+        .iter()
+        .filter(|operation| {
+            matches!(
+                operation.surface,
+                ReconciliationSurface::CliBinary | ReconciliationSurface::CliReceipt
+            )
+        })
+        .collect::<Vec<_>>();
+    match (journal.schema_version, cli.as_slice()) {
+        (JOURNAL_SCHEMA_VERSION, []) => {}
+        (CLI_JOURNAL_SCHEMA_VERSION, [binary, receipt])
+            if binary.surface == ReconciliationSurface::CliBinary
+                && receipt.surface == ReconciliationSurface::CliReceipt
+                && binary.old_product_version == receipt.old_product_version
+                && binary.old_pack_sha256 == receipt.old_pack_sha256
+                && binary.old_receipt_sha256 == receipt.old_receipt_sha256
+                && binary.new_receipt_sha256 == receipt.new_receipt_sha256
+                && binary.old_content_sha256 == receipt.old_content_sha256
+                && binary.new_content_sha256 == receipt.new_content_sha256 => {}
+        _ => return Err("native-update-reconciliation-invalid"),
     }
     let mut ids = BTreeSet::new();
     let mut destinations = BTreeSet::new();
@@ -1207,6 +1335,23 @@ fn verify_operation_identity(
         &operation.old_content_sha256
     };
     match operation.surface {
+        ReconciliationSurface::CliBinary => {
+            // Stream large executables through the existing CLI owner.
+            if crate::cli_install::regular_file_sha256(path)? != *expected_content {
+                return Err("native-update-reconciliation-verification-failed");
+            }
+        }
+        ReconciliationSurface::CliReceipt => {
+            let bytes = read_private_file(path, MAX_STATE_BYTES)?;
+            let receipt = crate::cli_install::read_receipt(path)?
+                .ok_or("native-update-reconciliation-verification-failed")?;
+            if receipt.product_version != *expected_version
+                || receipt.installed_sha256 != *expected_content
+                || sha256_hex(&bytes) != *expected_receipt
+            {
+                return Err("native-update-reconciliation-verification-failed");
+            }
+        }
         ReconciliationSurface::Skills => {
             let target = approve_materialization_target(path)
                 .map_err(|_| "native-update-reconciliation-verification-failed")?;
@@ -1598,6 +1743,94 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    fn cli_pair_activation_recovers_both_files_and_rejects_incomplete_journals() {
+        use crate::cli_install::{apply_cli_install, preview_cli_install};
+        use std::os::unix::fs::PermissionsExt;
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("target/qiongli-cli-reconciliation-tests")
+            .join(std::process::id().to_string());
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).unwrap();
+        fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+        let source = root.join("source-cli");
+        fs::write(&source, b"old-cli").unwrap();
+        fs::set_permissions(&source, fs::Permissions::from_mode(0o700)).unwrap();
+        let initial = preview_cli_install(&root, &source, "2.0.0-alpha.4").unwrap();
+        apply_cli_install(&initial).unwrap();
+        let old_receipt = fs::read(&initial.receipt_path).unwrap();
+        fs::write(&source, b"new-cli").unwrap();
+        let plan = preview_cli_install(&root, &source, "2.0.0-alpha.5").unwrap();
+        let transaction = "update-0123456789abcdef0123456789abcdef";
+        let mut operations = Vec::new();
+        prepare_cli_update_operations(
+            &plan,
+            transaction,
+            &"1".repeat(64),
+            &"2".repeat(64),
+            &mut operations,
+        )
+        .unwrap();
+        assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
+        assert_eq!(fs::read(&initial.receipt_path).unwrap(), old_receipt);
+        let mut journal = ReconciliationJournalV1 {
+            document_kind: JOURNAL_DOCUMENT_KIND.into(),
+            schema_version: CLI_JOURNAL_SCHEMA_VERSION,
+            transaction_id: transaction.into(),
+            target_version: "2.0.0-alpha.5".into(),
+            target_pack_sha256: "2".repeat(64),
+            operations,
+        };
+        verify_prepared_reconciliation(&journal).unwrap();
+        for version in [JOURNAL_SCHEMA_VERSION, 3] {
+            journal.schema_version = version;
+            assert!(activate_prepared_reconciliation(&journal).is_err());
+            assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
+        }
+        journal.schema_version = CLI_JOURNAL_SCHEMA_VERSION;
+        let mut incomplete = journal.clone();
+        incomplete.operations.pop();
+        assert!(activate_prepared_reconciliation(&incomplete).is_err());
+        let mut mismatched = journal.clone();
+        mismatched.operations[1].old_content_sha256 = "3".repeat(64);
+        mismatched.operations[1].plan_sha256 =
+            operation_plan_sha256(&mismatched.operations[1]).unwrap();
+        assert!(validate_journal(&mismatched).is_err());
+        // A freshly decoded journal recovers after the binary moves but the
+        // receipt still describes the predecessor.
+        let bytes = canonical_json(&journal).unwrap();
+        let journal: ReconciliationJournalV1 = serde_json::from_slice(&bytes).unwrap();
+        let binary = &journal.operations[0];
+        fs::rename(&binary.destination, &binary.backup).unwrap();
+        fs::rename(&binary.staged, &binary.destination).unwrap();
+        rollback_active_reconciliation(&journal).unwrap();
+        assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
+        assert_eq!(fs::read(&initial.receipt_path).unwrap(), old_receipt);
+        activate_prepared_reconciliation(&journal).unwrap();
+        verify_active_reconciliation(&journal).unwrap();
+        assert_eq!(fs::read(&initial.target).unwrap(), b"new-cli");
+        let active_receipt = fs::read(&initial.receipt_path).unwrap();
+        fs::write(&initial.receipt_path, b"receipt-drift-canary").unwrap();
+        assert!(rollback_active_reconciliation(&journal).is_err());
+        assert_eq!(fs::read(&initial.target).unwrap(), b"new-cli");
+        assert_eq!(
+            fs::read(&initial.receipt_path).unwrap(),
+            b"receipt-drift-canary"
+        );
+        fs::write(&initial.receipt_path, active_receipt).unwrap();
+        rollback_active_reconciliation(&journal).unwrap();
+        rollback_active_reconciliation(&journal).unwrap();
+        assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
+        assert_eq!(fs::read(&initial.receipt_path).unwrap(), old_receipt);
+        cleanup_rolled_back_reconciliation(&journal).unwrap();
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
     fn rel_913_activation_and_rollback_preserve_non_product_canaries() {
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
@@ -1683,7 +1916,7 @@ mod tests {
         )
         .unwrap();
         let staged_registry_inode = fs::metadata(&registry_operation.staged).unwrap().ino();
-        let journal = ReconciliationJournalV1 {
+        let mut journal = ReconciliationJournalV1 {
             document_kind: JOURNAL_DOCUMENT_KIND.to_string(),
             schema_version: JOURNAL_SCHEMA_VERSION,
             transaction_id: transaction_id.to_string(),
@@ -1692,7 +1925,34 @@ mod tests {
             operations: vec![skills_operation, registry_operation],
         };
 
+        // Non-empty v1 journals keep their canonical representation and remain
+        // readable before adding the explicitly versioned CLI pair.
+        let legacy_bytes = canonical_json(&journal).unwrap();
+        let legacy: ReconciliationJournalV1 = serde_json::from_slice(&legacy_bytes).unwrap();
+        verify_prepared_reconciliation(&legacy).unwrap();
+        assert_eq!(canonical_json(&legacy).unwrap(), legacy_bytes);
+        let cli_source = root.join("cli-source");
+        fs::write(&cli_source, b"old-shared-cli").unwrap();
+        fs::set_permissions(&cli_source, fs::Permissions::from_mode(0o700)).unwrap();
+        let old_cli =
+            crate::cli_install::preview_cli_install(&root, &cli_source, env!("CARGO_PKG_VERSION"))
+                .unwrap();
+        crate::cli_install::apply_cli_install(&old_cli).unwrap();
+        let old_cli_receipt = fs::read(&old_cli.receipt_path).unwrap();
+        fs::write(&cli_source, b"new-shared-cli").unwrap();
+        let new_cli =
+            crate::cli_install::preview_cli_install(&root, &cli_source, "2.0.0-alpha.2").unwrap();
+        prepare_cli_update_operations(
+            &new_cli,
+            transaction_id,
+            &old.pack_sha256,
+            &new.pack_sha256,
+            &mut journal.operations,
+        )
+        .unwrap();
+        journal.schema_version = CLI_JOURNAL_SCHEMA_VERSION;
         activate_prepared_reconciliation(&journal).unwrap();
+        assert_eq!(fs::read(&new_cli.target).unwrap(), b"new-shared-cli");
         assert_eq!(fs::metadata(&destination).unwrap().ino(), staged_inode);
         assert_eq!(
             fs::metadata(&registry_destination).unwrap().ino(),
@@ -1715,6 +1975,7 @@ mod tests {
             let bytes = fs::read(path).unwrap();
             fs::write(path, b"modified-private-canary").unwrap();
             assert!(rollback_active_reconciliation(&journal).is_err());
+            assert_eq!(fs::read(&new_cli.target).unwrap(), b"new-shared-cli");
             assert_eq!(fs::metadata(&destination).unwrap().ino(), staged_inode);
             assert_eq!(
                 fs::metadata(&registry_destination).unwrap().ino(),
@@ -1770,6 +2031,8 @@ mod tests {
         fs::rename(&destination, &journal.operations[0].backup).unwrap();
         rollback_active_reconciliation(&journal).unwrap();
         assert_eq!(fs::metadata(&destination).unwrap().ino(), old_inode);
+        assert_eq!(fs::read(&old_cli.target).unwrap(), b"old-shared-cli");
+        assert_eq!(fs::read(&old_cli.receipt_path).unwrap(), old_cli_receipt);
         cleanup_rolled_back_reconciliation(&journal).unwrap();
 
         for (name, bytes) in canaries {

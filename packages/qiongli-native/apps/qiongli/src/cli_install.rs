@@ -53,10 +53,10 @@ pub(crate) struct CliInstallInspection {
 pub(crate) struct CliInstallPlan {
     home: PathBuf,
     source: PathBuf,
-    target: PathBuf,
-    receipt_path: PathBuf,
-    product_version: String,
-    source_sha256: String,
+    pub(crate) target: PathBuf,
+    pub(crate) receipt_path: PathBuf,
+    pub(crate) product_version: String,
+    pub(crate) source_sha256: String,
     expected_target: TargetObservation,
     previous_managed: bool,
     previous_receipt_sha256: Option<String>,
@@ -167,10 +167,10 @@ impl TargetObservation {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct CliInstallReceiptV1 {
+pub(crate) struct CliInstallReceiptV1 {
     schema_version: u32,
-    product_version: String,
-    installed_sha256: String,
+    pub(crate) product_version: String,
+    pub(crate) installed_sha256: String,
     target_name: String,
     retained_backup_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -688,34 +688,7 @@ pub(crate) fn preview_cli_install(
 }
 
 pub(crate) fn apply_cli_install(plan: &CliInstallPlan) -> Result<&'static str, &'static str> {
-    validate_install_roots(&plan.home)?;
-    validate_target_ancestors(&plan.home, &plan.target)?;
-    if regular_file_sha256(&plan.source)? != plan.source_sha256 {
-        return Err("qiongli-cli-bundle-changed");
-    }
-    if detect_packaged_authority(&plan.source)? != plan.packaged_authority {
-        return Err("qiongli-cli-product-authority-changed");
-    }
-    if observe_target(&plan.target)? != plan.expected_target {
-        return Err("qiongli-cli-target-changed");
-    }
-
-    let observed_receipt = read_receipt_with_digest(&plan.receipt_path)?;
-    if observed_receipt.as_ref().map(|(_, digest)| digest.as_str())
-        != plan.previous_receipt_sha256.as_deref()
-    {
-        return Err("qiongli-cli-receipt-changed");
-    }
-    if plan.previous_managed {
-        let receipt = &observed_receipt
-            .as_ref()
-            .ok_or("qiongli-cli-receipt-changed")?
-            .0;
-        let retained = retained_backup_binding(&plan.home, receipt)?;
-        if retained.0 != plan.retained_backup_name || retained.1 != plan.retained_backup_sha256 {
-            return Err("qiongli-cli-backup-changed");
-        }
-    }
+    verify_cli_install_plan(plan)?;
 
     let bin_dir = plan.target.parent().ok_or("qiongli-cli-target-invalid")?;
     create_private_directory_chain(&plan.home, bin_dir)?;
@@ -755,6 +728,61 @@ pub(crate) fn apply_cli_install(plan: &CliInstallPlan) -> Result<&'static str, &
         return Err("qiongli-cli-install-verification-failed");
     }
 
+    let receipt = install_receipt(plan, backup_path.as_deref())?;
+    if let Err(code) = write_receipt(&plan.home, &plan.receipt_path, &receipt, &plan.plan_sha256) {
+        let _ = fs::remove_file(&plan.target);
+        restore_previous_target(&plan.target, backup_path.as_deref());
+        return Err(code);
+    }
+    if plan.previous_managed
+        && let Some(backup) = backup_path
+    {
+        let _ = fs::remove_file(backup);
+    }
+    Ok(if plan.expected_target == TargetObservation::Missing {
+        "qiongli-cli-installed"
+    } else {
+        "qiongli-cli-updated"
+    })
+}
+
+fn verify_cli_install_plan(plan: &CliInstallPlan) -> Result<(), &'static str> {
+    validate_install_roots(&plan.home)?;
+    validate_target_ancestors(&plan.home, &plan.target)?;
+    if regular_file_sha256(&plan.source)? != plan.source_sha256 {
+        return Err("qiongli-cli-bundle-changed");
+    }
+    if detect_packaged_authority(&plan.source)? != plan.packaged_authority {
+        return Err("qiongli-cli-product-authority-changed");
+    }
+    if observe_target(&plan.target)? != plan.expected_target {
+        return Err("qiongli-cli-target-changed");
+    }
+
+    let observed_receipt = read_receipt_with_digest(&plan.receipt_path)?;
+    if observed_receipt.as_ref().map(|(_, digest)| digest.as_str())
+        != plan.previous_receipt_sha256.as_deref()
+    {
+        return Err("qiongli-cli-receipt-changed");
+    }
+    if plan.previous_managed {
+        let receipt = &observed_receipt
+            .as_ref()
+            .ok_or("qiongli-cli-receipt-changed")?
+            .0;
+        let retained = retained_backup_binding(&plan.home, receipt)?;
+        if retained.0 != plan.retained_backup_name || retained.1 != plan.retained_backup_sha256 {
+            return Err("qiongli-cli-backup-changed");
+        }
+    }
+
+    Ok(())
+}
+
+fn install_receipt(
+    plan: &CliInstallPlan,
+    backup_path: Option<&Path>,
+) -> Result<CliInstallReceiptV1, &'static str> {
     let (retained_backup_name, retained_backup_sha256) = if plan.previous_managed {
         (
             plan.retained_backup_name.clone(),
@@ -774,7 +802,7 @@ pub(crate) fn apply_cli_install(plan: &CliInstallPlan) -> Result<&'static str, &
         };
         (name, sha256)
     };
-    let receipt = CliInstallReceiptV1 {
+    Ok(CliInstallReceiptV1 {
         schema_version: CLI_RECEIPT_SCHEMA_VERSION,
         product_version: plan.product_version.clone(),
         installed_sha256: plan.source_sha256.clone(),
@@ -796,22 +824,34 @@ pub(crate) fn apply_cli_install(plan: &CliInstallPlan) -> Result<&'static str, &
                 control_sha256: authority.control_sha256.clone(),
             }
         }),
-    };
-    if let Err(code) = write_receipt(&plan.home, &plan.receipt_path, &receipt, &plan.plan_sha256) {
-        let _ = fs::remove_file(&plan.target);
-        restore_previous_target(&plan.target, backup_path.as_deref());
-        return Err(code);
-    }
-    if plan.previous_managed
-        && let Some(backup) = backup_path
-    {
-        let _ = fs::remove_file(backup);
-    }
-    Ok(if plan.expected_target == TargetObservation::Missing {
-        "qiongli-cli-installed"
-    } else {
-        "qiongli-cli-updated"
     })
+}
+
+pub(crate) fn stage_cli_update(
+    plan: &CliInstallPlan,
+    staged_binary: &Path,
+    staged_receipt: &Path,
+) -> Result<(), &'static str> {
+    verify_cli_install_plan(plan)?;
+    if !plan.previous_managed {
+        return Err("qiongli-cli-not-managed");
+    }
+    for path in [staged_binary, staged_receipt] {
+        match fs::symlink_metadata(path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            _ => return Err("qiongli-cli-temporary-conflict"),
+        }
+    }
+    copy_executable(&plan.source, staged_binary)?;
+    if regular_file_sha256(staged_binary)? != plan.source_sha256 {
+        return Err("qiongli-cli-install-verification-failed");
+    }
+    write_receipt(
+        &plan.home,
+        staged_receipt,
+        &install_receipt(plan, None)?,
+        &plan.plan_sha256,
+    )
 }
 
 pub(crate) fn preview_cli_remove(
@@ -1337,7 +1377,7 @@ fn observe_target(path: &Path) -> Result<TargetObservation, &'static str> {
     }
 }
 
-fn regular_file_sha256(path: &Path) -> Result<String, &'static str> {
+pub(crate) fn regular_file_sha256(path: &Path) -> Result<String, &'static str> {
     let metadata = fs::symlink_metadata(path).map_err(|_| "qiongli-cli-file-unavailable")?;
     if metadata.file_type().is_symlink() || !metadata.is_file() {
         return Err("qiongli-cli-file-invalid");
@@ -1361,7 +1401,7 @@ fn sha256_bytes(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
-fn read_receipt(path: &Path) -> Result<Option<CliInstallReceiptV1>, &'static str> {
+pub(crate) fn read_receipt(path: &Path) -> Result<Option<CliInstallReceiptV1>, &'static str> {
     Ok(read_receipt_with_digest(path)?.map(|(receipt, _)| receipt))
 }
 

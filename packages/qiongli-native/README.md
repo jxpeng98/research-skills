@@ -1134,6 +1134,19 @@ supports interruptions between either pair of renames and repeated rollback.
 Config, secret references, research data, unmanaged host bytes, and 1.x content
 are outside this transaction.
 
+CLI-first reconciliation can additionally stage a managed CLI binary and its exact
+installation receipt in that same transaction. The existing CLI owner performs
+source/target/receipt CAS checks and generates the replacement receipt, retaining
+any unmanaged predecessor backup. The two operations bind matching old/new binary
+and receipt identities; an incomplete or mismatched pair is rejected before writes.
+Version 2 reconciliation journals require this pair. Existing version 1 journals
+and their operation digests retain their format and recovery behavior; unknown
+versions fail closed. Activation and rollback use the same executor as content and
+registration. This internal capability is not yet enabled by existing integration
+commands: a separately approved activation entry point, transaction locking and
+process/version checks remain necessary before standalone update qualification.
+
+
 R3O Batch 5 exposes that same updater through the Overview Update card. The
 typed desktop service owns Stable/Beta selection, signed metadata checks,
 download/verification/staging progress, cancellation, revision-bound install

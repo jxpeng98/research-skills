@@ -51,6 +51,10 @@ enum ReplacementCheckpoint {
     AfterHealthWindow,
     BeforeHealthCommit,
     AfterHealthCommit,
+    AfterFailedApplicationPark,
+    AfterRecoveryApplicationRestore,
+    BeforeRollbackStateClear,
+    BeforeRecoveryMarkerClear,
 }
 
 #[cfg(test)]
@@ -363,6 +367,72 @@ fn run_macos_helper(transaction_id: &str) -> Result<(), &'static str> {
     })
 }
 
+const LEGACY_ROLLBACK_RECORD: &str = "legacy-rollback-v1.json";
+
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct LegacyRollbackRecord {
+    schema_version: u32,
+    marker_sha256: String,
+    prior_release_sha256: String,
+    old_binary_sha256: String,
+}
+
+#[cfg(target_os = "macos")]
+fn legacy_application_binary(application: &Path) -> Result<PathBuf, &'static str> {
+    let binary = application
+        .join("Contents/MacOS")
+        .join(CANONICAL_BINARY_NAME);
+    validate_current_application(application, &binary)?;
+    Ok(binary)
+}
+
+#[cfg(target_os = "macos")]
+fn legacy_rollback_record(
+    store: &UpdateStateStore,
+    journal: &ReplacementJournalV1,
+) -> Result<LegacyRollbackRecord, &'static str> {
+    let loaded = store.load().map_err(|error| error.reason_code())?;
+    let prior_release_sha256 = sha256_hex(
+        &serde_json::to_vec(&(
+            loaded.state.last_accepted_generation,
+            &loaded.state.last_known_good,
+        ))
+        .map_err(|_| "native-update-journal-invalid")?,
+    );
+    let marker_sha256 =
+        sha256_hex(&serde_json::to_vec(journal).map_err(|_| "native-update-journal-invalid")?);
+    let root = store.staging_root().join(&journal.transaction_id);
+    validate_owned_private_directory(&root)?;
+    let path = root.join(LEGACY_ROLLBACK_RECORD);
+    if fs::symlink_metadata(&path).is_ok() {
+        let bytes = read_private_file(&path, MAX_JOURNAL_BYTES)?;
+        let record: LegacyRollbackRecord =
+            serde_json::from_slice(&bytes).map_err(|_| "native-update-recovery-record-invalid")?;
+        if record.schema_version != 1
+            || record.marker_sha256 != marker_sha256
+            || record.prior_release_sha256 != prior_release_sha256
+            || !valid_sha256(&record.old_binary_sha256)
+        {
+            return Err("native-update-recovery-record-invalid");
+        }
+        return Ok(record);
+    }
+    let old = legacy_application_binary(&journal.backup_application)?;
+    let record = LegacyRollbackRecord {
+        schema_version: 1,
+        marker_sha256,
+        prior_release_sha256,
+        old_binary_sha256: sha256_file(&old, 512 * 1024 * 1024)?,
+    };
+    write_new_private_file(
+        &path,
+        &serde_json::to_vec(&record).map_err(|_| "native-update-recovery-record-invalid")?,
+    )?;
+    sync_directory(&root)?;
+    Ok(record)
+}
+
 /// Roll back an interrupted legacy health window using the exact approved Home marker.
 /// The caller owns filesystem-write approval and must not be the running replacement.
 pub fn recover_legacy_health_interruption(
@@ -390,17 +460,19 @@ pub fn recover_legacy_health_interruption(
             serde_json::from_slice(&marker).map_err(|_| "native-update-journal-invalid")?;
         validate_journal(&journal, store, &journal.transaction_id)?;
         let loaded = store.load().map_err(|error| error.reason_code())?;
-        let transaction = loaded
+        if loaded
             .state
             .active_transaction
             .as_ref()
-            .ok_or("native-update-transaction-missing")?;
-        if transaction.transaction_id != journal.transaction_id
-            || transaction.target_version != journal.target_version
-            || !matches!(
-                transaction.phase,
-                UpdateTransactionPhase::HealthWindow | UpdateTransactionPhase::RecoveryRequired
-            )
+            .is_some_and(|transaction| {
+                transaction.transaction_id != journal.transaction_id
+                    || transaction.target_version != journal.target_version
+                    || !matches!(
+                        transaction.phase,
+                        UpdateTransactionPhase::HealthWindow
+                            | UpdateTransactionPhase::RecoveryRequired
+                    )
+            })
             || loaded.state.last_accepted_generation >= journal.generation
         {
             return Err("native-update-transaction-state-invalid");
@@ -410,34 +482,93 @@ pub fn recover_legacy_health_interruption(
         {
             return Err("native-update-reconciliation-invalid");
         }
-        validate_owned_directory(&journal.backup_application)?;
-        let canonical = journal
+        let failed = store
+            .staging_root()
+            .join(&journal.transaction_id)
+            .join(FAILED_APPLICATION_DIRECTORY);
+        let backup_present = journal
+            .backup_application
+            .try_exists()
+            .map_err(|_| "native-update-recovery-required")?;
+        if !backup_present {
+            ensure_absent(&journal.backup_application)?;
+        }
+        let destination_present = journal
             .destination_application
-            .join("Contents/MacOS")
-            .join(CANONICAL_BINARY_NAME);
-        validate_current_application(&journal.destination_application, &canonical)?;
-        validate_staged_executable(&canonical, &journal.canonical_binary_sha256)?;
-        ensure_absent(
-            &store
-                .staging_root()
-                .join(&journal.transaction_id)
-                .join(FAILED_APPLICATION_DIRECTORY),
+            .try_exists()
+            .map_err(|_| "native-update-recovery-required")?;
+        let failed_present = failed
+            .try_exists()
+            .map_err(|_| "native-update-recovery-required")?;
+        if !failed_present {
+            ensure_absent(&failed)?;
+        }
+        if backup_present {
+            if loaded.state.active_transaction.is_none() || destination_present == failed_present {
+                return Err("native-update-recovery-required");
+            }
+            let new_application = if destination_present {
+                &journal.destination_application
+            } else {
+                &failed
+            };
+            validate_staged_executable(
+                &legacy_application_binary(new_application)?,
+                &journal.canonical_binary_sha256,
+            )?;
+        } else if !destination_present {
+            return Err("native-update-recovery-required");
+        } else if failed_present {
+            validate_staged_executable(
+                &legacy_application_binary(&failed)?,
+                &journal.canonical_binary_sha256,
+            )?;
+        }
+        let record = legacy_rollback_record(store, &journal)?;
+        let old_application = if backup_present {
+            &journal.backup_application
+        } else {
+            &journal.destination_application
+        };
+        validate_staged_executable(
+            &legacy_application_binary(old_application)?,
+            &record.old_binary_sha256,
         )?;
-        let mut recovering = loaded.state;
-        recovering
-            .active_transaction
-            .as_mut()
-            .ok_or("native-update-transaction-missing")?
-            .phase = UpdateTransactionPhase::RecoveryRequired;
-        let reserved = store
-            .replace(loaded.revision, recovering)
-            .map_err(|error| error.reason_code())?;
-        if reserved.cleanup_required {
-            return Err("native-update-state-cleanup-required");
+        if loaded.state.active_transaction.is_some() {
+            let mut recovering = loaded.state;
+            recovering
+                .active_transaction
+                .as_mut()
+                .ok_or("native-update-transaction-missing")?
+                .phase = UpdateTransactionPhase::RecoveryRequired;
+            let reserved = store
+                .replace(loaded.revision, recovering)
+                .map_err(|error| error.reason_code())?;
+            if reserved.cleanup_required {
+                return Err("native-update-state-cleanup-required");
+            }
         }
         rollback_active_reconciliation(&reconciliation)?;
-        rollback_activated_application(store, &journal)?;
+        if backup_present {
+            if destination_present {
+                rollback_activated_application(store, &journal)?;
+            } else {
+                ensure_absent(&journal.destination_application)?;
+                rename_without_replacement(
+                    &journal.backup_application,
+                    &journal.destination_application,
+                )?;
+                sync_directory(
+                    journal
+                        .destination_application
+                        .parent()
+                        .ok_or("native-update-recovery-required")?,
+                )?;
+            }
+        }
+        replacement_checkpoint(ReplacementCheckpoint::AfterRecoveryApplicationRestore)?;
         finish_rolled_back_replacement(store, &journal, &reconciliation)?;
+        replacement_checkpoint(ReplacementCheckpoint::BeforeRecoveryMarkerClear)?;
         crate::update_reconcile::clear_installation_marker(home, &marker)
     }
 }
@@ -603,12 +734,42 @@ fn rollback_activated_application(
     store: &UpdateStateStore,
     journal: &ReplacementJournalV1,
 ) -> Result<(), &'static str> {
+    let loaded = store.load().map_err(|error| error.reason_code())?;
+    let mut state = loaded.state;
+    let transaction = state
+        .active_transaction
+        .as_mut()
+        .filter(|transaction| {
+            transaction.transaction_id == journal.transaction_id
+                && transaction.target_version == journal.target_version
+        })
+        .ok_or("native-update-transaction-state-invalid")?;
+    if !matches!(
+        transaction.phase,
+        UpdateTransactionPhase::Activating
+            | UpdateTransactionPhase::HealthWindow
+            | UpdateTransactionPhase::RecoveryRequired
+    ) || state.last_accepted_generation >= journal.generation
+    {
+        return Err("native-update-transaction-state-invalid");
+    }
+    if transaction.phase != UpdateTransactionPhase::RecoveryRequired {
+        transaction.phase = UpdateTransactionPhase::RecoveryRequired;
+        let reserved = store
+            .replace(loaded.revision, state)
+            .map_err(|error| error.reason_code())?;
+        if reserved.cleanup_required {
+            return Err("native-update-state-cleanup-required");
+        }
+    }
+    legacy_rollback_record(store, journal)?;
     let failed = store
         .staging_root()
         .join(&journal.transaction_id)
         .join(FAILED_APPLICATION_DIRECTORY);
     ensure_absent(&failed)?;
     rename_without_replacement(&journal.destination_application, &failed)?;
+    replacement_checkpoint(ReplacementCheckpoint::AfterFailedApplicationPark)?;
     if rename_without_replacement(
         &journal.backup_application,
         &journal.destination_application,
@@ -646,6 +807,7 @@ fn finish_rolled_back_replacement(
     }
     sync_directory(&transaction_root)?;
     // Keep the journal and health contract as recovery evidence across the state CAS.
+    replacement_checkpoint(ReplacementCheckpoint::BeforeRollbackStateClear)?;
     clear_failed_transaction(store, &journal.transaction_id)
 }
 
@@ -1545,82 +1707,147 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[test]
     fn interrupted_desktop_health_keeps_other_config_writers_excluded() {
-        let mut fixture = replacement_fixture("durable-home-marker", false);
-        let macos = fixture.journal.staged_application.join("Contents/MacOS");
-        create_private_tree(&macos);
-        fs::write(macos.join(CANONICAL_BINARY_NAME), b"new-canonical").unwrap();
-        fixture.journal.canonical_binary_sha256 = sha256_hex(b"new-canonical");
-        fixture.journal.reconciliation_journal_sha256 =
-            reconciliation_journal_sha256(&fixture.reconciliation).unwrap();
-        write_new_private_file(
-            &fixture
-                .transaction_root
-                .join(crate::update_reconcile::RECONCILIATION_JOURNAL_FILE),
-            &serde_json_canonicalizer::to_vec(&fixture.reconciliation).unwrap(),
-        )
-        .unwrap();
-        let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = continue_replacement_after_handoff(
-                &fixture.root,
-                &fixture.store,
-                &fixture.journal,
-                &fixture.reconciliation,
-                || panic!("interrupted health"),
-            );
-        }));
-        assert!(interrupted.is_err());
-        assert_eq!(
-            fixture
-                .store
-                .load()
-                .unwrap()
-                .state
-                .active_transaction
-                .unwrap()
-                .phase,
-            UpdateTransactionPhase::HealthWindow
-        );
-        let config = resolve_config_root(
-            Some(fixture.root.join("another-config").as_os_str()),
-            &fixture.root,
-        )
-        .unwrap();
-        assert_eq!(
-            crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config.clone())
-                .unwrap_err(),
-            "native-activation-recovery-required"
-        );
-        let marker = serde_json::to_vec(&fixture.journal).unwrap();
-        assert_eq!(
-            recover_legacy_health_interruption(&fixture.root, &fixture.store, &"0".repeat(64)),
-            Err("native-activation-journal-mismatch")
-        );
-        let canonical = fixture
-            .journal
-            .destination_application
-            .join("Contents/MacOS")
-            .join(CANONICAL_BINARY_NAME);
-        fs::write(&canonical, b"drifted-canonical").unwrap();
-        assert_eq!(
-            recover_legacy_health_interruption(&fixture.root, &fixture.store, &sha256_hex(&marker)),
-            Err("native-update-staged-application-drift")
-        );
-        assert!(fixture.journal.backup_application.exists());
-        assert!(
-            fixture
-                .store
-                .load()
-                .unwrap()
-                .state
-                .active_transaction
-                .is_some()
-        );
-        fs::write(&canonical, b"new-canonical").unwrap();
-        recover_legacy_health_interruption(&fixture.root, &fixture.store, &sha256_hex(&marker))
+        for checkpoint in [
+            ReplacementCheckpoint::AfterFailedApplicationPark,
+            ReplacementCheckpoint::AfterRecoveryApplicationRestore,
+            ReplacementCheckpoint::BeforeRollbackStateClear,
+            ReplacementCheckpoint::BeforeRecoveryMarkerClear,
+        ] {
+            let mut fixture = replacement_fixture("durable-home-marker", false);
+            let macos = fixture.journal.staged_application.join("Contents/MacOS");
+            create_private_tree(&macos);
+            fs::write(macos.join(CANONICAL_BINARY_NAME), b"new-canonical").unwrap();
+            fixture.journal.canonical_binary_sha256 = sha256_hex(b"new-canonical");
+            fixture.journal.reconciliation_journal_sha256 =
+                reconciliation_journal_sha256(&fixture.reconciliation).unwrap();
+            write_new_private_file(
+                &fixture
+                    .transaction_root
+                    .join(crate::update_reconcile::RECONCILIATION_JOURNAL_FILE),
+                &serde_json_canonicalizer::to_vec(&fixture.reconciliation).unwrap(),
+            )
             .unwrap();
-        drop(crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config).unwrap());
-        assert_rolled_back(&fixture);
-        fs::remove_dir_all(fixture.root).unwrap();
+            let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _ = continue_replacement_after_handoff(
+                    &fixture.root,
+                    &fixture.store,
+                    &fixture.journal,
+                    &fixture.reconciliation,
+                    || panic!("interrupted health"),
+                );
+            }));
+            assert!(interrupted.is_err());
+            assert_eq!(
+                fixture
+                    .store
+                    .load()
+                    .unwrap()
+                    .state
+                    .active_transaction
+                    .unwrap()
+                    .phase,
+                UpdateTransactionPhase::HealthWindow
+            );
+            let config = resolve_config_root(
+                Some(fixture.root.join("another-config").as_os_str()),
+                &fixture.root,
+            )
+            .unwrap();
+            assert_eq!(
+                crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config.clone())
+                    .unwrap_err(),
+                "native-activation-recovery-required"
+            );
+            let marker = serde_json::to_vec(&fixture.journal).unwrap();
+            assert_eq!(
+                recover_legacy_health_interruption(&fixture.root, &fixture.store, &"0".repeat(64)),
+                Err("native-activation-journal-mismatch")
+            );
+            let canonical = fixture
+                .journal
+                .destination_application
+                .join("Contents/MacOS")
+                .join(CANONICAL_BINARY_NAME);
+            fs::write(&canonical, b"drifted-canonical").unwrap();
+            assert_eq!(
+                recover_legacy_health_interruption(
+                    &fixture.root,
+                    &fixture.store,
+                    &sha256_hex(&marker)
+                ),
+                Err("native-update-staged-application-drift")
+            );
+            assert!(fixture.journal.backup_application.exists());
+            assert!(
+                fixture
+                    .store
+                    .load()
+                    .unwrap()
+                    .state
+                    .active_transaction
+                    .is_some()
+            );
+            fs::write(&canonical, b"new-canonical").unwrap();
+            assert_eq!(
+                with_replacement_interruption(checkpoint, || recover_legacy_health_interruption(
+                    &fixture.root,
+                    &fixture.store,
+                    &sha256_hex(&marker)
+                )),
+                Err(TEST_INTERRUPTION)
+            );
+            assert!(
+                fixture
+                    .root
+                    .join(".qiongli/native/active-installation.json")
+                    .exists()
+            );
+            let record_path = fixture.transaction_root.join(LEGACY_ROLLBACK_RECORD);
+            let original_record = fs::read(&record_path).unwrap();
+            for field in ["schema_version", "marker_sha256", "prior_release_sha256"] {
+                let mut changed: serde_json::Value =
+                    serde_json::from_slice(&original_record).unwrap();
+                changed[field] = if field == "schema_version" {
+                    serde_json::json!(2)
+                } else {
+                    serde_json::json!("0".repeat(64))
+                };
+                fs::write(&record_path, serde_json::to_vec(&changed).unwrap()).unwrap();
+                assert_eq!(
+                    recover_legacy_health_interruption(
+                        &fixture.root,
+                        &fixture.store,
+                        &sha256_hex(&marker)
+                    ),
+                    Err("native-update-recovery-record-invalid")
+                );
+            }
+            fs::write(&record_path, original_record).unwrap();
+            let old_application = if fixture.journal.backup_application.exists() {
+                &fixture.journal.backup_application
+            } else {
+                &fixture.journal.destination_application
+            };
+            let old_binary = legacy_application_binary(old_application).unwrap();
+            fs::write(&old_binary, b"drifted-old-binary").unwrap();
+            assert_eq!(
+                recover_legacy_health_interruption(
+                    &fixture.root,
+                    &fixture.store,
+                    &sha256_hex(&marker)
+                ),
+                Err("native-update-staged-application-drift")
+            );
+            fs::write(&old_binary, b"old-known-good").unwrap();
+            recover_legacy_health_interruption(&fixture.root, &fixture.store, &sha256_hex(&marker))
+                .unwrap();
+            drop(
+                crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config)
+                    .unwrap(),
+            );
+            assert_rolled_back(&fixture);
+            fs::remove_dir_all(fixture.root).unwrap();
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -2113,6 +2340,12 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     fn create_directory_with_file(path: &Path, bytes: &[u8]) {
+        create_private_tree(&path.join("Contents/MacOS"));
+        fs::write(
+            path.join("Contents/MacOS").join(CANONICAL_BINARY_NAME),
+            bytes,
+        )
+        .unwrap();
         create_private_tree(path);
         fs::write(path.join("payload"), bytes).unwrap();
     }

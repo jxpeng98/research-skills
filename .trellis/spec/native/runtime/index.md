@@ -259,8 +259,21 @@ installed new canonical binary hash. It reserves RecoveryRequired through state 
 before rollback so late legacy health cannot commit, then reuses Host/application
 rollback, cleanup and exact marker clearing. It does not rerun health. Caller-owned
 filesystem approval/process checks and a public CLI entry point remain pending, as
-do committed cleanup and retry after a second interruption during rollback. Unsupported
+do committed cleanup and real process-kill qualification. Unsupported
 layouts/states refuse rather than guessing a completed recovery.
+
+Legacy rollback persists private `legacy-rollback-v1.json` before moving the application.
+Its strict version-1 shape binds the Home marker digest, a hash of the prior accepted
+release metadata, and the old canonical binary digest. Normal rollback also reserves
+RecoveryRequired through CAS before moving files, excluding late health commitment.
+Recovery validates the record and old binary before continuing a parked-new-application,
+restored-old-application, or state-cleared/marker-retained layout. A retained failed
+application must still match the new canonical binary before deletion. Successful
+rollback keeps the record and journal as evidence. Unknown versions, changed marker/
+release bindings, substituted paths and binary drift refuse. Tested checkpoints are
+between filesystem operations; deletion interrupted inside a failed application tree
+can still require manual recovery if its identity cannot be verified. Committed
+cleanup and the public CLI remain pending.
 
 ## Quality Check
 

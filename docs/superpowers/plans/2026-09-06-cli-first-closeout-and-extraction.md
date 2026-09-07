@@ -1194,3 +1194,32 @@ approval/process validation. First-stage integration and acceptance remain incom
 
 Next: complete those recovery states, expose the reviewed recovery contract, and then
 connect native activation with fresh candidate/approval and installed CLI health.
+
+
+## CLI-403 twenty-sixth increment — retry interrupted legacy rollback
+
+Base: `03b1ab45`; branch: `codex/cli-resumable-legacy-recovery`.
+Legacy rollback now persists strict private record v1 with the marker digest, prior
+accepted-release metadata hash and old canonical binary digest. Both ordinary rollback
+and recovery reserve RecoveryRequired through CAS before application moves; late
+health cannot commit a rolled-back version. The same record lets recovery verify and
+continue after parking the new application, restoring the old one, removing the failed
+application, or clearing active state before marker removal. It never infers successful
+restoration from an absent backup alone. Retained failed applications must also match
+the new canonical identity before cleanup. Journal/record evidence remains afterward.
+
+Checks on macOS: all 12 replacement tests passed. The expanded recovery case injects
+interruption at four boundaries and retries through the actual coordinator. It checks
+wrong marker digest, new/old binary drift, unknown record version, changed marker and
+prior-release bindings, and restored write availability after success. The targeted
+case was rerun after the final semantic record negatives. Library Clippy, whitespace,
+roadmap-index and frozen-source boundary checks passed. Application fixtures now include canonical
+binaries so identity verification uses the production owner rather than placeholder
+paths. Public schemas and ledger acceptance are unchanged.
+
+Remaining: committed-outcome cleanup, a public approved recovery command and real
+process interruption qualification. Checkpoints between operations do not prove recovery
+from deletion stopped inside the failed application tree; if the remaining tree cannot
+prove identity the owner refuses. Then native activation/recovery still needs public
+candidate/approval/process wiring. First-stage integration remains incomplete; no push
+or publication occurred.

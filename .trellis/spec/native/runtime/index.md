@@ -175,9 +175,8 @@ preserves prior release metadata. Recovery can finish a committed cleanup withou
 rerunning health, and completed replay does not increase the revision. Unexpected
 release-state changes refuse before cleanup. Preparation transaction IDs now include
 update/workflow revisions so a rolled-back attempt can be prepared again without
-overwriting historical records. The caller still owns fresh candidate/approval and
-process verification; public activation/recovery commands and competing-write
-exclusion remain pending.
+overwriting historical records. The caller still owns fresh candidate/approval verification. Public native
+activation/recovery commands remain pending; shared write exclusion is described below.
 
 Native activation, recovery, discard and candidate preparation now acquire a fixed
 private `HOME/.qiongli/native/.installation.lock` before the config-root replacement
@@ -307,6 +306,15 @@ Both outputs use the Rust-owned additive `update-recovery-v1` public JSON contra
 with generated Draft 2020-12 schema and preview/recovered golden fixtures. Recovery
 retains the prior cleanup and partial-tree limitations; it does not grant package or
 program acceptance.
+
+On macOS, native activation and recovery also reuse the bounded installation-process
+inspector while holding Home/config locks. They check every journal CLI binary's
+destination, staged and backup path. A mapped executable refuses before activation
+records or recovery mutations; an inspection error also refuses. Receipt files and
+Host content are still governed by their existing ownership checks. This guard does
+not stop processes, prevent subsequent launches or claim Host reload completion.
+Other platforms retain their existing coordinator behavior and have not gained native
+process inspection; their public activation must not claim this macOS evidence.
 
 ## Quality Check
 

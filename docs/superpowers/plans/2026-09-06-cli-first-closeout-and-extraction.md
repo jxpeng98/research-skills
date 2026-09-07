@@ -1319,3 +1319,28 @@ Remaining: native activation/recovery command wiring, real update process-kill c
 partial-tree recovery limits, and named-candidate/platform/Host qualification. Successful
 synthetic recovery via dispatcher does not prove a real packaged application crash.
 First-stage integration and program acceptance remain incomplete. No push/publication.
+
+
+## CLI-403 thirtieth increment — guard native activation against live CLI files
+
+Base: `9faf9022`; branch: `codex/cli-native-process-guard`.
+Native activation and recovery on macOS now check mapped CLI destination, staged and
+backup files under their existing Home/config locks, before records or file mutation.
+They share the bounded process-inspection owner used by legacy recovery. Other platform
+behavior is unchanged; this does not qualify their process visibility or public activation.
+No process is stopped by product code, and the snapshot cannot prevent a later launch.
+
+Checks: all four reconciliation tests passed, including a new controlled process case.
+The case copies system sleep into its isolated CLI fixture, checks destination/staged
+refusal before activation, interrupts health, checks destination/backup refusal during
+recovery, then stops only its own children and completes rollback. It verifies unchanged
+state, receipts, marker and retained backup at refusal boundaries. The signed candidate
+integration test passed through v3 activation/recovery with the new guard. Library
+Clippy, whitespace, roadmap-index and frozen-source checks passed. An initial test build
+referenced an unavailable clock helper; using stdlib time fixed the test without changing
+product behavior. No schema or program acceptance changed.
+
+Next: connect fresh candidate/approval validation and installed CLI health to the public
+native activation command, with native recovery exposed through its existing owner.
+Real process-kill, platform and Host/named-candidate qualification remain open; the first
+stage is not complete. No push or publication occurred.

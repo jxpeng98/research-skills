@@ -444,20 +444,22 @@ fn refuse_running_replacement_applications(
     store: &UpdateStateStore,
     journal: &ReplacementJournalV1,
 ) -> Result<(), &'static str> {
-    let output = crate::desktop::installation_process_output()?;
     let failed = store
         .staging_root()
         .join(&journal.transaction_id)
         .join(FAILED_APPLICATION_DIRECTORY);
-    refuse_mapped_application_paths(
-        &output,
-        &[
-            &journal.destination_application,
-            &journal.backup_application,
-            &journal.staged_application,
-            &failed,
-        ],
-    )
+    refuse_running_installation_paths(&[
+        &journal.destination_application,
+        &journal.backup_application,
+        &journal.staged_application,
+        &failed,
+    ])
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn refuse_running_installation_paths(paths: &[&Path]) -> Result<(), &'static str> {
+    let output = crate::desktop::installation_process_output()?;
+    refuse_mapped_application_paths(&output, paths)
 }
 
 #[cfg(target_os = "macos")]

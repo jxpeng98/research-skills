@@ -542,6 +542,31 @@ struct NativeActivationRecord {
     outcome: Option<NativeActivationOutcome>,
 }
 
+// Native process inspection currently has a macOS implementation only.
+fn refuse_running_native_cli(journal: &ReconciliationJournalV1) -> Result<(), &'static str> {
+    #[cfg(target_os = "macos")]
+    {
+        let paths: Vec<&Path> = journal
+            .operations
+            .iter()
+            .filter(|operation| operation.surface == ReconciliationSurface::CliBinary)
+            .flat_map(|operation| {
+                [
+                    operation.destination.as_path(),
+                    operation.staged.as_path(),
+                    operation.backup.as_path(),
+                ]
+            })
+            .collect();
+        crate::native_update_replace::refuse_running_installation_paths(&paths)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = journal;
+        Ok(())
+    }
+}
+
 /// Executes an already approved v2/v3 reconciliation journal. The caller owns
 /// candidate trust, human approval, process pinning and the health check.
 pub fn activate_native_reconciliation(
@@ -571,6 +596,7 @@ pub fn activate_native_reconciliation(
         return Err("native-activation-state-changed");
     }
     verify_prepared_reconciliation(&journal)?;
+    refuse_running_native_cli(&journal)?;
     write_native_activation_record(store, &journal, expected_journal_sha256, None)?;
     bind_home_activation(store, &journal)?;
     set_native_activation_phase(
@@ -613,6 +639,7 @@ pub fn recover_native_reconciliation(
         expected_journal_sha256,
         NATIVE_ACTIVATION_RECORD,
     )?;
+    refuse_running_native_cli(&journal)?;
     bind_home_activation(store, &journal)?;
     let outcome = if native_record_exists(store, transaction_id, NATIVE_ACTIVATION_OUTCOME)? {
         read_native_activation_record(
@@ -2817,6 +2844,119 @@ mod tests {
                 Err("native-activation-recovery-required")
             );
         }
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    #[allow(clippy::disallowed_methods)]
+    fn native_activation_and_recovery_refuse_live_cli_files() {
+        use crate::cli_install::{apply_cli_install, preview_cli_install};
+        use std::os::unix::fs::PermissionsExt;
+        use std::process::{Command, Stdio};
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../target/native-live-cli-tests")
+            .join(format!(
+                "{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+        fs::create_dir_all(&root).unwrap();
+        let root = fs::canonicalize(root).unwrap();
+        fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+        let source = root.join("source-cli");
+        fs::copy("/bin/sleep", &source).unwrap();
+        let initial = preview_cli_install(&root, &source, "2.0.0-alpha.4").unwrap();
+        apply_cli_install(&initial).unwrap();
+        let receipt = fs::read(&initial.receipt_path).unwrap();
+        let plan = preview_cli_install(&root, &source, "2.0.0-alpha.5").unwrap();
+        let config = qiongli_config::resolve_config_root(None, &root).unwrap();
+        qiongli_config::GlobalSettingsStore::new(config.clone())
+            .prepare_store()
+            .unwrap();
+        let store = UpdateStateStore::new(config, qiongli_config::UpdateStreamPreference::Beta);
+        let transaction = "update-0123456789abcdef0123456789abcdef";
+        prepare_reconciliation_transaction_root(&store, transaction).unwrap();
+        let mut operations = Vec::new();
+        prepare_cli_update_operations(
+            &plan,
+            transaction,
+            &"1".repeat(64),
+            &"2".repeat(64),
+            &mut operations,
+        )
+        .unwrap();
+        let journal = ReconciliationJournalV1 {
+            native_release: None,
+            document_kind: JOURNAL_DOCUMENT_KIND.into(),
+            schema_version: CLI_JOURNAL_SCHEMA_VERSION,
+            transaction_id: transaction.into(),
+            target_version: plan.product_version.clone(),
+            target_pack_sha256: "2".repeat(64),
+            operations,
+        };
+        write_new_private_file(
+            &store
+                .staging_root()
+                .join(transaction)
+                .join(RECONCILIATION_JOURNAL_FILE),
+            &canonical_json(&journal).unwrap(),
+        )
+        .unwrap();
+        let digest = reconciliation_journal_sha256(&journal).unwrap();
+        let cli = journal
+            .operations
+            .iter()
+            .find(|op| op.surface == ReconciliationSurface::CliBinary)
+            .unwrap();
+        let exercise = |path: &Path, recovery: bool| {
+            let before = store.load().unwrap();
+            let mut child = Command::new(path)
+                .arg("30")
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()
+                .unwrap();
+            let result = if recovery {
+                recover_native_reconciliation(&store, transaction, &digest)
+            } else {
+                activate_native_reconciliation(&store, transaction, &digest, || {
+                    panic!("live CLI must prevent health")
+                })
+            };
+            let _ = child.kill();
+            child.wait().unwrap();
+            assert_eq!(result, Err("native-update-application-running"));
+            assert_eq!(store.load().unwrap(), before);
+        };
+        for path in [&cli.destination, &cli.staged] {
+            exercise(path, false);
+            assert!(!native_record_exists(&store, transaction, NATIVE_ACTIVATION_RECORD).unwrap());
+            assert_eq!(fs::read(&initial.receipt_path).unwrap(), receipt);
+        }
+        let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _ = activate_native_reconciliation(&store, transaction, &digest, || {
+                panic!("interrupted health")
+            });
+        }));
+        assert!(interrupted.is_err());
+        let marker = root.join(".qiongli/native").join(HOME_ACTIVATION_MARKER);
+        let marker_bytes = fs::read(&marker).unwrap();
+        for path in [&cli.destination, &cli.backup] {
+            exercise(path, true);
+            assert_eq!(fs::read(&marker).unwrap(), marker_bytes);
+            assert!(cli.backup.exists());
+        }
+        assert_eq!(
+            recover_native_reconciliation(&store, transaction, &digest),
+            Ok(NativeActivationOutcome::RolledBack)
+        );
+        assert_eq!(fs::read(&initial.receipt_path).unwrap(), receipt);
+        assert!(!marker.exists());
         fs::remove_dir_all(root).unwrap();
     }
 

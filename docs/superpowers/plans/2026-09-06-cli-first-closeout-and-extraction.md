@@ -1133,3 +1133,34 @@ change.
 Next: use the now-retained evidence for durable legacy Home exclusion and recovery;
 then expose native activation/recovery with the existing signed candidate, approval
 and installed CLI health owners. First-stage integration remains incomplete.
+
+
+## CLI-403 twenty-fourth increment — durable legacy Home exclusion
+
+Base: `0a1bae8b`; branch: `codex/cli-legacy-activation-marker`.
+The old macOS executor now writes its serialized replacement journal to the shared
+Home activation marker before live file replacement. Native and legacy paths share
+exact-byte marker binding/clearing under the Home lock. Success and completed rollback
+clear the marker; interruption or cleanup failure retains it across process-lock
+release. A different config root therefore cannot begin a participating installation
+write while legacy recovery is pending. Existing journal formats and public schemas
+are unchanged.
+
+Pre-activation restoration now returns errors instead of silently ignoring them. It
+requires the restored/staged layout, absent backup and successful state CAS before a
+marker may be cleared. A fixture that omitted its staged application correctly failed;
+it now verifies evidence preservation on that missing-layout refusal before creating
+the staged application and checking successful restoration.
+
+Checks on macOS: all 12 replacement tests and the native CLI-pair activation/recovery
+case passed. New panic/unwind coverage confirms HealthWindow state, other-config
+writer refusal after the lock drops, wrong-marker clearing refusal, and return to
+write availability after lower-level rollback/cleanup plus exact marker removal.
+Existing success, pre-activation and rollback assertions also require marker removal.
+Library Clippy, signed-candidate integration, whitespace, roadmap-index and
+frozen-source boundary checks passed. This is owner-level recovery exercised by the test,
+not a supported automatic/public legacy recovery command or SIGKILL qualification.
+
+Next: connect recovery to the retained legacy journal/marker and then enable native
+activation/recovery with fresh candidate/approval/process validation and installed CLI
+health. The full first-stage objective remains open; no acceptance or publication.

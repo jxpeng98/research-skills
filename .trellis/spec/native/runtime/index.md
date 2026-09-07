@@ -193,8 +193,8 @@ stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and pack
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
 CLI health. Non-Unix managed writes retain their existing behavior. This is partial
-entry-point coverage: legacy interrupted-update recovery still needs a final
-cross-config guard pass before
+entry-point coverage: legacy interrupted-update recovery still needs a supported
+recovery entry point before
 public native activation is enabled. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
 
@@ -211,10 +211,8 @@ retain the invoking Home scope. Existing managed-root approval rejects unsafe li
 The old macOS replacement executor takes the same Home-then-config locks after
 parent exit, refusing a native activation marker before switching files. Handoff
 failure restoration also takes both locks before altering state. Health retains its
-existing independent completion path. This is cooperative process exclusion, not a
-durable global marker for an interrupted legacy Desktop replacement; that remaining
-legacy recovery interaction and update-state writers must be resolved before public
-native activation is enabled.
+existing independent completion path. Legacy recovery still needs a supported entry
+point before public native activation is enabled.
 
 The shared update guard acquires Home then config locks without rejecting an
 existing update transaction; each update stage still validates its own state/CAS.
@@ -238,8 +236,20 @@ reconciliation cleanup, removes the failed application, syncs the transaction di
 and only then clears the failed transaction through CAS. Cleanup failure preserves the
 active transaction and retained journal/health contract; files and links substituted at
 the failed-application path refuse. Completed rollback keeps the journal and health
-contract as evidence rather than recursively deleting the transaction root. Durable
-Home marker/recovery wiring for legacy replacement remains separate pending work.
+contract as evidence rather than recursively deleting the transaction root. Supported
+legacy recovery entry-point wiring remains separate pending work.
+
+The legacy macOS executor now writes its serialized replacement journal to the shared
+private Home activation marker before replacing application files. Shared marker
+binding and clearing compare exact bytes under the Home lock; a different native or
+legacy transaction cannot clear it. Successful commit, complete rollback and verified
+pre-activation restoration clear their own marker. Panics and incomplete cleanup keep
+it, excluding participating writers across config roots after process-lock release.
+The marker reuses the existing replacement-journal format; it adds no public schema.
+Pre-activation restoration now reports errors and requires the destination/staged
+layout, absent backup and successful state CAS before releasing protection. Recovery
+through the existing lower-level owners is tested; automated/public legacy recovery
+and real process-kill qualification remain pending.
 
 ## Quality Check
 

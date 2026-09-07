@@ -355,7 +355,7 @@ fn run_macos_helper(transaction_id: &str) -> Result<(), &'static str> {
         let _home_lock = crate::update_reconcile::acquire_native_home_write_lock(&home)?;
         crate::update_reconcile::refuse_native_home_activation(&home)?;
         let _lock = acquire_replacement_lock(&store)?;
-        restore_pre_activation_state(&store, &journal);
+        restore_pre_activation_state(&store, &journal)?;
         return Err(error);
     }
     continue_replacement_after_handoff(&home, &store, &journal, &reconciliation, || {
@@ -380,20 +380,24 @@ fn continue_replacement_after_handoff(
         UpdateTransactionPhase::AwaitingExit,
         UpdateTransactionPhase::Activating,
     ) {
-        restore_pre_activation_state(store, journal);
+        restore_pre_activation_state(store, journal)?;
         return Err(error);
     }
+    let marker = serde_json::to_vec(journal).map_err(|_| "native-update-journal-invalid")?;
+    crate::update_reconcile::bind_installation_marker(home, &marker)?;
     if let Err(error) = activate_application(journal) {
         if error == "native-update-recovery-required" {
             mark_recovery_required(store, &journal.transaction_id);
             return Err(error);
         }
-        restore_pre_activation_state(store, journal);
+        restore_pre_activation_state(store, journal)?;
+        crate::update_reconcile::clear_installation_marker(home, &marker)?;
         return Err(error);
     }
     if let Err(error) = activate_prepared_reconciliation(reconciliation) {
         rollback_activated_application(store, journal)?;
         finish_rolled_back_replacement(store, journal, reconciliation)?;
+        crate::update_reconcile::clear_installation_marker(home, &marker)?;
         return Err(error);
     }
     if transition_phase(
@@ -408,20 +412,24 @@ fn continue_replacement_after_handoff(
             .map_err(|_| "native-update-recovery-required")?;
         rollback_activated_application(store, journal)?;
         finish_rolled_back_replacement(store, journal, reconciliation)?;
+        crate::update_reconcile::clear_installation_marker(home, &marker)?;
         return Err("native-update-recovery-required");
     }
     if let Err(error) = run_health() {
         if confirm_committed_state(store, journal).is_ok() {
-            return cleanup_committed_replacement(store, journal, reconciliation);
+            cleanup_committed_replacement(store, journal, reconciliation)?;
+            return crate::update_reconcile::clear_installation_marker(home, &marker);
         }
         rollback_active_reconciliation(reconciliation)
             .map_err(|_| "native-update-recovery-required")?;
         rollback_activated_application(store, journal)?;
         finish_rolled_back_replacement(store, journal, reconciliation)?;
+        crate::update_reconcile::clear_installation_marker(home, &marker)?;
         return Err(health_failure_reason(error));
     }
     confirm_committed_state(store, journal)?;
-    cleanup_committed_replacement(store, journal, reconciliation)
+    cleanup_committed_replacement(store, journal, reconciliation)?;
+    crate::update_reconcile::clear_installation_marker(home, &marker)
 }
 
 #[cfg(target_os = "macos")]
@@ -563,28 +571,41 @@ fn finish_rolled_back_replacement(
 }
 
 #[cfg(target_os = "macos")]
-fn restore_pre_activation_state(store: &UpdateStateStore, journal: &ReplacementJournalV1) {
+fn restore_pre_activation_state(
+    store: &UpdateStateStore,
+    journal: &ReplacementJournalV1,
+) -> Result<(), &'static str> {
     if journal.backup_application.exists() && !journal.destination_application.exists() {
-        let _ = rename_without_replacement(
+        rename_without_replacement(
             &journal.backup_application,
             &journal.destination_application,
-        );
+        )?;
     }
-    let Ok(loaded) = store.load() else {
-        return;
-    };
+    ensure_absent(&journal.backup_application)?;
+    if !journal.destination_application.is_dir() || !journal.staged_application.is_dir() {
+        return Err("native-update-recovery-required");
+    }
+    let loaded = store.load().map_err(|error| error.reason_code())?;
     let mut state = loaded.state;
-    if let Some(transaction) = state.active_transaction.as_mut()
-        && transaction.transaction_id == journal.transaction_id
-    {
-        transaction.phase = UpdateTransactionPhase::ReconciliationPrepared;
-        if store.replace(loaded.revision, state).is_ok()
-            && let Some(transaction_root) =
-                journal.staged_application.parent().and_then(Path::parent)
-        {
-            remove_replacement_contract(transaction_root);
-        }
+    let transaction = state
+        .active_transaction
+        .as_mut()
+        .filter(|transaction| transaction.transaction_id == journal.transaction_id)
+        .ok_or("native-update-transaction-state-invalid")?;
+    transaction.phase = UpdateTransactionPhase::ReconciliationPrepared;
+    let outcome = store
+        .replace(loaded.revision, state)
+        .map_err(|error| error.reason_code())?;
+    if outcome.cleanup_required {
+        return Err("native-update-state-cleanup-required");
     }
+    let transaction_root = journal
+        .staged_application
+        .parent()
+        .and_then(Path::parent)
+        .ok_or("native-update-journal-invalid")?;
+    remove_replacement_contract(transaction_root);
+    Ok(())
 }
 
 #[cfg(target_os = "macos")]
@@ -1444,6 +1465,61 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     #[test]
+    fn interrupted_desktop_health_keeps_other_config_writers_excluded() {
+        let fixture = replacement_fixture("durable-home-marker", false);
+        let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _ = continue_replacement_after_handoff(
+                &fixture.root,
+                &fixture.store,
+                &fixture.journal,
+                &fixture.reconciliation,
+                || panic!("interrupted health"),
+            );
+        }));
+        assert!(interrupted.is_err());
+        assert_eq!(
+            fixture
+                .store
+                .load()
+                .unwrap()
+                .state
+                .active_transaction
+                .unwrap()
+                .phase,
+            UpdateTransactionPhase::HealthWindow
+        );
+        let config = resolve_config_root(
+            Some(fixture.root.join("another-config").as_os_str()),
+            &fixture.root,
+        )
+        .unwrap();
+        assert_eq!(
+            crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config.clone())
+                .unwrap_err(),
+            "native-activation-recovery-required"
+        );
+        let marker = serde_json::to_vec(&fixture.journal).unwrap();
+        let _lock = crate::update_reconcile::acquire_native_home_write_lock(&fixture.root).unwrap();
+        assert_eq!(
+            crate::update_reconcile::clear_installation_marker(
+                &fixture.root,
+                b"different transaction"
+            ),
+            Err("native-activation-recovery-required")
+        );
+        rollback_active_reconciliation(&fixture.reconciliation).unwrap();
+        rollback_activated_application(&fixture.store, &fixture.journal).unwrap();
+        finish_rolled_back_replacement(&fixture.store, &fixture.journal, &fixture.reconciliation)
+            .unwrap();
+        crate::update_reconcile::clear_installation_marker(&fixture.root, &marker).unwrap();
+        drop(_lock);
+        drop(crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config).unwrap());
+        assert_rolled_back(&fixture);
+        fs::remove_dir_all(fixture.root).unwrap();
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
     fn desktop_replacement_refuses_native_activation_without_changing_state() {
         let fixture = replacement_fixture("native-activation-exclusion", false);
         let before = fixture.store.load().unwrap();
@@ -1696,7 +1772,13 @@ mod tests {
             applications.join(format!(".Qiongli.app.qiongli-backup-{transaction_id}")),
         );
 
-        restore_pre_activation_state(&store, &journal);
+        assert_eq!(
+            restore_pre_activation_state(&store, &journal),
+            Err("native-update-recovery-required")
+        );
+        assert!(transaction_root.join(JOURNAL_FILE).exists());
+        create_directory_with_file(&journal.staged_application, b"staged-new");
+        restore_pre_activation_state(&store, &journal).unwrap();
 
         assert_eq!(
             store
@@ -1824,6 +1906,12 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     fn assert_retryable_staged(fixture: &ReplacementFixture) {
+        assert!(
+            !fixture
+                .root
+                .join(".qiongli/native/active-installation.json")
+                .exists()
+        );
         let loaded = fixture.store.load().unwrap();
         assert_eq!(
             loaded.state.active_transaction.unwrap().phase,
@@ -1844,6 +1932,12 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     fn assert_rolled_back(fixture: &ReplacementFixture) {
+        assert!(
+            !fixture
+                .root
+                .join(".qiongli/native/active-installation.json")
+                .exists()
+        );
         let loaded = fixture.store.load().unwrap();
         assert!(loaded.state.active_transaction.is_none());
         assert_eq!(loaded.state.last_accepted_generation, 1);
@@ -1864,6 +1958,12 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     fn assert_committed(fixture: &ReplacementFixture) {
+        assert!(
+            !fixture
+                .root
+                .join(".qiongli/native/active-installation.json")
+                .exists()
+        );
         let loaded = fixture.store.load().unwrap();
         assert!(loaded.state.active_transaction.is_none());
         assert_eq!(loaded.state.last_accepted_generation, 2);

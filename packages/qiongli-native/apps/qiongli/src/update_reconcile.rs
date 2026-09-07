@@ -460,7 +460,6 @@ fn bind_home_activation(
     journal: &ReconciliationJournalV1,
 ) -> Result<(), &'static str> {
     let home = native_journal_home(journal)?;
-    let marker = native_home_state_root(&home)?.join(HOME_ACTIVATION_MARKER);
     let start = read_private_file(
         &store
             .staging_root()
@@ -468,6 +467,12 @@ fn bind_home_activation(
             .join(NATIVE_ACTIVATION_RECORD),
         MAX_STATE_BYTES,
     )?;
+    bind_installation_marker(&home, &start)
+}
+
+/// Call only while holding the Home installation lock.
+pub(crate) fn bind_installation_marker(home: &Path, start: &[u8]) -> Result<(), &'static str> {
+    let marker = native_home_state_root(home)?.join(HOME_ACTIVATION_MARKER);
     if marker
         .try_exists()
         .map_err(|_| "native-activation-record-invalid")?
@@ -477,7 +482,7 @@ fn bind_home_activation(
         }
     } else {
         ensure_absent(&marker)?;
-        write_new_private_file(&marker, &start)?;
+        write_new_private_file(&marker, start)?;
         sync_directory(marker.parent().ok_or("native-activation-record-invalid")?)?;
     }
     Ok(())
@@ -488,9 +493,23 @@ fn clear_home_activation(
     journal: &ReconciliationJournalV1,
 ) -> Result<(), &'static str> {
     bind_home_activation(store, journal)?;
-    let marker = native_journal_home(journal)?
-        .join(".qiongli/native")
-        .join(HOME_ACTIVATION_MARKER);
+    let home = native_journal_home(journal)?;
+    let start = read_private_file(
+        &store
+            .staging_root()
+            .join(&journal.transaction_id)
+            .join(NATIVE_ACTIVATION_RECORD),
+        MAX_STATE_BYTES,
+    )?;
+    clear_installation_marker(&home, &start)
+}
+
+/// Remove only the exact marker whose operation completed under the Home lock.
+pub(crate) fn clear_installation_marker(home: &Path, expected: &[u8]) -> Result<(), &'static str> {
+    let marker = native_home_state_root(home)?.join(HOME_ACTIVATION_MARKER);
+    if read_private_file(&marker, MAX_STATE_BYTES)? != expected {
+        return Err("native-activation-recovery-required");
+    }
     fs::remove_file(&marker).map_err(|_| "native-activation-record-invalid")?;
     sync_directory(marker.parent().ok_or("native-activation-record-invalid")?)
 }

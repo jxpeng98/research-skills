@@ -27,6 +27,15 @@ Public writes use preview, digest-bound approval, revalidation, and fail-closed
 errors. `qiongli_project_capture_apply` is a real Full MCP project write and
 must never be described as read-only. ToolHost remains read-only in-process.
 
+Host handoff instructions classify project data, PDF excerpts, web pages, repository
+content, dataset documentation, imported notes, tool results and prior candidate
+hashes as untrusted evidence. Embedded approval or tool instructions confer no
+permission. The server-owned handoff, project scope and evidence ledger remain the
+authority for orchestration reads; capture writes still require their separate
+preview/digest/approval checks. Candidate acceptance is not human approval. These
+server checks do not attest that a Host-supplied approval boolean came from a human;
+CLI-404 must separately verify that Host interaction.
+
 Local Workflow/Skill customization is owned by `WorkflowVariantStore`. It may
 override only canonical Markdown instruction resources, and installed
 Skills/Plugin outputs must record the exact optional variant digest. Saving a

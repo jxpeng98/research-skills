@@ -1454,3 +1454,35 @@ program acceptance, push or publication changed. This is one observed process-ki
 boundary; arbitrary interruption positions, power loss and partial-tree deletion are
 not qualified. Next: real Host baseline and remaining platform/named-candidate evidence,
 while preserving these explicit limits. First-stage integration remains incomplete.
+
+
+## SEC-401–403 first CLI Host boundary increment — untrusted approval claims
+
+Base: `307b4086`; branch: `codex/host-untrusted-evidence-boundary`.
+The existing Host packet now explicitly classifies PDF excerpts, web pages,
+repository content, dataset documentation and imported notes (alongside project
+and tool data) as untrusted evidence. It says source instructions cannot extend
+tool/project scope, authenticate evidence or approve writes; candidate acceptance
+is not human approval. No new parser, permission owner or public schema was added.
+
+The copied-binary MCP journey now reads a project name instructing it to invoke
+capture apply, verifies that source text stays out of the trusted handoff, then
+attempts the write through orchestration read with approval set true. The existing
+server rejects it. Existing cross-project and forged-evidence refusals still pass.
+The connected capture fixture now contains an imported note claiming human approval;
+its existing false-approval and wrong-digest cases still reject before the explicit
+approved happy path. These are server-boundary fixtures, not a real model attack
+corpus or proof of human-origin approval.
+
+Eight orchestration input tests and all seven MCP stdio tests passed. Six MCP tests
+passed inside the sandbox; the existing Zotero loopback test was initially denied
+permission to bind, then passed when rerun alone with scoped permission. Execution
+library Clippy and both deterministic Codex/Claude plugin bundle tests passed.
+Whitespace, generated roadmap index and frozen-source boundary checks passed.
+Runtime contract documentation records the remaining human
+origin gap: a Host-supplied boolean plus digest is not human-interaction evidence.
+
+SEC-401–403 remain unaccepted. Next: inspect the actual Host approval interaction
+and isolated read-only client integration before qualifying research writes. No
+private research data, remote publication or program acceptance was authorized or
+changed; first-stage integration remains incomplete.

@@ -2077,3 +2077,41 @@ history file remains absent. No approval was received, no capture was replaced,
 and no research state was applied. A richer future capture needs a fresh preview.
 Only this evidence note is committed; whitespace, generated-index and frozen-source
 checks passed. Existing runtime suites and unchanged package checks were not rerun.
+
+
+## CLI-403 macOS to Windows x64 cross-build
+
+The maintainer requested attempting the cross-build on macOS after the tooling
+permission question. Installed Rust `x86_64-pc-windows-msvc` standard libraries and
+cargo-xwin 0.23.1, reusing LLVM 23.1.0 and the existing cargo-xwin Windows SDK/CRT
+cache. Rust is 1.98.1. Source: `59a7080e6f7c8a02cbc0c4c17cbaee6318f29f3e`;
+branch: `codex/windows-cross-build-evidence`. No product source, Cargo.lock or default
+build configuration changed. Initial offline build lacked curve25519-dalek-derive
+0.1.1; a locked online retry fetched it and successfully built the release CLI.
+
+Both runs used `cargo xwin build --manifest-path packages/qiongli-native/Cargo.toml
+-p qiongli --bin qiongli --no-default-features --release --target
+x86_64-pc-windows-msvc --locked`, with existing LLVM/Rust bin directories on PATH
+and `XWIN_CACHE_DIR=/Users/pengjiaxin/Library/Caches/cargo-xwin`. Normal CRT output
+is under `packages/qiongli-native/target/cli-windows-cross-59a7080e/`; its binary
+SHA-256 is `40d83562da4f1d45ed19ef31db643e843280b5b1e7d775cf52830183023c2bce`.
+It imports VCRUNTIME140.dll and dynamic UCRT entrypoints.
+
+A second successful offline build added `RUSTFLAGS="-C target-feature=+crt-static"`
+and used target directory `packages/qiongli-native/target/cli-windows-cross-static-59a7080e`.
+Its `x86_64-pc-windows-msvc/release/qiongli.exe` is 15,579,136 bytes, SHA-256
+`4c0a2f692a2543a305a672124ea4b270ff4186d9d9b9a7101119a1c433224de1`.
+`llvm-readobj` confirms AMD64 PE/COFF, console subsystem and no VCRUNTIME/MSVCP/
+api-ms-win-crt imports. Eight Windows OS DLL imports remain. The SDK static libraries
+reference missing Microsoft PDBs (LNK4099); linkage succeeded, while CRT debugging
+symbols are incomplete. No warning was suppressed or represented as a runtime pass.
+The target directory retains `pe-inspection.txt` and `cross-build-receipt.json`.
+
+The selected Windows normal/build dependency graph has 186 distinct package names
+and no tauri/gtk/gdk/webkit/wry/rfd prefix. Its tree is saved with the first build.
+Compilation and PE inspection are complete; no guest/hardware execution, installer,
+signed candidate, research approval or Windows update qualification is implied.
+Next: exercise the Windows artifact in a declared Windows environment and qualify
+its actual package/consumer behavior. Existing human research approval remains
+pending. Local whitespace, generated-index and frozen-source checks passed; no
+unchanged source tests were rerun. Publication remains unauthorized.

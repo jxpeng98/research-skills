@@ -1127,8 +1127,12 @@ The signed update manifest supplies target-specific PluginBundle launch grants
 for both clients. A canonical reconciliation journal binds every old/new
 version, pack, destination, receipt, content, and plan digest. The helper
 activates these operations with the application and compensates them in reverse
-order before app rollback. Config, secret references, research data, unmanaged
-host bytes, and 1.x content are outside this transaction.
+order before app rollback. Before the first rollback rename, the shared executor
+verifies every old backup and active/staged identity in the rollback set. Damaged
+content or dangling backup links fail without moving another surface. Recovery
+supports interruptions between either pair of renames and repeated rollback.
+Config, secret references, research data, unmanaged host bytes, and 1.x content
+are outside this transaction.
 
 R3O Batch 5 exposes that same updater through the Overview Update card. The
 typed desktop service owns Stable/Beta selection, signed metadata checks,

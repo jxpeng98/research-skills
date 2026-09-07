@@ -322,17 +322,8 @@ pub(crate) fn activate_prepared_reconciliation(
 pub(crate) fn rollback_active_reconciliation(
     journal: &ReconciliationJournalV1,
 ) -> Result<(), &'static str> {
-    for operation in journal.operations.iter().rev() {
-        if !operation.backup.exists() {
-            continue;
-        }
-        if operation.destination.exists() {
-            ensure_absent(&operation.staged)?;
-            rename_without_replacement(&operation.destination, &operation.staged)?;
-        }
-        rename_without_replacement(&operation.backup, &operation.destination)?;
-        sync_operation_parent(operation)?;
-    }
+    validate_journal(journal)?;
+    rollback_applied_operations(&journal.operations)?;
     for operation in &journal.operations {
         verify_operation_identity(operation, &operation.destination, false)?;
         ensure_absent(&operation.backup)?;
@@ -1305,9 +1296,36 @@ fn verify_operation_identity(
 fn rollback_applied_operations(
     operations: &[ReconciliationOperationV1],
 ) -> Result<(), &'static str> {
+    // Validate the entire rollback set before the first rename. Both the active
+    // and interrupted-rename states retain exactly one copy of each identity.
+    for operation in operations {
+        if operation.backup.exists() {
+            verify_operation_identity(operation, &operation.backup, false)?;
+            if operation.destination.exists() {
+                ensure_absent(&operation.staged)?;
+                verify_operation_identity(operation, &operation.destination, true)?;
+            } else {
+                ensure_absent(&operation.destination)?;
+                verify_operation_identity(operation, &operation.staged, true)?;
+            }
+        } else {
+            ensure_absent(&operation.backup)?;
+            verify_operation_identity(operation, &operation.destination, false)?;
+            if operation.staged.exists() {
+                verify_operation_identity(operation, &operation.staged, true)?;
+            } else {
+                ensure_absent(&operation.staged)?;
+            }
+        }
+    }
     for operation in operations.iter().rev() {
-        ensure_absent(&operation.staged)?;
-        rename_without_replacement(&operation.destination, &operation.staged)?;
+        if !operation.backup.exists() {
+            continue;
+        }
+        if operation.destination.exists() {
+            ensure_absent(&operation.staged)?;
+            rename_without_replacement(&operation.destination, &operation.staged)?;
+        }
         rename_without_replacement(&operation.backup, &operation.destination)?;
         sync_operation_parent(operation)?;
     }
@@ -1691,6 +1709,49 @@ mod tests {
             fs::metadata(&journal.operations[0].backup).unwrap().ino(),
             old_inode
         );
+        // Validate every operation before moving any surface, including one earlier
+        // in the reverse rollback order whose backup or active bytes have drifted.
+        for path in [&journal.operations[1].backup, &registry_destination] {
+            let bytes = fs::read(path).unwrap();
+            fs::write(path, b"modified-private-canary").unwrap();
+            assert!(rollback_active_reconciliation(&journal).is_err());
+            assert_eq!(fs::metadata(&destination).unwrap().ino(), staged_inode);
+            assert_eq!(
+                fs::metadata(&registry_destination).unwrap().ino(),
+                staged_registry_inode
+            );
+            assert_eq!(fs::read(path).unwrap(), b"modified-private-canary");
+            for operation in &journal.operations {
+                assert!(operation.backup.exists());
+                assert!(!operation.staged.exists());
+            }
+            fs::write(path, bytes).unwrap();
+        }
+        // A dangling backup link in the last rollback operation must not cause
+        // the earlier registry operation to move before the failure is detected.
+        let backup = &journal.operations[0].backup;
+        let held_backup = root.join("held-skills-backup");
+        fs::rename(backup, &held_backup).unwrap();
+        std::os::unix::fs::symlink(root.join("missing-backup-target"), backup).unwrap();
+        assert!(rollback_active_reconciliation(&journal).is_err());
+        assert_eq!(
+            fs::metadata(&registry_destination).unwrap().ino(),
+            staged_registry_inode
+        );
+        assert_eq!(fs::metadata(&destination).unwrap().ino(), staged_inode);
+        assert!(
+            fs::symlink_metadata(backup)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        fs::remove_file(backup).unwrap();
+        fs::rename(&held_backup, backup).unwrap();
+
+        // Resume a rollback interrupted between moving the active file aside and
+        // restoring its backup, without moving unrelated state.
+        fs::rename(&registry_destination, &journal.operations[1].staged).unwrap();
+        rollback_active_reconciliation(&journal).unwrap();
         rollback_active_reconciliation(&journal).unwrap();
         assert_eq!(fs::metadata(&destination).unwrap().ino(), old_inode);
         assert_eq!(
@@ -1704,6 +1765,11 @@ mod tests {
                 .product_version,
             env!("CARGO_PKG_VERSION")
         );
+        // The other interrupted rename state occurs during activation, with the
+        // old destination backed up and the new bytes still staged.
+        fs::rename(&destination, &journal.operations[0].backup).unwrap();
+        rollback_active_reconciliation(&journal).unwrap();
+        assert_eq!(fs::metadata(&destination).unwrap().ino(), old_inode);
         cleanup_rolled_back_reconciliation(&journal).unwrap();
 
         for (name, bytes) in canaries {

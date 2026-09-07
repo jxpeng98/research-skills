@@ -598,3 +598,32 @@ current-process/version checks and rollback. Stage still verifies the running
 build's source/version/content; newer downloaded content needs explicit trusted
 verification. Windows/Linux runtime, CLI-404/405 and first-stage acceptance remain
 open. The ledger's accepted rows are unchanged.
+
+## CLI-403 eighth increment — shared rollback preflight
+
+Base: `15d3c2cc`; branch: `codex/cli-reconciliation-rollback-guards`.
+Tracing staged-version activation found that the reusable reconciliation rollback
+moved active files before checking its old backups. The regression reproduced this:
+a damaged registry backup returned an error only after another managed surface's
+inode had changed. Before wiring standalone activation to this owner, rollback now
+validates the journal and every operation's old/new identity before the first
+rename. Automatic activation compensation uses the same implementation, avoiding
+a second rollback path. Public JSON and persisted journal versions are unchanged.
+
+The existing real-materialization test now checks corrupted backup and active
+bytes, a dangling backup link in the final reverse-order operation, exact inode
+and canary preservation on refusal, both interrupted rename states, and replay.
+On macOS the reconciliation tests passed (2), direct replacement-owner tests
+passed (10), and affected library Clippy passed with the existing Rust 1.98
+`chunks_exact_to_as_chunks` exception. The earlier REL-913 selection also passed
+(4); unchanged results were not repeated at merge. Formatting and whitespace
+checks passed. Final review found no actionable findings in this bounded fix.
+
+Next remains actual independent version activation and rollback across installed
+command and Host surfaces using existing reconciliation/CLI owners. The current
+reconciliation journal covers Skills, plugin sources and registration, not the
+installed CLI binary/receipt; CLI replacement currently has its own transaction.
+Their coordinated recovery and current-process checks need implementation and
+real versioned execution evidence. This prerequisite fix is not qualification of
+that missing flow, CLI-404/405, additional platforms or first-stage acceptance.
+Ledger acceptance is unchanged; no remote operation or publication is included.

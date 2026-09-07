@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "command": "install-candidate-activate-recover",
+  "transaction_id": "update-11111111111111111111111111111111",
+  "journal_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "outcome": "rolled-back"
+}

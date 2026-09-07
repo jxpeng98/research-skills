@@ -186,23 +186,7 @@ pub(crate) fn prepare_update_reconciliation(
                 previous_update_revision: loaded.revision,
                 previous_last_accepted_generation: loaded.state.last_accepted_generation,
                 previous_last_known_good: loaded.state.last_known_good.clone(),
-                next: qiongli_config::UpdateLastKnownGood {
-                    version: candidate.candidate().artifact.version.clone(),
-                    channel: match candidate.candidate().artifact.channel {
-                        qiongli_platform::ReleaseChannel::Alpha => {
-                            qiongli_config::UpdateReleaseChannel::Alpha
-                        }
-                        qiongli_platform::ReleaseChannel::Beta => {
-                            qiongli_config::UpdateReleaseChannel::Beta
-                        }
-                        qiongli_platform::ReleaseChannel::Stable => {
-                            qiongli_config::UpdateReleaseChannel::Stable
-                        }
-                    },
-                    generation: candidate.candidate().generation,
-                    archive_sha256: release.archive_sha256.clone(),
-                    resource_pack_sha256: release.resource_pack_sha256.clone(),
-                },
+                next: candidate_release_identity(candidate),
             })
         })
         .transpose()?;
@@ -526,7 +510,7 @@ pub(crate) fn clear_installation_marker(home: &Path, expected: &[u8]) -> Result<
 const NATIVE_ACTIVATION_RECORD: &str = "native-activation.json";
 const NATIVE_ACTIVATION_OUTCOME: &str = "native-activation-outcome.json";
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub enum NativeActivationOutcome {
     Committed,
@@ -575,6 +559,22 @@ pub fn activate_native_reconciliation(
     expected_journal_sha256: &str,
     health: impl FnOnce() -> Result<(), &'static str>,
 ) -> Result<NativeActivationOutcome, &'static str> {
+    activate_native_reconciliation_with_preflight(
+        store,
+        transaction_id,
+        expected_journal_sha256,
+        |_| Ok(()),
+        health,
+    )
+}
+
+pub(crate) fn activate_native_reconciliation_with_preflight(
+    store: &UpdateStateStore,
+    transaction_id: &str,
+    expected_journal_sha256: &str,
+    preflight: impl FnOnce(&ReconciliationJournalV1) -> Result<(), &'static str>,
+    health: impl FnOnce() -> Result<(), &'static str>,
+) -> Result<NativeActivationOutcome, &'static str> {
     let initial_journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     store.load().map_err(|error| error.reason_code())?;
     let home = native_journal_home(&initial_journal)?;
@@ -597,6 +597,7 @@ pub fn activate_native_reconciliation(
     }
     verify_prepared_reconciliation(&journal)?;
     refuse_running_native_cli(&journal)?;
+    preflight(&journal)?;
     write_native_activation_record(store, &journal, expected_journal_sha256, None)?;
     bind_home_activation(store, &journal)?;
     set_native_activation_phase(
@@ -708,6 +709,43 @@ pub fn discard_native_reconciliation(
     checked_native_journal(store, transaction_id, expected_journal_sha256)?;
     remove_committed_reconciliation_journal(store, transaction_id)?;
     remove_reconciliation_transaction_root(store, transaction_id)
+}
+
+fn candidate_release_identity(
+    candidate: &qiongli_platform::VerifiedNativeReleaseCandidate,
+) -> qiongli_config::UpdateLastKnownGood {
+    let release = &candidate.candidate().signed_portable_release.envelope;
+    qiongli_config::UpdateLastKnownGood {
+        version: candidate.candidate().artifact.version.clone(),
+        channel: match candidate.candidate().artifact.channel {
+            qiongli_platform::ReleaseChannel::Alpha => qiongli_config::UpdateReleaseChannel::Alpha,
+            qiongli_platform::ReleaseChannel::Beta => qiongli_config::UpdateReleaseChannel::Beta,
+            qiongli_platform::ReleaseChannel::Stable => {
+                qiongli_config::UpdateReleaseChannel::Stable
+            }
+        },
+        generation: candidate.candidate().generation,
+        archive_sha256: release.archive_sha256.clone(),
+        resource_pack_sha256: release.resource_pack_sha256.clone(),
+    }
+}
+
+pub(crate) fn verify_native_candidate_journal(
+    journal: &ReconciliationJournalV1,
+    home: &Path,
+    candidate: &qiongli_platform::VerifiedNativeReleaseCandidate,
+) -> Result<(), &'static str> {
+    let release = journal
+        .native_release
+        .as_ref()
+        .ok_or("native-activation-release-invalid")?;
+    if native_journal_home(journal)? != home
+        || release.candidate_digest_sha256 != candidate.signed_payload_sha256()
+        || release.next != candidate_release_identity(candidate)
+    {
+        return Err("native-activation-release-invalid");
+    }
+    Ok(())
 }
 
 fn checked_native_journal(

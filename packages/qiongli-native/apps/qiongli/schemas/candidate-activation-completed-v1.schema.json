@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateActivationCompletedOutput",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "command": {
+      "$ref": "#/$defs/ActivationCompletedCommand"
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^update-[0-9a-f]{32}$"
+    },
+    "journal_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "outcome": {
+      "$ref": "#/$defs/NativeActivationOutcome"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "transaction_id",
+    "journal_sha256",
+    "outcome"
+  ],
+  "$defs": {
+    "ActivationCompletedCommand": {
+      "type": "string",
+      "enum": [
+        "install-candidate-activate",
+        "install-candidate-activate-recover"
+      ]
+    },
+    "NativeActivationOutcome": {
+      "type": "string",
+      "enum": [
+        "committed",
+        "rolled-back"
+      ]
+    }
+  }
+}

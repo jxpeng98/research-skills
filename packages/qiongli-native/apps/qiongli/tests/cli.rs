@@ -4527,3 +4527,50 @@ fn update_recovery_requires_explicit_digest_and_approval_without_creating_state(
         assert!(!fixture.home.join(".qiongli").exists());
     }
 }
+
+#[test]
+fn native_activation_public_entry_refuses_source_authority_without_writes() {
+    let fixture = Fixture::new("native-activation-source");
+    let help = run_configured(&fixture, &["install", "--help"]);
+    assert!(String::from_utf8_lossy(&help.stdout).contains("candidate activate --candidate"));
+    let output = run_configured(
+        &fixture,
+        &[
+            "install",
+            "candidate",
+            "activate",
+            "--candidate",
+            "missing.json",
+            "--archive",
+            "missing.zip",
+            "--release-notes",
+            "missing.md",
+            "--target",
+            "codex",
+            "--previous-install-id",
+            &format!("native-payload-{}", "1".repeat(64)),
+            "--transaction-id",
+            &format!("update-{}", "2".repeat(32)),
+            "--expected-journal-digest",
+            &"3".repeat(64),
+            "--expected-approval-digest",
+            &"4".repeat(64),
+            "--approve-filesystem-write",
+            "--approve-client-config-change",
+            "--approve-host-trust",
+        ],
+    );
+    assert!(!output.status.success());
+    assert_ne!(output.status.code(), Some(2));
+    let reason = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        reason.contains(if cfg!(target_os = "macos") {
+            "native-release-authority-unavailable"
+        } else {
+            "native-update-target-unsupported"
+        }),
+        "{reason}"
+    );
+    assert!(!fixture.config_root.exists());
+    assert!(!fixture.home.join(".qiongli").exists());
+}

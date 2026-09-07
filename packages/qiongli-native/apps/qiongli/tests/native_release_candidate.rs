@@ -997,7 +997,16 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
         assert_eq!(serde_json::to_value(activation().unwrap()).unwrap(), first);
         assert!(cancel(journal_digest).is_err());
 
-        for mode in ["failed", "interrupted", "committed-cleanup", "committed"] {
+        for mode in [
+            "failed",
+            "interrupted",
+            "committed-cleanup",
+            "committed",
+            "approved-health-failed",
+        ] {
+            if mode == "approved-health-failed" && !cfg!(target_os = "macos") {
+                continue;
+            }
             use std::os::unix::fs::PermissionsExt;
             let activation_home = fixture.root.join(format!("release-state-{mode}"));
             create_private_directory(&activation_home);
@@ -1119,6 +1128,58 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
             )
             .join("keep-me");
             let attempt = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                if mode == "approved-health-failed" {
+                    let before = store.load().unwrap();
+                    let approved = |approval: &str| {
+                        qiongli::activate_native_candidate(
+                            &next_product,
+                            &next_verified,
+                            &prior.payload.receipt.install_id,
+                            id,
+                            digest,
+                            approval,
+                            &embedded,
+                            config.clone(),
+                        )
+                    };
+                    assert_eq!(
+                        approved(&"0".repeat(64)),
+                        Err("native-activation-approval-digest-mismatch")
+                    );
+                    assert_eq!(store.load().unwrap(), before);
+                    assert!(
+                        !store
+                            .staging_root()
+                            .join(id)
+                            .join("native-activation.json")
+                            .exists()
+                    );
+                    let mut substituted = journal.clone();
+                    substituted["native_release"]["next"]["archive_sha256"] = json!("f".repeat(64));
+                    let substituted_bytes = serde_json_canonicalizer::to_vec(&substituted).unwrap();
+                    let substituted_digest = format!(
+                        "{:x}",
+                        <sha2::Sha256 as sha2::Digest>::digest(&substituted_bytes)
+                    );
+                    fs::write(&journal_path, &substituted_bytes).unwrap();
+                    assert_eq!(
+                        qiongli::activate_native_candidate(
+                            &next_product,
+                            &next_verified,
+                            &prior.payload.receipt.install_id,
+                            id,
+                            &substituted_digest,
+                            prepared["approval_digest_sha256"].as_str().unwrap(),
+                            &embedded,
+                            config.clone(),
+                        ),
+                        Err("native-activation-release-invalid")
+                    );
+                    assert_eq!(store.load().unwrap(), before);
+                    fs::write(&journal_path, &journal_bytes).unwrap();
+                    // Fixture payload bytes are not a runnable Qiongli CLI: mandatory health must roll back.
+                    return approved(prepared["approval_digest_sha256"].as_str().unwrap());
+                }
                 qiongli::activate_native_reconciliation(&store, id, digest, || {
                     assert_eq!(
                         store.load().unwrap().state.last_known_good,
@@ -1161,7 +1222,35 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
                 fs::write(&journal_path, &journal_bytes).unwrap();
                 fs::remove_file(&canary).unwrap();
             }
-            let outcome = qiongli::recover_native_reconciliation(&store, id, digest).unwrap();
+            let outcome = if cfg!(target_os = "macos") {
+                let output = std::process::Command::new(env!("CARGO_BIN_EXE_qiongli"))
+                    .env("HOME", &activation_home)
+                    .env("QIONGLI_CONFIG_HOME", config.compatibility_root())
+                    .args([
+                        "install",
+                        "candidate",
+                        "activate-recover",
+                        "--transaction-id",
+                        id,
+                        "--expected-journal-digest",
+                        digest,
+                        "--approve-filesystem-write",
+                    ])
+                    .output()
+                    .unwrap();
+                assert!(
+                    output.status.success(),
+                    "{}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+                let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+                assert_eq!(value["command"], "install-candidate-activate-recover");
+                assert_eq!(value["transaction_id"], id);
+                assert_eq!(value["journal_sha256"], digest);
+                serde_json::from_value(value["outcome"].clone()).unwrap()
+            } else {
+                qiongli::recover_native_reconciliation(&store, id, digest).unwrap()
+            };
             let recovered = store.load().unwrap();
             assert!(recovered.state.active_transaction.is_none());
             if mode.starts_with("committed") {

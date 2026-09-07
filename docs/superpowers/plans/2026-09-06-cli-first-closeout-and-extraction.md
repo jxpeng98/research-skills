@@ -1344,3 +1344,38 @@ Next: connect fresh candidate/approval validation and installed CLI health to th
 native activation command, with native recovery exposed through its existing owner.
 Real process-kill, platform and Host/named-candidate qualification remain open; the first
 stage is not complete. No push or publication occurred.
+
+
+## CLI-403 thirty-first increment — connect public native activation and recovery
+
+Base: `28f6a329`; branch: `codex/cli-native-activation-commands`.
+Added macOS `install candidate activate` with signed release inputs, predecessor,
+transaction/journal/approval digests and all three explicit approvals. The dispatcher
+verifies the signed candidate and running packaged product. Under the existing
+Home/config locks, the coordinator's preflight checks the candidate/Home/full next
+release identity and recomputes the preparation approval against current preflight,
+workflow and update state. The existing preparation approval bytes remain unchanged.
+Installed CLI health is mandatory; callers of the public command cannot replace it.
+
+Added `install candidate activate-recover` with exact transaction/journal identity and
+filesystem approval. It uses the existing recovery owner, process check and durable
+outcome without rerunning health or requiring new release adoption authority. These
+public commands explicitly refuse non-macOS pending equivalent process inspection;
+existing lower-level platform behavior is unchanged. Both success outputs have a
+Rust-generated additive schema and activate/recover golden fixtures.
+
+Checks: 13 focused activation tests passed, including preparation golden stability,
+new parser approvals and new schema consumer checks. The signed candidate integration
+case passed through the approved wrapper, proving wrong approval and substituted next
+archive identity refuse before records/state changes; its non-runnable payload fails
+mandatory real CLI health and rolls back. Native recovery for all macOS outcome cases
+runs through a real CLI subprocess and checks output identity/state. The standalone
+CLI source-authority refusal test passed without creating Home/config state. Library
+and generator Clippy, schema-policy validator plus 12 tests, roadmap index, whitespace
+and frozen-source boundary checks passed. Unchanged results were reused at integration.
+
+Next: prove the complete successful public activation path with a real signed runnable
+candidate, then real process-kill recovery and named-candidate/platform/Host qualification.
+Current positive commit tests still use the lower-level coordinator's health callback;
+they are not successful packaged public-activation evidence. First-stage integration and
+program acceptance remain incomplete; no push or publication.

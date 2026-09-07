@@ -145,7 +145,7 @@ revision and workflow revision/variant into a separate activation approval diges
 Workflow/update state is rechecked after staging. An existing transaction refuses
 without overwriting its journal. Fresh failed preparation uses existing guarded
 cleanup. The Rust-generated public contract is `candidate-activation-prepared-v1`;
-reconciliation v2 wire semantics remain unchanged. Actual activation and native recovery command wiring remain separate pending work.
+reconciliation v2 wire semantics remain unchanged. The macOS activation and recovery commands are described below.
 
 `install candidate activate-discard` cancels an unactivated v2 preparation using
 `--transaction-id`, `--expected-journal-digest` and filesystem-write approval. It
@@ -175,8 +175,8 @@ preserves prior release metadata. Recovery can finish a committed cleanup withou
 rerunning health, and completed replay does not increase the revision. Unexpected
 release-state changes refuse before cleanup. Preparation transaction IDs now include
 update/workflow revisions so a rolled-back attempt can be prepared again without
-overwriting historical records. The caller still owns fresh candidate/approval verification. Public native
-activation/recovery commands remain pending; shared write exclusion is described below.
+overwriting historical records. The caller still owns fresh candidate/approval verification. The macOS public native activation/recovery commands enforce these boundaries;
+shared write exclusion is described below.
 
 Native activation, recovery, discard and candidate preparation now acquire a fixed
 private `HOME/.qiongli/native/.installation.lock` before the config-root replacement
@@ -191,7 +191,7 @@ The shared Unix managed-write guard covers managed-operation apply, candidate
 stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and packaged
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
-CLI health. Non-Unix managed writes retain their existing behavior. Public native activation remains pending; legacy interrupted-update recovery uses
+CLI health. Non-Unix managed writes retain their existing behavior. Public native activation is macOS-only; legacy interrupted-update recovery uses
 the approved CLI entry described below. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
 
@@ -315,6 +315,30 @@ Host content are still governed by their existing ownership checks. This guard d
 not stop processes, prevent subsequent launches or claim Host reload completion.
 Other platforms retain their existing coordinator behavior and have not gained native
 process inspection; their public activation must not claim this macOS evidence.
+
+On macOS, `install candidate activate` accepts the same signed candidate/archive/notes,
+Host target and predecessor as preparation, plus its `--transaction-id`,
+`--expected-journal-digest`, `--expected-approval-digest` and all three approvals:
+`--approve-filesystem-write`, `--approve-client-config-change`, `--approve-host-trust`.
+Run it from the verified staged candidate binary. It freshly verifies candidate and
+running product authority, then rechecks candidate/Home/release identity, preflight,
+workflow and update revisions under the installation locks. It uses the unchanged
+preparation approval hash and starts no activation records on mismatch. The coordinator
+requires installed CLI health using the candidate identity; the public command cannot
+supply a substitute health callback. Failed health rolls back through the existing owner.
+
+`install candidate activate-recover --transaction-id <id> --expected-journal-digest
+<sha256> --approve-filesystem-write` replays the exact existing native journal/outcome.
+It requires no fresh release adoption authority and never reruns health. Use a separate
+CLI outside affected executable paths. Public activate/recover currently refuse other
+platforms rather than claim macOS process inspection there. Earlier preparation,
+discard and lower-level platform behavior remains unchanged.
+
+Both successful commands use additive Rust-generated `candidate-activation-completed-v1`
+JSON with exact transaction/journal identity and committed/rolled-back outcome. A returned
+outcome describes local transaction completion, not a live Host reload or named-candidate
+acceptance. Successful real packaged activation and process-kill qualification remain
+separate evidence requirements.
 
 ## Quality Check
 

@@ -879,7 +879,11 @@ fn ensure_candidate_directory(path: &Path, private: bool) -> Result<(), Transact
     match fs::symlink_metadata(path) {
         Ok(_) => validate_candidate_directory(path, private),
         Err(error) if error.kind() == io::ErrorKind::NotFound => {
-            create_candidate_private_directory(path)?;
+            match create_candidate_private_directory(path) {
+                Ok(()) => {}
+                Err(TransactionError::PersistenceFailed(io::ErrorKind::AlreadyExists)) => {}
+                Err(error) => return Err(error),
+            }
             validate_candidate_directory(path, true)
         }
         Err(error) => Err(TransactionError::PersistenceFailed(error.kind())),

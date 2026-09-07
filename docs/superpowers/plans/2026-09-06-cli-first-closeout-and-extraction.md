@@ -1071,3 +1071,40 @@ Next: guard update-state dispatch and resolve the cross-config interaction with 
 interrupted legacy Desktop replacement (which still lacks a durable global marker).
 Then connect public activation/recovery with fresh candidate/approval/process checks.
 The first-stage objective remains open; no push or publication occurred.
+
+
+## CLI-403 twenty-second increment — update dispatcher write coordination
+
+Base: `14c801c6`; branch: `codex/cli-update-dispatch-guard`.
+The existing managed-write guard now reuses a transaction-compatible Home/config
+lock helper. CLI/Desktop channel/cancel, signed verify/stage and staged reconciliation
+use that helper while retaining their stage-specific state/CAS checks. Read-only
+status/check and token-bound legacy health remain available. Signed paths without
+release authority still refuse through their original owners before mutation.
+
+Download locks cover only reservation and initial private staging after manifest
+verification. Transport and its private-state CAS remain cancellable. Holding locks
+across transport initially broke cancellation and stranded the two-party manifest
+barrier test; that exact test process was identified and terminated before rerunning
+the corrected scope. Concurrent reservation can now refuse either by revision or
+installation-lock contention. A real first-directory creation race also surfaced;
+the shared platform owner now accepts AlreadyExists only after full private-directory
+validation. No link, ownership or permission check was removed.
+
+Install's staged child owns its own guard. The parent waits without holding the lock,
+then acquires it and checks the exact state/revision before advancing and preparing
+handoff. This avoids introducing a parent/child lock conflict. Test adapters now use
+isolated fixture Homes instead of the developer's process Home.
+
+Checks: all 14 update unit tests passed, including new channel/cancel marker refusal
+without state writes, status availability under lock, concurrent cancellation and
+single-winner downloads. Nine managed-operation tests and CLI-pair activation/recovery
+passed after extracting the shared guard. Final library Clippy, signed-candidate
+integration, whitespace, roadmap-index and frozen-source checks passed. These tests do not qualify a real
+Desktop parent/helper handoff or real Host research. Public wire formats and accepted
+ledger rows are unchanged.
+
+Next: complete durable cross-config coordination for interrupted legacy Desktop
+replacement, then expose native activation/recovery using fresh candidate/approval
+and real installed-CLI health checks. First-stage integration remains incomplete;
+no push, publication or acceptance advancement.

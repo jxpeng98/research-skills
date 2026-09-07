@@ -523,6 +523,15 @@ pub(crate) fn desktop_cancel(
 }
 
 #[cfg(all(test, unix))]
+fn test_update_environment(store: &UpdateStateStore) -> CommandEnvironment {
+    use std::os::unix::fs::PermissionsExt;
+    let home = store.state_root().parent().unwrap().with_extension("home");
+    std::fs::create_dir_all(&home).unwrap();
+    std::fs::set_permissions(&home, std::fs::Permissions::from_mode(0o700)).unwrap();
+    CommandEnvironment::with_paths(None::<std::ffi::OsString>, Some(home), None)
+}
+
+#[cfg(all(test, unix))]
 fn execute_with_fetchers(
     command: UpdateCliCommand,
     store: &UpdateStateStore,
@@ -539,7 +548,7 @@ fn execute_with_fetchers(
         manifest_fetcher,
         archive_fetcher,
         &StagedEvidenceVerifier,
-        &CommandEnvironment::from_process(),
+        &test_update_environment(store),
     )
 }
 
@@ -557,6 +566,25 @@ fn execute_with_services(
     evidence_verifier: &impl EvidenceVerifier,
     environment: &CommandEnvironment,
 ) -> Result<UpdateCliOutput, &'static str> {
+    // Authority-free signed update paths refuse before mutation in their owners.
+    // Health uses the existing token-bound completion path while its helper holds locks.
+    let _write_guard = if matches!(
+        &command,
+        UpdateCliCommand::Channel { .. } | UpdateCliCommand::Cancel { .. }
+    ) || (authority.is_some()
+        && matches!(
+            &command,
+            UpdateCliCommand::Verify { .. } | UpdateCliCommand::Stage { .. }
+        )) {
+        crate::update_reconcile::acquire_update_write_guard(
+            environment
+                .platform_home()
+                .ok_or("native-update-home-unavailable")?,
+            store,
+        )?
+    } else {
+        None
+    };
     let loaded = store.load().map_err(|error| error.reason_code())?;
     match command {
         UpdateCliCommand::Status => Ok(UpdateCliOutput::Status(UpdateStatusOutput {
@@ -646,6 +674,9 @@ fn execute_with_services(
                 return Err("native-update-not-available");
             }
             download_verified_update(
+                environment
+                    .platform_home()
+                    .ok_or("native-update-home-unavailable")?,
                 store,
                 loaded.state,
                 expected_revision,
@@ -784,12 +815,14 @@ fn update_install_status(state: &UpdateState) -> &'static str {
 }
 
 fn download_verified_update(
+    home: &Path,
     store: &UpdateStateStore,
     mut state: UpdateState,
     expected_revision: u64,
     verified: VerifiedNativeUpdateManifest,
     archive_fetcher: &impl ArchiveFetcher,
 ) -> Result<UpdateDownloadOutput, &'static str> {
+    let reservation_guard = crate::update_reconcile::acquire_update_write_guard(home, store)?;
     let transaction_id = new_transaction_id()?;
     let manifest = verified.manifest();
     let target_version = manifest.artifact.version.clone();
@@ -825,6 +858,9 @@ fn download_verified_update(
             );
         }
     };
+    // The reserved transaction and state CAS protect private download staging;
+    // release installation locks so cancellation remains available during transport.
+    drop(reservation_guard);
     if let Err(error) = archive_fetcher.fetch(&verified, &staging) {
         return cleanup_failed_download(store, state, reservation.revision, &transaction_id, error);
     }
@@ -1052,37 +1088,55 @@ fn install_staged_update(
     let evidence = verified
         .verify_evidence(&desktop_manifest_bytes, &signing_receipt_bytes)
         .map_err(|error| error.reason_code())?;
-    let (reconciled, reconciliation_revision) =
-        if transaction_phase == UpdateTransactionPhase::Staged {
-            let reconciled = run_staged_reconciliation(store, &transaction_id, environment)?;
-            state
-                .active_transaction
-                .as_mut()
-                .ok_or("native-update-transaction-missing")?
-                .phase = UpdateTransactionPhase::ReconciliationPrepared;
-            let reconciliation_state = store
-                .replace(expected_revision, state.clone())
-                .map_err(|error| error.reason_code())?;
-            if reconciliation_state.cleanup_required {
-                return Err("native-update-state-cleanup-required");
-            }
-            (reconciled, reconciliation_state.revision)
-        } else {
-            let journal = load_reconciliation_journal(store, &transaction_id)?;
-            verify_prepared_reconciliation(&journal)?;
-            if journal.target_version != manifest.artifact.version
-                || journal.target_pack_sha256 != manifest.resource_pack_sha256
-            {
-                return Err("native-update-reconciliation-identity-mismatch");
-            }
-            (
-                PreparedReconciliation {
-                    operation_count: journal.operations.len(),
-                    journal_sha256: reconciliation_journal_sha256(&journal)?,
-                },
-                expected_revision,
-            )
-        };
+    // The staged child owns its own write guard; never hold ours while waiting for it.
+    let staged_reconciliation = if transaction_phase == UpdateTransactionPhase::Staged {
+        Some(run_staged_reconciliation(
+            store,
+            &transaction_id,
+            environment,
+        )?)
+    } else {
+        None
+    };
+    let _write_guard = crate::update_reconcile::acquire_update_write_guard(
+        environment
+            .platform_home()
+            .ok_or("native-update-home-unavailable")?,
+        store,
+    )?;
+    let current = store.load().map_err(|error| error.reason_code())?;
+    if current.revision != expected_revision || current.state != state {
+        return Err("revision-conflict");
+    }
+    let (reconciled, reconciliation_revision) = if let Some(reconciled) = staged_reconciliation {
+        state
+            .active_transaction
+            .as_mut()
+            .ok_or("native-update-transaction-missing")?
+            .phase = UpdateTransactionPhase::ReconciliationPrepared;
+        let reconciliation_state = store
+            .replace(expected_revision, state.clone())
+            .map_err(|error| error.reason_code())?;
+        if reconciliation_state.cleanup_required {
+            return Err("native-update-state-cleanup-required");
+        }
+        (reconciled, reconciliation_state.revision)
+    } else {
+        let journal = load_reconciliation_journal(store, &transaction_id)?;
+        verify_prepared_reconciliation(&journal)?;
+        if journal.target_version != manifest.artifact.version
+            || journal.target_pack_sha256 != manifest.resource_pack_sha256
+        {
+            return Err("native-update-reconciliation-identity-mismatch");
+        }
+        (
+            PreparedReconciliation {
+                operation_count: journal.operations.len(),
+                journal_sha256: reconciliation_journal_sha256(&journal)?,
+            },
+            expected_revision,
+        )
+    };
     let preparation = ReplacementPreparation {
         transaction_id: &transaction_id,
         target_version: &manifest.artifact.version,
@@ -1123,6 +1177,16 @@ fn reconcile_staged_update(
     environment: &CommandEnvironment,
     content: &EmbeddedContent,
 ) -> Result<UpdateReconcileOutput, &'static str> {
+    let _write_guard = if authority.is_some() {
+        crate::update_reconcile::acquire_update_write_guard(
+            environment
+                .platform_home()
+                .ok_or("native-update-home-unavailable")?,
+            store,
+        )?
+    } else {
+        None
+    };
     let loaded = store.load().map_err(|error| error.reason_code())?;
     let transaction = loaded
         .state
@@ -2380,6 +2444,62 @@ mod tests {
         assert_eq!(json["release_authority"], "unavailable");
         assert!(!root.exists());
 
+        let environment = test_update_environment(&store);
+        let home = environment.platform_home().unwrap();
+        let held = crate::update_reconcile::acquire_native_home_write_lock(home).unwrap();
+        assert_eq!(
+            execute_with_fetchers(
+                UpdateCliCommand::Channel {
+                    expected_revision: 0,
+                    stream: UpdateStreamPreference::Stable
+                },
+                &store,
+                None,
+                &runtime,
+                &FixedFetcher(Vec::new()),
+                &NoopArchiveFetcher,
+            ),
+            Err("native-update-replacement-active")
+        );
+        assert!(
+            execute_with_fetchers(
+                UpdateCliCommand::Status,
+                &store,
+                None,
+                &runtime,
+                &FixedFetcher(Vec::new()),
+                &NoopArchiveFetcher
+            )
+            .is_ok()
+        );
+        drop(held);
+        let marker = home.join(".qiongli/native/active-installation.json");
+        std::fs::write(&marker, b"pending-native-recovery").unwrap();
+        for command in [
+            UpdateCliCommand::Channel {
+                expected_revision: 0,
+                stream: UpdateStreamPreference::Stable,
+            },
+            UpdateCliCommand::Cancel {
+                expected_revision: 0,
+            },
+        ] {
+            assert_eq!(
+                execute_with_fetchers(
+                    command,
+                    &store,
+                    None,
+                    &runtime,
+                    &FixedFetcher(Vec::new()),
+                    &NoopArchiveFetcher
+                ),
+                Err("native-activation-recovery-required")
+            );
+        }
+        assert!(!root.exists());
+        assert_eq!(store.load().unwrap().revision, 0);
+        std::fs::remove_file(marker).unwrap();
+
         let changed = execute_with_fetchers(
             UpdateCliCommand::Channel {
                 expected_revision: 0,
@@ -2648,7 +2768,7 @@ mod tests {
             &ErrorManifestFetcher("network-must-not-run"),
             &NoopArchiveFetcher,
             &FixedEvidenceVerifier(None),
-            &CommandEnvironment::from_process(),
+            &test_update_environment(&store),
         )
         .unwrap();
         let json = serde_json::to_value(output).unwrap();
@@ -2678,7 +2798,7 @@ mod tests {
                 &ErrorManifestFetcher("network-must-not-run"),
                 &NoopArchiveFetcher,
                 &FixedEvidenceVerifier(None),
-                &CommandEnvironment::from_process(),
+                &test_update_environment(&store),
             ),
             Err("revision-conflict")
         );
@@ -2726,7 +2846,7 @@ mod tests {
             &ErrorManifestFetcher("network-must-not-run"),
             &NoopArchiveFetcher,
             &FixedEvidenceVerifier(None),
-            &CommandEnvironment::from_process(),
+            &test_update_environment(&store),
         )
         .unwrap();
         let loaded = store.load().unwrap();
@@ -3027,9 +3147,13 @@ mod tests {
         assert_eq!(
             results
                 .iter()
-                .filter(|result| matches!(result, Err("revision-conflict")))
+                .filter(|result| matches!(
+                    result,
+                    Err("revision-conflict" | "native-update-replacement-active")
+                ))
                 .count(),
-            1
+            1,
+            "{results:?}"
         );
         let loaded = store.load().unwrap();
         assert_eq!(loaded.revision, 2);

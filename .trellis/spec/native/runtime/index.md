@@ -193,8 +193,8 @@ stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and pack
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
 CLI health. Non-Unix managed writes retain their existing behavior. This is partial
-entry-point coverage: update-state dispatchers still need a final inventory/guard
-pass before
+entry-point coverage: legacy interrupted-update recovery still needs a final
+cross-config guard pass before
 public native activation is enabled. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
 
@@ -215,6 +215,22 @@ existing independent completion path. This is cooperative process exclusion, not
 durable global marker for an interrupted legacy Desktop replacement; that remaining
 legacy recovery interaction and update-state writers must be resolved before public
 native activation is enabled.
+
+The shared update guard acquires Home then config locks without rejecting an
+existing update transaction; each update stage still validates its own state/CAS.
+CLI and Desktop channel/cancel, signed verify/stage and staged reconciliation use it.
+Downloads acquire it only after manifest verification, across reservation and private
+staging setup, and release it before archive transport so concurrent cancellation
+remains available. The reservation/CAS owner protects subsequent private download
+writes. Installation waits for its guarded staged child before acquiring its own
+guard, then rechecks the exact state revision before advancing or creating handoff
+files. Status/check remain read-only; token-bound legacy health completion remains
+available while the replacement helper holds locks. Authority-free signed paths
+retain their existing refusal before any mutation.
+
+Initial candidate-directory creation tolerates a concurrent `AlreadyExists` only
+by revalidating the resulting directory's type, ownership and private permissions.
+It never adopts a link or relaxes the security check.
 
 ## Quality Check
 

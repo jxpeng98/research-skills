@@ -389,18 +389,7 @@ pub(crate) fn acquire_managed_write_guard(
         {
             return Err("native-update-transaction-active");
         }
-        let home_lock = acquire_native_home_write_lock(home)?;
-        refuse_native_home_activation(home)?;
-        qiongli_config::GlobalSettingsStore::new(config)
-            .prepare_store()
-            .map_err(|error| error.reason_code())?;
-        ensure_private_directory(
-            store
-                .staging_root()
-                .parent()
-                .ok_or("native-update-staging-unavailable")?,
-        )?;
-        let update_lock = acquire_replacement_lock(&store)?;
+        let guard = acquire_update_write_guard(home, &store)?;
         if store
             .load()
             .map_err(|error| error.reason_code())?
@@ -410,11 +399,41 @@ pub(crate) fn acquire_managed_write_guard(
         {
             return Err("native-update-transaction-active");
         }
-        Ok(Some((home_lock, update_lock)))
+        Ok(guard)
     }
     #[cfg(not(unix))]
     {
         let _ = (home, config);
+        Ok(None)
+    }
+}
+
+/// Update stages may continue their own active transaction under these locks.
+pub(crate) fn acquire_update_write_guard(
+    home: &Path,
+    store: &UpdateStateStore,
+) -> Result<Option<(File, File)>, &'static str> {
+    #[cfg(unix)]
+    {
+        store.load().map_err(|error| error.reason_code())?;
+        let home_lock = acquire_native_home_write_lock(home)?;
+        refuse_native_home_activation(home)?;
+        let root = store
+            .state_root()
+            .parent()
+            .ok_or("native-update-staging-unavailable")?;
+        let config = qiongli_config::resolve_config_root(Some(root.as_os_str()), home)
+            .map_err(|error| error.reason_code())?;
+        qiongli_config::GlobalSettingsStore::new(config)
+            .prepare_store()
+            .map_err(|error| error.reason_code())?;
+        ensure_private_directory(&store.state_root().join("updates"))?;
+        let update_lock = acquire_replacement_lock(store)?;
+        Ok(Some((home_lock, update_lock)))
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = (home, store);
         Ok(None)
     }
 }

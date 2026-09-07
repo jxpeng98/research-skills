@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       native-matrix-required: ${{ steps.change-boundary.outputs.native-matrix-required }}
+      desktop-check-required: ${{ steps.change-boundary.outputs.desktop-check-required }}
+      lite-check-required: ${{ steps.change-boundary.outputs.lite-check-required }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,12 +71,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && 60 || 30 }}
     env:
+      CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
+      CARGO_BUILD_RUSTC_WRAPPER: ""
+      CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
+      CARGO_BUILD_RUSTFLAGS: ""
+      CARGO_ENCODED_RUSTFLAGS: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
+      RUSTC_WRAPPER: ""
+      RUSTFLAGS: ""
       RUN_NATIVE_MATRIX: >-
         ${{
           needs.native-change-boundary.result == 'success' &&
           (
             github.event_name == 'workflow_dispatch' ||
             needs.native-change-boundary.outputs.native-matrix-required == 'true'
+          )
+        }}
+      RUN_DESKTOP_CHECK: >-
+        ${{
+          github.event_name == 'workflow_dispatch' ||
+          (
+            matrix.platform == 'Linux' &&
+            needs.native-change-boundary.outputs.desktop-check-required == 'true'
           )
         }}
     strategy:
@@ -122,112 +140,41 @@ jobs:
           [[ "$injected" -eq 0 ]]
 
       - name: Check native Rust formatting
-        if: env.RUN_NATIVE_MATRIX == 'true'
-        env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
+        if: env.RUN_NATIVE_MATRIX == 'true' && matrix.platform == 'Linux'
         run: cargo fmt --manifest-path packages/qiongli-native/Cargo.toml --all -- --check
 
       - name: Test CLI without desktop dependencies or frontend output
         if: env.RUN_NATIVE_MATRIX == 'true'
-        env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
         shell: bash
         run: |
-          graph="$(cargo tree --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --no-default-features --edges normal,build,dev --prefix none --format '{p}' --locked)"
+          graph="$(cargo tree --manifest-path packages/qiongli-native/Cargo.toml --workspace --exclude qiongli-ui --no-default-features --edges normal,build,dev --prefix none --format '{p}' --locked)"
           if grep -Eq '^(tauri([-_][^ ]+)?|rfd|eframe|egui|wry|tao|winit|gtk([-_][^ ]+)?|webkit2gtk([-_][^ ]+)?) v' <<< "$graph"; then
             echo "CLI normal/build/test graph contains a GUI dependency" >&2
             exit 1
           fi
-          cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --lib --test cli --test mcp_stdio --no-default-features --locked
+          cargo test --manifest-path packages/qiongli-native/Cargo.toml --workspace --exclude qiongli-ui --all-targets --no-default-features --locked
+
+      - name: Run CLI Rust clippy
+        if: env.RUN_NATIVE_MATRIX == 'true' && matrix.platform == 'Linux'
+        run: cargo clippy --manifest-path packages/qiongli-native/Cargo.toml --workspace --exclude qiongli-ui --all-targets --no-default-features --locked -- -D warnings
 
       - name: Setup Tauri and build the Svelte desktop
-        if: env.RUN_NATIVE_MATRIX == 'true'
+        if: env.RUN_NATIVE_MATRIX == 'true' && env.RUN_DESKTOP_CHECK == 'true'
         uses: ./.github/actions/setup-qiongli-desktop
         with:
           run-frontend-checks: ${{ matrix.platform == 'Linux' }}
 
-      - name: Check native Rust workspace
-        if: env.RUN_NATIVE_MATRIX == 'true'
-        env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
-        run: cargo check --manifest-path packages/qiongli-native/Cargo.toml --workspace --all-targets --all-features --locked
-
-      - name: Run native Rust clippy
-        if: env.RUN_NATIVE_MATRIX == 'true'
-        env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
+      - name: Run desktop Rust clippy
+        if: env.RUN_NATIVE_MATRIX == 'true' && env.RUN_DESKTOP_CHECK == 'true'
         run: cargo clippy --manifest-path packages/qiongli-native/Cargo.toml --workspace --all-targets --all-features --locked -- -D warnings
 
-      - name: Run native Rust tests
-        if: env.RUN_NATIVE_MATRIX == 'true'
-        env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
-        run: cargo test --manifest-path packages/qiongli-native/Cargo.toml --workspace --all-targets --all-features --locked
-
-      - name: Accept R4A project mobility on the Tier 1 runtime
-        if: env.RUN_NATIVE_MATRIX == 'true'
-        env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
-        run: >-
-          cargo test --manifest-path packages/qiongli-native/Cargo.toml
-          --package qiongli
-          --test cli
-          copied_binary_round_trips_portable_and_legacy_projects_without_runtime
-          --locked
+      - name: Test desktop consumers
+        if: env.RUN_NATIVE_MATRIX == 'true' && env.RUN_DESKTOP_CHECK == 'true'
+        run: cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli -p qiongli-ui --all-targets --all-features --locked
 
       - name: Measure opt-in platform capacity baseline
         if: github.event_name == 'workflow_dispatch' && env.RUN_NATIVE_MATRIX == 'true'
         env:
-          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
-          CARGO_BUILD_RUSTC_WRAPPER: ""
-          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
-          CARGO_BUILD_RUSTFLAGS: ""
-          CARGO_ENCODED_RUSTFLAGS: ""
-          RUSTC_WORKSPACE_WRAPPER: ""
-          RUSTC_WRAPPER: ""
-          RUSTFLAGS: ""
           QIONGLI_CAPACITY_OUTPUT_DIR: ${{ runner.temp }}/qiongli-capacity
           QIONGLI_CAPACITY_SOURCE_COMMIT: ${{ github.sha }}
           QIONGLI_CAPACITY_RUN_ID: ${{ github.run_id }}
@@ -607,6 +554,7 @@ jobs:
           github.event_name == 'workflow_dispatch' ||
           (
             github.event.pull_request.draft == false &&
+            needs.native-change-boundary.outputs.lite-check-required == 'true' &&
             needs.native-change-boundary.outputs.native-matrix-required == 'true'
           )
         )

@@ -96,7 +96,7 @@ class NativeChangeBoundaryTests(unittest.TestCase):
         self.assertTrue(github_output.exists())
         self.assertEqual(
             github_output.read_text(encoding="utf-8"),
-            "native-matrix-required=false\n",
+            "native-matrix-required=false\ndesktop-check-required=false\nlite-check-required=false\n",
         )
 
     def test_skips_native_matrix_for_non_runtime_process_and_docs(self) -> None:
@@ -145,7 +145,7 @@ class NativeChangeBoundaryTests(unittest.TestCase):
         self.assertIn("Native matrix required: true", result.stdout)
         self.assertEqual(
             github_output.read_text(encoding="utf-8"),
-            "native-matrix-required=true\n",
+            "native-matrix-required=true\ndesktop-check-required=true\nlite-check-required=true\n",
         )
 
     def test_requires_native_matrix_for_mixed_evidence_and_source_changes(
@@ -153,7 +153,8 @@ class NativeChangeBoundaryTests(unittest.TestCase):
     ) -> None:
         paths = (
             ".trellis/tasks/08-30-example/prd.md",
-            "packages/qiongli-native/apps/qiongli/src/main.rs",
+            "tooling/release/acceptance/rel-999.md",
+            "packages/qiongli-native/apps/qiongli/src/mcp.rs",
         )
         for path in paths:
             self.write(path, "changed\n")
@@ -164,11 +165,45 @@ class NativeChangeBoundaryTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("Native matrix required: true", result.stdout)
 
+        self.assertIn("Desktop check required: false", result.stdout)
+        self.assertIn("Lite check required: false", result.stdout)
+
     def test_requires_native_matrix_for_an_empty_diff(self) -> None:
         result = self.run_guard()
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("Native matrix required: true", result.stdout)
+
+    def test_routes_cli_desktop_lite_and_unknown_changes(self) -> None:
+        # Each diff starts from a fresh baseline, including deletions and renames.
+        for path, desktop, lite in (
+            ("packages/qiongli-native/apps/qiongli/src/mcp.rs", False, False),
+            ("packages/qiongli-native/apps/qiongli/examples/native_candidate_acceptance.rs", False, False),
+            ("packages/qiongli-native/crates/qiongli-project/src/service.rs", True, True),
+            ("packages/qiongli-native/crates/qiongli-runtime/src/lib.rs", True, True),
+            ("packages/qiongli-native/crates/qiongli-execution/src/lib.rs", True, False),
+            ("packages/qiongli-native/apps/qiongli/build.rs", True, False),
+            ("packages/qiongli-native/Cargo.lock", True, True),
+            ("packages/qiongli-desktop/src/main.ts", True, False),
+            ("packages/qiongli-lite-mcp/src/main.rs", False, True),
+            (".github/workflows/native-ci.yml", True, True),
+            (".trellis/scripts/check.py", True, True),
+            ("content/skills/example.md", True, True),
+        ):
+            with self.subTest(path=path):
+                self.base_ref = self.run_git("rev-parse", "HEAD").stdout.strip()
+                self.write(path, "changed\n")
+                self.commit_paths(path)
+                result = self.run_guard()
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"Desktop check required: {str(desktop).lower()}", result.stdout)
+                self.assertIn(f"Lite check required: {str(lite).lower()}", result.stdout)
+
+        self.base_ref = self.run_git("rev-parse", "HEAD").stdout.strip()
+        (self.repo / "docs").mkdir()
+        self.run_git("mv", "packages/qiongli-desktop/src/main.ts", "docs/retired.md")
+        self.run_git("commit", "-m", "move desktop source")
+        self.assertIn("Desktop check required: true", self.run_guard().stdout)
 
     def test_rejects_frozen_legacy_and_architecture_paths(self) -> None:
         paths = (

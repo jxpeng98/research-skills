@@ -56,6 +56,8 @@ git -C "$repo_root" merge-base "$base_ref" "$head_ref" >/dev/null
 violations=()
 changed_path_count=0
 native_matrix_required=false
+desktop_check_required=false
+lite_check_required=false
 while IFS= read -r -d '' path; do
   ((changed_path_count += 1))
 
@@ -75,8 +77,7 @@ while IFS= read -r -d '' path; do
       ;;
   esac
 
-  # ponytail: skip the expensive matrix only for files that cannot affect
-  # runtime source, packaged resources, workflows, actions, or test fixtures.
+  # Skip native work only for files that cannot affect runtime or packaging.
   case "$path" in
     .trellis/tasks/*|\
     .trellis/workspace/*|\
@@ -90,21 +91,54 @@ while IFS= read -r -d '' path; do
     CONTRIBUTING.md|\
     README.md|\
     docs/*)
+      continue
       ;;
     tooling/release/acceptance/*.md)
       acceptance_relative="${path#tooling/release/acceptance/}"
-      if [[ "$acceptance_relative" == */* ]]; then
-        native_matrix_required=true
+      if [[ "$acceptance_relative" != */* ]]; then
+        continue
       fi
       ;;
     tooling/release/*.md)
       release_relative="${path#tooling/release/}"
-      if [[ "$release_relative" == */* ]]; then
-        native_matrix_required=true
+      if [[ "$release_relative" != */* ]]; then
+        continue
       fi
       ;;
+  esac
+  native_matrix_required=true
+
+  # Keep shared source/build changes conservative; dedicated CLI/MCP modules
+  # need no renderer. Unknown paths still exercise desktop and Lite consumers.
+  case "$path" in
+    packages/qiongli-native/apps/qiongli/src/native_cli.rs|\
+    packages/qiongli-native/apps/qiongli/src/mcp.rs|\
+    packages/qiongli-native/apps/qiongli/src/mcp/*|\
+    packages/qiongli-native/apps/qiongli/src/candidate_cli.rs|\
+    packages/qiongli-native/apps/qiongli/src/cli_install.rs|\
+    packages/qiongli-native/apps/qiongli/tests/cli.rs|\
+    packages/qiongli-native/apps/qiongli/tests/mcp_stdio.rs|\
+    packages/qiongli-native/apps/qiongli/examples/native_candidate_acceptance.rs)
+      ;;
+    packages/qiongli-native/crates/qiongli-runtime/*|\
+    packages/qiongli-native/crates/qiongli-project/*|\
+    packages/qiongli-native/crates/qiongli-config/*|\
+    packages/qiongli-native/crates/qiongli-content/*|\
+    packages/qiongli-native/crates/qiongli-windows-security/*|\
+    packages/qiongli-native/Cargo.*)
+      # Lite consumes this runtime dependency closure with different features.
+      desktop_check_required=true
+      lite_check_required=true
+      ;;
+    packages/qiongli-native/*|packages/qiongli-desktop/*|packages/qiongli-app-api/*)
+      desktop_check_required=true
+      ;;
+    packages/qiongli-lite-mcp/*)
+      lite_check_required=true
+      ;;
     *)
-      native_matrix_required=true
+      desktop_check_required=true
+      lite_check_required=true
       ;;
   esac
 done < <(
@@ -127,11 +161,17 @@ fi
 
 if [[ "$changed_path_count" -eq 0 ]]; then
   native_matrix_required=true
+  desktop_check_required=true
+  lite_check_required=true
 fi
 
 echo "Native matrix required: $native_matrix_required."
+echo "Desktop check required: $desktop_check_required."
+echo "Lite check required: $lite_check_required."
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   printf 'native-matrix-required=%s\n' "$native_matrix_required" >> "$GITHUB_OUTPUT"
+  printf 'desktop-check-required=%s\n' "$desktop_check_required" >> "$GITHUB_OUTPUT"
+  printf 'lite-check-required=%s\n' "$lite_check_required" >> "$GITHUB_OUTPUT"
 fi
 
 echo "Native 2.x change boundary passed."

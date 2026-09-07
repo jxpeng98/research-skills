@@ -24,8 +24,9 @@
    task directory, PRD, context manifest, phase approval or journal entry.
 3. Implement within the user's requested scope and run the closest meaningful
    checks. Continue through routine fixes without asking for approval again.
-4. Review the final diff; update contracts when behavior changes and record what
-   passed, what remains unverified and the next increment in the existing plan.
+4. Review the final diff; update affected contracts and record checks, remaining
+   gaps and the next increment once at the integration boundary. Reuse unchanged
+   local results; do not repeat suites before commit, push or after merge.
 
 The main Agent may implement and check directly. Delegate only bounded independent
 work with clear file ownership when it helps; no mandatory role chain or channel.
@@ -34,13 +35,17 @@ external validation lane does not stop independent offline development.
 
 ## Preserve the product boundaries
 
-- Follow [CONTRIBUTING.md](CONTRIBUTING.md) for source ownership and daily, PR,
-  build and release checks. Run affected checks while editing; use required CI
-  when preparing integration, and qualify packages at a named candidate boundary.
+- Follow [CONTRIBUTING.md](CONTRIBUTING.md): develop on a local feature branch,
+  run affected checks, review and commit, then merge locally into `2.x`.
+  No PR or remote CI wait is required. Qualify packages at a named candidate.
 - Keep input validation, permission checks, compatibility and data-loss negative
   cases. Qiongli project writes still use existing preview/approval/CAS owners.
 - Preserve unrelated working changes and user data. Material scope changes or
   external/destructive actions need authority for that action; ordinary coding
   authorization does not imply publication or access to private research data.
-- Commit, push, merge and publish only within the user's authorization. Never
-  auto-commit bookkeeping or start release work because a local check passed.
+- The maintainer authorizes local branch creation, scoped commits and local
+  merges for requested development; proceed without per-step confirmation.
+  Push, remote-rule changes and publication require their own scope. Never
+  auto-commit unrelated bookkeeping or rerun full CI merely because of a merge.
+- Program acceptance and external/manual evidence gate their readiness claims,
+  not independent CLI implementation. No phase-by-phase human sign-off is needed.

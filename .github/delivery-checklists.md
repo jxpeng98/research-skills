@@ -1,55 +1,51 @@
 # Repository delivery checklists
 
-Use **Focused** checks for daily work, one exact-head **Slice** for a ready pull
-request, and **Acceptance** only for an explicit release candidate.
-A green check is evidence, not authorization to commit, push, merge, publish,
-or announce.
+Default loop: local feature branch → edit → affected **Focused** checks → review
+and commit → local merge into `2.x` → next increment. No PR, remote CI wait,
+post-merge suite or **Slice** ceremony is required. **Acceptance** belongs to a
+named candidate. Reuse results while source, dependencies and inputs are unchanged.
 
-Denied, expired, or revoked authorization blocks execution; obtain a new receipt
-for the current action. Emergency hotfix authorization is repository-only and
-still requires a named incident, minimum scope, exact-head checks, rollback, and
-the protected PR path.
-Post-incident reconciliation is evidence, not retroactive authorization.
+The maintainer's local-development instruction covers branch creation, scoped
+commits and local merges for the requested outcome; do not ask again per step.
+Push, remote-rule changes, private research access and publication need their own
+scope. A green check is evidence, not authorization.
 
-## Pre-commit checklist
+## Local development and merge
 
-- [ ] **Machine** — `git status --short --branch` and the staged path list match the intended bounded change.
-- [ ] **Machine** — `git diff --cached --check` passes and the full staged diff has been reviewed.
-- [ ] **Machine** — the smallest affected Focused check passes and its exact command/result is recorded.
-- [ ] **Human / authority** — no credential, private path, prompt/response, restricted data, or accidental generated output is staged; the Conventional Commit message describes one change.
+- [ ] Start from local `2.x` with `git switch -c <branch> 2.x`; preserve unrelated work, using a worktree if needed.
+- [ ] Review the diff for correctness, credentials, private data and unrelated changes; run the affected checks and `git diff --cached --check`, then commit the named paths with a Conventional Commit message.
+- [ ] Inspect `git diff --check 2.x...HEAD`, record `git rev-parse HEAD`, and run `./scripts/check_2x_native_change_boundary.sh --base-ref 2.x`. This fast local guard protects frozen source; its CI-routing output starts no tests.
+- [ ] Switch to local `2.x` and run `git merge --ff-only <branch>`. If `2.x` advanced, merge it into the feature branch, resolve conflicts and rerun only checks affected by the combined change before retrying.
 
-This records commit evidence only; it does not authorize a push.
+Every head change invalidates stale exact-head CI/review evidence. Review the
+final diff; reuse local checks when their inputs are unchanged. The current
+independent-reviewer blocker concerns optional remote review, not local merge.
+No duplicate report, receipt ceremony or per-stage human approval is needed.
 
-## Pre-push checklist
+## Optional remote synchronization
 
-- [ ] **Machine** — the current branch is a working branch, not `2.x`, `release/*`, or a tag.
-- [ ] **Machine** — after fetching, review `git diff --name-status origin/2.x...HEAD` and run `git diff --check origin/2.x...HEAD`.
-- [ ] **Machine** — the tree is clean, `git rev-parse HEAD` records the checkpoint, and its affected Focused checks pass.
-- [ ] **Human / authority** — compatibility, migration, rollback, data-loss, claims, non-claims, upstream, and PR target are explicit where affected. Plain `--force` is forbidden.
-- [ ] **Human / authority** — an exceptional rewrite is limited to an unprotected, unpublished feature branch with owner approval and reviewer notice; use `--force-with-lease` only and invalidate evidence for replaced commits.
-
-This records push evidence only; it does not authorize merge or release.
-
-## Pull request checklist
-
-- [ ] **Human / authority** — the PR template records the bounded outcome, paths, non-goals, boundary impact, tests, compatibility, rollback, risks, follow-ups, and reviewers.
-- [ ] **Machine** — local `git rev-parse HEAD` equals the PR head before exact-head evidence is recorded.
-- [ ] **Human / authority** — keep the PR draft while its head moves; freeze a source-affecting Slice before the required Linux, macOS, and Windows matrix.
-- [ ] **Machine** — `gh pr checks --required --watch` passes for the current head, including all protected contexts.
-- [ ] **Human / authority** — Every head change invalidates stale exact-head CI and review evidence; report CODEOWNER state truthfully, retain the current independent-reviewer blocker, and merge only through the protected PR path.
-
-This records integration evidence only; merge, publication, and announcement
-remain separate decisions.
+Fetch and inspect remote divergence only when synchronization is requested.
+The existing GitHub `2.x` ruleset still requires a PR and remote checks; that
+remote-only snapshot does not govern local integration. Do not silently open a
+PR, change the ruleset or treat local merge authority as push authority.
+Plain `--force` is forbidden. Exceptional rewrites of unprotected, unpublished
+feature branches without accepted evidence require owner approval and reviewer
+notice, using `--force-with-lease` only. Never rewrite `2.x`, release refs, tags
+or accepted-evidence heads.
 
 ## Release checklist
 
-- [ ] **Human / authority** — freeze the version, claims, non-claims, channels, rollback, and exact merged `2.x` commit; a PR Slice is not release qualification.
-- [ ] **Machine** — record a clean source with `git rev-parse HEAD`, then run `./scripts/release_ready.sh --version <version> --staging-dir <external-dir>`.
-- [ ] **Machine** — dispatch exact-source Acceptance with `gh workflow run native-ci.yml --ref 2.x` and verify the run's head SHA and conclusion.
-- [ ] **Machine** — packages, checksums, SBOM, provenance, signatures, receipts, and advertised assets bind the same source and bytes; missing evidence blocks publication.
-- [ ] **Human / authority** — obtain a named release decision bound to the commit, asset digests, channels, claims, and rollback plan; CI cannot grant it.
-- [ ] **Machine** — after authorized publication, independently download and verify every advertised target and channel.
-- [ ] **Human / authority** — obtain a distinct announcement decision and receipt bound to verified public bytes and exact claims. Publication authorization does not authorize announcement.
+Run only for a named candidate under explicit release scope.
 
-Tags and published assets are immutable. A changed source, digest, destination,
-channel, or claim requires new qualification and authorization.
+- [ ] Freeze version, claims, non-claims, channels, rollback and the merged source; run `./scripts/release_ready.sh --version <version> --staging-dir <external-dir>`.
+- [ ] For a requested remote candidate run, synchronize the source under separate authority, dispatch `gh workflow run native-ci.yml --ref 2.x` and verify its source/run identity. Bind packages, checksums, SBOM, provenance, signatures and receipts to the same bytes.
+- [ ] Obtain the named publication decision for those bytes and channels; after publication, independently download and verify advertised assets.
+- [ ] Obtain a distinct announcement decision and receipt for the verified public bytes and claims. Publication authorization does not authorize announcement.
+
+Denied, expired, or revoked authorization blocks execution; request renewed scope
+only for the blocked action. Emergency hotfix authorization is repository-only
+and retains a named incident, minimum scope, current-head checks, rollback and
+the protected remote PR path. This exceptional policy is unchanged.
+Post-incident reconciliation is evidence, not retroactive authorization.
+Tags and published assets are immutable. Changed release bindings require fresh
+qualification and authorization.

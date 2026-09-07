@@ -114,39 +114,27 @@ class AuthorizationPolicyTests(unittest.TestCase):
             EXPECTED_REVIEW_DOMAINS,
         )
 
+    def test_local_workflow_preserves_protected_remote_merge_authority(self) -> None:
+        merge = next(action for action in self.policy["actions"] if action["id"] == "repository.merge")
+        self.assertEqual(merge["default_rule"], "protected-pr-only")
+        self.assertEqual(merge["authorizer_roles"], ["maintainer", "codeowner-specialist-reviewer"])
+        self.assertIn("reviewer-codeowner-approval", merge["required_evidence"])
+        self.assertIn("git merge --ff-only", self.delivery_checklists)
+        self.assertIn("remote-only", self.delivery_checklists)
+        self.assertNotIn("gh pr checks --required --watch", self.delivery_checklists)
+
+    def test_delivery_layout_is_not_an_approval_gate(self) -> None:
+        checklist = self.delivery_checklists.replace("## ", "### ").replace("- [ ]", "-")
+        template = self.pr_template.replace("## ", "### ")
+        self.assertEqual(validate_delivery_documents(checklist, template), [])
+
     def test_delivery_checklists_and_pr_template_fail_closed(self) -> None:
         cases = (
-            (
-                self.delivery_checklists.replace(
-                    "## Pre-push checklist", "### Pre-push checklist", 1
-                ),
-                self.pr_template,
-                "four ordered stages",
-            ),
-            (
-                self.delivery_checklists.replace("**Machine**", "Machine", 1),
-                self.pr_template,
-                "evidence class",
-            ),
             (
                 self.delivery_checklists.replace(
                     "git diff --cached --check", "git diff --cached", 1
                 ),
                 self.pr_template,
-                "missing required marker",
-            ),
-            (
-                self.delivery_checklists,
-                self.pr_template.replace(
-                    "## Tests and exact-head evidence",
-                    "### Tests and exact-head evidence",
-                    1,
-                ),
-                "eight ordered evidence sections",
-            ),
-            (
-                self.delivery_checklists,
-                self.pr_template.replace("- Head SHA:", "- Revision:", 1),
                 "missing required marker",
             ),
             (
@@ -170,8 +158,7 @@ class AuthorizationPolicyTests(unittest.TestCase):
             (
                 self.delivery_checklists,
                 self.pr_template.replace(
-                    "Every head change (new commit, amend, rebase, merge, or "
-                    "history rewrite)",
+                    "Every head change invalidates stale exact-head",
                     "Every push",
                     1,
                 ),

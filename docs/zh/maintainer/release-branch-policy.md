@@ -46,6 +46,12 @@ bypass actor。服务端 ruleset 是实际强制来源，本文记录评审政�
 
 ## 2.x 原生分支治理
 
+当前开发直接在本地完成：从本地 `2.x` 创建分支，修改、运行相关检查、审阅并
+提交，然后用 `git merge --ff-only` 合并到本地 `2.x`。不要求 pull request，
+也不等待 GitHub CI。维护者的开发指令已覆盖范围内的本地分支、提交和合并。
+推送和远端规则调整另属独立操作；下文 GitHub 规则只描述可选远端协作，
+不构成本地合并门禁。
+
 `2.x` 只能在 normalized 1.x baseline 冻结后，从精确且干净的 A8 交接
 commit 创建；此后的原生实现和 2.x 发布工作全部归属该分支。
 
@@ -57,20 +63,18 @@ commit 创建；此后的原生实现和 2.x 发布工作全部归属该分支�
 - `Rust native foundation (macOS)`；
 - `Rust native foundation (Windows)`。
 
-对于 ready 且影响 source 的 PR，同一 commit 必须在 Linux、macOS 和 Windows
-通过 format、check、Clippy 和 workspace tests。可移植的 App
-API/Desktop/npm 检查只在 Linux 运行一次，三个平台仍各自构建静态 Desktop
-assets，Linux 还会运行有界的 Lite runtime compatibility。draft PR 不展开矩阵。
+ready source PR 在 Linux、macOS、Windows 上运行无 GUI 的 workspace 测试；
+format 和 CLI Clippy 只在 Linux 运行一次。共享 native 源码、构建或 Desktop
+改动增加 Linux 桌面消费者检查；专用 CLI/MCP 改动跳过前端。只有 Lite 或未知的
+工具输入、Lite 的共享 runtime 依赖改动运行独立 Lite compatibility。
+draft PR 暂缓 native 测试。
 
-对于 ready 的非运行时文档或仅证据 PR，四个 required context 名称仍会出现，
-但三个 foundation context 只运行轻量报告步骤；不会安装 Rust toolchain、设置
-frontend、构建或测试，同时跳过 Lite compatibility。immutable path 拒绝优先；
-其后 allowlist 包含 Trellis task/workspace/spec 记录与配置、两个仓库交付 Markdown
-文件、顶层仓库说明、`docs/**`，以及 `tooling/release/` 下的顶层 Markdown note
-或 receipt。运行时或打包内容、workflow、action、test、script、嵌套 release
-fixture、混合改动、未知路径和空 diff 都保守回退到完整矩阵。明确的
-`workflow_dispatch` 忽略该分类，完整运行 source、Lite、package 和 candidate
-检查。
+非运行时文档或仅证据 PR 保留轻量 native contexts；未知路径、workflow、fixture
+和空 diff 保守运行全部 PR 检查，删除源码仍按源码处理。`workflow_dispatch`
+才运行完整三平台桌面、Lite、package 和 candidate 检查。`Evaluation Truth V1`
+也只在 PR head 上运行一次；合入后的 push 不会重复启动这两个 workflow。
+日常步骤以 [CONTRIBUTING](https://github.com/jxpeng98/qiongli/blob/2.x/CONTRIBUTING.md)
+为准，不需要逐阶段人工确认。
 
 `Legacy Compatibility CI` 与
 `Legacy Checkout Install Check` 只对 `main`、`master`、`dev` 自动运行。
@@ -87,7 +91,7 @@ baseline 及其 schema，包括
 evidence 必须写入新的版本化路径。
 
 实际强制来源为 ruleset `18800504`。它要求 pull request 和以上四个
-required contexts，禁止删除与 non-fast-forward 更新，并且没有 bypass
+native required contexts 以及 `Evaluation Truth V1`，禁止删除与 non-fast-forward 更新，并且没有 bypass
 actor。只有当对应 workflow 是 required 时，immutable guard 才能在合入前
 阻止变更；没有服务端保护时，direct push 将不会被验证，因为合入后的 push
 不会启动 `Native CI`。
@@ -107,10 +111,8 @@ actor。只有当对应 workflow 是 required 时，immutable guard 才能在合
    测试，并使用下面的第三方 `cargo-xwin` 命令提前获得 Windows x64 编译反馈。
    使用 `cargo-xwin` 即接受 Microsoft SDK 许可，因此首次使用前必须得到维护者
    明确授权。
-2. **Slice**：一个完整用户业务切片或小版本 checkpoint 冻结后，运行所有受影响
-   package/cross-contract 检查，以及上面四个 exact-head Native CI required
-   contexts。影响 source 的改动运行完整三平台矩阵；allowlist 内的非运行时文档
-   或仅证据收尾保留 context，但使用轻量路径。
+2. **Slice**：只用于明确请求的可选远端协作。日常走上述本地分支、相关检查、
+   提交和合并流程，不需要 PR 或等待 CI。
 3. **Acceptance**：仅在明确的 2.x cutover 或 release candidate 上运行三目标
    package、packaged-product 和 Lite candidate acceptance、当前 live Hosts、
    migration/rollback、trust/supply-chain 与所声明的 manual journeys。

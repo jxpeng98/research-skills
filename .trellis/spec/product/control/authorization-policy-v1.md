@@ -4,7 +4,7 @@
 
 Use this contract when changing authorization roles, sensitive actions,
 non-transitive authority, redacted decision receipts, CODEOWNERS, or the
-protected `2.x` review ruleset. It is governance policy-as-code; it does not
+local `2.x` integration and the separate remote review ruleset. It is governance policy-as-code; it does not
 grant runtime authority and a receipt is never a bearer credential.
 
 ## 2. Signatures
@@ -64,7 +64,7 @@ Canonical artifacts:
 - Repository review policy has exactly six ordered sensitive domains: security,
   schema, migration, release, research-Gate, and authorization. Every v1 path is
   literal, repository-rooted, present, symlink-free, and owned by `@jxpeng98`.
-- Ruleset `18800504` targets only `2.x`, has no bypass, blocks deletion and
+- The recorded remote ruleset `18800504` targets only `2.x`, has no bypass, blocks deletion and
   non-fast-forward changes, requires PR/thread resolution, and keeps the native
   cross-platform checks plus `Evaluation Truth V1` strict and current.
 - Exact-head identity is one full lowercase commit SHA. A new commit, amend,
@@ -81,14 +81,22 @@ Canonical artifacts:
   approvals remain zero and CODEOWNER approval remains disabled. `enforced`
   requires at least two distinct owners on every path, one approval, CODEOWNER
   review, exact-head non-stale evidence, and no blocker.
-- The delivery checklist has exactly four stages: pre-commit, pre-push, pull
-  request, and release. Every checklist item declares Machine or Human/authority
-  evidence, selects Focused/Slice/Acceptance proportionately, and keeps commit,
-  push, merge, publication, and announcement authority non-transitive.
-- The default PR template links the canonical checklist and records bounded
-  scope/non-goals, affected boundaries, exact-head tests, compatibility,
-  migration/rollback, risks/follow-ups, and required reviewers. A new push
-  invalidates stale evidence.
+- Routine requested development uses local feature branches and local `2.x`
+  merges under the maintainer's standing instruction. This is local Git history
+  management; the protected remote `repository.merge` action and its PR,
+  required-check and CODEOWNER evidence are unchanged. No local merge receipt
+  may be presented as authorization or evidence for that remote action.
+- Local commits and merges use affected checks and a reviewed diff without
+  per-step confirmation. Push, protected remote merge, remote-rule changes and
+  publication retain their separate authority. PR workflows and the recorded
+  independent-review blocker concern optional remote collaboration only.
+- Delivery documents select Focused/Slice/Acceptance proportionately and preserve
+  evidence and authority boundaries. Markdown section counts, order, checkbox
+  labels and per-step human confirmations are not validation requirements.
+- The PR template links the canonical checklist and records outcome, tests and
+  affected risks/rollback. GitHub owns the head and required-check state; no
+  duplicate SHA ledger is required. New pushes replace stale remote evidence;
+  unchanged local test results can be reused.
 
 ## 4. Validation & Error Matrix
 
@@ -112,8 +120,8 @@ Canonical artifacts:
 - missing or weakened head event, evidence invalidation, protected ref,
   no-force rule, feature eligibility, owner/reviewer notice, lease-only mode, or
   replaced-receipt invalidation -> fail.
-- missing/reordered delivery stage, unlabeled checklist item, required command
-  or authorization warning, PR field, or canonical checklist link -> fail.
+- missing required evidence command, authorization warning or canonical
+  checklist link -> fail; layout-only changes remain valid.
 
 ## 5. Good / Base / Bad Cases
 
@@ -127,8 +135,8 @@ Canonical artifacts:
   without creating any receipt or changing product state.
 - Bad: green CI, a prior edit/commit/merge, or an old receipt is treated as
   authorization for a later action or changed input.
-- Repository good: CODEOWNERS exactly matches the checked-in review policy and
-  the live ruleset adds Evaluation Truth without weakening an existing rule.
+- Repository good: a scoped local merge has affected checks and a reviewed diff;
+  CODEOWNERS and the separate remote ruleset snapshot remain truthful.
 - Repository base: one maintainer receives path ownership routing, while the
   ledger truthfully retains the independent-reviewer blocker.
 - Repository bad: CI/Agent approval, self-review, bypass, or an impossible
@@ -158,8 +166,9 @@ Canonical artifacts:
 - Mutate exact-head events/evidence reuse, protected refs/force policy, feature
   rewrite eligibility, authority/notice, lease-only mode, or receipt
   invalidation; assert rejection.
-- Remove checklist stages, evidence labels, required commands/warnings, PR
-  fields, and the canonical link; assert rejection.
+- Remove required commands/warnings, evidence fields or the canonical link;
+  assert rejection. Reformat headings/checkboxes without altering these
+  boundaries; assert acceptance.
 - Run the validator and focused tests in Evaluation Truth.
 
 ## 7. Wrong vs Correct
@@ -172,9 +181,10 @@ Wrong: revive a denied, expired, or revoked receipt, use an incident to bypass
 required checks or leave the repository plane, or treat reconciliation as
 permission after the fact.
 
-Correct: obtain a separate scoped decision for the exact next action, including
+Correct: verify existing scoped authority for each named action, including
 a distinct announcement receipt after public verification, retain a redacted
-receipt, verify every binding, route sensitive paths to CODEOWNERS, and leave
-review blocked until another eligible human can approve exact-head work.
+receipt, verify every binding, and route sensitive paths to CODEOWNERS. Keep
+independent-review status blocked until another eligible human exists; this
+remote status does not prevent a scoped local merge.
 For ordinary source changes, add a follow-up commit and replace current-head
 evidence instead of rewriting history.

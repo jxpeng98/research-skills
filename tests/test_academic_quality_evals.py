@@ -108,7 +108,8 @@ class AcademicQualityEvalTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "evaluation-truth.yml"
         ).read_text(encoding="utf-8")
 
-        self.assertEqual(2, workflow.count('branches: ["2.x"]'))
+        self.assertEqual(1, workflow.count('branches: ["2.x"]'))
+        self.assertNotIn("\n  push:\n", workflow)
         self.assertEqual(1, workflow.count("python evals/runner/run_suite.py"))
         self.assertNotIn("run_academic_quality_evals.py", workflow)
 

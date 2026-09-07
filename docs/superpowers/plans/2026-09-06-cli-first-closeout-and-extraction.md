@@ -221,3 +221,87 @@ comparison remains `376108eb008f40fdb2b558d50c2245d770db8879`; no upstream
 changes or additional working-tree scope appeared at the pre-commit check.
 The PR records the frozen head and live check evidence. Program acceptance,
 merge and release remain separate from this integration check.
+
+
+## Development-flow simplification — September 7
+
+The maintainer requested faster App-to-CLI extraction with fewer tests, gates
+and manual confirmations. This changes delivery tooling, not product authority
+or accepted program rows. Existing CLI-403 source/evidence edits are preserved.
+
+The live `2.x` ruleset has five required contexts and zero required approving
+reviews; an impossible independent human review is not an integration gate.
+Native CI already has no merge-push trigger. The duplicate post-merge Evaluation
+Truth run at `c25fb2c1` took 13 seconds; the main excess is the ready-PR matrix:
+CLI tests plus desktop setup, check, Clippy, all-feature tests and a duplicated
+mobility test on each platform, plus Lite compatibility even for app-only edits.
+
+The revised loop is edit → one affected check → ready PR → current-head CI →
+authorized merge → next increment. Reuse unchanged local results and one scoped
+integration instruction. Remove mandatory draft/freeze and per-stage approval
+ceremonies, duplicate evidence fields, and Markdown layout validation. Preserve
+negative tests, protected checks, truthful review state and publication scope.
+
+CI now runs headless workspace tests on three systems (excluding GUI test
+roots), Linux-only format/CLI Clippy, affected Linux desktop consumers, and
+Lite compatibility only for Lite, its shared runtime dependencies or unknown/
+tooling inputs. Shared native
+source/build changes conservatively select desktop consumers; dedicated CLI/MCP
+paths skip the renderer. Remove the redundant `cargo check`, standalone mobility
+rerun and merge-push Evaluation Truth. Full desktop matrices, capacity, packages
+and real Hosts remain candidate work. No remote ruleset changes are needed.
+
+Validation:
+- 55 focused flow/evaluation/authorization tests passed; affected classifier and
+  authorization checks were rerun after the final routing/document edits.
+- Shell syntax, YAML/trigger parsing, authorization validation, generated roadmap
+  consistency and whitespace checks passed. Required remote contexts are unchanged.
+- The selected headless workspace graph contains no GUI dependencies, and every
+  selected test target compiled on macOS without frontend setup (50.16 seconds).
+- Runtime execution reported 242 passes and 3 explicit ignores before stopping
+  at the MCP fixture's sandbox-denied `TcpListener::bind("127.0.0.1:0")`. The
+  focused unsandboxed `--test mcp_stdio --no-default-features --locked --offline`
+  rerun passed all 7 tests. Later workspace test binaries were not run; this is
+  not a full local workspace pass.
+- Remote Linux/Windows execution and elapsed-time savings are unverified for
+  this diff. macOS/Windows desktop regressions now surface at candidate validation
+  rather than every PR; three-platform CLI regressions remain required.
+
+No commit, push, merge, remote ruleset mutation, package or publication was
+performed for this workflow change.
+Next increment remains CLI-403 independent package authority/install/rollback;
+its external acceptance does not block independent CLI development.
+
+
+## Local integration correction — September 7
+
+The maintainer accepted the simplification and explicitly selected development
+on local feature branches followed by direct local merge into `2.x`, with no PR.
+This supersedes the ready-PR requirement in the preceding audit. The current
+instruction authorizes scoped local branch creation, commits and merges; no
+push, remote ruleset change or publication is included.
+
+Default loop: local feature branch → edit → affected check → reviewed commit →
+`git merge --ff-only` into local `2.x` → next increment. If the base advances,
+merge it into the feature branch and check only the affected combined behavior.
+Run the existing fast frozen-source guard before merge. No new wrapper, task
+engine, approval receipt ceremony or CI job is needed.
+
+Local Git integration uses affected checks and a reviewed diff under the
+maintainer's instruction. The versioned authorization policy still governs
+protected remote merge with its existing PR/CODEOWNER evidence; local merge does
+not authorize that action. Research/publication boundaries and the remote ruleset
+snapshot are unchanged. Optional PR workflows
+continue to exist for explicitly requested remote collaboration or candidates.
+The preceding CLI-403 working changes remain outside this workflow commit.
+
+Validation: 40 focused authorization, branch and development-policy tests passed;
+authorization policy, generated roadmap and whitespace validation passed. Existing
+CI/classifier evidence from the preceding audit is reused; no Rust code changes
+are part of this increment, so the native suites are not repeated.
+
+Integration branch: `codex/local-first-development`; target: local `2.x` through
+fast-forward merge after the frozen-source guard. The isolated worktree contains
+only workflow/policy changes. CLI-403 source, ledger updates and evidence remain
+uncommitted in the original worktree. Remote rules, push and publication are
+outside this action. Next development remains the CLI-403 package boundary.

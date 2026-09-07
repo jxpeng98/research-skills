@@ -148,84 +148,35 @@ Correct: recompute the fixed native plan at confirmation, reject any digest or
 state change, execute the resolved official CLI, then derive Ready only from
 fresh positive evidence.
 
-## Scenario: Three-tier verification
+## Scenario: Local development and proportionate verification
 
-### 1. Scope / Trigger
+The maintainer selected local development: feature branch → affected **Focused**
+checks → reviewed commit → local `2.x` merge. No PR, remote **Slice** CI or
+independent reviewer is required. Local branch/commit/merge authority persists
+within the requested development scope; push and publication remain separate.
 
-Use this contract to keep daily development, pull-request integration,
-cross-platform builds, and release qualification independent. Moving to a
-higher lane is explicit; success in one lane never authorizes the next.
+- Reuse local results while tested source, dependencies and inputs are unchanged.
+  Run the frozen-source guard once against local `2.x` before merging; use
+  `git merge --ff-only`. A diverged base is merged into the feature branch first;
+  conflict resolution or changed inputs receive the affected checks.
+- Trust, authorization, schema, path, ownership and data-loss changes keep their
+  negative checks. Local integration does not bypass product preview/approval/CAS.
+- The remote ruleset record governs optional remote synchronization only.
+  Existing PR workflows stay available for explicitly requested collaboration;
+  neither PR nor merge-push CI is a local completion requirement.
+- Optional PR CI runs headless workspace tests on three platforms excluding GUI
+  test roots; format/CLI Clippy run on Linux. Shared native source/build changes
+  select Linux desktop consumers. Lite or its runtime dependencies select Lite
+  compatibility. Unknown inputs select all PR checks; documentation uses reports.
+- **Acceptance** is a named candidate's package, cross-platform, live Host and
+  release evidence. Missing external evidence blocks its claim, not independent
+  implementation. Local compilation does not claim target-native runtime success.
 
-### 2. Signatures
-
-- Daily / **Focused**: the smallest package-native lint, type-check, test, or
-  negative command that can falsify the change.
-- PR / **Slice**: affected checks plus the required exact-head GitHub contexts.
-- Build: a named local target command or explicit Native CI run; record source,
-  target, and whether code ran or only compiled.
-- Release / **Acceptance**: an explicit versioned release task and
-  `workflow_dispatch` from `2.x` using the existing release owners.
-
-### 3. Contracts
-
-- **Focused** is the task default. A final task check remains Focused unless the
-  task explicitly produces a PR-ready Slice.
-- Security, authorization, schema compatibility, path ownership, and data-loss
-  risks receive their focused negative checks immediately; lane separation
-  never delays these checks.
-- A ready source-affecting PR runs the required three-platform native matrix.
-  Pure non-runtime documentation/process/evidence changes preserve the required
-  context names with lightweight report steps. Mixed, unknown, runtime,
-  workflow/action, fixture, and empty diffs fail safe to the full matrix.
-- Draft PRs do not expand the matrix. Merge pushes do not duplicate it. Explicit
-  `workflow_dispatch` always runs the full source, Lite, package, and candidate
-  checks.
-- A target build proves only that target. `cargo xwin test --no-run` is Windows
-  compilation feedback, never a Windows runtime pass.
-- **Acceptance** adds target packages, packaged product, live Hosts where
-  claimed, migration/rollback, supply-chain trust, authorization, and public
-  verification only for an explicit candidate.
-
-### 4. Validation & Error Matrix
-
-- changed trust/data/schema boundary without a focused negative check -> check
-  incomplete;
-- task completion automatically treated as PR, Build, or Release evidence ->
-  invalid lane transition;
-- Windows-target compilation reported as Windows runtime validation -> invalid
-  build claim;
-- pure docs/process change starts the native matrix -> classifier regression;
-- mixed/runtime change skips the native matrix -> fail-closed regression;
-- release authorization from green Slice evidence -> invalid release claim;
-- automatic PR or merge-push activity starts packaging or promotion -> workflow
-  policy failure.
-
-### 5. Good / Base / Bad Cases
-
-- Good: a local change runs one focused test; its ready source PR later runs one
-  exact-head matrix; release work waits for a separate release task.
-- Base: a pure process/docs PR runs policy tests and lightweight required native
-  contexts without installing the toolchain.
-- Bad: every task runs three targets, packages, live Hosts, and promotion.
-- Bad: green PR checks or a cross-compiled artifact are reported as release or
-  native-runtime evidence.
-
-### 6. Tests Required
-
-- Boundary tests cover non-runtime-only, mixed, runtime, frozen, nested-fixture,
-  unknown, and empty diffs.
-- Policy tests preserve the four required context identities and explicit manual
-  dispatch for packaging, candidate, and promotion work.
-- Roadmap tests keep task IDs, ledger state, and generated evidence views
-  deterministic without making them the current planning owner.
-
-### 7. Wrong vs Correct
-
-Wrong: finish a task, automatically run a release checklist, and treat CI as
-authorization.
-
-Correct: record the current lane, run only its owner, and enter a higher lane
-only through an explicit PR, build request, or release task.
+Validation: workflow/classifier regressions preserve the optional CI route;
+authorization tests verify that local Git instructions preserve the protected
+remote merge policy and its CODEOWNER evidence. Remote protection, research and
+publication checks remain separate. Markdown layout and per-step approval ceremonies are not gates.
+The ledger still owns accepted state; local merge alone accepts no program task.
 
 ## Scenario: Opt-in platform capacity receipts
 

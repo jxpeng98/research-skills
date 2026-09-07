@@ -1,52 +1,23 @@
-<!-- Keep this PR Draft until its exact-head evidence is ready. -->
+<!-- Optional remote collaboration only; local development merges directly into local 2.x. -->
 
-Follow the [repository delivery checklists](https://github.com/jxpeng98/qiongli/blob/2.x/.github/delivery-checklists.md).
+Follow the [delivery checklist](https://github.com/jxpeng98/qiongli/blob/2.x/.github/delivery-checklists.md).
+Fill only what the change affects; link existing evidence instead of copying it.
 
-## Problem and bounded outcome
+## Outcome
 
-<!-- What problem does this solve, and what observable outcome is included? -->
+<!-- Problem, resulting behavior, and scope. -->
 
-## Scope and non-goals
+## Testing
 
-**In-scope paths:**
-
-**Explicit non-goals:**
-
-## Boundary impact
-
-- Architecture:
-- Schema or persisted data:
-- Security or authorization:
-- Research boundary or claims:
-
-## Tests and exact-head evidence
-
-- Head SHA:
 - Focused commands/results:
 - Required checks/run links:
-- Manual evidence and non-claims:
 
-## Migration, rollback, and compatibility
+<!-- GitHub owns the current head and required checks. Do not maintain a second SHA log. -->
 
-- Compatibility class:
-- Migration/data-loss behavior:
-- Rollback or replacement path:
+## Risks and rollback
 
-## Risks and follow-ups
+<!-- Relevant architecture, schema, security, research, compatibility or data-loss
+impact; rollback and unverified follow-ups. Omit unaffected categories. -->
 
-- Known risks or residual limitations:
-- Required follow-ups and owners:
-
-## Required reviewers
-
-<!-- Name affected CODEOWNER, specialist, research, or release roles. Do not
-claim independent approval while the GOV-413 reviewer blocker remains. -->
-
-## Delivery confirmation
-
-- [ ] The diff is bounded to the stated scope and preserves unrelated work.
-- [ ] Every head change (new commit, amend, rebase, merge, or history rewrite)
-      has replaced stale exact-head CI and review evidence.
-- [ ] Required checks pass for the recorded head.
-- [ ] Review status is reported truthfully.
-- [ ] Green checks are evidence, not merge, release, or announcement authorization.
+Every head change invalidates stale exact-head CI and review evidence.
+Green checks are evidence, not merge, release, or announcement authorization.

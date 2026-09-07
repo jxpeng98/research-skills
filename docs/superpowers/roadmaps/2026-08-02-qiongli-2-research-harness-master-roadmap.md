@@ -69,7 +69,7 @@ product acceptance. CLI First is the product direction; CI remains verification.
 
 The [current closeout and extraction plan](../plans/2026-09-06-cli-first-closeout-and-extraction.md)
 records the actual branch, dependency/caller inventory, preserved source, checks
-and the precise next PR. The former
+and the precise next increment. The former
 [ACP implementation plan](https://github.com/jxpeng98/qiongli/blob/ab84081fd260cb2914ce86f6dc4b6c77c26c6a58/.trellis/tasks/09-04-app-acp-all-chat-realignment/implement.md)
 and its embedded-Agent review are historical source evidence. Their unfinished
 App stages are no longer the next execution queue.
@@ -101,12 +101,21 @@ CLI split is verified. Do not start React/Electron, embedded chat, direct provid
 APIs, a general Agent daemon or a cross-repository common package. Old GUI
 support and public package retirement require their own explicit decision.
 
-Run affected Focused checks while editing and required exact-head Slice checks
-for integration. Missing live/package evidence blocks its own claim, not
+Run affected Focused checks while editing, review and commit the local feature
+branch, then merge it locally into `2.x`. No PR or remote CI wait is required. Missing live/package evidence blocks its own claim, not
 independent offline work. The master and ledger own direction and state;
 Trellis history is retained. The maintainer explicitly authorized integrating
 the existing hook/task-engine cleanup. AGENTS.md and CONTRIBUTING.md own the
 development flow; product approval/CAS and required integration checks remain.
+
+September 7 maintainer correction: development and integration happen locally.
+Create a feature branch from local `2.x`, edit, run affected checks, review and
+commit, then merge locally and continue. This standing instruction covers scoped
+local branch/commit/merge without repeated confirmation. No PR, remote CI wait,
+post-merge suite or candidate acceptance is required for each increment. Push and
+remote-rule changes remain separate. Optional CI retains headless/platform
+checks; packages and live Hosts are qualified at named candidates. Acceptance
+records gate claims, not independent implementation.
 
 ## 2. North Star
 

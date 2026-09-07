@@ -67,5 +67,7 @@ build script. CLI-only compilation is not standalone package qualification.
 
 - Run the closest crate or integration test first.
 - For contract changes, verify tool registry, dispatch, schemas, and docs agree.
-- Before exact-head CI, run Rust format and the affected workspace tests.
+- Run affected tests once locally; reuse unchanged results for integration.
+  Remote CI is optional for local integration; named candidates own full
+  cross-platform qualification.
 - Confirm public CLI examples exist in the parser and `--help` output.

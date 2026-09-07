@@ -53,6 +53,13 @@ window is not permission to resume feature development.
 
 ## 2.x Native Branch Governance
 
+Current development is local: create a feature branch from local `2.x`, edit,
+run affected checks, review and commit, then `git merge --ff-only` into local
+`2.x`. No pull request or GitHub CI wait is required. The maintainer's instruction
+covers local branch/commit/merge within the requested scope. Remote sync and
+remote-rule changes are separate actions. The GitHub policy below describes the
+optional remote route, not a local integration gate.
+
 `2.x` is created from the exact clean A8 handoff commit after the normalized
 1.x baseline is frozen. It owns all subsequent native implementation and 2.x
 release work.
@@ -66,23 +73,21 @@ candidate. Its required checks are:
 - `Rust native foundation (macOS)`;
 - `Rust native foundation (Windows)`.
 
-For a ready, source-affecting pull request, the native matrix runs format,
-check, Clippy, and workspace tests from the same commit on Linux, macOS, and
-Windows. Portable App API/Desktop/npm checks run once on Linux; every platform
-still builds the static Desktop assets, and Linux also runs the bounded Lite
-runtime compatibility check. Draft pull requests do not expand the matrix.
+For a ready source PR, run headless workspace tests on Linux, macOS and Windows
+and format/CLI Clippy once on Linux. Shared native source/build and desktop
+changes add Linux desktop consumer checks; dedicated CLI/MCP changes skip the
+renderer. Lite compatibility covers changes to Lite, its shared runtime
+dependencies and unknown/tooling inputs.
+Draft pull requests defer native tests. Native CI and Evaluation Truth merge pushes
+do not start a duplicate run.
 
-For a ready non-runtime documentation or evidence-only pull request, all four
-required context names still appear, but each foundation context runs only a
-lightweight report step; no Rust toolchain, frontend setup, build, or test runs,
-and Lite compatibility is skipped. After immutable-path rejection, the
-allowlist covers Trellis task/workspace/spec records and configuration, the two
-repository delivery Markdown files, top-level repository guidance, `docs/**`,
-and top-level Markdown notes or receipts under `tooling/release/`. Runtime or
-packaged content, workflows, actions, tests, scripts, nested release fixtures,
-mixed changes, unknown paths, and empty diffs fail safe to the full matrix. An
-explicit `workflow_dispatch` ignores this classifier and runs the full source,
-Lite, package, and candidate checks.
+For a non-runtime documentation or evidence-only pull request, native contexts
+use lightweight reports. Unknown/workflow/fixture/empty changes conservatively
+select all PR checks; deleted source remains source. Explicit `workflow_dispatch`
+runs the full three-platform desktop, Lite, package and candidate checks.
+See [CONTRIBUTING](https://github.com/jxpeng98/qiongli/blob/2.x/CONTRIBUTING.md)
+for the current development loop. The required `Evaluation Truth V1` context
+also runs once on each PR head; it does not require human confirmation.
 
 `Legacy Compatibility CI` and
 `Legacy Checkout Install Check` continue to run automatically for `main`,
@@ -101,7 +106,7 @@ legacy workflow for a named compatibility investigation. New conformance
 evidence uses a new versioned path rather than rewriting accepted 1.x evidence.
 
 The active enforcement source is ruleset `18800504`, which requires pull
-requests and the four contexts above, blocks deletion and non-fast-forward
+requests, the four native contexts above and `Evaluation Truth V1`, blocks deletion and non-fast-forward
 updates, and has no bypass actors. The immutable guard is preventive only when
 its workflow is required; without server-side enforcement, a direct push would
 be unvalidated because merge pushes do not start `Native CI`.
@@ -122,11 +127,8 @@ Use the smallest tier that matches the delivery boundary:
    test and the third-party `cargo-xwin` commands below for early Windows x64
    compilation feedback. Using `cargo-xwin` accepts the Microsoft SDK licence
    and therefore requires explicit maintainer approval before first use.
-2. **Slice** — when a complete user-visible business slice or small-version
-   checkpoint is frozen, run all affected package/cross-contract checks and the
-   four required exact-head Native CI contexts above. Source-affecting changes
-   run the full three-platform matrix; allowlisted non-runtime documentation or
-   evidence-only closeout keeps the contexts but uses the lightweight path.
+2. **Slice** — optional remote collaboration only. Routine integration uses
+   the local branch/check/commit/merge loop above; no PR or CI wait is required.
 3. **Acceptance** — only for an explicit 2.x cutover or release candidate, run
    target packages, packaged-product and Lite candidate acceptance, current live
    Hosts, migration/rollback, trust/supply-chain, and claimed manual journeys.

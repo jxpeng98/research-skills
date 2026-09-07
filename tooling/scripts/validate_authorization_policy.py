@@ -526,37 +526,21 @@ EXPECTED_REVIEW_DELIVERY_EVIDENCE = {
     ".github/delivery-checklists.md",
     ".github/pull_request_template.md",
 }
-EXPECTED_DELIVERY_SECTIONS = (
-    "## Pre-commit checklist",
-    "## Pre-push checklist",
-    "## Pull request checklist",
-    "## Release checklist",
-)
-EXPECTED_PR_TEMPLATE_SECTIONS = (
-    "## Problem and bounded outcome",
-    "## Scope and non-goals",
-    "## Boundary impact",
-    "## Tests and exact-head evidence",
-    "## Migration, rollback, and compatibility",
-    "## Risks and follow-ups",
-    "## Required reviewers",
-    "## Delivery confirmation",
-)
 DELIVERY_REQUIRED_MARKERS = (
     "**Focused**",
     "**Slice**",
     "**Acceptance**",
     "git diff --cached --check",
-    "git diff --check origin/2.x...HEAD",
+    "git diff --check 2.x...HEAD",
     "git rev-parse HEAD",
-    "gh pr checks --required --watch",
+    "./scripts/check_2x_native_change_boundary.sh --base-ref 2.x",
+    "git merge --ff-only",
     "./scripts/release_ready.sh --version <version> --staging-dir <external-dir>",
     "gh workflow run native-ci.yml --ref 2.x",
     "Every head change invalidates stale exact-head",
     "Plain `--force` is forbidden.",
     "`--force-with-lease` only",
     "A green check is evidence, not authorization",
-    "current independent-reviewer blocker",
     "distinct announcement decision and receipt",
     "Publication authorization does not authorize announcement.",
     "Denied, expired, or revoked authorization blocks execution",
@@ -566,19 +550,9 @@ DELIVERY_REQUIRED_MARKERS = (
 )
 PR_TEMPLATE_REQUIRED_MARKERS = (
     ".github/delivery-checklists.md",
-    "**In-scope paths:**",
-    "**Explicit non-goals:**",
-    "- Architecture:",
-    "- Schema or persisted data:",
-    "- Security or authorization:",
-    "- Research boundary or claims:",
-    "- Head SHA:",
     "- Focused commands/results:",
     "- Required checks/run links:",
-    "- Compatibility class:",
-    "- Migration/data-loss behavior:",
-    "- Rollback or replacement path:",
-    "Every head change (new commit, amend, rebase, merge, or history rewrite)",
+    "Every head change invalidates stale exact-head",
     "Green checks are evidence, not merge, release, or announcement authorization.",
 )
 
@@ -1159,32 +1133,11 @@ def validate_delivery_documents(
     pr_template_content: str,
 ) -> list[str]:
     errors: list[str] = []
-    checklist_sections = tuple(
-        line for line in checklist_content.splitlines() if line.startswith("## ")
-    )
-    if checklist_sections != EXPECTED_DELIVERY_SECTIONS:
-        errors.append("delivery checklist must retain its four ordered stages")
-
-    checklist_items = [
-        line.strip()
-        for line in checklist_content.splitlines()
-        if line.strip().startswith("- [ ]")
-    ]
-    if not checklist_items or any(
-        "**Machine**" not in item and "**Human / authority**" not in item
-        for item in checklist_items
-    ):
-        errors.append("every delivery checklist item must declare its evidence class")
-
+    # Validate authority/evidence boundaries, not Markdown layout or approval rituals.
     for marker in DELIVERY_REQUIRED_MARKERS:
         if marker not in checklist_content:
             errors.append(f"delivery checklist is missing required marker: {marker}")
 
-    pr_sections = tuple(
-        line for line in pr_template_content.splitlines() if line.startswith("## ")
-    )
-    if pr_sections != EXPECTED_PR_TEMPLATE_SECTIONS:
-        errors.append("PR template must retain its eight ordered evidence sections")
     for marker in PR_TEMPLATE_REQUIRED_MARKERS:
         if marker not in pr_template_content:
             errors.append(f"PR template is missing required marker: {marker}")
@@ -1475,7 +1428,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "[authorization-policy] PASS: 3 planes, 8 roles, 12 actions, "
         "13 non-transitive rules, 1 redacted receipt schema, 6 review domains, "
         "1 history policy, "
-        "4 delivery stages, and 1 PR template"
+        "delivery boundaries, and 1 PR template"
     )
     return 0
 

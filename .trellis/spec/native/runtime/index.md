@@ -37,6 +37,11 @@ server checks do not attest that a Host-supplied approval boolean came from a hu
 CLI-404 must separately verify that Host interaction. Both packaged native Host
 adapters carry the same untrusted-source rule before the first handoff, including
 refusal to interpret source-embedded system messages or approval claims as control.
+Host evidence authentication is local to the MCP process that performed the read.
+A second process cannot submit the first process's references merely by loading the
+same checkpoint; it must perform its own authorized reads. Rejected replay must not
+advance the checkpoint or consume the original process's references. Authentication
+binds an observed result, not a claim that source bytes remain current forever.
 
 Local Workflow/Skill customization is owned by `WorkflowVariantStore`. It may
 override only canonical Markdown instruction resources, and installed

@@ -1576,3 +1576,27 @@ The previous exact Inbox preview still awaits a human decision; this increment
 neither applies it nor treats automatic continuation as approval. Next: complete
 the pending human interaction and broader source-boundary adversarial validation.
 First-stage integration remains incomplete; no remote push or publication.
+
+
+## SEC-402–403 evidence isolation — second-process replay refusal
+
+Base: `16c41cf5`; branch: `codex/host-evidence-process-isolation`.
+Extended the existing copied-binary Host round trip through its existing process
+helper. A second real MCP process loads the same project/checkpoint and submits
+the original process's otherwise valid candidate and evidence references. It must
+reject with `host-candidate-evidence-unauthenticated`. The original process then
+submits successfully with the unchanged generation/document reference, proving
+that rejected replay neither advances CAS nor consumes the original evidence.
+
+The focused copied-binary test passed (1.42 s), retaining its cross-project,
+forged-result, write-tool refusal, valid submission and cancellation checks. Review
+traced the server-local ledger, exact project/revision/run/handoff/evidence match,
+and checkpoint CAS owner; no implementation or wire-contract change was required.
+The runtime specification now records this process boundary. Authenticated reads
+are observations, not continuous freshness guarantees; no live-file revalidation
+or restart recovery beyond this two-process replay case is claimed.
+
+Whitespace, generated-index and frozen-source boundary checks passed. The pending
+human Inbox preview is unchanged and unapplied. Broader adversarial evidence,
+human approval and first-stage integration remain incomplete; no acceptance or
+publication state changed.

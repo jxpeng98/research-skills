@@ -868,6 +868,26 @@ fn copied_full_binary_completes_host_handoff_round_trip_without_model_transport(
         Vec::new(),
     )
     .unwrap();
+    // A second MCP process sees the checkpoint, but owns none of these reads.
+    let (_, replayed) = full_tool_response(
+        &fixture,
+        22,
+        "qiongli_orchestration_submit",
+        json!({
+            "projectId": project_id,
+            "expectedProjectRevision": 1,
+            "runId": run_id,
+            "expectedGeneration": generation,
+            "expectedDocumentSha256": document_sha256,
+            "host": host,
+            "candidate": candidate
+        }),
+    );
+    assert_eq!(
+        replayed["result"]["structuredContent"]["reason_code"],
+        "host-candidate-evidence-unauthenticated"
+    );
+    // Rejection must not consume the original process's evidence or advance CAS.
     let submitted = exchange_rpc(
         &mut stdout,
         &mut stdin,

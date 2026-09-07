@@ -398,3 +398,54 @@ Validation on macOS:
 Integrate the scoped commit locally through the frozen-source guard and fast-forward
 merge. Reuse these results; no remote synchronization or publication. CLI-403 and
 all accepted ledger rows retain their existing status.
+
+## Continuing objective — complete the first-stage integration
+
+The maintainer requested continued work through the first-stage integration.
+This means the standalone CLI baseline in ADR 0218 and CLI-401 through CLI-405,
+with CLI-410 qualification preparation: independent build/resources/install/trust,
+window-free Host integration and verified human approval, a controlled research
+write, restart/recovery and same-device handoff. Integration is local `2.x` under
+the current workflow. Publication and additional collaboration remain separately
+scoped; passing primitives does not complete this objective.
+
+Outstanding evidence includes independent product-operation routing, update and
+rollback, human approval without a Qiongli window, the real Host journey and the
+declared package/platform support scope. Existing implementation and accepted
+evidence will be reused only where their scope matches these requirements.
+
+## CLI-403 third increment — persisted candidate identity
+
+Base: `307fd56b`; branch: `codex/cli-installed-candidate-identity`.
+Candidate installation now stores the exact canonical signed candidate beside
+the payload directories, through existing private-file, sync and atomic no-replace
+rename helpers. Existing conflicting records refuse before payload changes;
+identical records replay. A final persistence failure uses existing installation
+compensation. Interrupted temporary metadata cannot confer product authority.
+Signed metadata remains with diagnostic receipts after uninstall.
+
+`verify_installed_native_candidate_product` discovers the fixed managed root,
+requires an active payload receipt and revalidates the signed candidate, source
+commit, platform/version, portable release and requested Host grant against current
+trust/time. The supplied process path must resolve to the verified installed binary;
+an identical copy elsewhere is refused. Archive and release-note bytes remain
+installation qualification inputs, not runtime dependencies. Receipt and signed
+release digests must agree. The returned capability is private-constructed and its
+debug output redacts the executable path; it does not carry write approval.
+
+The existing receipt schemas and integrity-only diagnose/remove path remain
+compatible. Legacy installs without signed metadata refuse this new authority path
+until a fresh verified candidate apply replays the installation. App-backed product
+operation routing is the next increment; this source change does not yet make those
+operations standalone or prove a running release binary/real Host journey.
+
+Checks on macOS: the existing `native_release_candidate` integration test passed
+(1.74 seconds), including installed metadata, legacy replay, tampering/hard-link
+refusal, recovery journal refusal, uninstall invalidation, both Host scopes,
+wrong source/signature/key/time/channel/generation and identical-copy path refusal.
+Three platform candidate parser/identity tests passed; affected-target Clippy passed
+with the existing local Rust 1.98 `chunks_exact_to_as_chunks` exception. Formatting
+and whitespace checks passed. Final review found no actionable findings; native
+Linux/Windows, crash injection and actual product-entry qualification remain open.
+Integrate locally after the frozen-source guard, reusing these checks. CLI-403 and
+accepted ledger status remain unchanged; no publication or remote synchronization.

@@ -7,6 +7,11 @@ use std::path::Path;
 
 use qiongli_content::LoadedResourcePack;
 
+use crate::transaction::{
+    create_private_new_file, path_exists, read_private_file, rename_path, sync_directory,
+    transaction_id, write_sync_file,
+};
+
 use crate::{
     AllowedRootV1, ApprovalRequirement, ApprovedManagedRoot, CapabilityProfile, ClaudeAdapterError,
     ClaudeRegistrationCommit, ClaudeRegistrationDisposition, ClaudeRegistrationExecutor,
@@ -18,11 +23,14 @@ use crate::{
     NativeCandidatePluginSourceCommit, NativeCandidatePluginSourceDisposition,
     NativeCandidatePluginSourceError, NativeCandidatePluginSourceTarget,
     NativeCandidatePluginSourceVerification, NativePayloadInstallCommit,
-    NativePayloadInstallVerification, NativePayloadLifecycleCommit, PlatformError, SymbolicRoot,
-    TargetDescriptorV1, TransactionError, VerifiedNativeReleaseCandidate, approve_install_plan,
-    approve_managed_root, discover_claude_user, discover_codex_user,
-    discover_native_candidate_plugin_source_target, materialize_native_candidate_plugin_source,
-    native_artifact_binary_path, native_artifact_id, prepare_native_candidate_plugin_source_target,
+    NativePayloadInstallVerification, NativePayloadLifecycleCommit, NativeReleaseAuthority,
+    NativeReleaseCandidateError, NativeReleaseCandidateVerificationContext, PlatformError,
+    SignedNativeReleaseCandidateV1, SymbolicRoot, TargetDescriptorV1, TransactionError,
+    VerifiedInstalledNativeCandidate, VerifiedNativeReleaseCandidate, approve_install_plan,
+    approve_managed_root, approve_native_artifact_target, discover_claude_user,
+    discover_codex_user, discover_native_candidate_plugin_source_target,
+    materialize_native_candidate_plugin_source, native_artifact_binary_path, native_artifact_id,
+    native_release_candidate_file_name, prepare_native_candidate_plugin_source_target,
     preview_claude_registration, preview_codex_registration, preview_native_payload_install,
     remove_native_candidate_plugin_source, verify_native_candidate_plugin_source,
 };
@@ -102,6 +110,7 @@ pub enum NativeCandidateLocalInstallError {
     ClaudeCode(ClaudeAdapterError),
     InstalledBinaryInvalid,
     ReceiptClosureInvalid,
+    Candidate(NativeReleaseCandidateError),
     RecoveryRequired,
     CompensationFailed,
 }
@@ -116,6 +125,7 @@ impl NativeCandidateLocalInstallError {
             Self::Codex(error) => error.reason_code(),
             Self::ClaudeCode(error) => error.reason_code(),
             Self::InstalledBinaryInvalid => "native-candidate-installed-binary-invalid",
+            Self::Candidate(error) => error.reason_code(),
             Self::ReceiptClosureInvalid => "native-candidate-local-receipt-closure-invalid",
             Self::RecoveryRequired => "native-candidate-install-recovery-required",
             Self::CompensationFailed => "native-candidate-install-compensation-failed",
@@ -144,6 +154,16 @@ pub fn apply_native_release_candidate_local(
 ) -> Result<NativeCandidateLocalInstallCommit, NativeCandidateLocalInstallError> {
     let home = home.as_ref();
     let managed_root = prepare_native_candidate_managed_root(home)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let candidate_path = managed_root.path().join(
+        native_release_candidate_file_name(&candidate.candidate().artifact)
+            .map_err(NativeCandidateLocalInstallError::Candidate)?,
+    );
+    let candidate_bytes = candidate
+        .signed_candidate()
+        .to_canonical_json()
+        .map_err(NativeCandidateLocalInstallError::Candidate)?;
+    check_candidate_record(&candidate_path, &candidate_bytes)
         .map_err(NativeCandidateLocalInstallError::Transaction)?;
     let root = AllowedRootV1 {
         id: MANAGED_ROOT_ID.to_string(),
@@ -264,6 +284,11 @@ pub fn apply_native_release_candidate_local(
         return Err(NativeCandidateLocalInstallError::RecoveryRequired);
     }
 
+    if let Err(error) = persist_candidate_record(&managed_root, &candidate_path, &candidate_bytes) {
+        compensate_registration_source_and_payload(&registration, home, &compensation)?;
+        return Err(NativeCandidateLocalInstallError::Transaction(error));
+    }
+
     Ok(NativeCandidateLocalInstallCommit {
         target: candidate.target(),
         payload,
@@ -271,6 +296,101 @@ pub fn apply_native_release_candidate_local(
         registration,
         outstanding_host_action: HostAction::InstallOrEnablePlugin,
     })
+}
+
+// Immutable signed metadata is retained with lifecycle receipts after uninstall.
+// It grants nothing without fresh signature, active payload and executable checks.
+fn check_candidate_record(path: &Path, bytes: &[u8]) -> Result<bool, TransactionError> {
+    if !path_exists(path)? {
+        return Ok(false);
+    }
+    if read_private_file(path)? != bytes {
+        return Err(TransactionError::InvalidReceipt);
+    }
+    Ok(true)
+}
+
+fn persist_candidate_record(
+    root: &ApprovedManagedRoot,
+    path: &Path,
+    bytes: &[u8],
+) -> Result<(), TransactionError> {
+    root.validate()?;
+    if check_candidate_record(path, bytes)? {
+        return Ok(());
+    }
+    let temporary = root
+        .path()
+        .join(format!(".qiongli-candidate-{}.tmp", transaction_id()));
+    let mut file = create_private_new_file(&temporary)?;
+    let result = write_sync_file(&mut file, bytes);
+    drop(file);
+    let result = result.and_then(|()| rename_path(&temporary, path, false));
+    // A concurrent writer may have committed the same immutable candidate.
+    let result = match result {
+        Err(_) if check_candidate_record(path, bytes).unwrap_or(false) => Ok(()),
+        other => other,
+    };
+    let _ = fs::remove_file(&temporary);
+    result?;
+    sync_directory(root.path())
+}
+
+/// Revalidates the installed product using fixed home-relative paths and the
+/// trusted caller's current_exe(), embedded identity, authority and current time.
+/// Receipt integrity alone cannot create this capability. This does not approve writes.
+pub fn verify_installed_native_candidate_product(
+    pack: &LoadedResourcePack<'_>,
+    authority: &NativeReleaseAuthority,
+    context: &NativeReleaseCandidateVerificationContext<'_>,
+    home: impl AsRef<Path>,
+    current_executable: &Path,
+) -> Result<VerifiedInstalledNativeCandidate, NativeCandidateLocalInstallError> {
+    let root = discover_native_candidate_managed_root(home)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let candidate_path = root.path().join(
+        native_release_candidate_file_name(context.expected_artifact)
+            .map_err(NativeCandidateLocalInstallError::Candidate)?,
+    );
+    let bytes = read_private_file(&candidate_path)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let signed = SignedNativeReleaseCandidateV1::from_json(&bytes)
+        .map_err(NativeCandidateLocalInstallError::Candidate)?;
+    let install_id = format!(
+        "native-payload-{}",
+        signed
+            .candidate
+            .signed_portable_release
+            .envelope
+            .archive_sha256
+    );
+    let receipt = ManagedNativePayloadExecutor::new(root.clone())
+        .verify(&install_id, pack)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?
+        .receipt;
+    let target = approve_native_artifact_target(
+        root.path().join(
+            native_artifact_id(context.expected_artifact)
+                .map_err(|_| NativeCandidateLocalInstallError::InstalledBinaryInvalid)?,
+        ),
+        context.expected_artifact,
+    )
+    .map_err(|_| NativeCandidateLocalInstallError::InstalledBinaryInvalid)?;
+    let installed = signed
+        .verify_installed(authority, context, pack, &target, current_executable)
+        .map_err(NativeCandidateLocalInstallError::Candidate)?;
+    if receipt.artifact != installed.candidate().artifact
+        || receipt.operation.release_envelope_sha256
+            != crate::grant::sha256_hex(
+                &crate::native_release_envelope_signing_bytes(
+                    &signed.candidate.signed_portable_release.envelope,
+                )
+                .map_err(|_| NativeCandidateLocalInstallError::ReceiptClosureInvalid)?,
+            )
+    {
+        return Err(NativeCandidateLocalInstallError::ReceiptClosureInvalid);
+    }
+    Ok(installed)
 }
 
 /// Creates and approves the one product-owned native payload root below the

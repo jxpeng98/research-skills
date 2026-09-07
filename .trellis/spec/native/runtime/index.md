@@ -69,8 +69,21 @@ requiring the original archive. It reuses release-key/generation/time policy and
 the artifact owner's full file-tree validation, binding the manifest, binary and
 resource digests to the expected artifact and requested launch scope. Its result
 is a scoped launch grant, not running-process identity, candidate source provenance
-or approval to write. App-backed product authority and source-build refusals remain
-until the standalone caller and persisted signed-candidate binding are implemented.
+or approval to write.
+
+Candidate installation atomically persists the exact signed candidate beside the
+native payload directories using the existing private-file and no-replace rename
+owners. Conflicting metadata is refused before payload changes. Identical metadata
+replays; legacy installs acquire it only through a freshly verified candidate apply.
+The record is retained with lifecycle receipts after uninstall. It is not itself
+authority: `verify_installed_native_candidate_product` requires an active payload
+receipt, a freshly verified candidate/source/Host grant, and the matching executable
+at the fixed managed path. Recovery journals, changed bytes, linked records, expired
+signatures and removed payloads refuse authority. Temporary or orphan records do not
+restore authority; successful replay can complete an interrupted metadata commit.
+The app boundary must supply current_exe(), embedded identity, trust roots and time.
+App-backed operation routing and source-build refusals remain until that caller is
+connected; this primitive does not create approval or qualify a release.
 
 ## Quality Check
 

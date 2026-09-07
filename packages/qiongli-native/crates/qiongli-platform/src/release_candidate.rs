@@ -1,4 +1,6 @@
 use std::fmt::{self, Debug, Display, Formatter};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 use qiongli_content::LoadedResourcePack;
 use serde::{Deserialize, Serialize};
@@ -7,7 +9,7 @@ use crate::grant::{decode_fixed_hex, is_lower_hex, sha256_hex, valid_identifier}
 use crate::native_release::validate_release_keys;
 use crate::{
     ArtifactIdentityV1, ClientActivationTarget, GrantMode, GrantVerificationContext, InstallerKind,
-    IntegrationScope, NativePortableArchiveTarget, NativeReleaseAuthority,
+    IntegrationScope, NativeArtifactTarget, NativePortableArchiveTarget, NativeReleaseAuthority,
     NativeReleaseSignatureV1, NativeReleaseVerificationContext, SignatureAlgorithm,
     SignedLaunchGrantV1, SignedNativeReleaseEnvelopeV1, VerifiedLaunchGrant,
     VerifiedNativeReleaseEnvelope, native_artifact_id,
@@ -207,6 +209,104 @@ impl SignedNativeReleaseCandidateV1 {
         archive_target: &NativePortableArchiveTarget,
         release_notes: &[u8],
     ) -> Result<VerifiedNativeReleaseCandidate, NativeReleaseCandidateError> {
+        let signing_bytes = self.verify_authority(authority, context)?;
+        if archive_target.artifact() != context.expected_artifact {
+            return Err(NativeReleaseCandidateError::CandidateArtifactMismatch);
+        }
+        verify_release_notes(
+            &self.candidate.release_notes,
+            &self.candidate.artifact,
+            release_notes,
+        )?;
+
+        let release_context = NativeReleaseVerificationContext {
+            now_unix: context.now_unix,
+            minimum_release_generation: authority.minimum_release_generation(),
+            minimum_launch_grant_generation: authority.minimum_launch_grant_generation(),
+            expected_artifact: context.expected_artifact,
+            expected_channel: authority.channel(),
+            requested_mode: GrantMode::LiteMcp,
+            requested_scope: context.requested_target.integration_scope(),
+        };
+        let portable_release = self
+            .candidate
+            .signed_portable_release
+            .verify(
+                authority.release_keys(),
+                authority.launch_grant_keys(),
+                &release_context,
+                pack,
+                archive_target,
+            )
+            .map_err(|_| NativeReleaseCandidateError::PortableReleaseInvalid)?;
+
+        let plugin_grant = self.verify_plugin_grant(authority, context)?;
+
+        Ok(VerifiedNativeReleaseCandidate {
+            signed: self.clone(),
+            signed_payload_sha256: sha256_hex(&signing_bytes),
+            release_key_id: self.signature.key_id.clone(),
+            verified_at_unix: context.now_unix,
+            target: context.requested_target,
+            portable_release,
+            plugin_grant,
+        })
+    }
+
+    /// Verifies installed bytes and binds them to the caller-supplied process path.
+    /// The trusted app boundary must supply current_exe(), embedded source/version,
+    /// authority and time. This is not installation approval or release qualification;
+    /// release-note and archive bytes are checked by `verify` before installation.
+    pub fn verify_installed(
+        &self,
+        authority: &NativeReleaseAuthority,
+        context: &NativeReleaseCandidateVerificationContext<'_>,
+        pack: &LoadedResourcePack<'_>,
+        target: &NativeArtifactTarget,
+        current_executable: &Path,
+    ) -> Result<VerifiedInstalledNativeCandidate, NativeReleaseCandidateError> {
+        self.verify_authority(authority, context)?;
+        let release_context = NativeReleaseVerificationContext {
+            now_unix: context.now_unix,
+            minimum_release_generation: authority.minimum_release_generation(),
+            minimum_launch_grant_generation: authority.minimum_launch_grant_generation(),
+            expected_artifact: context.expected_artifact,
+            expected_channel: authority.channel(),
+            requested_mode: GrantMode::LiteMcp,
+            requested_scope: context.requested_target.integration_scope(),
+        };
+        self.candidate
+            .signed_portable_release
+            .verify_extracted_artifact(
+                authority.release_keys(),
+                authority.launch_grant_keys(),
+                &release_context,
+                pack,
+                target,
+            )
+            .map_err(|_| NativeReleaseCandidateError::PortableReleaseInvalid)?;
+        let binary_path = crate::native_artifact_binary_path(context.expected_artifact)
+            .map_err(|_| NativeReleaseCandidateError::ExecutableInvalid)?;
+        let expected = fs::canonicalize(target.path().join(binary_path))
+            .map_err(|_| NativeReleaseCandidateError::ExecutableInvalid)?;
+        let current = fs::canonicalize(current_executable)
+            .map_err(|_| NativeReleaseCandidateError::ExecutableInvalid)?;
+        if current != expected {
+            return Err(NativeReleaseCandidateError::ExecutableInvalid);
+        }
+        let plugin_grant = self.verify_plugin_grant(authority, context)?;
+        Ok(VerifiedInstalledNativeCandidate {
+            candidate: self.candidate.clone(),
+            current_executable: current,
+            plugin_grant,
+        })
+    }
+
+    fn verify_authority(
+        &self,
+        authority: &NativeReleaseAuthority,
+        context: &NativeReleaseCandidateVerificationContext<'_>,
+    ) -> Result<Vec<u8>, NativeReleaseCandidateError> {
         self.validate_structure()?;
         validate_release_keys(authority.release_keys())
             .map_err(|_| NativeReleaseCandidateError::InvalidCandidate)?;
@@ -238,41 +338,20 @@ impl SignedNativeReleaseCandidateV1 {
         if self.candidate.artifact.channel != authority.channel() {
             return Err(NativeReleaseCandidateError::CandidateChannelMismatch);
         }
-        if &self.candidate.artifact != context.expected_artifact
-            || archive_target.artifact() != context.expected_artifact
-        {
+        if &self.candidate.artifact != context.expected_artifact {
             return Err(NativeReleaseCandidateError::CandidateArtifactMismatch);
         }
         if self.candidate.source_commit != context.expected_source_commit {
             return Err(NativeReleaseCandidateError::CandidateSourceMismatch);
         }
-        verify_release_notes(
-            &self.candidate.release_notes,
-            &self.candidate.artifact,
-            release_notes,
-        )?;
+        Ok(signing_bytes)
+    }
 
-        let release_context = NativeReleaseVerificationContext {
-            now_unix: context.now_unix,
-            minimum_release_generation: authority.minimum_release_generation(),
-            minimum_launch_grant_generation: authority.minimum_launch_grant_generation(),
-            expected_artifact: context.expected_artifact,
-            expected_channel: authority.channel(),
-            requested_mode: GrantMode::LiteMcp,
-            requested_scope: context.requested_target.integration_scope(),
-        };
-        let portable_release = self
-            .candidate
-            .signed_portable_release
-            .verify(
-                authority.release_keys(),
-                authority.launch_grant_keys(),
-                &release_context,
-                pack,
-                archive_target,
-            )
-            .map_err(|_| NativeReleaseCandidateError::PortableReleaseInvalid)?;
-
+    fn verify_plugin_grant(
+        &self,
+        authority: &NativeReleaseAuthority,
+        context: &NativeReleaseCandidateVerificationContext<'_>,
+    ) -> Result<VerifiedLaunchGrant, NativeReleaseCandidateError> {
         let plugin = self
             .candidate
             .client_plugins
@@ -297,20 +376,10 @@ impl SignedNativeReleaseCandidateV1 {
             requested_mode: context.requested_target.required_grant_mode(),
             requested_scope: context.requested_target.integration_scope(),
         };
-        let plugin_grant = plugin
+        plugin
             .signed_launch_grant
             .verify(authority.launch_grant_keys(), &grant_context)
-            .map_err(|_| NativeReleaseCandidateError::PluginGrantInvalid)?;
-
-        Ok(VerifiedNativeReleaseCandidate {
-            signed: self.clone(),
-            signed_payload_sha256: sha256_hex(&signing_bytes),
-            release_key_id: key.key_id().to_string(),
-            verified_at_unix: context.now_unix,
-            target: context.requested_target,
-            portable_release,
-            plugin_grant,
-        })
+            .map_err(|_| NativeReleaseCandidateError::PluginGrantInvalid)
     }
 
     fn validate_structure(&self) -> Result<(), NativeReleaseCandidateError> {
@@ -334,6 +403,41 @@ pub struct NativeReleaseCandidateVerificationContext<'a> {
     pub expected_source_commit: &'a str,
     pub expected_artifact: &'a ArtifactIdentityV1,
     pub requested_target: ClientActivationTarget,
+}
+
+#[derive(Clone)]
+pub struct VerifiedInstalledNativeCandidate {
+    candidate: NativeReleaseCandidateV1,
+    current_executable: PathBuf,
+    plugin_grant: VerifiedLaunchGrant,
+}
+
+impl VerifiedInstalledNativeCandidate {
+    #[must_use]
+    pub const fn candidate(&self) -> &NativeReleaseCandidateV1 {
+        &self.candidate
+    }
+
+    #[must_use]
+    pub fn current_executable(&self) -> &Path {
+        &self.current_executable
+    }
+
+    #[must_use]
+    pub const fn plugin_grant(&self) -> &VerifiedLaunchGrant {
+        &self.plugin_grant
+    }
+}
+
+impl Debug for VerifiedInstalledNativeCandidate {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("VerifiedInstalledNativeCandidate")
+            .field("artifact", &self.candidate.artifact)
+            .field("source_commit", &self.candidate.source_commit)
+            .field("current_executable", &"<verified-installed-executable>")
+            .finish_non_exhaustive()
+    }
 }
 
 #[derive(Clone)]
@@ -541,6 +645,7 @@ pub enum NativeReleaseCandidateError {
     CandidateChannelMismatch,
     CandidateArtifactMismatch,
     CandidateSourceMismatch,
+    ExecutableInvalid,
     ReleaseNotesInvalid,
     PortableReleaseInvalid,
     PluginGrantInvalid,
@@ -567,6 +672,7 @@ impl NativeReleaseCandidateError {
             Self::CandidateChannelMismatch => "native-release-candidate-channel-mismatch",
             Self::CandidateArtifactMismatch => "native-release-candidate-artifact-mismatch",
             Self::CandidateSourceMismatch => "native-release-candidate-source-mismatch",
+            Self::ExecutableInvalid => "native-release-candidate-executable-invalid",
             Self::ReleaseNotesInvalid => "native-release-candidate-notes-invalid",
             Self::PortableReleaseInvalid => "native-release-candidate-portable-invalid",
             Self::PluginGrantInvalid => "native-release-candidate-plugin-grant-invalid",

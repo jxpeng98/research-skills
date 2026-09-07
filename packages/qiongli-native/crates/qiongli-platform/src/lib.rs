@@ -42,7 +42,7 @@ pub use candidate_install::{
     NativeCandidateRegistrationLifecycleCommit, NativeCandidateRegistrationVerification,
     apply_native_release_candidate_local, discover_native_candidate_managed_root,
     prepare_native_candidate_managed_root, remove_native_release_candidate_local,
-    verify_native_release_candidate_local,
+    verify_installed_native_candidate_product, verify_native_release_candidate_local,
 };
 pub use candidate_source::{
     NativeCandidatePluginSourceCommit, NativeCandidatePluginSourceDisposition,
@@ -240,7 +240,8 @@ pub use release_candidate::{
     NATIVE_RELEASE_CANDIDATE_SCHEMA_VERSION, NativeClientPluginGrantV1,
     NativeReleaseCandidateError, NativeReleaseCandidateStatus, NativeReleaseCandidateV1,
     NativeReleaseCandidateVerificationContext, NativeReleaseNotesV1,
-    SignedNativeReleaseCandidateV1, VerifiedNativeReleaseCandidate, build_native_release_candidate,
+    SignedNativeReleaseCandidateV1, VerifiedInstalledNativeCandidate,
+    VerifiedNativeReleaseCandidate, build_native_release_candidate,
     native_release_candidate_file_name, native_release_candidate_signing_bytes,
     native_release_notes_file_name,
 };

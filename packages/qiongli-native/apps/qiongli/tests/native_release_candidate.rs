@@ -27,7 +27,8 @@ use qiongli_platform::{
     native_portable_archive_file_name, native_release_candidate_signing_bytes,
     native_release_envelope_signing_bytes, prepare_native_candidate_plugin_source_target,
     remove_native_candidate_plugin_source, remove_native_release_candidate_local,
-    verify_native_candidate_plugin_source, verify_native_release_candidate_local,
+    verify_installed_native_candidate_product, verify_native_candidate_plugin_source,
+    verify_native_release_candidate_local,
 };
 use serde_json::json;
 
@@ -517,6 +518,73 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
     )
     .unwrap();
     assert_eq!(codex_verified.source, codex_install.source.verification);
+    let installed_path = home.join(".qiongli/native/payloads").join(&artifact_id);
+    let installed_target = approve_native_artifact_target(&installed_path, &artifact).unwrap();
+    let installed_binary = installed_path.join(&assembled.manifest().binary_path);
+    let installed = signed_candidate
+        .verify_installed(
+            &authority,
+            &codex_context,
+            &content,
+            &installed_target,
+            &installed_binary,
+        )
+        .expect("installed candidate must bind the installed executable");
+    assert_eq!(
+        installed.current_executable(),
+        fs::canonicalize(&installed_binary).unwrap()
+    );
+    assert_eq!(installed.candidate().source_commit, SOURCE_COMMIT);
+    let record_path = home
+        .join(".qiongli/native/payloads")
+        .join(qiongli_platform::native_release_candidate_file_name(&artifact).unwrap());
+    let record_bytes = fs::read(&record_path).unwrap();
+    assert_eq!(record_bytes, signed_candidate.to_canonical_json().unwrap());
+    let verify_product = || {
+        verify_installed_native_candidate_product(
+            &content,
+            &authority,
+            &codex_context,
+            &home,
+            &installed_binary,
+        )
+    };
+    verify_product().expect("persisted candidate and active receipt must revalidate");
+    fs::remove_file(&record_path).unwrap();
+    assert!(
+        verify_product().is_err(),
+        "legacy receipts alone cannot authorize a product"
+    );
+    let upgraded = apply_native_release_candidate_local(&content, &codex, &home, NOW + 3).unwrap();
+    assert_eq!(
+        upgraded.payload.disposition,
+        InstallDisposition::AlreadyApplied
+    );
+    assert_eq!(fs::read(&record_path).unwrap(), record_bytes);
+    let record_link = fixture.root.join("candidate-record-hard-link");
+    fs::hard_link(&record_path, &record_link).unwrap();
+    assert!(
+        verify_product().is_err(),
+        "linked authority records must be refused"
+    );
+    fs::remove_file(record_link).unwrap();
+
+    fs::write(&record_path, b"untrusted candidate canary").unwrap();
+    assert!(verify_product().is_err());
+    assert!(apply_native_release_candidate_local(&content, &codex, &home, NOW + 3).is_err());
+    assert_eq!(
+        fs::read(&record_path).unwrap(),
+        b"untrusted candidate canary"
+    );
+    fs::write(&record_path, &record_bytes).unwrap();
+    verify_product().expect("restored signed candidate must revalidate freshly");
+
+    assert_eq!(
+        installed.plugin_grant().authorized_scope(),
+        IntegrationScope::CodexLocal
+    );
+    assert!(!format!("{installed:?}").contains(fixture.root.to_string_lossy().as_ref()));
+
     assert!(
         verify_native_release_candidate_local(
             &content,
@@ -530,6 +598,7 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
         .join(".qiongli/native/payloads")
         .join(".qiongli-native-payload-transaction.json");
     fs::write(&recovery_marker, b"recovery-canary").unwrap();
+    assert!(verify_product().is_err());
     assert_eq!(
         verify_native_release_candidate_local(
             &content,
@@ -549,6 +618,15 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
         NOW + 4,
     )
     .unwrap();
+    assert!(
+        record_path.exists(),
+        "signed diagnostic metadata is retained like receipts"
+    );
+    assert!(
+        verify_product().is_err(),
+        "removed payload cannot regain authority from retained metadata"
+    );
+
     assert!(
         !home
             .join(".qiongli/native/payloads")
@@ -766,6 +844,115 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
             .unwrap_err(),
         NativeReleaseCandidateError::PluginGrantInvalid
     );
+
+    // Runtime identity does not require the download or release-note bytes.
+    fs::remove_file(&archive_path).unwrap();
+    let executable = artifact_path.join(&assembled.manifest().binary_path);
+    for context in [codex_context, claude_context] {
+        let installed = signed_candidate
+            .verify_installed(
+                &authority,
+                &context,
+                &content,
+                &artifact_target,
+                &executable,
+            )
+            .unwrap();
+        assert_eq!(
+            installed.plugin_grant().authorized_scope(),
+            context.requested_target.integration_scope()
+        );
+    }
+    for (candidate, policy, context, expected) in [
+        (
+            &signed_candidate,
+            &authority,
+            &wrong_source,
+            NativeReleaseCandidateError::CandidateSourceMismatch,
+        ),
+        (
+            &bad_signature,
+            &authority,
+            &codex_context,
+            NativeReleaseCandidateError::SignatureInvalid,
+        ),
+        (
+            &signed_candidate,
+            &authority,
+            &not_yet_valid,
+            NativeReleaseCandidateError::CandidateNotYetValid,
+        ),
+        (
+            &signed_candidate,
+            &authority,
+            &expired,
+            NativeReleaseCandidateError::CandidateExpired,
+        ),
+        (
+            &signed_candidate,
+            &stale_authority,
+            &codex_context,
+            NativeReleaseCandidateError::CandidateReplayed,
+        ),
+        (
+            &signed_candidate,
+            &beta_authority,
+            &codex_context,
+            NativeReleaseCandidateError::CandidateChannelMismatch,
+        ),
+        (
+            &untrusted,
+            &authority,
+            &codex_context,
+            NativeReleaseCandidateError::ReleaseKeyUntrusted,
+        ),
+        (
+            &bad_portable,
+            &authority,
+            &codex_context,
+            NativeReleaseCandidateError::PortableReleaseInvalid,
+        ),
+        (
+            &bad_plugin,
+            &authority,
+            &codex_context,
+            NativeReleaseCandidateError::PluginGrantInvalid,
+        ),
+    ] {
+        assert_eq!(
+            candidate
+                .verify_installed(policy, context, &content, &artifact_target, &executable)
+                .unwrap_err(),
+            expected
+        );
+    }
+    assert_eq!(
+        signed_candidate
+            .verify_installed(
+                &authority,
+                &codex_context,
+                &content,
+                &artifact_target,
+                &fixture.source_binary,
+            )
+            .unwrap_err(),
+        NativeReleaseCandidateError::ExecutableInvalid
+    );
+    let original = fs::read(&executable).unwrap();
+    fs::write(&executable, b"tampered installed executable").unwrap();
+    assert_eq!(
+        signed_candidate
+            .verify_installed(
+                &authority,
+                &codex_context,
+                &content,
+                &artifact_target,
+                &executable,
+            )
+            .unwrap_err(),
+        NativeReleaseCandidateError::PortableReleaseInvalid
+    );
+    fs::write(&executable, original).unwrap();
 
     let debug = format!("{codex:?}");
     assert!(!debug.contains(fixture.root.to_string_lossy().as_ref()));

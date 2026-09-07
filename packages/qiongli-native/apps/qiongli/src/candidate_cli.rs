@@ -145,7 +145,7 @@ pub(crate) fn execute(
             transaction_id,
             expected_journal_sha256,
         } => {
-            if !cfg!(target_os = "macos") {
+            if !cfg!(any(target_os = "macos", target_os = "linux")) {
                 return Err("native-update-target-unsupported");
             }
             let store = crate::desktop::update_store(environment)?;
@@ -171,7 +171,7 @@ pub(crate) fn execute(
             expected_journal_sha256,
             expected_approval_digest,
         } => {
-            if !cfg!(target_os = "macos") {
+            if !cfg!(any(target_os = "macos", target_os = "linux")) {
                 return Err("native-update-target-unsupported");
             }
             let now = now_unix()?;
@@ -731,7 +731,7 @@ pub fn activate_native_candidate(
     content: &EmbeddedContent,
     config: qiongli_config::ConfigRoot,
 ) -> Result<crate::update_reconcile::NativeActivationOutcome, &'static str> {
-    if !cfg!(target_os = "macos") {
+    if !cfg!(any(target_os = "macos", target_os = "linux")) {
         return Err("native-update-target-unsupported");
     }
     let workflow_store = qiongli_config::WorkflowVariantStore::new(config.clone());

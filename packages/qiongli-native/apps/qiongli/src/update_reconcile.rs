@@ -526,7 +526,7 @@ struct NativeActivationRecord {
     outcome: Option<NativeActivationOutcome>,
 }
 
-// Public activation remains separately gated; internal moves also inspect Linux processes.
+// Inspect all managed CLI locations before activation or recovery mutates them.
 fn refuse_running_native_cli(journal: &ReconciliationJournalV1) -> Result<(), &'static str> {
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
@@ -2949,7 +2949,7 @@ mod tests {
         fs::remove_dir_all(root).unwrap();
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     #[test]
     #[allow(clippy::disallowed_methods)]
     fn native_activation_and_recovery_refuse_live_cli_files() {

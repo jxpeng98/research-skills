@@ -359,7 +359,7 @@ fn run_native_activation_journey(
     archive_path: &Path,
     notes_path: &Path,
 ) -> Result<Value, &'static str> {
-    if !cfg!(target_os = "macos") {
+    if !cfg!(any(target_os = "macos", target_os = "linux")) {
         return Err("candidate-activation-journey-target-unsupported");
     }
     let home = create_child_directory(root, "activation-probe-home")?;
@@ -705,7 +705,7 @@ fn run_native_activation_case(
     )
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 #[allow(clippy::too_many_arguments)]
 fn kill_native_activation_after_cli_switch(
     binary: &Path,
@@ -778,7 +778,7 @@ fn kill_native_activation_after_cli_switch(
     Ok(())
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn kill_native_activation_after_cli_switch(
     _binary: &Path,
     _root: &Path,

@@ -26,10 +26,10 @@ embedded resources live under `packages/qiongli-native/`.
 Native reconciliation uses atomic no-replace renames on macOS and Linux for
 activation, compensation and rollback. A concurrently created target, including a
 symlink, must not be overwritten; losing source files remain intact. Unsupported
-kernel/filesystem operations fail closed. This does not enable the public Linux
-activation/recovery commands, which still require platform update qualification.
+kernel/filesystem operations fail closed. Public native activation/recovery on
+Linux use these moves and the process checks below.
 
-Linux internal reconciliation inspects current-user executables through the visible
+Linux native reconciliation inspects current-user executables through the visible
 `/proc` PID namespace, anchoring status/executable reads to one process directory.
 Deleted executable paths still count as running. Ambiguous executable access,
 malformed identity, ptrace-only visibility and exceeded scan bounds fail closed.
@@ -220,8 +220,9 @@ The shared Unix managed-write guard covers managed-operation apply, candidate
 stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and packaged
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
-CLI health. Non-Unix managed writes retain their existing behavior. Public native activation is macOS-only; legacy interrupted-update recovery uses
-the approved CLI entry described below. This lock coordinates participating processes;
+CLI health. Non-Unix managed writes retain their existing behavior. Public native
+activation supports macOS and Linux; legacy interrupted-update recovery uses the
+approved CLI entry described below. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
 
 Engineering `install native apply/remove` also takes the Home/config guard using
@@ -342,10 +343,10 @@ destination, staged and backup path. A mapped executable refuses before activati
 records or recovery mutations; an inspection error also refuses. Receipt files and
 Host content are still governed by their existing ownership checks. This guard does
 not stop processes, prevent subsequent launches or claim Host reload completion.
-Other platforms retain their existing coordinator behavior and have not gained native
-process inspection; their public activation must not claim this macOS evidence.
+Linux uses the `/proc` guard described above under the same locks. Other platforms
+retain their coordinator behavior and must not claim these process-inspection results.
 
-On macOS, `install candidate activate` accepts the same signed candidate/archive/notes,
+On macOS and Linux, `install candidate activate` accepts the same signed candidate/archive/notes,
 Host target and predecessor as preparation, plus its `--transaction-id`,
 `--expected-journal-digest`, `--expected-approval-digest` and all three approvals:
 `--approve-filesystem-write`, `--approve-client-config-change`, `--approve-host-trust`.
@@ -359,9 +360,9 @@ supply a substitute health callback. Failed health rolls back through the existi
 `install candidate activate-recover --transaction-id <id> --expected-journal-digest
 <sha256> --approve-filesystem-write` replays the exact existing native journal/outcome.
 It requires no fresh release adoption authority and never reruns health. Use a separate
-CLI outside affected executable paths. Public activate/recover currently refuse other
-platforms rather than claim macOS process inspection there. Earlier preparation,
-discard and lower-level platform behavior remains unchanged.
+CLI outside affected executable paths. Public activate/recover refuse platforms other
+than macOS and Linux. Earlier preparation, discard and lower-level platform behavior
+remains unchanged.
 
 Both successful commands use additive Rust-generated `candidate-activation-completed-v1`
 JSON with exact transaction/journal identity and committed/rolled-back outcome. A returned
@@ -386,7 +387,7 @@ including a restored predecessor. The same plan validator still requires the run
 process version for every managed write. Schema, TTL, digest, operation and approval
 checks are unchanged; observing an older healthy CLI does not authorize an old write plan.
 
-The macOS two-version runner also exercises an independent interrupted Home. It creates
+The macOS/Linux two-version runner also exercises an independent interrupted Home. It creates
 a new process group for the public activation command, observes the installed CLI inode
 change while the Home marker exists and no durable outcome exists, then sends SIGKILL
 to that test-owned group. It requires an actual signal exit and verifies the new binary

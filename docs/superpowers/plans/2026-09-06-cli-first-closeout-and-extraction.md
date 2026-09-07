@@ -1872,3 +1872,48 @@ by these tests. Next: exercise the Linux process guard at the public activation
 boundary and qualify actual commit/recovery before enabling that path. Human
 approval and first-stage integration remain incomplete; no user process, current
 Host installation, research data or publication was changed.
+
+
+## CLI-403 Linux public native activation and interrupted recovery
+
+Base: `3d01349961fc886b1cba02cf928cc843ba21d8c7`; branch:
+`codex/linux-native-activation`. The three native candidate activation/recovery
+platform gates now include Linux. Existing approval, signed product verification,
+Home/config locks, exact journal/revision checks, process inspection, atomic moves
+and installed health remain the owners. Legacy App replacement stays macOS-only;
+other platform public activation remains unsupported. No public JSON changed.
+The existing acceptance runner's Unix process-group/inode interruption probe now
+runs on Linux too; no second qualification framework was added.
+
+A real Rust 1.97.1 Linux ARM64 container built successor alpha.5 from the base plus
+this platform-gate change and predecessor alpha.4 from a base archive with only
+workspace/lockfile version edits. It used ephemeral in-memory signing keys and
+an isolated `/qualification` Home outside the source checkout, with empty runtime
+PATH. The predecessor is a version fixture, not historical published-source proof.
+The disposable container used an init process to reap its test-owned descendants.
+
+Receipt: `/private/tmp/qiongli-linux-activation-3d013499/run/acceptance-evidence.json`;
+SHA-256 `9c63ffbab0273222605e9230471f829e8f62f03a16863fe9bb0cda9b0da28f3c`.
+Archive SHA-256 `3eff741e7e44c9200be05a8f86075ca2d069e33d4127db3474d356327d3bf4d0`;
+candidate SHA-256 `9a870a2b82df4a5347458cd3bdd7360a1e5f465b46636354f177b24a29243148`.
+All 27 baseline receipt fields passed or describe the isolation context. Public
+activation committed alpha.4 to alpha.5; installed health/MCP passed and committed
+recovery replay left state unchanged. A separate fixture observed the new CLI inode
+before a durable outcome, killed only its own activation process group with SIGKILL,
+then used public recovery to restore the exact prior binary/version/known-good state,
+clear the marker and pass restored health/MCP. The source commit field names the
+base; the working platform-gate delta is explicitly part of this evidence.
+
+macOS checks passed: eight acceptance-runner tests, the existing all-approvals and
+transaction parser negative test, and library/example Clippy with the existing
+Rust 1.98 lint exception. The existing live-CLI refusal test was enabled on Linux
+and passed there: destination/staged executables block activation, destination/backup
+executables block recovery, and rejected attempts preserve state, receipts and the
+recovery marker. Recovery succeeds after the test-owned children are killed/reaped.
+Final whitespace, generated-index and frozen-source checks passed.
+This container result does not qualify clean hardware/VMs, arbitrary power loss,
+production signing, resource migration or a model-driven Host session. Ledger
+acceptance remains unchanged. The real human Inbox preview remains unapplied;
+CLI-404/405 research approval, live Host work and first-stage integration remain
+open. Next increment: continue those existing Host/research owners and remaining
+platform qualification without treating test receipts as human approval.

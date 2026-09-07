@@ -1759,3 +1759,46 @@ human preview remains unchanged and unapplied. No new production code, dependenc
 program acceptance or publication was introduced. Whitespace, generated-index and
 frozen-source checks passed. Continue platform/candidate qualification and the
 human research interaction without claiming first-stage completion.
+
+
+## CLI-403 Linux candidate install and exact consumer follow-through
+
+Source: `da10e055dd72d9d697f69a37fd8644060498f3af`;
+branch: `codex/linux-candidate-install-evidence`.
+Ran the unchanged native candidate acceptance owner inside the existing Rust 1.97
+ARM64 container, with network disabled, source/cache read-only, private output and
+separate Linux build storage. The first invocation contained a mistyped full source
+hash; its test-owned container was explicitly stopped (exit 137) before acceptance.
+That output remains under `run` and is invalid evidence. The corrected invocation
+used the verified full HEAD and a fresh `correct-source` output; it passed.
+
+Linux candidate receipt:
+`/Users/pengjiaxin/Work/qiongli-cli403-linux-candidate-da10e055/correct-source/acceptance-evidence.json`;
+SHA-256 `05df98dd1eff2eb4a22555ca003de8f0f4c445118e16e402d371d990c2af6a7d`.
+Archive SHA-256:
+`e20f00a7b2a719e7eaaec74c56873ae5edc5129477df358097b507e71098f7dc`;
+candidate SHA-256:
+`9c8f904df80cc818ea011426726a350b9fb83aa5abba519c22339bf89175d2ae`.
+All 27 baseline fields passed, including candidate staging/approval replay, initial
+install, installed child health/tamper refusal, failure compensation, uninstall and
+preservation of unmanaged state. Host lifecycle fixtures are local registration
+checks; real clients explicitly remain not run. Ephemeral signing is not production
+signing, and `publication_allowed=false`.
+
+Then reran the existing 12-check consumer script against that candidate's exact
+executable in a fresh Debian 12 ARM64 state directory without Python/Node/Cargo,
+source or network. Version/content, missing approval, fixture project creation,
+fresh-process read, Full MCP 32-tool/route and portable export checks passed.
+`packages/qiongli-native/target/cli-linux-candidate-consumer-da10e055/consumer-evidence/receipt.json`
+SHA-256: `adae0525ff635b1d2fe328a7d1c5afeeea4df637edaadd988ce2cb6753a64dbc`.
+Consumer binary SHA-256:
+`e0fbe8d2eecfff4a250619a3bb59452dcc3704a3d109122f23f35f08bed3a6b4`;
+verified that this digest appears in the signed candidate document. The probe script
+and command outputs remain beside the receipt for review.
+
+No production code changed. Public native activation/recovery remain macOS-only;
+Linux process inspection and update qualification were not bypassed or claimed.
+This is container evidence, not a clean VM or physical Linux machine. Windows,
+real research/human approval and first-stage acceptance remain open. The earlier
+pending human preview was not applied. Whitespace, generated-index and frozen-source
+checks passed; no existing VM or user installation was modified or published.

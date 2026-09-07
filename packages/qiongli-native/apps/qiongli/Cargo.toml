@@ -10,8 +10,15 @@ publish.workspace = true
 description = "Canonical native Qiongli product executable"
 default-run = "qiongli"
 
+[[bin]]
+name = "qiongli-desktop"
+path = "src/bin/qiongli-desktop.rs"
+required-features = ["desktop"]
+
 [features]
-custom-protocol = ["tauri/custom-protocol"]
+default = []
+desktop = ["dep:tauri", "dep:tauri-build", "dep:tauri-plugin-opener", "dep:rfd"]
+custom-protocol = ["desktop", "tauri/custom-protocol"]
 
 [dependencies]
 qiongli-config = { path = "../../crates/qiongli-config" }
@@ -23,15 +30,17 @@ qiongli-runtime = { path = "../../crates/qiongli-runtime", features = ["embedded
 qiongli-ui = { path = "../../crates/qiongli-ui", default-features = false }
 futures.workspace = true
 getrandom.workspace = true
-rfd.workspace = true
+rfd = { workspace = true, optional = true }
 schemars.workspace = true
 semver.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_json_canonicalizer.workspace = true
 sha2.workspace = true
-tauri.workspace = true
-tauri-plugin-opener.workspace = true
+# Keep mock IPC support behind desktop too; an unconditional dev dependency
+# would bring the GUI into CLI-only tests.
+tauri = { workspace = true, optional = true, features = ["test"] }
+tauri-plugin-opener = { workspace = true, optional = true }
 
 [target.'cfg(not(windows))'.dependencies]
 reqwest = { workspace = true, features = ["rustls-tls"] }
@@ -49,10 +58,9 @@ rustix.workspace = true
 [build-dependencies]
 qiongli-content = { path = "../../crates/qiongli-content" }
 qiongli-platform = { path = "../../crates/qiongli-platform" }
-tauri-build.workspace = true
+tauri-build = { workspace = true, optional = true }
 
 [dev-dependencies]
-tauri = { workspace = true, features = ["test"] }
 ed25519-dalek.workspace = true
 serde_json_canonicalizer.workspace = true
 zeroize.workspace = true

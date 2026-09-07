@@ -16,10 +16,10 @@ Markdown checkboxes are presentation only.
 | State | Count | Meaning |
 |---|---:|---|
 | `accepted` | 46 | Exact repository evidence, commit and CI run are recorded. |
-| `active` | 1 | The bounded task is currently being implemented or integrated. |
+| `active` | 2 | The bounded task is currently being implemented or integrated. |
 | `blocked` | 14 | Work cannot advance until the recorded blocker clears. |
 | `deferred` | 157 | Intentionally held behind a milestone or policy gate. |
-| `proposed` | 31 | Ordered work that has not entered implementation. |
+| `proposed` | 30 | Ordered work that has not entered implementation. |
 | `superseded` | 0 | Replaced by another recorded task or decision. |
 
 ## Tasks
@@ -59,7 +59,7 @@ Markdown checkboxes are presentation only.
 | ID | State | Owner | Description | Dependencies | Evidence / blocker |
 |---|---|---|---|---|---|
 | `CLI-401` | `active` | `CLI` | Audit the current branch, GUI dependencies and retained source; adopt the CLI-first direction and close the App development stage (LF-Q01). | — | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
-| `CLI-402` | `proposed` | `CLI` | Separate a pure native CLI/MCP target from graphical build, test and launch dependencies while preserving command and service behavior (LF-Q02). | `CLI-401` | — |
+| `CLI-402` | `active` | `CLI` | Separate a pure native CLI/MCP target from graphical build, test and launch dependencies while preserving command and service behavior (LF-Q02). | `CLI-401` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
 | `CLI-403` | `proposed` | `CLI` | Qualify independent resources, package identity, trust, installation, update and rollback without an App bundle (LF-Q03). | `CLI-402` | — |
 | `CLI-404` | `proposed` | `CLI` | Provide window-free Host integration and a verified human approval path using existing preview/apply owners (LF-Q04). | `CLI-403`<br>`SEC-403` | — |
 | `CLI-405` | `proposed` | `CLI` | Complete one real Host research journey and same-device handoff with source-bound candidates, approved writes and restart recovery (LF-Q05). | `CLI-404` | — |

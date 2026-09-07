@@ -289,6 +289,33 @@ Use this loop for styling, compact layouts, responsive behaviour, localisation,
 and component states. Confirm native actions in the full App before considering
 the work complete.
 
+## Build and Run the CLI without the Desktop
+
+The default `qiongli` package has no GUI feature. It builds and tests without
+Svelte output, Tauri, webview libraries, or a graphical file picker:
+
+```bash
+cargo build --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --bin qiongli --locked
+cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --all-targets --no-default-features --locked
+cargo run --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --locked -- --help
+```
+
+No arguments print help in this build. Existing JSON commands and
+`mcp serve --profile <lite|marketplace-lite|full> --transport stdio` retain
+their existing interfaces. `ui` cannot launch a window; `ui --startup-check`
+still checks the shared service, not window availability. App inspection and
+managed-operation commands retain their shared owners and approval checks.
+
+Select `desktop` for Tauri development, or `custom-protocol` (which also
+selects `desktop`) for embedded frontend assets. The `qiongli-desktop`
+launcher requires `desktop`; existing package builds already select
+`custom-protocol`. Whole-workspace/all-feature tests include GUI dependencies
+and do not prove the CLI-only dependency boundary.
+
+The CLI still verifies its embedded content, Companion artifact, and available
+release authority. A source build does not qualify a standalone managed install;
+independent package/install work remains CLI-403.
+
 ## Run the Full Source App
 
 Build the static Svelte assets, then run the canonical Rust executable:
@@ -302,8 +329,8 @@ cargo run \
   --locked
 ```
 
-`cargo run` opens the desktop window because `qiongli` is the package's default
-binary and no CLI arguments were supplied. After changing Svelte code, run
+With `custom-protocol` selected, `cargo run` opens the desktop window because
+no CLI arguments were supplied. After changing Svelte code, run
 `pnpm desktop:build` again before restarting the native App. Rust changes are
 rebuilt by Cargo automatically.
 

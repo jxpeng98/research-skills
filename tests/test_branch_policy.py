@@ -223,7 +223,12 @@ class BranchPolicyTests(unittest.TestCase):
             job,
         )
         self.assertIn("evidence-only pull request", job)
-        self.assertEqual(job.count("if: env.RUN_NATIVE_MATRIX == 'true'"), 9)
+        self.assertEqual(job.count("if: env.RUN_NATIVE_MATRIX == 'true'"), 10)
+        cli_step = job.index("name: Test CLI without desktop dependencies or frontend output")
+        self.assertLess(job.index("name: Reject injected target-specific Rust flags"), cli_step)
+        self.assertLess(cli_step, job.index("name: Setup Tauri and build the Svelte desktop"))
+        self.assertIn("--edges normal,build,dev", job)
+        self.assertIn("-p qiongli --lib --test cli --test mcp_stdio --no-default-features --locked", job)
         self.assertIn("fail-fast: false", job)
         for platform, runner in (
             ("Linux", "ubuntu-latest"),
@@ -241,7 +246,7 @@ class BranchPolicyTests(unittest.TestCase):
         )
         self.assertIn("Reject injected target-specific Rust flags", job)
         self.assertIn("CARGO_TARGET_*_RUSTFLAGS", job)
-        self.assertEqual(job.count("CARGO_HOME:"), 6)
+        self.assertEqual(job.count("CARGO_HOME:"), 7)
         self.assertIn('CARGO_ENCODED_RUSTFLAGS: ""', job)
         self.assertIn('RUSTC_WRAPPER: ""', job)
         self.assertIn('RUSTFLAGS: ""', job)

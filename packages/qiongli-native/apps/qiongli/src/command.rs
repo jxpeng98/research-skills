@@ -611,7 +611,11 @@ struct UsageError {
 fn parse_args(args: impl IntoIterator<Item = OsString>) -> Result<Command, UsageError> {
     let args = args.into_iter().collect::<Vec<_>>();
     if args.is_empty() {
-        return Ok(Command::Ui);
+        return Ok(if cfg!(feature = "desktop") {
+            Command::Ui
+        } else {
+            Command::Help
+        });
     }
     let Some(command) = args.first().and_then(|value| value.to_str()) else {
         return Err(global_usage_error("command or option is not valid text"));
@@ -2883,7 +2887,14 @@ mod tests {
 
     #[test]
     fn parser_accepts_the_frozen_command_families() {
-        assert_eq!(parse_args(args(&[])), Ok(Command::Ui));
+        assert_eq!(
+            parse_args(args(&[])),
+            Ok(if cfg!(feature = "desktop") {
+                Command::Ui
+            } else {
+                Command::Help
+            })
+        );
         assert_eq!(parse_args(args(&["--help"])), Ok(Command::Help));
         assert_eq!(parse_args(args(&["--version"])), Ok(Command::Version));
         assert_eq!(parse_args(args(&["ui"])), Ok(Command::Ui));
@@ -3503,11 +3514,20 @@ mod tests {
         let content = crate::embedded_content().unwrap();
         let environment = CommandEnvironment::default();
         let no_args = run_cli(args(&[]), &environment, &content);
-        assert_eq!(no_args.exit_code(), 1);
-        assert_eq!(
-            no_args.stderr(),
-            "error: desktop-command-requires-product-entrypoint\n"
-        );
+        if cfg!(feature = "desktop") {
+            assert_eq!(no_args.exit_code(), 1);
+            assert_eq!(
+                no_args.stderr(),
+                "error: desktop-command-requires-product-entrypoint\n"
+            );
+        } else {
+            assert_eq!(no_args.exit_code(), 0);
+            assert!(no_args.stderr().is_empty());
+            assert_eq!(
+                no_args.stdout(),
+                run_cli(args(&["--help"]), &environment, &content).stdout()
+            );
+        }
 
         let ui = run_cli(args(&["ui"]), &environment, &content);
         assert_eq!(ui.exit_code(), 1);

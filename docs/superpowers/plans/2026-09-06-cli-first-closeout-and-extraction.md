@@ -160,3 +160,64 @@ Historical detailed checks remain in the old ACP implementation plan. Real model
 login, private research data, native package qualification, release, tag and
 announcement were not run. `CLI-401` remains an audit/integration item pending
 program acceptance; the next implementation scope is the bounded `CLI-402` above.
+
+## CLI-402 implementation — September 6
+
+The maintainer requested the next increment after closeout PR #181 merged as
+`376108eb008f40fdb2b558d50c2245d770db8879`. Work is on
+`codex/cli-mcp-build-separation`. CLI-402 is active, not program-accepted.
+
+The existing package now defaults to CLI/MCP. Optional `desktop` gates Tauri,
+its build script resources, rfd, IPC adapters, and the existing thin desktop
+launcher. `custom-protocol` selects `desktop`, preserving the existing App
+packaging commands and desktop-enabled empty-argument launch. CLI-only empty
+arguments print help; explicit UI launch fails with the existing startup error.
+Pure schemas and shared service/approval owners remain compiled. The headless
+picker declines selection, while explicit path-based CLI operations retain
+their existing validation. No new crate, installer, storage, or service was added.
+
+Embedded content, release authority, source identity and Companion construction
+remain unconditional. Tauri test support is optional with the desktop dependency,
+so selected-package CLI tests cannot pull the GUI back through dev-dependencies.
+Only actual Tauri IPC portions of mixed All Chat tests are feature-gated; pure
+schema, source-drift, recovery and Capture tests still run without the desktop.
+
+Native CI now checks the CLI normal/build/dev graph and runs CLI library,
+command-process and MCP-process tests before installing Tauri prerequisites or
+building Svelte. Existing all-feature three-platform checks and packaged App
+build commands remain. Local validation uses Rust 1.98.1 on macOS; CI retains
+Rust 1.97.0. Remote Linux/Windows execution has not been performed for this work.
+
+Fresh local validation (CLI-402 working diff):
+
+- CLI dependency graph excludes Tauri, rfd, egui/eframe, wry/tao/winit and
+  GTK/WebKit; the same assertion is in CI.
+- CLI-only all-target Clippy passed with the already documented local
+  `-A clippy::chunks_exact_to_as_chunks` exception.
+- Explicit `custom-protocol` all-target desktop check passed.
+- 79 branch/release automation and roadmap policy tests passed.
+- `cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --all-targets --no-default-features --locked --offline`: 267 passed, 3 explicitly ignored across 28 test binaries/examples. The ignores are manual capacity measurement and real Codex/Claude installation checks. This includes 193 library tests, 32 CLI process tests (including empty-argument help and UI refusal), and 7 copied-binary MCP stdio tests.
+- `cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --features custom-protocol --lib all_chat --locked --offline`: all 6 desktop IPC/history/research tests passed.
+- Rust format, whitespace, generated roadmap checks passed; all 46 accepted ledger rows are unchanged.
+
+Final diff review covered both feature selections, desktop launcher requirements,
+schema/test availability, unconditional trusted resource construction and the
+CI step order. The source default changes from GUI to CLI; downstream desktop
+builders must select `desktop` or `custom-protocol`. Existing supported
+packaging invocations already select the latter. No public schema or
+approval/CAS behavior changed. This is local implementation evidence; no new
+commit, push, merge, package publication or remote CI result is claimed.
+
+The next integration boundary is review and exact-head CI for CLI-402.
+CLI-403 remains the separate trusted package/install/rollback increment; real
+Host authorization and research journeys remain CLI-404/405. Compilation and
+local tests do not supply their acceptance evidence.
+
+## CLI-402 integration — September 7
+
+The maintainer requested the next step: commit the reviewed CLI-402 change,
+open a PR targeting `2.x`, and run its exact-head required CI. The source
+comparison remains `376108eb008f40fdb2b558d50c2245d770db8879`; no upstream
+changes or additional working-tree scope appeared at the pre-commit check.
+The PR records the frozen head and live check evidence. Program acceptance,
+merge and release remain separate from this integration check.

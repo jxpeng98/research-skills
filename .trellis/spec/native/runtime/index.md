@@ -49,6 +49,20 @@ Legacy packages can provide migration evidence but are not runtime dependencies.
 - When a writer shares the native state root, test that another normal owner can
   read the root after the write on every Tier 1 platform.
 
+## Build and Entry Boundary
+
+The `qiongli` package defaults to CLI/MCP without GUI dependencies in its normal,
+build, or selected-package test graph. Empty arguments print help. The optional
+`desktop` feature enables Tauri, the file picker, and `qiongli-desktop`;
+`custom-protocol` includes `desktop` for existing packaged App builds.
+Desktop-enabled empty arguments retain the App launch behavior.
+
+Shared App services, DTO/schema generators, CLI inspection, MCP dispatch and
+preview/approval/CAS remain available without the renderer. `ui` fails without
+the desktop feature; `ui --startup-check` reports shared service readiness only.
+Embedded resource, release authority and Companion checks always run in the
+build script. CLI-only compilation is not standalone package qualification.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

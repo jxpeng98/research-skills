@@ -255,12 +255,14 @@
     },
     {
       "id": "CLI-402",
-      "state": "proposed",
+      "state": "active",
       "owner": "CLI",
       "dependencies": [
         "CLI-401"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+      ],
       "commit": "",
       "run": "",
       "updated_at": "2026-09-06",

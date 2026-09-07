@@ -27,6 +27,12 @@ fn main() {
     if let Err(error) = build_embedded_assets() {
         panic!("failed to build verified Qiongli embedded assets: {error}");
     }
+    #[cfg(feature = "desktop")]
+    build_desktop_resources();
+}
+
+#[cfg(feature = "desktop")]
+fn build_desktop_resources() {
     let mut attributes = tauri_build::Attributes::new();
     if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows")
         && env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc")

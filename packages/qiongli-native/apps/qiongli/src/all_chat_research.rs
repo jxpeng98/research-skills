@@ -1,3 +1,10 @@
+#![cfg_attr(
+    not(feature = "desktop"),
+    allow(
+        dead_code,
+        reason = "CLI retains the pure schema and DTO contract; session consumers belong to the desktop"
+    )
+)]
 //! Selected, revision-bound excerpts and untrusted comparison candidates.
 //! Project readers and Capture remain the data and mutation authorities.
 use qiongli_execution::{AcpV1TurnOutcome, AgentEventV1, AgentFinishReason, RunId};
@@ -804,6 +811,7 @@ mod tests {
             fs::read_to_string(base.join("schemas/all-chat-research-v2.schema.json")).unwrap(),
             schema
         );
+        #[cfg(feature = "desktop")]
         exercise_research_ipc(&projects, &id, &selections);
         let intake = projects
             .preview_capture_from_current_sources(
@@ -888,6 +896,7 @@ mod tests {
         fs::remove_dir_all(root).unwrap();
     }
 
+    #[cfg(feature = "desktop")]
     fn exercise_research_ipc(
         projects: &ProjectStateService,
         id: &str,

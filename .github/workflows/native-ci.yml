@@ -104,12 +104,6 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Setup Tauri and build the Svelte desktop
-        if: env.RUN_NATIVE_MATRIX == 'true'
-        uses: ./.github/actions/setup-qiongli-desktop
-        with:
-          run-frontend-checks: ${{ matrix.platform == 'Linux' }}
-
       - name: Reject injected target-specific Rust flags
         if: env.RUN_NATIVE_MATRIX == 'true'
         shell: bash
@@ -139,6 +133,32 @@ jobs:
           RUSTC_WRAPPER: ""
           RUSTFLAGS: ""
         run: cargo fmt --manifest-path packages/qiongli-native/Cargo.toml --all -- --check
+
+      - name: Test CLI without desktop dependencies or frontend output
+        if: env.RUN_NATIVE_MATRIX == 'true'
+        env:
+          CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
+          CARGO_BUILD_RUSTC_WRAPPER: ""
+          CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
+          CARGO_BUILD_RUSTFLAGS: ""
+          CARGO_ENCODED_RUSTFLAGS: ""
+          RUSTC_WORKSPACE_WRAPPER: ""
+          RUSTC_WRAPPER: ""
+          RUSTFLAGS: ""
+        shell: bash
+        run: |
+          graph="$(cargo tree --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --no-default-features --edges normal,build,dev --prefix none --format '{p}' --locked)"
+          if grep -Eq '^(tauri([-_][^ ]+)?|rfd|eframe|egui|wry|tao|winit|gtk([-_][^ ]+)?|webkit2gtk([-_][^ ]+)?) v' <<< "$graph"; then
+            echo "CLI normal/build/test graph contains a GUI dependency" >&2
+            exit 1
+          fi
+          cargo test --manifest-path packages/qiongli-native/Cargo.toml -p qiongli --lib --test cli --test mcp_stdio --no-default-features --locked
+
+      - name: Setup Tauri and build the Svelte desktop
+        if: env.RUN_NATIVE_MATRIX == 'true'
+        uses: ./.github/actions/setup-qiongli-desktop
+        with:
+          run-frontend-checks: ${{ matrix.platform == 'Linux' }}
 
       - name: Check native Rust workspace
         if: env.RUN_NATIVE_MATRIX == 'true'

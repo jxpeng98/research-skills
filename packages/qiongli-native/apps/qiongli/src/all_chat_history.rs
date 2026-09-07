@@ -1,3 +1,10 @@
+#![cfg_attr(
+    not(feature = "desktop"),
+    allow(
+        dead_code,
+        reason = "CLI retains the pure schema and DTO contract; session consumers belong to the desktop"
+    )
+)]
 //! Canonical private event log; the App view is a disposable projection, never a second commit.
 use qiongli_execution::{
     AcpV1PermissionChoice, AcpV1PermissionKind, AcpV1TurnStatus, AcpV1Update, AcpV1UpdateKind,

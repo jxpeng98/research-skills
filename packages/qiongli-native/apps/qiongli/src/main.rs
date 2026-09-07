@@ -4,6 +4,7 @@ use std::process::ExitCode;
 
 fn main() -> ExitCode {
     let args = env::args_os().skip(1).collect::<Vec<_>>();
+    #[cfg(feature = "desktop")]
     if args.is_empty() {
         return match qiongli::run_desktop_application() {
             Ok(()) => ExitCode::SUCCESS,

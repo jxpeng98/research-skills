@@ -1,8 +1,8 @@
 #![cfg_attr(
-    test,
+    any(test, not(feature = "desktop")),
     allow(
         dead_code,
-        reason = "the Tauri IPC adapter is excluded from the core library unit-test binary"
+        reason = "the Tauri IPC adapter is excluded from CLI-only builds and core library unit tests"
     )
 )]
 

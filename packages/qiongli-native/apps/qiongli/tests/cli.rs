@@ -4408,3 +4408,20 @@ fn copied_binary_lists_content_and_retires_direct_materialization_without_source
     assert!(!output_contains_path(&materialize, &target));
     fs::remove_dir_all(runtime_root).expect("outside-checkout runtime root must be removed");
 }
+
+#[cfg(not(feature = "desktop"))]
+#[test]
+fn cli_only_empty_args_print_help_and_ui_fails_without_a_window() {
+    let help = run(&["--help"]);
+    let empty = run(&[]);
+    assert!(empty.status.success());
+    assert_eq!(empty.stdout, help.stdout);
+    assert!(empty.stderr.is_empty());
+    let ui = run(&["ui"]);
+    assert!(!ui.status.success());
+    assert!(ui.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(ui.stderr).unwrap(),
+        format!("error: {}\n", qiongli::DESKTOP_STARTUP_ERROR_CODE)
+    );
+}

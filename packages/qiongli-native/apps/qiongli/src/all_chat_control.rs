@@ -1,3 +1,10 @@
+#![cfg_attr(
+    not(feature = "desktop"),
+    allow(
+        dead_code,
+        reason = "CLI retains the pure schema and DTO contract; session consumers belong to the desktop"
+    )
+)]
 //! Desktop session owner. Durable observations and project tools have separate owners.
 use crate::all_chat_history::{ChatHistory, ChatRecordKind};
 use crate::all_chat_research::{
@@ -773,11 +780,13 @@ pub fn all_chat_control_schema_json() -> std::result::Result<String, serde_json:
     serde_json::to_string_pretty(&schema).map(|s| s + "\n")
 }
 
+#[cfg(feature = "desktop")]
 pub(crate) struct DesktopChatState {
     pub(crate) chat: Mutex<crate::all_chat_control::DesktopChat>,
     pub(crate) projects: Option<ProjectStateService>,
 }
 
+#[cfg(feature = "desktop")]
 #[tauri::command]
 pub(crate) fn qiongli_all_chat(
     request: crate::all_chat_control::ChatRequest,
@@ -790,6 +799,7 @@ pub(crate) fn qiongli_all_chat(
         .execute(request, state.projects.as_ref())
 }
 
+#[cfg(feature = "desktop")]
 #[tauri::command]
 pub(crate) fn qiongli_all_chat_research(
     request: ResearchRequest,
@@ -802,7 +812,7 @@ pub(crate) fn qiongli_all_chat_research(
         .research(request, state.projects.as_ref())
 }
 
-#[cfg(all(test, debug_assertions))]
+#[cfg(all(test, debug_assertions, feature = "desktop"))]
 mod all_chat_ipc_tests {
     use super::*;
     use serde_json::{Value, json};

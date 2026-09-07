@@ -1,8 +1,8 @@
 #![cfg_attr(
-    test,
+    any(test, not(feature = "desktop")),
     allow(
         dead_code,
-        reason = "the Tauri shell is excluded from the core library unit-test binary"
+        reason = "the Tauri shell is excluded from CLI-only builds and core library unit tests"
     )
 )]
 
@@ -163,12 +163,12 @@ use qiongli_project::{
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct DesktopLaunchError;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "desktop", not(test)))]
 mod tauri_adapter;
-#[cfg(not(test))]
+#[cfg(all(feature = "desktop", not(test)))]
 use tauri_adapter::run_tauri_application;
 
-#[cfg(test)]
+#[cfg(any(test, not(feature = "desktop")))]
 fn run_tauri_application(
     _service: NativeDesktopService,
     _project_service: Option<ProjectStateService>,
@@ -3011,6 +3011,14 @@ trait FolderPicker: Send {
 
 struct NativeFolderPicker;
 
+#[cfg(not(feature = "desktop"))]
+impl FolderPicker for NativeFolderPicker {
+    fn pick_folder(&mut self) -> Option<PathBuf> {
+        None
+    }
+}
+
+#[cfg(feature = "desktop")]
 impl FolderPicker for NativeFolderPicker {
     fn pick_folder(&mut self) -> Option<PathBuf> {
         rfd::FileDialog::new()

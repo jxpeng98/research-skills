@@ -80,6 +80,7 @@ pub(crate) fn execute(
     command: NativeCliCommand,
     authority: Option<&NativeReleaseAuthority>,
     content: &EmbeddedContent,
+    environment: &crate::command::CommandEnvironment,
 ) -> Result<NativeCliOutput, &'static str> {
     match command {
         NativeCliCommand::Preview(options) => {
@@ -104,6 +105,12 @@ pub(crate) fn execute(
                 now_unix,
             )
             .map_err(|error| error.reason_code())?;
+            let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+                environment
+                    .platform_home()
+                    .ok_or("native-candidate-home-unavailable")?,
+                crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+            )?;
             let executor = ManagedNativePayloadExecutor::new(prepared.managed_root);
             let commit = executor
                 .apply(
@@ -146,6 +153,12 @@ pub(crate) fn execute(
         NativeCliCommand::Remove(options) => {
             let managed_root = approve_managed_root(&allowed_root(), &options.managed_root)
                 .map_err(|error| error.reason_code())?;
+            let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+                environment
+                    .platform_home()
+                    .ok_or("native-candidate-home-unavailable")?,
+                crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+            )?;
             let commit = ManagedNativePayloadExecutor::new(managed_root)
                 .remove(&options.install_id, content.pack(), now_unix()?)
                 .map_err(|error| error.reason_code())?;
@@ -538,6 +551,13 @@ mod tests {
     fn authority_backed_cli_previews_applies_verifies_and_removes() {
         let content = crate::embedded_content().expect("embedded content must verify");
         let fixture = Fixture::new(&content);
+        let environment = crate::command::CommandEnvironment::with_paths(
+            None::<std::ffi::OsString>,
+            Some(fixture.root.clone()),
+            None,
+        );
+        let execute =
+            |command, authority, content| super::execute(command, authority, content, &environment);
 
         let preview = execute(
             NativeCliCommand::Preview(fixture.release_options()),
@@ -571,6 +591,17 @@ mod tests {
             options: fixture.release_options(),
             expected_plan_digest: preview.plan_digest_sha256.clone(),
         };
+        #[cfg(unix)]
+        {
+            let held =
+                crate::update_reconcile::acquire_native_home_write_lock(&fixture.root).unwrap();
+            assert_eq!(
+                execute(apply_command.clone(), Some(&fixture.authority), &content).unwrap_err(),
+                "native-update-replacement-active"
+            );
+            assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
+            drop(held);
+        }
         let applied = execute(apply_command.clone(), Some(&fixture.authority), &content)
             .expect("native CLI apply must succeed");
         let applied_rendered = serde_json::to_string(&applied).unwrap();
@@ -602,6 +633,24 @@ mod tests {
         assert_eq!(verified.state, "healthy");
         assert_eq!(verified.install_id, preview.install_id);
 
+        #[cfg(unix)]
+        {
+            let marker = fixture
+                .root
+                .join(".qiongli/native/active-installation.json");
+            fs::write(&marker, b"pending-recovery").unwrap();
+            assert_eq!(
+                execute(
+                    NativeCliCommand::Remove(receipt_options.clone()),
+                    None,
+                    &content
+                )
+                .unwrap_err(),
+                "native-activation-recovery-required"
+            );
+            assert!(fixture.managed_root.join(&fixture.artifact_id).is_dir());
+            fs::remove_file(marker).unwrap();
+        }
         let removed = execute(
             NativeCliCommand::Remove(receipt_options.clone()),
             None,

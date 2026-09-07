@@ -193,10 +193,19 @@ stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and pack
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
 CLI health. Non-Unix managed writes retain their existing behavior. This is partial
-entry-point coverage: legacy migration, engineering `install native`, older Desktop
-replacement and other direct writers still need a final inventory/guard pass before
+entry-point coverage: older Desktop replacement and update-state dispatchers still
+need a final inventory/guard pass before
 public native activation is enabled. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
+
+Engineering `install native apply/remove` also takes the Home/config guard using
+the command environment; preview/verify remain read-only. Apply validates release
+authority, plan digest and approval before acquiring it. Legacy migration apply,
+continue (including cleanup/finalize), and recover use the same guard in their shared
+CLI/Desktop owner. Apply acquires it after product/approval validation and before
+provider or Host writes; recovery loads its receipt before acquiring it and never
+bypasses pending native activation. Arbitrary engineering managed roots are still
+coordinated by the invoking Home, not by every possible root alias.
 
 ## Quality Check
 

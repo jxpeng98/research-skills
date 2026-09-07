@@ -504,7 +504,7 @@ pub(crate) fn prepare_action_with_release_authority(
             }
         }
         Command::InstallNative(command) => {
-            match crate::native_cli::execute(command, authority, content) {
+            match crate::native_cli::execute(command, authority, content, environment) {
                 Ok(output) => json_output(&output, 0),
                 Err(reason_code) => CliOutput::operation_failure(reason_code),
             }

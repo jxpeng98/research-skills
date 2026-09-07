@@ -1010,3 +1010,33 @@ qualification. No program acceptance or publication status is advanced.
 Next: finish the remaining writer inventory, then wire approved public activation
 and recovery through the existing signed-candidate, journal and real CLI health
 owners. First-stage integration and named package/real Host qualification remain open.
+
+
+## CLI-403 twentieth increment — engineering and migration writer guards
+
+Base: `c02e440b`; branch: `codex/cli-remaining-write-guards`.
+Engineering native apply/remove now receive the command environment and acquire the
+existing Home/config write guard before payload mutation. Apply retains release,
+digest and approval validation first. Preview/verify remain available without that
+lock. The existing authority-backed lifecycle test proves lock contention leaves the
+payload absent and a pending recovery marker prevents removal of an installed payload;
+normal apply/replay/verify/remove/replay still pass after the guard is released.
+
+Legacy migration apply, continue and recover now acquire the same guard in their
+shared CLI/Desktop owner. Apply validates approval/product identity before taking it
+and holds it across provider staging, Host installation and receipt writes. Continue
+covers Host confirmation, cleanup and finalize; recovery loads its receipt first and
+holds the guard across restoration and receipt advancement. Existing data ownership,
+secret handling, product control and CAS checks remain in place.
+
+Checks on macOS: the expanded native CLI lifecycle test passed; all five migration
+unit tests and the real CLI migration inspection/source-authority refusal test passed.
+Library Clippy and whitespace checks passed. Migration tests cover persisted-state,
+provider rollback and source-build refusal, not a new real signed-product migration
+under lock contention. No public wire contract or accepted ledger row changed.
+
+Next: finish old Desktop replacement/update-state dispatch coverage and address the
+engineering arbitrary-root alias boundary (its current guard follows the invoking
+Home). Keep public activation unexposed until this inventory and the remaining fresh
+candidate/approval/process validation are complete. First-stage integration and real
+Host/named package qualification remain incomplete; nothing was pushed or published.

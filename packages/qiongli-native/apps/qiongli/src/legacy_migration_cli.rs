@@ -165,7 +165,9 @@ pub(crate) fn execute_with_secret_store(
                 inventory: inventory.summary().clone(),
             })
         }
-        LegacyMigrationCliCommand::Recover { migration_id } => recover(&inventory, &migration_id),
+        LegacyMigrationCliCommand::Recover { migration_id } => {
+            recover(&inventory, environment, &migration_id)
+        }
     }
 }
 
@@ -247,6 +249,12 @@ fn apply(
     {
         return Err("legacy-migration-product-identity-mismatch");
     }
+    let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+        environment
+            .platform_home()
+            .ok_or("native-candidate-home-unavailable")?,
+        crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+    )?;
     let staged_provider =
         stage_legacy_provider_config(&plan, inventory, environment, secret_store)?;
     if targets.is_empty() && staged_provider.is_none() {
@@ -317,6 +325,12 @@ fn continue_migration(
         .load_receipt(migration_id)
         .map_err(|error| error.reason_code())?;
     let product = verify_running_packaged_product(environment, content)?;
+    let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+        environment
+            .platform_home()
+            .ok_or("native-candidate-home-unavailable")?,
+        crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+    )?;
     let next = match action {
         LegacyMigrationContinueAction::ConfirmHostActivation => {
             if receipt.state == LegacyMigrationState::Staged {
@@ -419,6 +433,7 @@ fn continue_migration(
 
 fn recover(
     inventory: &LegacyMigrationInventory,
+    environment: &CommandEnvironment,
     migration_id: &str,
 ) -> Result<LegacyMigrationCliOutput, &'static str> {
     let store =
@@ -426,6 +441,12 @@ fn recover(
     let current = store
         .load_receipt(migration_id)
         .map_err(|error| error.reason_code())?;
+    let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
+        environment
+            .platform_home()
+            .ok_or("native-candidate-home-unavailable")?,
+        crate::command::config_root(environment).map_err(|error| error.reason_code())?,
+    )?;
     let recovery = recover_legacy_migration_cleanup(inventory, migration_id)
         .map_err(|error| error.reason_code())?;
     let items = current

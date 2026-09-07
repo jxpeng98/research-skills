@@ -4451,3 +4451,79 @@ fn cli_only_empty_args_print_help_and_ui_fails_without_a_window() {
         format!("error: {}\n", qiongli::DESKTOP_STARTUP_ERROR_CODE)
     );
 }
+
+#[test]
+fn update_recovery_requires_explicit_digest_and_approval_without_creating_state() {
+    let fixture = Fixture::new("update-recovery-contract");
+    let digest = "a".repeat(64);
+    let help = run_configured(&fixture, &["update", "--help"]);
+    assert!(help.status.success());
+    assert!(String::from_utf8_lossy(&help.stdout).contains("recovery-preview"));
+    for args in [
+        vec!["update", "recover"],
+        vec!["update", "recover", "--approve-filesystem-write"],
+        vec!["update", "recover", "--expected-marker-digest", &digest],
+        vec![
+            "update",
+            "recover",
+            "--expected-marker-digest",
+            "bad",
+            "--approve-filesystem-write",
+        ],
+        vec![
+            "update",
+            "recover",
+            "--expected-marker-digest",
+            &digest,
+            "--approve-filesystem-write",
+            "--approve-filesystem-write",
+        ],
+        vec![
+            "update",
+            "recover",
+            "--expected-marker-digest",
+            &digest,
+            "--expected-marker-digest",
+            &digest,
+            "--approve-filesystem-write",
+        ],
+        vec![
+            "update",
+            "recover",
+            "--expected-marker-digest",
+            &digest,
+            "--approve-filesystem-write",
+            "--unknown",
+        ],
+        vec!["update", "recovery-preview", "--approve-filesystem-write"],
+    ] {
+        assert_eq!(
+            run_configured(&fixture, &args).status.code(),
+            Some(2),
+            "{args:?}"
+        );
+    }
+    for args in [
+        vec!["update", "recovery-preview"],
+        vec![
+            "update",
+            "recover",
+            "--expected-marker-digest",
+            &digest,
+            "--approve-filesystem-write",
+        ],
+        vec![
+            "update",
+            "recover",
+            "--approve-filesystem-write",
+            "--expected-marker-digest",
+            &digest,
+        ],
+    ] {
+        let output = run_configured(&fixture, &args);
+        assert!(!output.status.success());
+        assert_ne!(output.status.code(), Some(2), "valid syntax: {args:?}");
+        assert!(!fixture.config_root.exists());
+        assert!(!fixture.home.join(".qiongli").exists());
+    }
+}

@@ -357,6 +357,28 @@
           ],
           "migration_path": null,
           "removal_gate": null
+        },
+        {
+          "change_id": "public-cli-json/update-recovery-v1",
+          "contract_id": "public-cli-json/update-recovery",
+          "from_version": "absent",
+          "to_version": "1",
+          "classification": "additive",
+          "rust_sources": [
+            "packages/qiongli-native/apps/qiongli/src/update_cli.rs"
+          ],
+          "generated_schema": "packages/qiongli-native/apps/qiongli/schemas/update-recovery-v1.schema.json",
+          "golden_fixtures": [
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/update-recovery-v1.preview.json",
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/update-recovery-v1.recovered.json"
+          ],
+          "consumer_checks": [
+            "packages/qiongli-native/apps/qiongli/src/update_cli.rs",
+            "packages/qiongli-native/apps/qiongli/src/native_update_replace.rs",
+            "packages/qiongli-native/apps/qiongli/tests/cli.rs"
+          ],
+          "migration_path": null,
+          "removal_gate": null
         }
       ]
     }

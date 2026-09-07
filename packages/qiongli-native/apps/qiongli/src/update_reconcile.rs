@@ -506,8 +506,11 @@ fn clear_home_activation(
 
 /// Read the bounded private marker without accepting an arbitrary source path.
 pub(crate) fn read_installation_marker(home: &Path) -> Result<Vec<u8>, &'static str> {
-    let marker = native_home_state_root(home)?.join(HOME_ACTIVATION_MARKER);
-    read_private_file(&marker, MAX_STATE_BYTES)
+    qiongli_platform::discover_native_candidate_managed_root(home)
+        .map_err(|error| error.reason_code())?;
+    let native_root = home.join(".qiongli/native");
+    verify_existing_private_directory(&native_root)?;
+    read_private_file(&native_root.join(HOME_ACTIVATION_MARKER), MAX_STATE_BYTES)
 }
 
 /// Remove only the exact marker whose operation completed under the Home lock.

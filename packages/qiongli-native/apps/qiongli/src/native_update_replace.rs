@@ -525,6 +525,56 @@ fn refuse_mapped_application_paths(
     Ok(())
 }
 
+pub(crate) struct LegacyRecoveryPlan {
+    pub(crate) transaction_id: String,
+    pub(crate) marker_sha256: String,
+    pub(crate) committed: bool,
+}
+
+/// Read-only selection of a supported recovery path; mutation revalidates all evidence.
+pub(crate) fn preview_legacy_recovery(
+    home: &Path,
+    store: &UpdateStateStore,
+) -> Result<LegacyRecoveryPlan, &'static str> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (home, store);
+        Err("native-update-target-unsupported")
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let marker = crate::update_reconcile::read_installation_marker(home)?;
+        let journal: ReplacementJournalV1 =
+            serde_json::from_slice(&marker).map_err(|_| "native-update-journal-invalid")?;
+        validate_journal(&journal, store, &journal.transaction_id)?;
+        let loaded = store.load().map_err(|error| error.reason_code())?;
+        let committed = confirm_committed_state(store, &journal).is_ok();
+        if !committed
+            && (loaded.state.last_accepted_generation >= journal.generation
+                || loaded
+                    .state
+                    .active_transaction
+                    .as_ref()
+                    .is_some_and(|transaction| {
+                        transaction.transaction_id != journal.transaction_id
+                            || transaction.target_version != journal.target_version
+                            || !matches!(
+                                transaction.phase,
+                                UpdateTransactionPhase::HealthWindow
+                                    | UpdateTransactionPhase::RecoveryRequired
+                            )
+                    }))
+        {
+            return Err("native-update-transaction-state-invalid");
+        }
+        Ok(LegacyRecoveryPlan {
+            transaction_id: journal.transaction_id,
+            marker_sha256: sha256_hex(&marker),
+            committed,
+        })
+    }
+}
+
 /// Finish only a durably committed legacy update; never rerun health or roll back.
 /// The caller owns filesystem-write approval and process checks.
 pub fn recover_legacy_committed_cleanup(
@@ -1315,6 +1365,7 @@ fn validate_journal(
     store: &UpdateStateStore,
     transaction_id: &str,
 ) -> Result<(), &'static str> {
+    validate_transaction_id(transaction_id)?;
     let transaction_root = store.staging_root().join(transaction_id);
     let expected_staged = transaction_root.join("application").join(APPLICATION_NAME);
     let expected_backup = journal
@@ -1881,6 +1932,49 @@ mod tests {
     }
 
     #[cfg(target_os = "macos")]
+    fn recover_through_cli(fixture: &ReplacementFixture, digest: &str, expected_mode: &str) {
+        use crate::update_cli::{UpdateCliCommand, execute};
+        let environment =
+            crate::command::CommandEnvironment::with_paths(None, Some(fixture.root.clone()), None);
+        let content = crate::embedded_content().unwrap();
+        let run = |command| execute(command, &fixture.store, None, None, &environment, &content);
+        let before = fixture.store.load().unwrap();
+        let preview =
+            serde_json::to_value(run(UpdateCliCommand::RecoveryPreview).unwrap()).unwrap();
+        assert_eq!(preview["command"], "update-recovery-preview");
+        assert_eq!(preview["marker_sha256"], digest);
+        assert_eq!(preview["mode"], expected_mode);
+        assert_eq!(fixture.store.load().unwrap(), before);
+        assert_eq!(
+            run(UpdateCliCommand::Recover {
+                expected_marker_sha256: digest.to_owned(),
+                approve_filesystem_write: false,
+            }),
+            Err("native-update-recovery-approval-required")
+        );
+        assert_eq!(
+            run(UpdateCliCommand::Recover {
+                expected_marker_sha256: "0".repeat(64),
+                approve_filesystem_write: true,
+            }),
+            Err("native-activation-journal-mismatch")
+        );
+        assert_eq!(fixture.store.load().unwrap(), before);
+        let recovered = serde_json::to_value(
+            run(UpdateCliCommand::Recover {
+                expected_marker_sha256: digest.to_owned(),
+                approve_filesystem_write: true,
+            })
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(recovered["command"], "update-recover");
+        assert_eq!(recovered["mode"], expected_mode);
+        assert_eq!(recovered["marker_sha256"], digest);
+        assert_eq!(recovered["transaction_id"], preview["transaction_id"]);
+    }
+
+    #[cfg(target_os = "macos")]
     #[test]
     fn interrupted_desktop_health_keeps_other_config_writers_excluded() {
         for checkpoint in [
@@ -2008,8 +2102,7 @@ mod tests {
                 Err("native-update-staged-application-drift")
             );
             fs::write(&old_binary, b"old-known-good").unwrap();
-            recover_legacy_health_interruption(&fixture.root, &fixture.store, &sha256_hex(&marker))
-                .unwrap();
+            recover_through_cli(&fixture, &sha256_hex(&marker), "rollback");
             drop(
                 crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config)
                     .unwrap(),
@@ -2161,7 +2254,7 @@ mod tests {
                     .exists()
             );
         }
-        recover_legacy_committed_cleanup(&fixture.root, &fixture.store, &digest).unwrap();
+        recover_through_cli(&fixture, &digest, "committed-cleanup");
         assert_eq!(fixture.store.load().unwrap(), before);
         assert_committed(&fixture);
         fs::remove_dir_all(fixture.root).unwrap();
@@ -2297,6 +2390,10 @@ mod tests {
             created_at_unix: 1,
         };
         assert!(validate_journal(&journal, &store, transaction_id).is_ok());
+        assert_eq!(
+            validate_journal(&journal, &store, "invalid-id"),
+            Err("native-update-transaction-id-invalid")
+        );
         journal.staged_application = root.join("attacker-controlled.app");
         assert_eq!(
             validate_journal(&journal, &store, transaction_id),

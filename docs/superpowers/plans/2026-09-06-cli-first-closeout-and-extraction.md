@@ -1287,3 +1287,35 @@ Remaining: public recovery approval/output contracts, native activation command 
 and real package/Host qualification. The check is a current-user snapshot and cannot
 prevent a subsequent launch or attest to other users' processes. First-stage integration
 is incomplete; no push, publication or acceptance advancement.
+
+
+## CLI-403 twenty-ninth increment — expose approved legacy recovery
+
+Base: `a30cdc0c`; branch: `codex/cli-public-recovery`.
+Added `update recovery-preview` and digest-bound, explicitly approved `update recover`.
+The preview reads existing private state without creating directories and reports the
+legacy transaction, marker digest and rollback/committed-cleanup mode. Execution routes
+to existing owners, preserving Home/config locks, CAS, process inspection and identity
+checks. Source builds need no fresh release authority for this exact-owned recovery.
+Native activation markers remain outside this legacy entry point. Recovery must run
+from a CLI outside affected application paths; preview is not a readiness guarantee.
+
+Review added transaction-ID validation at the shared journal validator and retained
+private native-directory validation in the read-only marker path. The new additive
+public JSON contract has a Rust Draft 2020-12 producer, two golden fixtures, strict
+consumer checks and a public-schema policy entry. Both general and update help list
+the commands.
+
+Checks on macOS: 15 replacement/process tests passed after final validation changes;
+existing interrupted rollback and committed cleanup cases now finish through the real
+CLI dispatcher, checking preview mode, wrong digest, missing approval and final output.
+The subprocess CLI check covers syntax, duplicate/missing/unknown options, both option
+orders and no state creation on missing-marker preview/recovery. Rust schema/consumer
+test, library/generator Clippy, schema-policy validator and its 12 tests, roadmap index,
+whitespace and frozen-source boundary checks passed. No full desktop/package suite was
+rerun for local integration.
+
+Remaining: native activation/recovery command wiring, real update process-kill cases,
+partial-tree recovery limits, and named-candidate/platform/Host qualification. Successful
+synthetic recovery via dispatcher does not prove a real packaged application crash.
+First-stage integration and program acceptance remain incomplete. No push/publication.

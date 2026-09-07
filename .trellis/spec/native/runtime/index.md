@@ -192,10 +192,8 @@ The shared Unix managed-write guard covers managed-operation apply, candidate
 stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and packaged
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
-CLI health. Non-Unix managed writes retain their existing behavior. This is partial
-entry-point coverage: legacy interrupted-update recovery still needs a supported
-recovery entry point before
-public native activation is enabled. This lock coordinates participating processes;
+CLI health. Non-Unix managed writes retain their existing behavior. Public native activation remains pending; legacy interrupted-update recovery uses
+the approved CLI entry described below. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
 
 Engineering `install native apply/remove` also takes the Home/config guard using
@@ -211,8 +209,7 @@ retain the invoking Home scope. Existing managed-root approval rejects unsafe li
 The old macOS replacement executor takes the same Home-then-config locks after
 parent exit, refusing a native activation marker before switching files. Handoff
 failure restoration also takes both locks before altering state. Health retains its
-existing independent completion path. Legacy recovery still needs a supported entry
-point before public native activation is enabled.
+existing independent completion path. Legacy recovery uses the approved CLI entry described below.
 
 The shared update guard acquires Home then config locks without rejecting an
 existing update transaction; each update stage still validates its own state/CAS.
@@ -236,8 +233,7 @@ reconciliation cleanup, removes the failed application, syncs the transaction di
 and only then clears the failed transaction through CAS. Cleanup failure preserves the
 active transaction and retained journal/health contract; files and links substituted at
 the failed-application path refuse. Completed rollback keeps the journal and health
-contract as evidence rather than recursively deleting the transaction root. Supported
-legacy recovery entry-point wiring remains separate pending work.
+contract as evidence rather than recursively deleting the transaction root. The approved legacy recovery CLI reuses these owners.
 
 The legacy macOS executor now writes its serialized replacement journal to the shared
 private Home activation marker before replacing application files. Shared marker
@@ -247,9 +243,8 @@ pre-activation restoration clear their own marker. Panics and incomplete cleanup
 it, excluding participating writers across config roots after process-lock release.
 The marker reuses the existing replacement-journal format; it adds no public schema.
 Pre-activation restoration now reports errors and requires the destination/staged
-layout, absent backup and successful state CAS before releasing protection. Recovery
-through the existing lower-level owners is tested; automated/public legacy recovery
-and real process-kill qualification remain pending.
+layout, absent backup and successful state CAS before releasing protection. Recovery through these owners and the CLI dispatcher is tested; real
+process-kill qualification remains pending.
 
 `recover_legacy_health_interruption` is a callable library owner for an interrupted
 legacy HealthWindow (or its RecoveryRequired reservation). It requires the exact
@@ -257,9 +252,8 @@ Home marker digest, validates the marker's replacement journal against the confi
 store, checks the canonical reconciliation journal/digest, backup ownership and the
 installed new canonical binary hash. It reserves RecoveryRequired through state CAS
 before rollback so late legacy health cannot commit, then reuses Host/application
-rollback, cleanup and exact marker clearing. It does not rerun health. Caller-owned
-filesystem approval and a public CLI entry point remain pending, as
-does real process-kill qualification. Unsupported layouts/states refuse rather than guessing a completed recovery.
+rollback, cleanup and exact marker clearing. It does not rerun health. The public CLI enforces caller-owned filesystem approval; real process-kill
+qualification remains pending. Unsupported layouts/states refuse rather than guessing a completed recovery.
 
 Legacy rollback persists private `legacy-rollback-v1.json` before moving the application.
 Its strict version-1 shape binds the Home marker digest, a hash of the prior accepted
@@ -271,8 +265,7 @@ application must still match the new canonical binary before deletion. Successfu
 rollback keeps the record and journal as evidence. Unknown versions, changed marker/
 release bindings, substituted paths and binary drift refuse. Tested checkpoints are
 between filesystem operations; deletion interrupted inside a failed application tree
-can still require manual recovery if its identity cannot be verified. The public CLI
-and process qualification remain pending.
+can still require manual recovery if its identity cannot be verified. The public CLI is described below; full process qualification remains pending.
 
 `recover_legacy_committed_cleanup` is the library entry for an already accepted legacy
 update. It validates the exact marker, configured journal, canonical Host journal and
@@ -285,8 +278,7 @@ with its old handoff contract to allow a fresh attempt.
 
 Committed cleanup retains transaction evidence/downloads and supports an already
 removed backup. Cleanup stopped inside a backup tree still refuses if identity can no
-longer be established. Bounded garbage collection and public approval wiring
-remain separate work; retaining evidence does not claim complete package qualification.
+longer be established. Bounded garbage collection remains separate work; retaining evidence does not claim complete package qualification.
 
 Both legacy recovery owners inspect the current user's mapped application files under
 the installation locks before changing state/files. A fixed `/usr/sbin/lsof` invocation
@@ -297,8 +289,24 @@ covers destination, backup, staged and failed-application directories by path co
 C-locale hexadecimal encoding of non-ASCII path bytes is accounted for; target control
 characters refuse because reliable matching is unavailable. No processes are killed.
 This is a current-user snapshot, not prevention of launches after inspection or a claim
-of visibility into other users' processes. CLI approval and full process qualification
-remain pending.
+of visibility into other users' processes. Full process qualification remains pending.
+
+`qiongli update recovery-preview` reads the private Home marker and configured update
+state without creating directories or acquiring write locks. It identifies a legacy
+transaction, exact marker SHA-256 and `rollback` or `committed-cleanup` mode. This is a
+recovery description, not proof that process, application or Host evidence will pass.
+`qiongli update recover --expected-marker-digest <sha256> --approve-filesystem-write`
+requires explicit approval and the exact marker, then delegates to the existing recovery
+owner, which rechecks locks, state, process and filesystem identities before mutation.
+Missing/duplicate options and malformed digests refuse. Source builds can recover owned
+legacy evidence without obtaining new release authority. Run recovery from a separate
+CLI outside the affected application paths; a running binary inside them is refused.
+Native payload activation markers remain unsupported by these legacy commands.
+
+Both outputs use the Rust-owned additive `update-recovery-v1` public JSON contract,
+with generated Draft 2020-12 schema and preview/recovered golden fixtures. Recovery
+retains the prior cleanup and partial-tree limitations; it does not grant package or
+program acceptance.
 
 ## Quality Check
 

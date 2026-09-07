@@ -157,3 +157,5 @@ pub use update_reconcile::{
 };
 
 pub use candidate_cli::check_native_cli_health;
+
+pub use update_cli::update_recovery_contract_json;

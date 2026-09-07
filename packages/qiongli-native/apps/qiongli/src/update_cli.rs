@@ -62,6 +62,11 @@ const PARTIAL_SIGNING_RECEIPT_FILE: &str = ".signing-receipt.partial";
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum UpdateCliCommand {
+    RecoveryPreview,
+    Recover {
+        expected_marker_sha256: String,
+        approve_filesystem_write: bool,
+    },
     Status,
     Channel {
         expected_revision: u64,
@@ -94,6 +99,7 @@ pub(crate) enum UpdateCliCommand {
 #[derive(Debug, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 pub(crate) enum UpdateCliOutput {
+    Recovery(UpdateRecoveryOutput),
     Status(UpdateStatusOutput),
     Channel(UpdateChannelOutput),
     Check(UpdateCheckOutput),
@@ -104,6 +110,124 @@ pub(crate) enum UpdateCliOutput {
     Reconcile(UpdateReconcileOutput),
     Health(UpdateHealthOutput),
     Cancel(UpdateCancelOutput),
+}
+
+#[derive(
+    Clone, Copy, Debug, Eq, PartialEq, Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum LegacyRecoveryMode {
+    Rollback,
+    CommittedCleanup,
+}
+
+#[derive(Debug, Eq, PartialEq, Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(tag = "command", deny_unknown_fields)]
+pub(crate) enum UpdateRecoveryOutput {
+    #[serde(rename = "update-recovery-preview")]
+    Preview {
+        #[schemars(range(min = 1, max = 1))]
+        schema_version: u32,
+        #[schemars(regex(pattern = "^update-[0-9a-fA-F]{32}$"))]
+        transaction_id: String,
+        #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+        marker_sha256: String,
+        mode: LegacyRecoveryMode,
+    },
+    #[serde(rename = "update-recover")]
+    Recovered {
+        #[schemars(range(min = 1, max = 1))]
+        schema_version: u32,
+        #[schemars(regex(pattern = "^update-[0-9a-fA-F]{32}$"))]
+        transaction_id: String,
+        #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+        marker_sha256: String,
+        mode: LegacyRecoveryMode,
+    },
+}
+
+pub fn update_recovery_contract_json() -> Result<String, serde_json::Error> {
+    let schema = schemars::generate::SchemaSettings::draft2020_12()
+        .into_generator()
+        .into_root_schema_for::<UpdateRecoveryOutput>();
+    let fixtures = [
+        UpdateRecoveryOutput::Preview {
+            schema_version: 1,
+            transaction_id: format!("update-{}", "1".repeat(32)),
+            marker_sha256: "2".repeat(64),
+            mode: LegacyRecoveryMode::Rollback,
+        },
+        UpdateRecoveryOutput::Recovered {
+            schema_version: 1,
+            transaction_id: format!("update-{}", "1".repeat(32)),
+            marker_sha256: "2".repeat(64),
+            mode: LegacyRecoveryMode::CommittedCleanup,
+        },
+    ];
+    serde_json::to_string_pretty(&serde_json::json!({"schema":schema, "fixtures":fixtures}))
+}
+
+fn execute_recovery(
+    command: UpdateCliCommand,
+    store: &UpdateStateStore,
+    environment: &CommandEnvironment,
+) -> Result<UpdateCliOutput, &'static str> {
+    if matches!(
+        &command,
+        UpdateCliCommand::Recover {
+            approve_filesystem_write: false,
+            ..
+        }
+    ) {
+        return Err("native-update-recovery-approval-required");
+    }
+    let home = environment
+        .platform_home()
+        .ok_or("native-update-home-unavailable")?;
+    let plan = crate::native_update_replace::preview_legacy_recovery(home, store)?;
+    let mode = if plan.committed {
+        LegacyRecoveryMode::CommittedCleanup
+    } else {
+        LegacyRecoveryMode::Rollback
+    };
+    match command {
+        UpdateCliCommand::RecoveryPreview => {
+            Ok(UpdateCliOutput::Recovery(UpdateRecoveryOutput::Preview {
+                schema_version: 1,
+                transaction_id: plan.transaction_id,
+                marker_sha256: plan.marker_sha256,
+                mode,
+            }))
+        }
+        UpdateCliCommand::Recover {
+            expected_marker_sha256,
+            ..
+        } => {
+            if expected_marker_sha256 != plan.marker_sha256 {
+                return Err("native-activation-journal-mismatch");
+            }
+            if plan.committed {
+                crate::native_update_replace::recover_legacy_committed_cleanup(
+                    home,
+                    store,
+                    &expected_marker_sha256,
+                )?;
+            } else {
+                crate::native_update_replace::recover_legacy_health_interruption(
+                    home,
+                    store,
+                    &expected_marker_sha256,
+                )?;
+            }
+            Ok(UpdateCliOutput::Recovery(UpdateRecoveryOutput::Recovered {
+                schema_version: 1,
+                transaction_id: plan.transaction_id,
+                marker_sha256: plan.marker_sha256,
+                mode,
+            }))
+        }
+        _ => Err("native-update-recovery-command-invalid"),
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize)]
@@ -284,6 +408,12 @@ pub(crate) fn execute(
     environment: &CommandEnvironment,
     content: &EmbeddedContent,
 ) -> Result<UpdateCliOutput, &'static str> {
+    if matches!(
+        &command,
+        UpdateCliCommand::RecoveryPreview | UpdateCliCommand::Recover { .. }
+    ) {
+        return execute_recovery(command, store, environment);
+    }
     let now_unix = if matches!(
         &command,
         UpdateCliCommand::Check
@@ -587,6 +717,9 @@ fn execute_with_services(
     };
     let loaded = store.load().map_err(|error| error.reason_code())?;
     match command {
+        UpdateCliCommand::RecoveryPreview | UpdateCliCommand::Recover { .. } => {
+            execute_recovery(command, store, environment)
+        }
         UpdateCliCommand::Status => Ok(UpdateCliOutput::Status(UpdateStatusOutput {
             schema_version: 1,
             command: "update-status",
@@ -2190,6 +2323,34 @@ mod tests {
     use serde_json::json;
 
     use super::*;
+
+    #[test]
+    fn recovery_contract_matches_generated_and_consumer() {
+        let generated: serde_json::Value =
+            serde_json::from_str(&update_recovery_contract_json().unwrap()).unwrap();
+        let schema: serde_json::Value =
+            serde_json::from_str(include_str!("../schemas/update-recovery-v1.schema.json"))
+                .unwrap();
+        assert_eq!(generated["schema"], schema);
+        for (index, source) in [
+            include_str!("../tests/fixtures/update-recovery-v1.preview.json"),
+            include_str!("../tests/fixtures/update-recovery-v1.recovered.json"),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let fixture: serde_json::Value = serde_json::from_str(source).unwrap();
+            assert_eq!(generated["fixtures"][index], fixture);
+            let decoded: UpdateRecoveryOutput = serde_json::from_value(fixture.clone()).unwrap();
+            assert_eq!(serde_json::to_value(decoded).unwrap(), fixture);
+            let mut invalid = fixture.clone();
+            invalid["unapproved"] = json!(true);
+            assert!(serde_json::from_value::<UpdateRecoveryOutput>(invalid).is_err());
+            let mut invalid = fixture;
+            invalid["mode"] = json!("install");
+            assert!(serde_json::from_value::<UpdateRecoveryOutput>(invalid).is_err());
+        }
+    }
 
     const NOW: u64 = 1_750_000_000;
     const TEAM_ID: &str = "ABC123DEFG";

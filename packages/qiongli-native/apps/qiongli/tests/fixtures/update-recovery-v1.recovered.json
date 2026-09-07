@@ -1,0 +1,7 @@
+{
+  "command": "update-recover",
+  "schema_version": 1,
+  "transaction_id": "update-11111111111111111111111111111111",
+  "marker_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "mode": "committed-cleanup"
+}

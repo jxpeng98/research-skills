@@ -405,9 +405,12 @@ The maintainer requested continued work through the first-stage integration.
 This means the standalone CLI baseline in ADR 0218 and CLI-401 through CLI-405,
 with CLI-410 qualification preparation: independent build/resources/install/trust,
 window-free Host integration and verified human approval, a controlled research
-write, restart/recovery and same-device handoff. Integration is local `2.x` under
-the current workflow. Publication and additional collaboration remain separately
-scoped; passing primitives does not complete this objective.
+write, restart/recovery and same-device handoff. The September 8 maintainer decision
+retains graph query/source-traceability compatibility and truthful sparse output;
+complete academic graph extraction and interactive visualization are not first-stage
+gates. Integration is local `2.x` under the current workflow. Publication and
+additional collaboration remain separately scoped; passing primitives does not
+complete this objective.
 
 Outstanding evidence includes independent product-operation routing, update and
 rollback, human approval without a Qiongli window, the real Host journey and the
@@ -2444,3 +2447,35 @@ events, continuation note and receipt. The earlier rejected invocation remains
 separate. No source code or research state changed. Next: complete the scholarly
 artifact gaps through reviewed source-bound changes and qualify same-device
 second-Host continuation. Current acceptance counts remain unchanged.
+
+
+## CLI-first graph scope correction and next handoff — September 8
+
+Base `b8ee7f6f`; branch `codex/cli-first-graph-roadmap`. The maintainer approved
+retaining rebuildable relationship queries, text/table and Host answers by default,
+and optional local-subgraph export. The master horizon and first-stage definition
+now distinguish preserved source-traceability/sparse diagnostics from rich semantic
+extraction and optional visualization. Existing JSON/CLI/MCP contracts and canonical
+write owners are unchanged; no new database, renderer or graph-writing path is added.
+Earlier notes describing a complete academic graph as a first-stage gap are
+superseded by this ordering decision. The accepted `PLT-322` task/receipt retain
+their original semantic and visual scope; no accepted ledger row is rewritten.
+
+The next bounded increment is the actual second-Host read-only continuation of
+the same approved revision-2 project. Claude Code is installed and local auth
+status reports logged in; only the authentication booleans/method were retained.
+The private handoff packet is prepared at
+`packages/qiongli-native/target/cli405-claude-handoff-b8ee7f6f/`: exact 1955-byte
+canonical text/hash, project-scoped MCP config, prompt, invocation and `REVIEW.md`.
+The candidate binary and research-state hashes match the prior verified bytes.
+The proposed invocation enables only project-read and graph-snapshot, disables
+built-in tools, uses strict MCP configuration, refuses unapproved operations and
+does not persist a Host conversation. The local invocation check passed.
+
+A specific disclosure question is pending because prior explicit research access
+authority names Codex, not Claude Code/Anthropic. No Claude model request or research
+write has executed. On approval, verify returned project/graph revision 2 and exact
+artifact digest, record an independent continuation note and compare file snapshots.
+First-stage acceptance remains separate from this roadmap correction; Windows stays
+partially complete/paused. Lightweight ledger/index and whitespace checks pass;
+unchanged runtime and package suites are reused.

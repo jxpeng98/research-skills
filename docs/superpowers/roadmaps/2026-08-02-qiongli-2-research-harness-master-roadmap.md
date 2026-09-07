@@ -51,7 +51,7 @@ Typed Kernel、Evidence/Reproducibility 和机构级科研治理扩张。
   checklist marks in this file are presentation only；
 - 旧路线图和计划保留为历史设计与验收记录，不再通过追加“当前状态”来控制未来队列。
 
-## Current execution horizon — September 7, 2026
+## Current execution horizon — September 8, 2026
 
 The maintainer has selected **CLI-first delivery without a Qiongli App window**.
 [ADR 0218](../../architecture/decisions/0218-cli-first-local-host-collaboration.md)
@@ -62,8 +62,8 @@ product acceptance. CLI First is the product direction; CI remains verification.
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
-| **NOW** | `CLI-404/405` current-candidate window-free Host use and project continuation. Windows `CLI-403` is partially complete and paused by the maintainer: cross-build and Parallels runtime evidence exist; trusted installation/update qualification remains open. `CLI-401/402` source integration is merged; program acceptance remains separate. |
-| **NEXT** | Finish the selected Host research/approval/continuation journey and `CLI-410` baseline qualification preparation. Resume Windows trusted installation as a separate qualification lane when selected; it does not block independent development. `SEC-401`—`SEC-403` remain prerequisites for enabling research writes. |
+| **NOW** | `CLI-405` same-device handoff after the approved revision-2 research write and same-Codex continuation. Qualify the second Host against the same project and candidate; do not require a complete academic graph. Windows `CLI-403` remains partially complete/paused. `CLI-401/402` source integration is merged; program acceptance remains separate. |
+| **NEXT** | Close the declared CLI-401—405 baseline evidence and `CLI-410` qualification preparation, preserving security, recovery and research approval gates. Windows trusted installation remains a separate paused lane. Rich Graph v1 semantics belong to `PLT-322` in M2; optional visualization does not block the CLI baseline. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 
@@ -80,6 +80,35 @@ then recover or continue in another Host on the same device. Models/accounts and
 native conversations stay with Hosts; research state and receipts stay with
 Qiongli. Same-device collaboration shares local authority through existing
 services, not chat copying or cross-device file synchronization.
+
+### Academic relations and presentation under CLI First
+
+September 8 maintainer decision: retain Graph v1 as a rebuildable relationship
+query over canonical research records and receipts. Existing file/ID/source-anchor
+authority, bounded CLI/MCP queries, rebuild and truthful missing/sparse diagnostics
+remain supported. A model-proposed relation remains a candidate until reviewed;
+structural containment never implies scholarly support. Do not introduce a second
+canonical store, graph database or graph-editing write path for presentation.
+
+Presentation follows the user's question rather than opening a whole network:
+
+| Surface | Intended output | Delivery boundary |
+|---|---|---|
+| CLI | Brief summaries, tables and actionable evidence-gap lists, with source anchors | Reuse current query/doctor owners; preserve existing JSON contracts. Human-readable formatting is a bounded follow-up when needed, not a claim about current output. |
+| External Host | Natural-language questions answered from bounded relation queries, citing artifacts and distinguishing proposed/reviewed/unverified relations | Reuse Full MCP; return actual missing data without inventing relations. |
+| On-demand export | A local subset as Markdown or Mermaid; interactive local HTML only when a real research use case needs it | Optional read-only presentation work, not an App dependency or first-stage gate. |
+
+The first stage requires preserved query/traceability behavior and truthful sparse
+output, alongside the approved research write, restart and Host handoff. It does
+not require every project to produce semantic nodes, a complete literature graph,
+or a dedicated graph UI. The current REALM/RAG example's structural-only graph is
+a disclosed capability limit, not a reason to manufacture scholarly records.
+`PLT-322` retains useful source-bound semantics on a representative migrated
+project in M2; its already-accepted historical task and evidence keep their original
+scope, including visualization. This change does not reopen that task because the
+current small fixture is sparse. Graph v2 stays in M4. Retained Desktop support and its existing
+contracts remain intact. This decision refines roadmap ordering/presentation and
+does not rewrite accepted ADRs or historical acceptance evidence.
 
 All 46 accepted ledger records retain their original scope. `PLT-401`—`PLT-403`
 capacity/bounds are already accepted. The retained App stage proves offline
@@ -134,8 +163,8 @@ Qiongli 2 的目标产品定义是：
 
 - CLI、Plugin/Skills、Lite/Full MCP、Zotero 的关键用户旅程无需本产品 App；
 - CLI、MCP、Host handoff 与保留的 Desktop 在同一 revision 上表达相同语义；
-- Graph v1 在一个代表性 1.19 迁移项目上产生来源绑定的学术语义、可用查询和
-  可视化、确定性重建与真实空/稀疏状态；
+- Graph v1 在 M2 的代表性 1.19 迁移项目上产生来源绑定的学术语义、可用查询和
+  可追溯的文字结果、确定性重建与真实空/稀疏状态；局部可视化按需提供；
 - 安装、升级、迁移、修复、回滚和卸载不丢失用户项目或非托管状态；
 - macOS、Windows 和 Linux 的公开声明都绑定同一 exact source、包和收据；
 - 1.19 保持功能冻结，2.0 Stable 后按既有策略进入 90 天维护倒计时。
@@ -257,7 +286,7 @@ below describe historical capabilities rather than new CLI acceptance.
   the single-Host baseline and does not gate its first independent CLI release;
 - native CLI and Zotero Companion; retained App support stays in its own lane;
 - the accepted Graph v1 semantic projection plus one representative migrated-
-  project query and visualization journey;
+  project query and source-traceability journey in M2; visualization is optional;
 - the existing deterministic Evaluation Truth checks and risk-triggered security,
   schema, data-loss and authorization checks;
 - auditable export, migration, rollback and recovery for the replacement journey;
@@ -609,7 +638,7 @@ does not make a row ready.
 | Lite/Full MCP | 1.19 tool discovery and workflow execution | Native protocol suites exist; earlier authenticated Full route exposed a Lite-profile mismatch | Current supported Hosts discover and execute the declared Lite/Full tools without profile drift | `PLT-320` |
 | Zotero | 1.19 discovery/search/write journey | Exact historical automated vertical exists | Frozen candidate proves supported discovery, read and approved write without losing library ownership | `PLT-320` |
 | App | 1.19 CLI workflow remains the behavior oracle | App/API tests and historical package evidence exist; reported runtime flow remains unstable | App consumes the same native owners and completes setup, status, recovery and critical workflow without App-only logic | `PLT-321` |
-| Research Graph v1 | 1.19 project artifacts plus accepted portable graph contracts | Deterministic fixtures and focused Graph v1 continuity repair exist | One representative migrated project produces source-bound scholarly nodes/relations, useful query/visualization, deterministic rebuild and truthful empty/sparse diagnostics | `PLT-322` |
+| Research Graph v1 | 1.19 project artifacts plus accepted portable graph contracts | Deterministic fixtures and focused Graph v1 continuity repair exist | In M2, one representative migrated project produces source-bound scholarly nodes/relations, useful query and readable source traces, deterministic rebuild and truthful empty/sparse diagnostics; visualization is optional | `PLT-322` |
 
 Rows remain open until their named candidate evidence exists. Graph v2 and the
 Typed Research Kernel cannot be substituted for Graph v1 cutover evidence.
@@ -647,14 +676,19 @@ Recommended planning size: three independently reviewable business slices.
   source-bound scholarly semantics, useful query and visualization, deterministic
   rebuild, and truthful empty/sparse diagnostics.
 
+`PLT-322` above preserves its accepted historical scope. September 8's CLI-first
+presentation decision governs future qualification: source-traceable query results
+remain required, while new visualization is optional and separately qualified.
+
 ### Exit gate
 
 - every replacement-matrix row has current Slice evidence or an explicit blocker;
 - CLI, Plugin/Skills, MCP and Zotero succeed before App-only evidence is considered;
 - Graph v1 semantic acceptance proves source-bound scholarly nodes/relations and
   deterministic rebuild independently of presentation;
-- Graph v1 UI acceptance separately proves useful query, visualization and
-  truthful empty/sparse diagnostics on that same migrated project;
+- Graph v1 query acceptance proves useful, source-traceable results and truthful
+  empty/sparse diagnostics on that same migrated project; any offered visualization
+  is qualified separately and is not a CLI baseline or M2 exit prerequisite;
 - no open P0/P1 remains in the replacement flow;
 - Graph v2 expansion and the Typed Research Kernel remain separate M4 scope and
   cannot satisfy either Graph v1 gate.

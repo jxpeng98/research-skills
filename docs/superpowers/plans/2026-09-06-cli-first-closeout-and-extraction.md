@@ -1417,3 +1417,40 @@ index and frozen-source boundary checks passed; unchanged focused results were r
 Next: real process-kill recovery using these runnable packages, then remaining platform
 and live Host/named-candidate qualification. First-stage integration and program
 acceptance remain incomplete. No push or publication occurred.
+
+
+## CLI-403 thirty-third increment — real SIGKILL recovery and predecessor health
+
+Base: `3ed2e335`; branch: `codex/cli-native-sigkill-recovery`.
+The existing two-version runner now reuses its signed packages for separate normal and
+interrupted Homes. It starts public activation in a new test-owned process group,
+observes the installed CLI inode change with a Home marker and no durable outcome,
+and sends SIGKILL to that group (including its health child). It requires an actual
+signal exit, the new binary at interruption and unchanged prior accepted release.
+Already-reaped children are never signaled; missed windows fail rather than pass.
+Public recovery must restore the old binary/version/release and pass actual health/MCP.
+
+The first run completed rollback but exposed a real cross-version health bug:
+`verify_native_cli_health_plan` used the running process version when validating the
+restored predecessor's plan. The shared validator now accepts an explicit expected
+version for trusted candidate health; constructors and managed writes keep the current
+process version. Schema, digest, TTL, operation and approval checks remain intact.
+Nine managed-operation tests passed, including exact predecessor health, digest drift,
+wrong candidate/version and refusal to use the old plan for current-version writes.
+Six runner tests and final library/example Clippy passed.
+
+The complete real macOS runner passed after the fix. Evidence:
+`/Users/pengjiaxin/Work/qiongli-cli403-native-sigkill-20260907-r2/acceptance-evidence.json`;
+SHA-256 `63ae003977c4a5dc407841544117be244c9e8094ce73d64800a303e4ce796d73`.
+It includes the normal alpha.4 -> alpha.5 commit/replay and real SIGKILL rollback,
+restored binary/version, unchanged prior release, and restored health/MCP. The initial
+failed run is retained separately and is not counted as passed. The predecessor is a
+version-only build derived from a `git archive` of the base, with matching lockfile
+version changes; the successor includes this branch's health fix. Both use ephemeral
+test signing, the same content pack and a source label, not immutable released source.
+
+Whitespace, roadmap-index and frozen-source checks passed. No public wire schema,
+program acceptance, push or publication changed. This is one observed process-kill
+boundary; arbitrary interruption positions, power loss and partial-tree deletion are
+not qualified. Next: real Host baseline and remaining platform/named-candidate evidence,
+while preserving these explicit limits. First-stage integration remains incomplete.

@@ -361,7 +361,7 @@ fn run_native_activation_journey(
     if !cfg!(target_os = "macos") {
         return Err("candidate-activation-journey-target-unsupported");
     }
-    let home = create_child_directory(root, "activation-home")?;
+    let home = create_child_directory(root, "activation-probe-home")?;
     let built = build_product_manifest(
         build_root,
         authority_path,
@@ -430,18 +430,62 @@ fn run_native_activation_journey(
             &notes,
         )
         .map_err(|error| error.reason_code())?;
+    let mut success = run_native_activation_case(
+        root,
+        &previous_candidate,
+        successor,
+        candidate_path,
+        archive_path,
+        notes_path,
+        false,
+    )?;
+    success["interrupted_recovery"] = run_native_activation_case(
+        root,
+        &previous_candidate,
+        successor,
+        candidate_path,
+        archive_path,
+        notes_path,
+        true,
+    )?;
+    Ok(success)
+}
+
+fn run_native_activation_case(
+    root: &Path,
+    previous_candidate: &qiongli_platform::VerifiedNativeReleaseCandidate,
+    successor: &qiongli_platform::VerifiedNativeReleaseCandidate,
+    candidate_path: &Path,
+    archive_path: &Path,
+    notes_path: &Path,
+    interrupt: bool,
+) -> Result<Value, &'static str> {
+    let home = create_child_directory(
+        root,
+        if interrupt {
+            "activation-interrupted-home"
+        } else {
+            "activation-home"
+        },
+    )?;
+    let content =
+        qiongli::embedded_content().map_err(|_| "candidate-acceptance-embedded-content-invalid")?;
+    let artifact = &previous_candidate.candidate().artifact;
+    let version = artifact.version.as_str();
     let installed = qiongli_platform::apply_native_release_candidate_local(
         content.pack(),
-        &previous_candidate,
+        previous_candidate,
         &home,
         now_unix()?,
     )
     .map_err(|error| error.reason_code())?;
     let previous_id = &installed.payload.receipt.install_id;
-    let previous_binary = installed_candidate_binary(&home, &artifact)?;
+    let previous_binary = installed_candidate_binary(&home, artifact)?;
     run_managed_fixture_operation(&previous_binary, root, &home, "cli-install", None)?;
     let command = home.join(".local/bin/qiongli");
-    if run_product(&command, root, &home, ["--version"])?.stdout != version_output.stdout {
+    if run_product(&command, root, &home, ["--version"])?.stdout
+        != format!("qiongli {version}\n").as_bytes()
+    {
         return Err("candidate-predecessor-installed-version-invalid");
     }
     let previous_hash =
@@ -458,7 +502,12 @@ fn run_native_activation_journey(
         version: version.to_string(),
         channel: qiongli_config::UpdateReleaseChannel::Alpha,
         generation: 1,
-        archive_sha256: archive.archive_sha256().to_string(),
+        archive_sha256: previous_candidate
+            .candidate()
+            .signed_portable_release
+            .envelope
+            .archive_sha256
+            .clone(),
         resource_pack_sha256: content.pack().pack_sha256().to_string(),
     });
     store
@@ -511,20 +560,87 @@ fn run_native_activation_journey(
     let approval = prepared["approval_digest_sha256"]
         .as_str()
         .ok_or("candidate-activation-preparation-invalid")?;
-    let result = invoke(
-        "activate",
-        &[
-            "--transaction-id".into(),
-            transaction.into(),
-            "--expected-journal-digest".into(),
-            journal.into(),
-            "--expected-approval-digest".into(),
-            approval.into(),
-            "--approve-filesystem-write".into(),
-            "--approve-client-config-change".into(),
-            "--approve-host-trust".into(),
-        ],
-    )?;
+    let activation_args = [
+        "--transaction-id".into(),
+        transaction.into(),
+        "--expected-journal-digest".into(),
+        journal.into(),
+        "--expected-approval-digest".into(),
+        approval.into(),
+        "--approve-filesystem-write".into(),
+        "--approve-client-config-change".into(),
+        "--approve-host-trust".into(),
+    ];
+    if interrupt {
+        let mut args: Vec<OsString> = vec!["install".into(), "candidate".into(), "activate".into()];
+        args.extend(common);
+        args.extend_from_slice(&activation_args);
+        kill_native_activation_after_cli_switch(
+            &next_binary,
+            root,
+            &home,
+            &command,
+            &store,
+            transaction,
+            &args,
+        )?;
+        let pending = store.load().map_err(|error| error.reason_code())?;
+        if pending.state.last_accepted_generation != 1
+            || pending
+                .state
+                .active_transaction
+                .as_ref()
+                .is_none_or(|active| active.transaction_id != transaction)
+            || sha256_hex(
+                &fs::read(&command).map_err(|_| "candidate-interrupted-command-unavailable")?,
+            ) != successor
+                .candidate()
+                .signed_portable_release
+                .envelope
+                .binary_sha256
+        {
+            return Err("candidate-interrupted-state-invalid");
+        }
+        let recovered = parse_output_json(&run_product(
+            &next_binary,
+            root,
+            &home,
+            [
+                "install",
+                "candidate",
+                "activate-recover",
+                "--transaction-id",
+                transaction,
+                "--expected-journal-digest",
+                journal,
+                "--approve-filesystem-write",
+            ],
+        )?)?;
+        let restored = store.load().map_err(|error| error.reason_code())?;
+        if recovered["outcome"] != "rolled-back"
+            || restored.state.active_transaction.is_some()
+            || restored.state.last_accepted_generation != 1
+            || restored.state.last_known_good != pending.state.last_known_good
+            || sha256_hex(
+                &fs::read(&command).map_err(|_| "candidate-restored-command-unavailable")?,
+            ) != previous_hash
+            || run_product(&command, root, &home, ["--version"])?.stdout
+                != format!("qiongli {version}\n").as_bytes()
+            || home
+                .join(".qiongli/native/active-installation.json")
+                .exists()
+        {
+            return Err("candidate-interrupted-recovery-invalid");
+        }
+        qiongli::check_native_cli_health(&home, &home.join(".qiongli/config"), previous_candidate)?;
+        run_mcp(&command, root, &home)?;
+        return Ok(
+            json!({"status": "passed", "signal": "SIGKILL", "observed_boundary": "new-cli-inode-before-durable-outcome",
+            "outcome": "rolled-back", "prior_release_preserved": true, "old_binary_and_version_restored": true,
+            "restored_health_and_mcp": "passed", "process_scope": "test-owned-process-group"}),
+        );
+    }
+    let result = invoke("activate", &activation_args)?;
     if result["outcome"] != "committed"
         || result["transaction_id"] != transaction
         || result["journal_sha256"] != journal
@@ -586,6 +702,92 @@ fn run_native_activation_journey(
         "target": "codex", "public_activation": "committed", "installed_health_and_mcp": "passed", "recovery_replay": "unchanged",
         "predecessor_source": "caller-provided-manifest-built-with-ephemeral-authority", "publication_allowed": false}),
     )
+}
+
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+fn kill_native_activation_after_cli_switch(
+    binary: &Path,
+    root: &Path,
+    home: &Path,
+    installed: &Path,
+    store: &qiongli_config::UpdateStateStore,
+    transaction: &str,
+    args: &[OsString],
+) -> Result<(), &'static str> {
+    use std::os::unix::{
+        fs::MetadataExt,
+        process::{CommandExt, ExitStatusExt},
+    };
+    use std::time::{Duration, Instant};
+    let old_inode = fs::metadata(installed)
+        .map_err(|_| "candidate-interruption-source-unavailable")?
+        .ino();
+    let outcome = store
+        .staging_root()
+        .join(transaction)
+        .join("native-activation-outcome.json");
+    let marker = home.join(".qiongli/native/active-installation.json");
+    let mut command = product_command(binary, root, home);
+    command
+        .args(args)
+        .process_group(0)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    let mut child = command
+        .spawn()
+        .map_err(|_| "candidate-interruption-start-failed")?;
+    let group = rustix::process::Pid::from_raw(
+        i32::try_from(child.id()).map_err(|_| "candidate-interruption-pid-invalid")?,
+    )
+    .ok_or("candidate-interruption-pid-invalid")?;
+    let deadline = Instant::now() + Duration::from_secs(30);
+    let observed = loop {
+        match child.try_wait() {
+            // A reaped child no longer reserves its PID: never signal that group afterward.
+            Ok(Some(_)) => return Err("candidate-interruption-boundary-missed"),
+            Ok(None) => {}
+            Err(_) => break false,
+        }
+        if marker.is_file()
+            && !outcome.exists()
+            && fs::metadata(installed).is_ok_and(|metadata| metadata.ino() != old_inode)
+        {
+            break true;
+        }
+        if Instant::now() >= deadline {
+            break false;
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    };
+    // This group was created above solely for the fixture; includes its health child.
+    let killed = rustix::process::kill_process_group(group, rustix::process::Signal::KILL);
+    let status = child
+        .wait()
+        .map_err(|_| "candidate-interruption-wait-failed")?;
+    if !observed
+        || killed.is_err()
+        || status.signal() != Some(9)
+        || outcome.exists()
+        || !marker.is_file()
+    {
+        return Err("candidate-interruption-boundary-missed");
+    }
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn kill_native_activation_after_cli_switch(
+    _binary: &Path,
+    _root: &Path,
+    _home: &Path,
+    _installed: &Path,
+    _store: &qiongli_config::UpdateStateStore,
+    _transaction: &str,
+    _args: &[OsString],
+) -> Result<(), &'static str> {
+    Err("candidate-activation-journey-target-unsupported")
 }
 
 struct Arguments {

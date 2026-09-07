@@ -374,9 +374,13 @@ impl ManagedOperationPlanV1 {
     }
 
     fn validate(&self, now_unix: u64) -> Result<(), &'static str> {
+        self.validate_for_version(now_unix, env!("CARGO_PKG_VERSION"))
+    }
+
+    fn validate_for_version(&self, now_unix: u64, version: &str) -> Result<(), &'static str> {
         if self.document_kind != PLAN_DOCUMENT_KIND
             || self.schema_version != PLAN_SCHEMA_VERSION
-            || self.product_version != env!("CARGO_PKG_VERSION")
+            || self.product_version != version
             || !valid_sha256(&self.content_pack_sha256)
             || !valid_sha256(&self.content_root_sha256)
             || !valid_sha256(&self.semantic_digest_sha256)
@@ -415,7 +419,9 @@ pub(crate) fn verify_native_cli_health_plan(
 ) -> Result<(), &'static str> {
     let plan: ManagedOperationPlanV1 =
         serde_json::from_str(output).map_err(|_| "native-activation-health-plan-invalid")?;
-    plan.validate(now_unix()?)?;
+    // Health observes the verified candidate, which may be the restored predecessor.
+    // Managed writes still validate against this process's own version.
+    plan.validate_for_version(now_unix()?, version)?;
     if plan.product_version != version
         || plan.content_pack_sha256 != pack
         || !matches!(&plan.operation, ManagedOperationV1::CliInstall { control_sha256, .. }
@@ -2156,6 +2162,36 @@ mod tests {
         ] {
             assert!(super::verify_native_cli_health_plan(&output, v, p, c).is_err());
         }
+        plan.product_version = "2.0.0-alpha.4".to_string();
+        plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+        let previous = plan.to_canonical_json().unwrap();
+        assert!(
+            super::verify_native_cli_health_plan(
+                &previous,
+                &plan.product_version,
+                pack,
+                &candidate
+            )
+            .is_ok()
+        );
+        assert_eq!(
+            plan.validate(super::now_unix().unwrap()),
+            Err("managed-operation-plan-invalid")
+        );
+        assert!(
+            super::verify_native_cli_health_plan(&previous, version, pack, &candidate).is_err()
+        );
+        plan.plan_digest_sha256 = "0".repeat(64);
+        assert_eq!(
+            super::verify_native_cli_health_plan(
+                &plan.to_canonical_json().unwrap(),
+                &plan.product_version,
+                pack,
+                &candidate
+            ),
+            Err("managed-operation-plan-digest-invalid")
+        );
+        plan.product_version = version.to_string();
         plan.operation = super::ManagedOperationV1::CliRemove {
             control_sha256: candidate.clone(),
             native_plan_digest_sha256: "2".repeat(64),

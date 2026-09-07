@@ -352,6 +352,21 @@ build proves runtime switching only; it does not attest to historical published 
 production signing, resource-pack migration or live Host reload. Private keys are never
 persisted, and the receipt retains `publication_allowed=false`.
 
+Installed CLI health validates a plan against the explicitly verified candidate version,
+including a restored predecessor. The same plan validator still requires the running
+process version for every managed write. Schema, TTL, digest, operation and approval
+checks are unchanged; observing an older healthy CLI does not authorize an old write plan.
+
+The macOS two-version runner also exercises an independent interrupted Home. It creates
+a new process group for the public activation command, observes the installed CLI inode
+change while the Home marker exists and no durable outcome exists, then sends SIGKILL
+to that test-owned group. It requires an actual signal exit and verifies the new binary
+was present with the old accepted release still pending. Public recovery must restore
+the exact old binary/version/known-good identity, remove the Home marker and pass real
+installed health plus MCP. Already-reaped children are never signaled; a missed window
+fails the run. This is process interruption evidence, not arbitrary kill-point coverage,
+power-loss durability or deletion interrupted inside every application tree.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

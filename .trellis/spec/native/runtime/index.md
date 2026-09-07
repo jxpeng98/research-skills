@@ -23,6 +23,12 @@ embedded resources live under `packages/qiongli-native/`.
   presets, stable-v1 negotiation, event normalization, and fail-closed
   permission/cancellation behavior. It is not packaged provider support.
 
+Native reconciliation uses atomic no-replace renames on macOS and Linux for
+activation, compensation and rollback. A concurrently created target, including a
+symlink, must not be overwritten; losing source files remain intact. Unsupported
+kernel/filesystem operations fail closed. This does not enable the public Linux
+activation/recovery commands, which still require platform process inspection.
+
 Public writes use preview, digest-bound approval, revalidation, and fail-closed
 errors. `qiongli_project_capture_apply` is a real Full MCP project write and
 must never be described as read-only. ToolHost remains read-only in-process.

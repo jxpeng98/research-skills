@@ -2433,7 +2433,7 @@ fn read_private_file(path: &Path, maximum_size: u64) -> Result<Vec<u8>, &'static
     Ok(bytes)
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn rename_without_replacement(source: &Path, destination: &Path) -> Result<(), &'static str> {
     rustix::fs::renameat_with(
         rustix::fs::CWD,
@@ -2442,10 +2442,16 @@ fn rename_without_replacement(source: &Path, destination: &Path) -> Result<(), &
         destination,
         rustix::fs::RenameFlags::NOREPLACE,
     )
-    .map_err(|_| "native-update-reconciliation-activation-failed")
+    .map_err(|error| {
+        if cfg!(target_os = "linux") && error == rustix::io::Errno::EXIST {
+            "native-update-reconciliation-collision"
+        } else {
+            "native-update-reconciliation-activation-failed"
+        }
+    })
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn rename_without_replacement(source: &Path, destination: &Path) -> Result<(), &'static str> {
     ensure_absent(destination)?;
     fs::rename(source, destination).map_err(|_| "native-update-reconciliation-activation-failed")
@@ -2552,6 +2558,64 @@ fn sync_directory(path: &Path) -> Result<(), &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[test]
+    fn concurrent_renames_preserve_every_losing_source() {
+        use std::sync::Barrier;
+        let root =
+            std::env::temp_dir().join(format!("qiongli-atomic-rename-{}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        let destination = root.join("destination");
+        let sources: Vec<_> = (0_u8..8)
+            .map(|index| {
+                let path = root.join(format!("source-{index}"));
+                fs::write(&path, [index]).unwrap();
+                path
+            })
+            .collect();
+        let barrier = Barrier::new(sources.len());
+        let outcomes = std::thread::scope(|scope| {
+            let handles: Vec<_> = sources
+                .iter()
+                .map(|source| {
+                    let barrier = &barrier;
+                    let destination = &destination;
+                    scope.spawn(move || {
+                        barrier.wait();
+                        rename_without_replacement(source, destination)
+                    })
+                })
+                .collect();
+            handles
+                .into_iter()
+                .map(|handle| handle.join().unwrap())
+                .collect::<Vec<_>>()
+        });
+        assert_eq!(outcomes.iter().filter(|result| result.is_ok()).count(), 1);
+        let winner = outcomes.iter().position(Result::is_ok).unwrap();
+        assert_eq!(fs::read(&destination).unwrap(), [winner as u8]);
+        for (index, source) in sources.iter().enumerate() {
+            if index == winner {
+                assert!(!source.exists());
+            } else {
+                assert_eq!(fs::read(source).unwrap(), [index as u8]);
+            }
+        }
+        let link = root.join("destination-link");
+        std::os::unix::fs::symlink(&destination, &link).unwrap();
+        let loser = &sources[(winner + 1) % sources.len()];
+        assert!(rename_without_replacement(loser, &link).is_err());
+        assert!(
+            fs::symlink_metadata(&link)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert!(loser.is_file());
+        assert_eq!(fs::read(&destination).unwrap(), [winner as u8]);
+        fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn rejects_legacy_content_identity() {

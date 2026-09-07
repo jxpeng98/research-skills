@@ -1802,3 +1802,35 @@ This is container evidence, not a clean VM or physical Linux machine. Windows,
 real research/human approval and first-stage acceptance remain open. The earlier
 pending human preview was not applied. Whitespace, generated-index and frozen-source
 checks passed; no existing VM or user installation was modified or published.
+
+
+## CLI-403 Linux reconciliation atomic no-replace prerequisite
+
+Base: `e6a37d41`; branch: `codex/linux-atomic-update-rename`.
+Tracing activation, failed-activation compensation and rollback found that Linux
+used `ensure_absent` followed by `fs::rename`, allowing a target created between
+those operations to be overwritten. Linux now reuses the existing rustix
+`renameat_with(NOREPLACE)` owner already used on macOS. Linux EEXIST preserves the
+existing collision reason; other failures remain activation failures. Unsupported
+kernel/filesystem operations fail closed rather than falling back to overwrite.
+macOS behavior and other platform branches are unchanged.
+
+A shared native test races eight source files into one destination and requires
+exactly one winner, intact bytes for every loser, and refusal to overwrite a
+symlink destination. It passed on macOS. All four Linux `update_reconcile::tests`
+passed in the Rust 1.97 ARM64 container, including CLI-pair activation/recovery,
+incomplete journals and non-product canary preservation (3.21 s after build).
+macOS library Clippy passed with the existing Rust 1.98 lint exception.
+
+The first Linux test container failed during tmpfs mount preparation with ENOSPC.
+Read-only checks showed 17 GiB available in the Podman VM and ample host space;
+no unrelated image, VM or data was removed. Replacing that mount with a dedicated
+repository target directory allowed the tests to run successfully. Only the test
+container was disposable; existing containers and suspended VMs were untouched.
+
+Runtime contract, whitespace, generated-index and frozen-source checks passed.
+This fixes a lower-level data-loss race, not Linux process inspection or permission
+to enable public activation/recovery. Those commands remain macOS-only. The earlier
+candidate receipts predate this product change and retain that scope; no new
+package/Host acceptance is implied. Human approval and first-stage completion
+remain open, with the pending Inbox preview still unapplied.

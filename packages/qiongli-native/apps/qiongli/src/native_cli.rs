@@ -1,6 +1,6 @@
 use std::fs;
 use std::io::Read as _;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use qiongli_content::EmbeddedContent;
@@ -106,9 +106,7 @@ pub(crate) fn execute(
             )
             .map_err(|error| error.reason_code())?;
             let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
-                environment
-                    .platform_home()
-                    .ok_or("native-candidate-home-unavailable")?,
+                &managed_payload_home(&options.managed_root, environment)?,
                 crate::command::config_root(environment).map_err(|error| error.reason_code())?,
             )?;
             let executor = ManagedNativePayloadExecutor::new(prepared.managed_root);
@@ -154,9 +152,7 @@ pub(crate) fn execute(
             let managed_root = approve_managed_root(&allowed_root(), &options.managed_root)
                 .map_err(|error| error.reason_code())?;
             let _write_guard = crate::update_reconcile::acquire_managed_write_guard(
-                environment
-                    .platform_home()
-                    .ok_or("native-candidate-home-unavailable")?,
+                &managed_payload_home(&options.managed_root, environment)?,
                 crate::command::config_root(environment).map_err(|error| error.reason_code())?,
             )?;
             let commit = ManagedNativePayloadExecutor::new(managed_root)
@@ -173,6 +169,25 @@ pub(crate) fn execute(
             }))
         }
     }
+}
+
+// Resolve the actual fixed candidate root before choosing its installation lock.
+// General engineering roots keep the invoking Home's coordination scope.
+fn managed_payload_home(
+    managed_root: &Path,
+    environment: &crate::command::CommandEnvironment,
+) -> Result<PathBuf, &'static str> {
+    let canonical =
+        fs::canonicalize(managed_root).map_err(|_| "native-managed-root-unavailable")?;
+    if let Some(home) = canonical.ancestors().nth(3)
+        && home.join(".qiongli/native/payloads") == canonical
+    {
+        return Ok(home.to_path_buf());
+    }
+    environment
+        .platform_home()
+        .map(Path::to_path_buf)
+        .ok_or("native-candidate-home-unavailable")
 }
 
 struct PreparedInstall {
@@ -550,137 +565,149 @@ mod tests {
     #[test]
     fn authority_backed_cli_previews_applies_verifies_and_removes() {
         let content = crate::embedded_content().expect("embedded content must verify");
-        let fixture = Fixture::new(&content);
-        let environment = crate::command::CommandEnvironment::with_paths(
-            None::<std::ffi::OsString>,
-            Some(fixture.root.clone()),
-            None,
-        );
-        let execute =
-            |command, authority, content| super::execute(command, authority, content, &environment);
+        for use_other_home in [false, true] {
+            let mut fixture = Fixture::new(&content);
+            let invoking_home = if use_other_home {
+                qiongli_platform::prepare_native_candidate_managed_root(&fixture.root).unwrap();
+                fixture.managed_root = fixture.root.join(".qiongli/native/payloads");
+                let other = fixture.root.join("other-home");
+                create_private_directory(&other);
+                other
+            } else {
+                fixture.root.clone()
+            };
+            let environment = crate::command::CommandEnvironment::with_paths(
+                None::<std::ffi::OsString>,
+                Some(invoking_home),
+                None,
+            );
+            let execute = |command, authority, content| {
+                super::execute(command, authority, content, &environment)
+            };
 
-        let preview = execute(
-            NativeCliCommand::Preview(fixture.release_options()),
-            Some(&fixture.authority),
-            &content,
-        )
-        .expect("native CLI preview must succeed");
-        let preview_rendered = serde_json::to_string(&preview).unwrap();
-        let NativeCliOutput::Preview(preview) = preview else {
-            panic!("native CLI preview returned the wrong output");
-        };
-        assert_eq!(preview.mutation, "none");
-        assert_eq!(preview.target.family, LocalTargetFamily::CodexLocal);
-        assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
-
-        assert_eq!(
-            execute(
-                NativeCliCommand::Apply {
-                    options: fixture.release_options(),
-                    expected_plan_digest: "0".repeat(64),
-                },
+            let preview = execute(
+                NativeCliCommand::Preview(fixture.release_options()),
                 Some(&fixture.authority),
                 &content,
             )
-            .unwrap_err(),
-            "native-install-plan-digest-mismatch"
-        );
-        assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
-
-        let apply_command = NativeCliCommand::Apply {
-            options: fixture.release_options(),
-            expected_plan_digest: preview.plan_digest_sha256.clone(),
-        };
-        #[cfg(unix)]
-        {
-            let held =
-                crate::update_reconcile::acquire_native_home_write_lock(&fixture.root).unwrap();
-            assert_eq!(
-                execute(apply_command.clone(), Some(&fixture.authority), &content).unwrap_err(),
-                "native-update-replacement-active"
-            );
+            .expect("native CLI preview must succeed");
+            let preview_rendered = serde_json::to_string(&preview).unwrap();
+            let NativeCliOutput::Preview(preview) = preview else {
+                panic!("native CLI preview returned the wrong output");
+            };
+            assert_eq!(preview.mutation, "none");
+            assert_eq!(preview.target.family, LocalTargetFamily::CodexLocal);
             assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
-            drop(held);
-        }
-        let applied = execute(apply_command.clone(), Some(&fixture.authority), &content)
-            .expect("native CLI apply must succeed");
-        let applied_rendered = serde_json::to_string(&applied).unwrap();
-        let NativeCliOutput::Apply(applied) = applied else {
-            panic!("native CLI apply returned the wrong output");
-        };
-        assert_eq!(applied.disposition, "applied");
-        assert_eq!(applied.install_id, preview.install_id);
-        assert!(fixture.managed_root.join(&fixture.artifact_id).is_dir());
 
-        let replay = execute(apply_command, Some(&fixture.authority), &content)
-            .expect("native CLI apply replay must succeed");
-        let NativeCliOutput::Apply(replay) = replay else {
-            panic!("native CLI replay returned the wrong output");
-        };
-        assert_eq!(replay.disposition, "already-applied");
-
-        let receipt_options = fixture.receipt_options(&preview.install_id);
-        let verified = execute(
-            NativeCliCommand::Verify(receipt_options.clone()),
-            None,
-            &content,
-        )
-        .expect("receipt-backed native CLI verify must succeed without authority");
-        let verified_rendered = serde_json::to_string(&verified).unwrap();
-        let NativeCliOutput::Verify(verified) = verified else {
-            panic!("native CLI verify returned the wrong output");
-        };
-        assert_eq!(verified.state, "healthy");
-        assert_eq!(verified.install_id, preview.install_id);
-
-        #[cfg(unix)]
-        {
-            let marker = fixture
-                .root
-                .join(".qiongli/native/active-installation.json");
-            fs::write(&marker, b"pending-recovery").unwrap();
             assert_eq!(
                 execute(
-                    NativeCliCommand::Remove(receipt_options.clone()),
-                    None,
-                    &content
+                    NativeCliCommand::Apply {
+                        options: fixture.release_options(),
+                        expected_plan_digest: "0".repeat(64),
+                    },
+                    Some(&fixture.authority),
+                    &content,
                 )
                 .unwrap_err(),
-                "native-activation-recovery-required"
+                "native-install-plan-digest-mismatch"
             );
+            assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
+
+            let apply_command = NativeCliCommand::Apply {
+                options: fixture.release_options(),
+                expected_plan_digest: preview.plan_digest_sha256.clone(),
+            };
+            #[cfg(unix)]
+            {
+                let held =
+                    crate::update_reconcile::acquire_native_home_write_lock(&fixture.root).unwrap();
+                assert_eq!(
+                    execute(apply_command.clone(), Some(&fixture.authority), &content).unwrap_err(),
+                    "native-update-replacement-active"
+                );
+                assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
+                drop(held);
+            }
+            let applied = execute(apply_command.clone(), Some(&fixture.authority), &content)
+                .expect("native CLI apply must succeed");
+            let applied_rendered = serde_json::to_string(&applied).unwrap();
+            let NativeCliOutput::Apply(applied) = applied else {
+                panic!("native CLI apply returned the wrong output");
+            };
+            assert_eq!(applied.disposition, "applied");
+            assert_eq!(applied.install_id, preview.install_id);
             assert!(fixture.managed_root.join(&fixture.artifact_id).is_dir());
-            fs::remove_file(marker).unwrap();
-        }
-        let removed = execute(
-            NativeCliCommand::Remove(receipt_options.clone()),
-            None,
-            &content,
-        )
-        .expect("receipt-backed native CLI remove must succeed without authority");
-        let removed_rendered = serde_json::to_string(&removed).unwrap();
-        let NativeCliOutput::Remove(removed) = removed else {
-            panic!("native CLI remove returned the wrong output");
-        };
-        assert_eq!(removed.disposition, "removed");
-        assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
 
-        let removed_replay = execute(NativeCliCommand::Remove(receipt_options), None, &content)
-            .expect("native CLI remove replay must succeed");
-        let NativeCliOutput::Remove(removed_replay) = removed_replay else {
-            panic!("native CLI remove replay returned the wrong output");
-        };
-        assert_eq!(removed_replay.disposition, "already-removed");
+            let replay = execute(apply_command, Some(&fixture.authority), &content)
+                .expect("native CLI apply replay must succeed");
+            let NativeCliOutput::Apply(replay) = replay else {
+                panic!("native CLI replay returned the wrong output");
+            };
+            assert_eq!(replay.disposition, "already-applied");
 
-        for output in [
-            preview_rendered,
-            applied_rendered,
-            verified_rendered,
-            removed_rendered,
-        ] {
-            assert!(!output.contains(fixture.release_path.to_string_lossy().as_ref()));
-            assert!(!output.contains(fixture.archive_path.to_string_lossy().as_ref()));
-            assert!(!output.contains(fixture.managed_root.to_string_lossy().as_ref()));
-            assert!(!output.contains("private-path-canary"));
+            let receipt_options = fixture.receipt_options(&preview.install_id);
+            let verified = execute(
+                NativeCliCommand::Verify(receipt_options.clone()),
+                None,
+                &content,
+            )
+            .expect("receipt-backed native CLI verify must succeed without authority");
+            let verified_rendered = serde_json::to_string(&verified).unwrap();
+            let NativeCliOutput::Verify(verified) = verified else {
+                panic!("native CLI verify returned the wrong output");
+            };
+            assert_eq!(verified.state, "healthy");
+            assert_eq!(verified.install_id, preview.install_id);
+
+            #[cfg(unix)]
+            {
+                let marker = fixture
+                    .root
+                    .join(".qiongli/native/active-installation.json");
+                fs::write(&marker, b"pending-recovery").unwrap();
+                assert_eq!(
+                    execute(
+                        NativeCliCommand::Remove(receipt_options.clone()),
+                        None,
+                        &content
+                    )
+                    .unwrap_err(),
+                    "native-activation-recovery-required"
+                );
+                assert!(fixture.managed_root.join(&fixture.artifact_id).is_dir());
+                fs::remove_file(marker).unwrap();
+            }
+            let removed = execute(
+                NativeCliCommand::Remove(receipt_options.clone()),
+                None,
+                &content,
+            )
+            .expect("receipt-backed native CLI remove must succeed without authority");
+            let removed_rendered = serde_json::to_string(&removed).unwrap();
+            let NativeCliOutput::Remove(removed) = removed else {
+                panic!("native CLI remove returned the wrong output");
+            };
+            assert_eq!(removed.disposition, "removed");
+            assert!(!fixture.managed_root.join(&fixture.artifact_id).exists());
+
+            let removed_replay = execute(NativeCliCommand::Remove(receipt_options), None, &content)
+                .expect("native CLI remove replay must succeed");
+            let NativeCliOutput::Remove(removed_replay) = removed_replay else {
+                panic!("native CLI remove replay returned the wrong output");
+            };
+            assert_eq!(removed_replay.disposition, "already-removed");
+
+            for output in [
+                preview_rendered,
+                applied_rendered,
+                verified_rendered,
+                removed_rendered,
+            ] {
+                assert!(!output.contains(fixture.release_path.to_string_lossy().as_ref()));
+                assert!(!output.contains(fixture.archive_path.to_string_lossy().as_ref()));
+                assert!(!output.contains(fixture.managed_root.to_string_lossy().as_ref()));
+                assert!(!output.contains("private-path-canary"));
+            }
         }
     }
 

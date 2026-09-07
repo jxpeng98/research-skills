@@ -193,8 +193,8 @@ stage/apply/remove, and Desktop confirmed Skills, workflow-variant, CLI and pack
 Host mutations. It rejects active update state and any Home activation marker, then
 rechecks state under the config lock. Read-only plans remain available for installed
 CLI health. Non-Unix managed writes retain their existing behavior. This is partial
-entry-point coverage: older Desktop replacement and update-state dispatchers still
-need a final inventory/guard pass before
+entry-point coverage: update-state dispatchers still need a final inventory/guard
+pass before
 public native activation is enabled. This lock coordinates participating processes;
 it is not an operating-system access boundary against unrelated writers.
 
@@ -204,8 +204,17 @@ authority, plan digest and approval before acquiring it. Legacy migration apply,
 continue (including cleanup/finalize), and recover use the same guard in their shared
 CLI/Desktop owner. Apply acquires it after product/approval validation and before
 provider or Host writes; recovery loads its receipt before acquiring it and never
-bypasses pending native activation. Arbitrary engineering managed roots are still
-coordinated by the invoking Home, not by every possible root alias.
+bypasses pending native activation. Engineering roots resolving to `HOME/.qiongli/native/payloads` use that actual Home
+for coordination, even when the invoking Home differs; other engineering roots
+retain the invoking Home scope. Existing managed-root approval rejects unsafe links.
+
+The old macOS replacement executor takes the same Home-then-config locks after
+parent exit, refusing a native activation marker before switching files. Handoff
+failure restoration also takes both locks before altering state. Health retains its
+existing independent completion path. This is cooperative process exclusion, not a
+durable global marker for an interrupted legacy Desktop replacement; that remaining
+legacy recovery interaction and update-state writers must be resolved before public
+native activation is enabled.
 
 ## Quality Check
 

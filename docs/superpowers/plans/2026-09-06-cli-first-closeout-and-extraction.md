@@ -1040,3 +1040,34 @@ engineering arbitrary-root alias boundary (its current guard follows the invokin
 Home). Keep public activation unexposed until this inventory and the remaining fresh
 candidate/approval/process validation are complete. First-stage integration and real
 Host/named package qualification remain incomplete; nothing was pushed or published.
+
+
+## CLI-403 twenty-first increment — actual payload Home and Desktop exclusion
+
+Base: `a205417d`; branch: `codex/cli-payload-home-guard`.
+Engineering apply/remove resolves its already-approved managed directory and selects
+the actual Home when it is the fixed native candidate payload root. Changing the
+invoking Home can no longer bypass that target's installation lock or pending native
+activation marker. General engineering roots retain their existing invoking-Home
+scope. The authority-backed lifecycle test runs both ordinary engineering and
+other-Home fixed-payload cases, retaining contention/preservation negatives and
+successful apply/replay/verify/remove/replay.
+
+The retained macOS replacement executor now takes Home then config locks after
+parent exit and rejects native activation markers before changing state or files.
+Handoff-failure restoration also takes both locks; it cannot race a native activation
+by resetting update state outside the guard. Existing health completion remains
+available while the executor holds its locks. The new refusal test checks unchanged
+update state, retained staged application and absent backup when another writer or
+native recovery blocks replacement.
+
+Checks on macOS: both native lifecycle variants passed; all 11 replacement-owner
+tests passed, including health failure and interruption/known-good behavior. Library
+Clippy, the 11 replacement tests, whitespace, roadmap-index and frozen-source
+boundary checks passed after the final handoff-error guard addition. These are owner-level fixtures, not a real parent/helper process or
+SIGKILL qualification. No release authority, public schema or ledger acceptance changed.
+
+Next: guard update-state dispatch and resolve the cross-config interaction with an
+interrupted legacy Desktop replacement (which still lacks a durable global marker).
+Then connect public activation/recovery with fresh candidate/approval/process checks.
+The first-stage objective remains open; no push or publication occurred.

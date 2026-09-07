@@ -336,7 +336,6 @@ fn run_macos_helper(transaction_id: &str) -> Result<(), &'static str> {
         return Err("native-update-reconciliation-invalid");
     }
     validate_running_helper(&journal)?;
-    let _lock = acquire_replacement_lock(&store)?;
     let handoff = (|| {
         let transaction_root = journal
             .staged_application
@@ -348,22 +347,33 @@ fn run_macos_helper(transaction_id: &str) -> Result<(), &'static str> {
         validate_replacement_filesystem(transaction_root, &journal.destination_application)?;
         Ok(())
     })();
+    let home = env::var_os("HOME")
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
+        .ok_or("native-update-home-unavailable")?;
     if let Err(error) = handoff {
+        let _home_lock = crate::update_reconcile::acquire_native_home_write_lock(&home)?;
+        crate::update_reconcile::refuse_native_home_activation(&home)?;
+        let _lock = acquire_replacement_lock(&store)?;
         restore_pre_activation_state(&store, &journal);
         return Err(error);
     }
-    continue_replacement_after_handoff(&store, &journal, &reconciliation, || {
+    continue_replacement_after_handoff(&home, &store, &journal, &reconciliation, || {
         run_health_process(&journal)
     })
 }
 
 #[cfg(target_os = "macos")]
 fn continue_replacement_after_handoff(
+    home: &Path,
     store: &UpdateStateStore,
     journal: &ReplacementJournalV1,
     reconciliation: &crate::update_reconcile::ReconciliationJournalV1,
     run_health: impl FnOnce() -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
+    let _home_lock = crate::update_reconcile::acquire_native_home_write_lock(home)?;
+    crate::update_reconcile::refuse_native_home_activation(home)?;
+    let _lock = acquire_replacement_lock(store)?;
     if let Err(error) = transition_phase(
         store,
         &journal.transaction_id,
@@ -1404,6 +1414,7 @@ mod tests {
             let fixture = replacement_fixture(&format!("pre-health-{checkpoint:?}"), false);
             let result = with_replacement_interruption(checkpoint, || {
                 continue_replacement_after_handoff(
+                    &fixture.root,
                     &fixture.store,
                     &fixture.journal,
                     &fixture.reconciliation,
@@ -1419,6 +1430,43 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     #[test]
+    fn desktop_replacement_refuses_native_activation_without_changing_state() {
+        let fixture = replacement_fixture("native-activation-exclusion", false);
+        let before = fixture.store.load().unwrap();
+        let held = crate::update_reconcile::acquire_native_home_write_lock(&fixture.root).unwrap();
+        assert_eq!(
+            continue_replacement_after_handoff(
+                &fixture.root,
+                &fixture.store,
+                &fixture.journal,
+                &fixture.reconciliation,
+                || panic!("health must not run")
+            ),
+            Err("native-update-replacement-active")
+        );
+        drop(held);
+        let marker = fixture
+            .root
+            .join(".qiongli/native/active-installation.json");
+        fs::write(&marker, b"pending-native-activation").unwrap();
+        assert_eq!(
+            continue_replacement_after_handoff(
+                &fixture.root,
+                &fixture.store,
+                &fixture.journal,
+                &fixture.reconciliation,
+                || panic!("health must not run")
+            ),
+            Err("native-activation-recovery-required")
+        );
+        assert_eq!(fixture.store.load().unwrap(), before);
+        assert!(fixture.journal.staged_application.exists());
+        assert!(!fixture.journal.backup_application.exists());
+        fs::remove_dir_all(&fixture.root).unwrap();
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
     fn rel_913_health_window_interruptions_roll_back_without_advancing_last_known_good() {
         for checkpoint in [
             ReplacementCheckpoint::BeforeHealthWindow,
@@ -1428,6 +1476,7 @@ mod tests {
             let fixture = replacement_fixture(&format!("health-window-{checkpoint:?}"), false);
             let result = with_replacement_interruption(checkpoint, || {
                 continue_replacement_after_handoff(
+                    &fixture.root,
                     &fixture.store,
                     &fixture.journal,
                     &fixture.reconciliation,
@@ -1455,6 +1504,7 @@ mod tests {
         let result =
             with_replacement_interruption(ReplacementCheckpoint::AfterHealthCommit, || {
                 continue_replacement_after_handoff(
+                    &fixture.root,
                     &fixture.store,
                     &fixture.journal,
                     &fixture.reconciliation,

@@ -51,6 +51,11 @@ pub(crate) struct CandidateReceiptOptions {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum CandidateCliCommand {
+    StagePreview(CandidateReleaseOptions),
+    Stage {
+        options: CandidateReleaseOptions,
+        expected_approval_digest: String,
+    },
     Preview(CandidateReleaseOptions),
     Apply {
         options: CandidateReleaseOptions,
@@ -63,6 +68,7 @@ pub(crate) enum CandidateCliCommand {
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub(crate) enum CandidateCliOutput {
+    Stage(CandidateStageOutput),
     Preview(CandidatePreviewOutput),
     Apply(CandidateApplyOutput),
     Verify(CandidateVerifyOutput),
@@ -77,6 +83,53 @@ pub(crate) fn execute(
     content: &EmbeddedContent,
 ) -> Result<CandidateCliOutput, &'static str> {
     match command {
+        CandidateCliCommand::StagePreview(options) => {
+            let prepared = prepare_candidate(
+                &options,
+                require_authority(authority)?,
+                require_source_commit(expected_source_commit)?,
+                content,
+                now_unix()?,
+            )?;
+            Ok(CandidateCliOutput::Stage(stage_output(
+                &prepared,
+                StageCommand::Preview,
+                StageState::Ready,
+            )))
+        }
+        CandidateCliCommand::Stage {
+            options,
+            expected_approval_digest,
+        } => {
+            let now = now_unix()?;
+            let prepared = prepare_candidate(
+                &options,
+                require_authority(authority)?,
+                require_source_commit(expected_source_commit)?,
+                content,
+                now,
+            )?;
+            if stage_approval_digest(&prepared.approval_digest_sha256) != expected_approval_digest {
+                return Err("native-candidate-stage-approval-digest-mismatch");
+            }
+            let commit = qiongli_platform::stage_native_release_candidate_local(
+                content.pack(),
+                &prepared.verified,
+                home.ok_or("native-candidate-home-unavailable")?,
+                now,
+            )
+            .map_err(|error| error.reason_code())?;
+            let state = if commit.disposition == InstallDisposition::Applied {
+                StageState::Staged
+            } else {
+                StageState::AlreadyStaged
+            };
+            Ok(CandidateCliOutput::Stage(stage_output(
+                &prepared,
+                StageCommand::Stage,
+                state,
+            )))
+        }
         CandidateCliCommand::Preview(options) => {
             let prepared = prepare_candidate(
                 &options,
@@ -136,6 +189,96 @@ pub(crate) fn execute(
             Ok(CandidateCliOutput::Remove(remove_output(commit)))
         }
     }
+}
+
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CandidateStageOutput {
+    #[schemars(range(min = 1, max = 1))]
+    schema_version: u32,
+    command: StageCommand,
+    state: StageState,
+    #[schemars(regex(pattern = "^(codex|claude-code)$"))]
+    target: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    candidate_digest_sha256: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    approval_digest_sha256: String,
+    #[schemars(regex(pattern = "^native-payload-[0-9a-f]{64}$"))]
+    install_id: String,
+    approvals_required: [StageApproval; 1],
+}
+
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+enum StageCommand {
+    #[serde(rename = "install-candidate-stage-preview")]
+    Preview,
+    #[serde(rename = "install-candidate-stage")]
+    Stage,
+}
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "kebab-case")]
+enum StageState {
+    Ready,
+    Staged,
+    AlreadyStaged,
+}
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "kebab-case")]
+enum StageApproval {
+    FilesystemWrite,
+}
+
+fn stage_approval_digest(install_digest: &str) -> String {
+    let mut hash = Sha256::new();
+    hash.update(b"QIONGLI-CANDIDATE-STAGE-V1\0");
+    hash.update(install_digest.as_bytes());
+    encode_hex(&hash.finalize())
+}
+
+fn stage_output(
+    prepared: &PreparedCandidate,
+    command: StageCommand,
+    state: StageState,
+) -> CandidateStageOutput {
+    CandidateStageOutput {
+        schema_version: 1,
+        command,
+        state,
+        target: match prepared.verified.target() {
+            ClientActivationTarget::Codex => "codex",
+            ClientActivationTarget::ClaudeCode => "claude-code",
+        }
+        .to_string(),
+        candidate_digest_sha256: prepared.verified.signed_payload_sha256().to_string(),
+        approval_digest_sha256: stage_approval_digest(&prepared.approval_digest_sha256),
+        install_id: native_payload_install_id(prepared.verified.portable_release().archive()),
+        approvals_required: [StageApproval::FilesystemWrite],
+    }
+}
+
+pub fn candidate_stage_contract_json() -> Result<String, serde_json::Error> {
+    let schema = schemars::generate::SchemaSettings::draft2020_12()
+        .into_generator()
+        .into_root_schema_for::<CandidateStageOutput>();
+    let fixtures = [
+        (StageCommand::Preview, StageState::Ready),
+        (StageCommand::Stage, StageState::Staged),
+        (StageCommand::Stage, StageState::AlreadyStaged),
+    ]
+    .into_iter()
+    .map(|(command, state)| CandidateStageOutput {
+        schema_version: 1,
+        command,
+        state,
+        target: "codex".to_string(),
+        candidate_digest_sha256: "1".repeat(64),
+        approval_digest_sha256: stage_approval_digest(&"2".repeat(64)),
+        install_id: format!("native-payload-{}", "3".repeat(64)),
+        approvals_required: [StageApproval::FilesystemWrite],
+    })
+    .collect::<Vec<_>>();
+    serde_json::to_string_pretty(&serde_json::json!({"schema": schema, "fixtures": fixtures}))
 }
 
 pub(crate) struct PreparedCandidate {
@@ -578,6 +721,32 @@ mod tests {
     use super::*;
 
     #[test]
+    fn candidate_stage_contract_matches_generated_schema_and_fixtures() {
+        let generated: serde_json::Value =
+            serde_json::from_str(&candidate_stage_contract_json().unwrap()).unwrap();
+        let schema: serde_json::Value =
+            serde_json::from_str(include_str!("../schemas/candidate-stage-v1.schema.json"))
+                .unwrap();
+        assert_eq!(generated["schema"], schema);
+        for (index, fixture) in [
+            include_str!("../tests/fixtures/candidate-stage-v1.ready.json"),
+            include_str!("../tests/fixtures/candidate-stage-v1.staged.json"),
+            include_str!("../tests/fixtures/candidate-stage-v1.already-staged.json"),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let value: serde_json::Value = serde_json::from_str(fixture).unwrap();
+            assert_eq!(generated["fixtures"][index], value);
+            let decoded: CandidateStageOutput = serde_json::from_value(value.clone()).unwrap();
+            assert_eq!(serde_json::to_value(decoded).unwrap(), value);
+            let mut unknown = value;
+            unknown["unexpected"] = true.into();
+            assert!(serde_json::from_value::<CandidateStageOutput>(unknown).is_err());
+        }
+    }
+
+    #[test]
     fn approval_digest_is_deterministic_lower_hex_and_target_bound() {
         let candidate = "a".repeat(64);
         let codex = candidate_approval_digest(&candidate, ClientActivationTarget::Codex);
@@ -593,5 +762,17 @@ mod tests {
             candidate_approval_digest(&candidate, ClientActivationTarget::Codex)
         );
         assert_ne!(codex, claude);
+        assert_ne!(stage_approval_digest(&codex), codex);
+        assert_ne!(
+            stage_approval_digest(&codex),
+            stage_approval_digest(&claude)
+        );
+        assert_ne!(
+            stage_approval_digest(&codex),
+            stage_approval_digest(&candidate_approval_digest(
+                &"b".repeat(64),
+                ClientActivationTarget::Codex
+            ))
+        );
     }
 }

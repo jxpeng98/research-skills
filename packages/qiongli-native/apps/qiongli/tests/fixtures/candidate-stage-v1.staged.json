@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "command": "install-candidate-stage",
+  "state": "staged",
+  "target": "codex",
+  "candidate_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "approval_digest_sha256": "db0b76fb71907fd7c8a959254b0133b7f3930d017cb45b5c89ad9911911d1ab7",
+  "install_id": "native-payload-3333333333333333333333333333333333333333333333333333333333333333",
+  "approvals_required": [
+    "filesystem-write"
+  ]
+}

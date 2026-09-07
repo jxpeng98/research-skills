@@ -744,6 +744,29 @@ Claude Code source path. It then applies and immediately verifies payload,
 source, and registration receipts as one closed identity chain. A fresh later
 failure compensates only fresh earlier steps in reverse order.
 
+For release engineering, payload-only staging uses the same verified candidate
+and fixed payload owner without changing Host sources, registration or the
+installed command:
+
+```text
+qiongli install candidate stage-preview <same file and target options>
+qiongli install candidate stage <same file and target options> \
+  --expected-approval-digest <stage-preview-sha256> \
+  --approve-filesystem-write
+```
+
+Stage requires exactly filesystem-write approval; Host approval flags are rejected.
+Its digest binds the candidate and target under a separate staging domain, so
+neither a full-install digest nor a stage digest authorizes the other operation.
+Execution re-verifies the candidate before writing. Replay reports `already-staged`.
+Stage JSON version 1 is generated from the Rust type in `candidate_cli.rs`; the
+schema is `apps/qiongli/schemas/candidate-stage-v1.schema.json` and its three
+Rust-produced fixtures are under `apps/qiongli/tests/fixtures/candidate-stage-v1.*`.
+Regenerate with the `candidate_stage_contract` Cargo example, which emits a
+`schema` object and a `fixtures` array. Existing command JSON remains unchanged.
+Staging still requires the running build's exact source, version and content;
+it does not activate a different version or provide an end-user updater.
+
 Verify and remove require no candidate, authority, source-commit input, or
 unexpired release. They reopen only the fixed current-user paths and require
 the payload, PluginBundle, and registration receipts to agree on target,

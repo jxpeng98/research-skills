@@ -52,7 +52,7 @@ const UPDATE_USAGE: &str = "Qiongli native update\n\nUsage:\n  qiongli update st
 
 const MCP_USAGE: &str = "Qiongli native MCP\n\nUsage:\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli mcp --help\n\nFull profile adds redacted Research Library, capture, academic graph, and local checkpoint controls. The connected host owns model execution and returns revision-bound candidates through the host handoff contract.\n";
 
-const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
+const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
 
 const MIGRATION_USAGE: &str = "Qiongli 1.x replacement migration\n\nUsage:\n  qiongli migrate-1x inspect\n  qiongli migrate-1x preview [--provider-resolution <provider>=<keep-v2|use-legacy|merge-compatible>]...\n  qiongli migrate-1x apply --migration-id <id> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change] [--approve-secret-store-write]\n  qiongli migrate-1x continue --migration-id <id> --confirm-host-activation\n  qiongli migrate-1x continue --migration-id <id> --approve-cleanup\n  qiongli migrate-1x continue --migration-id <id> --finalize\n  qiongli migrate-1x status --migration-id <id>\n  qiongli migrate-1x recover --migration-id <id>\n  qiongli migrate-1x --help\n";
 
@@ -1185,6 +1185,18 @@ fn parse_candidate_install_args(args: &[OsString]) -> Result<CandidateCliCommand
         ));
     };
     match subcommand {
+        "stage-preview" => parse_candidate_release_options_inner(&args[1..], false, true)
+            .map(|parsed| CandidateCliCommand::StagePreview(parsed.options)),
+        "stage" => {
+            parse_candidate_release_options_inner(&args[1..], true, true).and_then(|parsed| {
+                Ok(CandidateCliCommand::Stage {
+                    options: parsed.options,
+                    expected_approval_digest: parsed.expected_approval_digest.ok_or_else(|| {
+                        install_usage_error("expected candidate staging digest is required")
+                    })?,
+                })
+            })
+        }
         "preview" => parse_candidate_release_options(&args[1..], false)
             .map(|parsed| CandidateCliCommand::Preview(parsed.options)),
         "apply" => parse_candidate_release_options(&args[1..], true).and_then(|parsed| {
@@ -1217,6 +1229,14 @@ struct ParsedCandidateReleaseOptions {
 fn parse_candidate_release_options(
     args: &[OsString],
     apply: bool,
+) -> Result<ParsedCandidateReleaseOptions, UsageError> {
+    parse_candidate_release_options_inner(args, apply, false)
+}
+
+fn parse_candidate_release_options_inner(
+    args: &[OsString],
+    apply: bool,
+    stage: bool,
 ) -> Result<ParsedCandidateReleaseOptions, UsageError> {
     let mut candidate = None;
     let mut archive = None;
@@ -1282,7 +1302,12 @@ fn parse_candidate_release_options(
         }
         index += 2;
     }
-    if apply && !(filesystem_approved && config_approved && host_trust_approved) {
+    if stage && (config_approved || host_trust_approved) {
+        return Err(install_usage_error(
+            "candidate staging only accepts filesystem-write approval",
+        ));
+    }
+    if apply && !(filesystem_approved && (stage || (config_approved && host_trust_approved))) {
         return Err(install_usage_error(
             "all candidate install approvals are required",
         ));
@@ -2791,6 +2816,59 @@ fn windows_drive_home() -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn candidate_stage_requires_exact_filesystem_approval() {
+        use std::ffi::OsString;
+        let common: Vec<OsString> = [
+            "stage-preview",
+            "--candidate",
+            "candidate.json",
+            "--archive",
+            "archive",
+            "--release-notes",
+            "notes.md",
+            "--target",
+            "codex",
+        ]
+        .into_iter()
+        .map(OsString::from)
+        .collect();
+        assert!(matches!(
+            super::parse_candidate_install_args(&common),
+            Ok(super::CandidateCliCommand::StagePreview(_))
+        ));
+        let mut stage = common.clone();
+        stage[0] = "stage".into();
+        stage.extend([
+            OsString::from("--expected-approval-digest"),
+            "a".repeat(64).into(),
+        ]);
+        assert!(super::parse_candidate_install_args(&stage).is_err());
+        stage.push("--approve-filesystem-write".into());
+        assert!(matches!(
+            super::parse_candidate_install_args(&stage),
+            Ok(super::CandidateCliCommand::Stage { .. })
+        ));
+        for flag in [
+            "--approve-filesystem-write",
+            "--approve-client-config-change",
+            "--approve-host-trust",
+        ] {
+            let mut invalid = stage.clone();
+            invalid.push(flag.into());
+            assert!(super::parse_candidate_install_args(&invalid).is_err());
+            let mut preview = common.clone();
+            preview.push(flag.into());
+            assert!(super::parse_candidate_install_args(&preview).is_err());
+        }
+        let mut missing_digest = common;
+        missing_digest[0] = "stage".into();
+        missing_digest.push("--approve-filesystem-write".into());
+        assert!(super::parse_candidate_install_args(&missing_digest).is_err());
+        stage[0] = "apply".into();
+        assert!(super::parse_candidate_install_args(&stage).is_err());
+    }
 
     fn args(values: &[&str]) -> Vec<OsString> {
         values.iter().map(OsString::from).collect()

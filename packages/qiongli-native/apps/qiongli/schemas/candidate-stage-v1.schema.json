@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateStageOutput",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "command": {
+      "$ref": "#/$defs/StageCommand"
+    },
+    "state": {
+      "$ref": "#/$defs/StageState"
+    },
+    "target": {
+      "type": "string",
+      "pattern": "^(codex|claude-code)$"
+    },
+    "candidate_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "approval_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "install_id": {
+      "type": "string",
+      "pattern": "^native-payload-[0-9a-f]{64}$"
+    },
+    "approvals_required": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/StageApproval"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "state",
+    "target",
+    "candidate_digest_sha256",
+    "approval_digest_sha256",
+    "install_id",
+    "approvals_required"
+  ],
+  "$defs": {
+    "StageCommand": {
+      "type": "string",
+      "enum": [
+        "install-candidate-stage-preview",
+        "install-candidate-stage"
+      ]
+    },
+    "StageState": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "staged",
+        "already-staged"
+      ]
+    },
+    "StageApproval": {
+      "type": "string",
+      "enum": [
+        "filesystem-write"
+      ]
+    }
+  }
+}

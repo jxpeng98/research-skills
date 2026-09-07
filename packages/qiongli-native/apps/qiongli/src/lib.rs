@@ -141,3 +141,5 @@ pub const fn embedded_macos_team_id() -> Option<&'static str> {
         Some(EMBEDDED_MACOS_TEAM_ID)
     }
 }
+
+pub use candidate_cli::candidate_stage_contract_json;

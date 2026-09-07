@@ -4074,6 +4074,15 @@ fn source_build_has_no_release_authority_and_cannot_preview_native_install() {
             OsString::from("candidate"),
             OsString::from("preview"),
         ],
+        vec!["install".into(), "candidate".into(), "stage-preview".into()],
+        vec![
+            "install".into(),
+            "candidate".into(),
+            "stage".into(),
+            "--expected-approval-digest".into(),
+            "a".repeat(64).into(),
+            "--approve-filesystem-write".into(),
+        ],
         vec![OsString::from("ui")],
     ] {
         let mut args = prefix;

@@ -274,7 +274,30 @@
         "semantic_meaning": "Each documented CLI JSON result keeps its command-scoped fields, errors, and redaction meanings under schema version 1.",
         "support_window": "qiongli-2.x"
       },
-      "changes": []
+      "changes": [
+        {
+          "change_id": "public-cli-json/candidate-stage-v1",
+          "contract_id": "public-cli-json/candidate-stage",
+          "from_version": "absent",
+          "to_version": "1",
+          "classification": "additive",
+          "rust_sources": [
+            "packages/qiongli-native/apps/qiongli/src/candidate_cli.rs"
+          ],
+          "generated_schema": "packages/qiongli-native/apps/qiongli/schemas/candidate-stage-v1.schema.json",
+          "golden_fixtures": [
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/candidate-stage-v1.ready.json",
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/candidate-stage-v1.staged.json",
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/candidate-stage-v1.already-staged.json"
+          ],
+          "consumer_checks": [
+            "packages/qiongli-native/apps/qiongli/src/candidate_cli.rs",
+            "packages/qiongli-native/apps/qiongli/examples/native_candidate_acceptance.rs"
+          ],
+          "migration_path": null,
+          "removal_gate": null
+        }
+      ]
     }
   ]
 }

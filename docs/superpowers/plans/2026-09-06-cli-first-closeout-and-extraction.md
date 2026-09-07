@@ -561,3 +561,40 @@ verification expects the running build's source/version/content; support for new
 downloaded content must be explicit rather than bypassing that check. Active-version
 rollback, cross-platform runtime and CLI-404/405 acceptance remain open. Local
 integration does not complete the first-stage objective or change accepted rows.
+
+## CLI-403 seventh increment — digest-bound CLI staging
+
+Base: `9bc93bca`; branch: `codex/cli-candidate-stage-command`.
+`install candidate stage-preview` and `stage` now expose the existing payload-only
+stage owner. Stage re-verifies the signed candidate and requires its own
+candidate/target-bound digest plus exactly filesystem-write approval. Full-install
+and stage digests are mutually unusable; Host approval flags are rejected. Source
+builds retain authority refusal. No Host source, registration or installed command
+is changed. The existing candidate commands keep their JSON contracts.
+
+The new stage JSON v1 has a Rust-generated Draft 2020-12 schema and three
+Rust-produced golden fixtures, with an additive public-schema policy record.
+The native README documents commands, generation and the current-build limitation.
+
+Validation on macOS:
+- Three focused Rust tests passed for approval parsing, digest separation and
+  generated schema/fixture consistency; the expanded source-build CLI refusal
+  test passed. Affected-target Clippy passed with the existing local Rust 1.98
+  `chunks_exact_to_as_chunks` exception.
+- Public-schema validation and its 12 tests passed; generated roadmap index and
+  whitespace checks passed. Final diff review found no actionable findings.
+- The actual `native_candidate_acceptance` runner passed with 26 evidence fields,
+  including stage preview, missing-approval refusal, both directions of digest
+  misuse, successful stage and replay for both target configuration fixtures.
+  It checked absence of Host/command writes and retained the prior lifecycle checks.
+  Evidence: `/Users/pengjiaxin/Work/qiongli-cli403-stage-command-20260907/acceptance-evidence.json`;
+  SHA-256 `fe8fcf577e2bd3379c181fb174e42df602a6f847db81ce86505ad2a8a20642b9`.
+  Build source label is `9bc93bca77b81bb0bc3406cf00b209b5354e8e07` plus this working
+  implementation, not an immutable release candidate. Signing keys were ephemeral,
+  PATH was empty and homes were isolated; no real Host ran or publication occurred.
+
+Next: activate/reconcile a staged version through existing owners, with recovery,
+current-process/version checks and rollback. Stage still verifies the running
+build's source/version/content; newer downloaded content needs explicit trusted
+verification. Windows/Linux runtime, CLI-404/405 and first-stage acceptance remain
+open. The ledger's accepted rows are unchanged.

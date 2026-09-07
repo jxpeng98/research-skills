@@ -868,6 +868,8 @@ fn run_acceptance(
     }
     run_mcp(binary, root, &product_home)?;
 
+    check_candidate_staging(binary, root, candidate, archive, notes)?;
+
     let mut codex_client_evidence = json!({
         "status": "not-run",
         "reason": "external-client-not-provided"
@@ -1158,6 +1160,7 @@ fn run_acceptance(
             "codex_local_lifecycle": "passed",
             "claude_code_local_lifecycle": "passed",
             "digest_and_partial_approval_rejection": "passed",
+            "candidate_stage_preview_approval_replay_and_host_isolation": "passed",
             "fresh_failure_compensation": "passed",
             "clean_install": "passed",
             "uninstall": "passed",
@@ -1176,6 +1179,101 @@ fn run_acceptance(
             "claude_code": claude_client_evidence
         }),
     })
+}
+
+fn check_candidate_staging(
+    binary: &Path,
+    root: &Path,
+    candidate: &Path,
+    archive: &Path,
+    notes: &Path,
+) -> Result<(), &'static str> {
+    for target in ["codex", "claude"] {
+        let home = create_child_directory(root, &format!("stage-{target}-home"))?;
+        let mut args = vec![
+            OsString::from("install"),
+            "candidate".into(),
+            "stage-preview".into(),
+            "--candidate".into(),
+            candidate.into(),
+            "--archive".into(),
+            archive.into(),
+            "--release-notes".into(),
+            notes.into(),
+            "--target".into(),
+            target.into(),
+        ];
+        let preview = parse_output_json(&run_product(binary, root, &home, &args)?)?;
+        let digest = preview["approval_digest_sha256"]
+            .as_str()
+            .filter(|value| valid_sha256(value))
+            .ok_or("candidate-stage-preview-invalid")?;
+        if preview["command"] != "install-candidate-stage-preview"
+            || preview["state"] != "ready"
+            || preview["approvals_required"] != json!(["filesystem-write"])
+            || candidate_owned_state_present(&home, target)
+        {
+            return Err("candidate-stage-preview-invalid");
+        }
+        args[2] = "preview".into();
+        let install = parse_output_json(&run_product(binary, root, &home, &args)?)?;
+        let install_digest = install["approval_digest_sha256"]
+            .as_str()
+            .ok_or("candidate-stage-install-digest-invalid")?;
+        args[2] = "stage".into();
+        args.extend([OsString::from("--expected-approval-digest"), digest.into()]);
+        run_product_failure(binary, root, &home, &args, 2)?;
+        args.push("--approve-filesystem-write".into());
+        let mut wrong = args.clone();
+        let digest_index = wrong.len() - 2;
+        wrong[digest_index] = install_digest.into();
+        run_product_expected_failure(
+            binary,
+            root,
+            &home,
+            &wrong,
+            "native-candidate-stage-approval-digest-mismatch",
+        )?;
+        let mut reverse = args.clone();
+        reverse[2] = "apply".into();
+        reverse.extend([
+            OsString::from("--approve-client-config-change"),
+            "--approve-host-trust".into(),
+        ]);
+        run_product_expected_failure(
+            binary,
+            root,
+            &home,
+            &reverse,
+            "native-candidate-approval-digest-mismatch",
+        )?;
+        if candidate_owned_state_present(&home, target) {
+            return Err("candidate-stage-rejection-mutated-state");
+        }
+        for state in ["staged", "already-staged"] {
+            let actual = parse_output_json(&run_product(binary, root, &home, &args)?)?;
+            let mut expected = preview.clone();
+            expected["command"] = "install-candidate-stage".into();
+            expected["state"] = state.into();
+            if actual != expected || !home.join(".qiongli/native/payloads").is_dir() {
+                return Err("candidate-stage-output-invalid");
+            }
+            for path in [
+                ".agents",
+                ".codex",
+                ".claude",
+                ".qiongli/plugins",
+                ".local",
+                "AppData",
+                ".qiongli/v2/cli",
+            ] {
+                if home.join(path).exists() {
+                    return Err("candidate-stage-mutated-host-or-command");
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 fn run_real_codex_client(

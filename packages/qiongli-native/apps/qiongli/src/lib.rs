@@ -147,3 +147,5 @@ pub use candidate_cli::candidate_stage_contract_json;
 pub use update_reconcile::{
     NativeActivationOutcome, activate_native_reconciliation, recover_native_reconciliation,
 };
+
+pub use candidate_cli::check_native_cli_health;

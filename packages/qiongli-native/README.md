@@ -1160,8 +1160,19 @@ the journal digest and retain the committed or rolled-back outcome. Recovery rol
 back an undecided activation; a committed outcome only resumes cleanup. Completed
 recovery does not advance the state revision again. The journal/outcome remain for
 replay. This owner leaves release generation and last-known-good package metadata
-unchanged; signed-candidate validation, approval, process pinning and the real
-health check belong to the command integration still to be completed.
+unchanged; signed-candidate validation, approval, process pinning and wiring the
+native health check remain command-level integration work.
+
+`check_native_cli_health` validates the managed executable's hash against a verified
+candidate, starts that executable with an empty PATH and explicit home/config root,
+and reads its existing `app plan cli-install` output. The existing managed-plan
+type checks the document/digest/time contract; health additionally requires the
+candidate's version, resource pack and product-control identity. The executable
+hash is checked again after the child exits. The shared process runner retains its
+30-second child timeout and 512 KiB output limits. Errors remain static reason codes;
+child output is not returned as diagnostic text. This proves native product startup
+and identity; real Host activation and research writes have separate evidence.
+
 
 
 R3O Batch 5 exposes that same updater through the Overview Update card. The

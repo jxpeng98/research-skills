@@ -10867,8 +10867,6 @@ fn bounded_host_os_command_with_timeout(
     arguments: &[OsString],
     timeout: Duration,
 ) -> Result<String, HostCommandFailure> {
-    const MAX_HOST_PROBE_OUTPUT_BYTES: usize = 512 * 1024;
-
     let mut command = Command::new(executable);
     command
         .env_clear()
@@ -10890,6 +10888,44 @@ fn bounded_host_os_command_with_timeout(
     if let Some(root) = environment.claude_config_root() {
         command.env("CLAUDE_CONFIG_DIR", root);
     }
+    run_bounded_command(command, timeout)
+}
+
+#[allow(
+    clippy::disallowed_methods,
+    reason = "Launch only the digest-verified managed CLI for a bounded read-only health check"
+)]
+pub(crate) fn native_cli_health_output(
+    home: &Path,
+    config_root: &Path,
+    executable: &Path,
+) -> Result<String, &'static str> {
+    let mut command = Command::new(executable);
+    command
+        .env_clear()
+        .current_dir(home)
+        .args(["app", "plan", "cli-install"])
+        .env("PATH", "")
+        .env("HOME", home)
+        .env("USERPROFILE", home)
+        .env("QIONGLI_CONFIG_HOME", config_root)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    for name in ["SYSTEMROOT", "WINDIR", "TEMP", "TMP", "TMPDIR"] {
+        if let Some(value) = std::env::var_os(name) {
+            command.env(name, value);
+        }
+    }
+    run_bounded_command(command, Duration::from_secs(30))
+        .map_err(|_| "native-activation-health-process-failed")
+}
+
+fn run_bounded_command(
+    mut command: Command,
+    timeout: Duration,
+) -> Result<String, HostCommandFailure> {
+    const MAX_HOST_PROBE_OUTPUT_BYTES: usize = 512 * 1024;
     let mut child = command.spawn().map_err(|_| HostCommandFailure::Spawn)?;
     let stdout = child.stdout.take().ok_or(HostCommandFailure::OutputRead)?;
     let stderr = child.stderr.take().ok_or(HostCommandFailure::OutputRead)?;

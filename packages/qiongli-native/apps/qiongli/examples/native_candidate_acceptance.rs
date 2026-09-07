@@ -67,7 +67,7 @@ fn run() -> Result<(), &'static str> {
     let authority_path = authority_root.join("qiongli-native-release-authority.json");
     fs::write(&authority_path, &authority_bytes)
         .map_err(|_| "candidate-acceptance-authority-write-failed")?;
-    NativeReleaseAuthority::from_json(&authority_bytes)
+    let authority = NativeReleaseAuthority::from_json(&authority_bytes)
         .map_err(|_| "candidate-acceptance-authority-invalid")?;
 
     let built_product = build_product(&build_root, &authority_path, &arguments.source_commit)?;
@@ -219,6 +219,21 @@ fn run() -> Result<(), &'static str> {
             .map_err(|_| "candidate-acceptance-runtime-binary-invalid")?,
     );
 
+    let verified_candidate = signed_candidate
+        .verify(
+            &authority,
+            &qiongli_platform::NativeReleaseCandidateVerificationContext {
+                now_unix: crate::now_unix()?,
+                expected_source_commit: &arguments.source_commit,
+                expected_artifact: &artifact,
+                requested_target: ClientActivationTarget::Codex,
+            },
+            content.pack(),
+            &archive_target,
+            &notes,
+        )
+        .map_err(|error| error.reason_code())?;
+
     let acceptance = run_acceptance(
         &arguments.output,
         &runtime_binary,
@@ -226,7 +241,7 @@ fn run() -> Result<(), &'static str> {
         &archive_path,
         &notes_path,
         &arguments.external_clients,
-        &artifact,
+        &verified_candidate,
     )?;
     let evidence = json!({
         "schema_version": 1,
@@ -745,8 +760,9 @@ fn run_acceptance(
     archive: &Path,
     notes: &Path,
     external_clients: &ExternalClients,
-    artifact: &ArtifactIdentityV1,
+    verified_candidate: &qiongli_platform::VerifiedNativeReleaseCandidate,
 ) -> Result<AcceptanceOutcome, &'static str> {
+    let artifact = &verified_candidate.candidate().artifact;
     let product_home = create_child_directory(root, "product-home")?;
     check_cli_entry(binary, root, &product_home)?;
     let version = run_product(binary, root, &product_home, [OsStr::new("--version")])?;
@@ -1058,6 +1074,23 @@ fn run_acceptance(
         };
         check_cli_entry(&command_binary, root, &home)?;
         run_mcp(&command_binary, root, &home)?;
+        qiongli::check_native_cli_health(&home, &home.join(".qiongli/config"), verified_candidate)?;
+        fs::write(&command_binary, b"untrusted-command-canary")
+            .map_err(|_| "candidate-acceptance-health-canary-write-failed")?;
+        if qiongli::check_native_cli_health(
+            &home,
+            &home.join(".qiongli/config"),
+            verified_candidate,
+        ) != Err("native-activation-health-binary-mismatch")
+            || fs::read(&command_binary)
+                .map_err(|_| "candidate-acceptance-health-canary-read-failed")?
+                != b"untrusted-command-canary"
+        {
+            return Err("candidate-acceptance-health-canary-invalid");
+        }
+        fs::copy(&installed_binary, &command_binary)
+            .map_err(|_| "candidate-acceptance-health-command-restore-failed")?;
+
         #[cfg(unix)]
         {
             const PROFILE_CANARY: &[u8] = b"# candidate shell profile canary\n";
@@ -1161,6 +1194,7 @@ fn run_acceptance(
             "claude_code_local_lifecycle": "passed",
             "digest_and_partial_approval_rejection": "passed",
             "candidate_stage_preview_approval_replay_and_host_isolation": "passed",
+            "installed_cli_child_health_and_tamper_refusal": "passed",
             "fresh_failure_compensation": "passed",
             "clean_install": "passed",
             "uninstall": "passed",

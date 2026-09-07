@@ -407,6 +407,25 @@ impl ManagedOperationPlanV1 {
     }
 }
 
+pub(crate) fn verify_native_cli_health_plan(
+    output: &str,
+    version: &str,
+    pack: &str,
+    candidate_digest: &str,
+) -> Result<(), &'static str> {
+    let plan: ManagedOperationPlanV1 =
+        serde_json::from_str(output).map_err(|_| "native-activation-health-plan-invalid")?;
+    plan.validate(now_unix()?)?;
+    if plan.product_version != version
+        || plan.content_pack_sha256 != pack
+        || !matches!(&plan.operation, ManagedOperationV1::CliInstall { control_sha256, .. }
+            if control_sha256 == candidate_digest)
+    {
+        return Err("native-activation-health-identity-mismatch");
+    }
+    Ok(())
+}
+
 fn prepare_skills_reconcile_plan(
     environment: &CommandEnvironment,
     content: &EmbeddedContent,
@@ -2104,6 +2123,51 @@ fn encode_lower_hex(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn native_cli_health_requires_the_exact_candidate_plan() {
+        let content = crate::embedded_content().unwrap();
+        let candidate = "1".repeat(64);
+        let mut plan = super::ManagedOperationPlanV1::new(
+            &content,
+            super::now_unix().unwrap(),
+            super::ManagedOperationV1::CliInstall {
+                control_sha256: candidate.clone(),
+                native_plan_digest_sha256: "2".repeat(64),
+            },
+            vec![super::ManagedOperationApprovalV1::FilesystemWrite],
+            "3".repeat(64),
+        )
+        .unwrap();
+        let output = plan.to_canonical_json().unwrap();
+        let version = env!("CARGO_PKG_VERSION");
+        let pack = content.pack().pack_sha256();
+        assert!(super::verify_native_cli_health_plan(&output, version, pack, &candidate).is_ok());
+        for (v, p, c) in [
+            ("2.0.0-alpha.0", pack, candidate.as_str()),
+            (version, "wrong-pack", candidate.as_str()),
+            (version, pack, "wrong-candidate"),
+        ] {
+            assert!(super::verify_native_cli_health_plan(&output, v, p, c).is_err());
+        }
+        plan.operation = super::ManagedOperationV1::CliRemove {
+            control_sha256: candidate.clone(),
+            native_plan_digest_sha256: "2".repeat(64),
+        };
+        plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+        assert!(
+            super::verify_native_cli_health_plan(
+                &plan.to_canonical_json().unwrap(),
+                version,
+                pack,
+                &candidate
+            )
+            .is_err()
+        );
+        assert!(
+            super::verify_native_cli_health_plan("not-json", version, pack, &candidate).is_err()
+        );
+    }
+
     use super::*;
 
     #[cfg(unix)]

@@ -1114,7 +1114,7 @@ fn unavailable_inspection_with_target(
     }
 }
 
-fn cli_target(home: &Path) -> PathBuf {
+pub(crate) fn cli_target(home: &Path) -> PathBuf {
     if cfg!(windows) {
         home.join("AppData/Local/Qiongli/bin/qiongli.exe")
     } else {

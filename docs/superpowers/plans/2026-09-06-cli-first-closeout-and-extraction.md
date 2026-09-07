@@ -756,3 +756,39 @@ and last-known-good package fields; committing those requires the signed release
 identity in the next command-level integration. Native Windows update-state support,
 real Host approval/research recovery, named candidate qualification and first-stage
 acceptance remain open. No accepted ledger row or publication state changed.
+
+## CLI-403 thirteenth increment — real installed-process health
+
+Base: `75235fa0`; branch: `codex/cli-native-process-health`.
+`check_native_cli_health` checks the installed command hash against an already
+verified candidate, starts that exact managed command with empty PATH and explicit
+home/config roots, and validates its existing CLI-install plan through the managed
+plan type. Version, resource pack and candidate control digest must match; the
+command hash is checked again afterward. Process timeout/output bounds reuse the
+existing Host-command executor. Existing Host environment construction is unchanged;
+child failures expose static reason codes. Public CLI JSON remains unchanged.
+
+Checks on macOS: the new identity-plan test and existing bounded-command failure
+test passed; library and candidate-example Clippy passed with the existing local
+Rust 1.98 exception. Extraction initially left the output limit constant in its old
+scope, and the example initially shadowed its clock function; both compilation
+issues were fixed before validation. Formatting, whitespace and generated roadmap
+index checks passed. Final review found no actionable issue in this scope.
+
+The actual `native_candidate_acceptance` runner passed with 27 evidence fields.
+Both isolated target fixtures executed healthy installed CLI children; tampering
+the command caused refusal before execution and preserved the tampered canary.
+Restoring exact bytes allowed the remaining lifecycle checks to complete. Evidence:
+`/Users/pengjiaxin/Work/qiongli-cli403-process-health-20260907/acceptance-evidence.json`;
+SHA-256 `b4ef9acf3c0b2d90befbd5553208bfc2a04be0f52b64c16509960113506b6b2d`.
+The build source label is `75235fa006cb641e52e225577fb610e207487a79` plus this working
+implementation, using ephemeral signing keys. It is not an immutable release
+candidate. Real Host checks were not run; `publication_allowed=false`.
+
+Next: connect candidate/predecessor preview and explicit approvals to the persistent
+activation coordinator with this health callback; bind the signed release outcome
+and last-known-good metadata, add process/version and competing-write guards, and
+expose recovery. This health function validates the current candidate build and
+native startup; it does not establish cross-version update selection, real Host
+activation, research writes or cross-platform qualification. First-stage acceptance
+and ledger acceptance remain open and unchanged.

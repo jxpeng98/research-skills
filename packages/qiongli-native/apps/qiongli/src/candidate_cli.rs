@@ -75,6 +75,35 @@ pub(crate) enum CandidateCliOutput {
     Remove(CandidateRemoveOutput),
 }
 
+/// Runs the installed command with an empty PATH and checks its verified native
+/// product plan against the already verified candidate. This does not approve writes.
+pub fn check_native_cli_health(
+    home: &Path,
+    config_root: &Path,
+    candidate: &VerifiedNativeReleaseCandidate,
+) -> Result<(), &'static str> {
+    if !home.is_absolute() || !config_root.is_absolute() {
+        return Err("native-activation-health-root-invalid");
+    }
+    let executable = crate::cli_install::cli_target(home);
+    let release = &candidate.candidate().signed_portable_release.envelope;
+    let verify_binary = || {
+        if crate::cli_install::regular_file_sha256(&executable)? != release.binary_sha256 {
+            return Err("native-activation-health-binary-mismatch");
+        }
+        Ok(())
+    };
+    verify_binary()?;
+    let output = crate::desktop::native_cli_health_output(home, config_root, &executable)?;
+    crate::managed_operation::verify_native_cli_health_plan(
+        &output,
+        &candidate.candidate().artifact.version,
+        &release.resource_pack_sha256,
+        candidate.signed_payload_sha256(),
+    )?;
+    verify_binary()
+}
+
 pub(crate) fn execute(
     command: CandidateCliCommand,
     authority: Option<&NativeReleaseAuthority>,

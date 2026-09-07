@@ -1164,3 +1164,33 @@ not a supported automatic/public legacy recovery command or SIGKILL qualificatio
 Next: connect recovery to the retained legacy journal/marker and then enable native
 activation/recovery with fresh candidate/approval/process validation and installed CLI
 health. The full first-stage objective remains open; no acceptance or publication.
+
+
+## CLI-403 twenty-fifth increment — callable legacy health recovery owner
+
+Base: `bb81d38b`; branch: `codex/cli-legacy-recovery-owner`.
+Added `recover_legacy_health_interruption`, a library recovery owner requiring the
+exact Home marker digest. Under Home/config locks it validates the replacement
+journal against the configured store, active transaction identity/phase/generation,
+canonical Host reconciliation journal and digest, backup ownership, application
+layout and installed new canonical binary hash. It reserves RecoveryRequired through
+CAS before rollback, preventing late HealthWindow completion from committing during
+recovery, then reuses the existing rollback/cleanup/marker owners. No health rerun or
+new product adoption occurs. Other platforms refuse.
+
+The interrupted-health test now calls this owner instead of manually composing its
+steps. Wrong marker digest and binary drift refuse before rollback, preserving backup
+and active state; restoring the exact binary permits rollback, journal retention,
+marker clearing and another config root's writes. The test fixture now persists the
+canonical reconciliation bytes; the initial plain JSON serialization correctly failed
+the existing canonical-input check and was fixed without weakening the loader.
+
+Checks: the replacement suite's other 11 tests passed; the affected recovery case
+passed after correcting fixture serialization. Final library Clippy, whitespace,
+roadmap-index and frozen-source boundary checks passed. This is a library entry point and synthetic filesystem test,
+not a public recovery CLI or real process-kill qualification. The full recovery goal
+still includes committed cleanup, a second interruption during rollback, and public
+approval/process validation. First-stage integration and acceptance remain incomplete.
+
+Next: complete those recovery states, expose the reviewed recovery contract, and then
+connect native activation with fresh candidate/approval and installed CLI health.

@@ -251,6 +251,17 @@ layout, absent backup and successful state CAS before releasing protection. Reco
 through the existing lower-level owners is tested; automated/public legacy recovery
 and real process-kill qualification remain pending.
 
+`recover_legacy_health_interruption` is a callable library owner for an interrupted
+legacy HealthWindow (or its RecoveryRequired reservation). It requires the exact
+Home marker digest, validates the marker's replacement journal against the configured
+store, checks the canonical reconciliation journal/digest, backup ownership and the
+installed new canonical binary hash. It reserves RecoveryRequired through state CAS
+before rollback so late legacy health cannot commit, then reuses Host/application
+rollback, cleanup and exact marker clearing. It does not rerun health. Caller-owned
+filesystem approval/process checks and a public CLI entry point remain pending, as
+do committed cleanup and retry after a second interruption during rollback. Unsupported
+layouts/states refuse rather than guessing a completed recovery.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

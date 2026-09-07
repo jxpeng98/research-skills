@@ -504,6 +504,12 @@ fn clear_home_activation(
     clear_installation_marker(&home, &start)
 }
 
+/// Read the bounded private marker without accepting an arbitrary source path.
+pub(crate) fn read_installation_marker(home: &Path) -> Result<Vec<u8>, &'static str> {
+    let marker = native_home_state_root(home)?.join(HOME_ACTIVATION_MARKER);
+    read_private_file(&marker, MAX_STATE_BYTES)
+}
+
 /// Remove only the exact marker whose operation completed under the Home lock.
 pub(crate) fn clear_installation_marker(home: &Path, expected: &[u8]) -> Result<(), &'static str> {
     let marker = native_home_state_root(home)?.join(HOME_ACTIVATION_MARKER);

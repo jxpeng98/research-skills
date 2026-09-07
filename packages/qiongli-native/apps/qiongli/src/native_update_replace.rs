@@ -363,6 +363,85 @@ fn run_macos_helper(transaction_id: &str) -> Result<(), &'static str> {
     })
 }
 
+/// Roll back an interrupted legacy health window using the exact approved Home marker.
+/// The caller owns filesystem-write approval and must not be the running replacement.
+pub fn recover_legacy_health_interruption(
+    home: &Path,
+    store: &UpdateStateStore,
+    expected_marker_sha256: &str,
+) -> Result<(), &'static str> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (home, store, expected_marker_sha256);
+        Err("native-update-target-unsupported")
+    }
+    #[cfg(target_os = "macos")]
+    {
+        if !valid_sha256(expected_marker_sha256) {
+            return Err("native-update-journal-invalid");
+        }
+        let _home_lock = crate::update_reconcile::acquire_native_home_write_lock(home)?;
+        let _lock = acquire_replacement_lock(store)?;
+        let marker = crate::update_reconcile::read_installation_marker(home)?;
+        if sha256_hex(&marker) != expected_marker_sha256 {
+            return Err("native-activation-journal-mismatch");
+        }
+        let journal: ReplacementJournalV1 =
+            serde_json::from_slice(&marker).map_err(|_| "native-update-journal-invalid")?;
+        validate_journal(&journal, store, &journal.transaction_id)?;
+        let loaded = store.load().map_err(|error| error.reason_code())?;
+        let transaction = loaded
+            .state
+            .active_transaction
+            .as_ref()
+            .ok_or("native-update-transaction-missing")?;
+        if transaction.transaction_id != journal.transaction_id
+            || transaction.target_version != journal.target_version
+            || !matches!(
+                transaction.phase,
+                UpdateTransactionPhase::HealthWindow | UpdateTransactionPhase::RecoveryRequired
+            )
+            || loaded.state.last_accepted_generation >= journal.generation
+        {
+            return Err("native-update-transaction-state-invalid");
+        }
+        let reconciliation = load_reconciliation_journal(store, &journal.transaction_id)?;
+        if reconciliation_journal_sha256(&reconciliation)? != journal.reconciliation_journal_sha256
+        {
+            return Err("native-update-reconciliation-invalid");
+        }
+        validate_owned_directory(&journal.backup_application)?;
+        let canonical = journal
+            .destination_application
+            .join("Contents/MacOS")
+            .join(CANONICAL_BINARY_NAME);
+        validate_current_application(&journal.destination_application, &canonical)?;
+        validate_staged_executable(&canonical, &journal.canonical_binary_sha256)?;
+        ensure_absent(
+            &store
+                .staging_root()
+                .join(&journal.transaction_id)
+                .join(FAILED_APPLICATION_DIRECTORY),
+        )?;
+        let mut recovering = loaded.state;
+        recovering
+            .active_transaction
+            .as_mut()
+            .ok_or("native-update-transaction-missing")?
+            .phase = UpdateTransactionPhase::RecoveryRequired;
+        let reserved = store
+            .replace(loaded.revision, recovering)
+            .map_err(|error| error.reason_code())?;
+        if reserved.cleanup_required {
+            return Err("native-update-state-cleanup-required");
+        }
+        rollback_active_reconciliation(&reconciliation)?;
+        rollback_activated_application(store, &journal)?;
+        finish_rolled_back_replacement(store, &journal, &reconciliation)?;
+        crate::update_reconcile::clear_installation_marker(home, &marker)
+    }
+}
+
 #[cfg(target_os = "macos")]
 fn continue_replacement_after_handoff(
     home: &Path,
@@ -1466,7 +1545,20 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[test]
     fn interrupted_desktop_health_keeps_other_config_writers_excluded() {
-        let fixture = replacement_fixture("durable-home-marker", false);
+        let mut fixture = replacement_fixture("durable-home-marker", false);
+        let macos = fixture.journal.staged_application.join("Contents/MacOS");
+        create_private_tree(&macos);
+        fs::write(macos.join(CANONICAL_BINARY_NAME), b"new-canonical").unwrap();
+        fixture.journal.canonical_binary_sha256 = sha256_hex(b"new-canonical");
+        fixture.journal.reconciliation_journal_sha256 =
+            reconciliation_journal_sha256(&fixture.reconciliation).unwrap();
+        write_new_private_file(
+            &fixture
+                .transaction_root
+                .join(crate::update_reconcile::RECONCILIATION_JOURNAL_FILE),
+            &serde_json_canonicalizer::to_vec(&fixture.reconciliation).unwrap(),
+        )
+        .unwrap();
         let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let _ = continue_replacement_after_handoff(
                 &fixture.root,
@@ -1499,20 +1591,33 @@ mod tests {
             "native-activation-recovery-required"
         );
         let marker = serde_json::to_vec(&fixture.journal).unwrap();
-        let _lock = crate::update_reconcile::acquire_native_home_write_lock(&fixture.root).unwrap();
         assert_eq!(
-            crate::update_reconcile::clear_installation_marker(
-                &fixture.root,
-                b"different transaction"
-            ),
-            Err("native-activation-recovery-required")
+            recover_legacy_health_interruption(&fixture.root, &fixture.store, &"0".repeat(64)),
+            Err("native-activation-journal-mismatch")
         );
-        rollback_active_reconciliation(&fixture.reconciliation).unwrap();
-        rollback_activated_application(&fixture.store, &fixture.journal).unwrap();
-        finish_rolled_back_replacement(&fixture.store, &fixture.journal, &fixture.reconciliation)
+        let canonical = fixture
+            .journal
+            .destination_application
+            .join("Contents/MacOS")
+            .join(CANONICAL_BINARY_NAME);
+        fs::write(&canonical, b"drifted-canonical").unwrap();
+        assert_eq!(
+            recover_legacy_health_interruption(&fixture.root, &fixture.store, &sha256_hex(&marker)),
+            Err("native-update-staged-application-drift")
+        );
+        assert!(fixture.journal.backup_application.exists());
+        assert!(
+            fixture
+                .store
+                .load()
+                .unwrap()
+                .state
+                .active_transaction
+                .is_some()
+        );
+        fs::write(&canonical, b"new-canonical").unwrap();
+        recover_legacy_health_interruption(&fixture.root, &fixture.store, &sha256_hex(&marker))
             .unwrap();
-        crate::update_reconcile::clear_installation_marker(&fixture.root, &marker).unwrap();
-        drop(_lock);
         drop(crate::update_reconcile::acquire_managed_write_guard(&fixture.root, config).unwrap());
         assert_rolled_back(&fixture);
         fs::remove_dir_all(fixture.root).unwrap();

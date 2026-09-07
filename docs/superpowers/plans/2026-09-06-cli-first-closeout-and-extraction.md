@@ -1525,3 +1525,29 @@ therefore no human approval, authenticated research reasoning, same-device Host
 handoff or SEC program acceptance is claimed. Next: prepare the real research
 preview and verify human-origin approval through an available Host interaction,
 while completing SEC prerequisites. First-stage integration remains incomplete.
+
+
+## CLI-404 human approval preview — pending a real decision
+
+Base: `a199656f`; branch: `codex/host-human-approval-preview`.
+Reused the existing `project capture preview/apply` commands; no new approval
+system was necessary. A private fixture under
+`packages/qiongli-native/target/cli404-human-review-a199656f` contains the created
+empty project, portable candidate, preview, missing-approval result and empty Inbox
+snapshot. `REVIEW.md` presents the exact scope in Chinese. The candidate records
+only the prior real-client engineering observation, with no academic changes,
+decisions or evidence items. This is an approval exercise, not a research journey.
+
+Project: `prj_f7708e7c379deb5b44de85781096804c`, revision 1.
+Plan digest: `9cc0ed23c200fe3e1809ee2072d6e26d1ecc5e7b4c5ce4e69f42d5bd4c4ff371`.
+Capture: `cap_b204255fd6efd7c43d69440267032506e4004f72810851b7c0b091783cba562a`.
+A real CLI apply without filesystem approval failed; the history file remained
+absent and a fresh CLI Inbox read reported zero entries. No capture was applied.
+The existing owner can apply the exact preview after a real human decision and
+fresh digest/revision revalidation. Do not infer that decision from development
+authorization or from these fixture setup writes. The user-facing review requests
+only pending Inbox intake, never consolidation or academic mutation.
+
+Human approval is pending, SEC-401–403 remain unaccepted, and first-stage integration
+is incomplete. Continue independent security work while this interaction is pending;
+publication, private research access and broad Host write enablement are not covered.

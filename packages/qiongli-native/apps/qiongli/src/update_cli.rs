@@ -1180,6 +1180,7 @@ fn reconcile_staged_update(
         std::env::current_exe().map_err(|_| "native-update-reconciliation-binary-unavailable")?;
     let prepared = prepare_update_reconciliation(&ReconciliationPreparation {
         cli_update: None,
+        native_release: None,
         store,
         transaction_id,
         target_version: &manifest.artifact.version,

@@ -35,6 +35,7 @@ pub(crate) const RECONCILIATION_JOURNAL_FILE: &str = "reconciliation-journal.jso
 const JOURNAL_DOCUMENT_KIND: &str = "qiongli-update-reconciliation";
 const JOURNAL_SCHEMA_VERSION: u32 = 1;
 const CLI_JOURNAL_SCHEMA_VERSION: u32 = 2;
+const RELEASE_JOURNAL_SCHEMA_VERSION: u32 = 3;
 const MAX_JOURNAL_BYTES: u64 = 1024 * 1024;
 const MAX_OPERATIONS: usize = 136;
 const MAX_STATE_BYTES: u64 = 1024 * 1024;
@@ -82,6 +83,18 @@ pub(crate) struct ReconciliationJournalV1 {
     pub(crate) target_version: String,
     pub(crate) target_pack_sha256: String,
     pub(crate) operations: Vec<ReconciliationOperationV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    native_release: Option<NativeActivationReleaseV1>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+struct NativeActivationReleaseV1 {
+    candidate_digest_sha256: String,
+    previous_update_revision: u64,
+    previous_last_accepted_generation: u64,
+    previous_last_known_good: Option<qiongli_config::UpdateLastKnownGood>,
+    next: qiongli_config::UpdateLastKnownGood,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -105,6 +118,10 @@ pub(crate) struct ReconciliationPreparation<'a> {
     pub(crate) now_unix: u64,
     // The old pack digest must come from the verified predecessor product.
     pub(crate) cli_update: Option<(&'a crate::cli_install::CliInstallPlan, &'a str)>,
+    pub(crate) native_release: Option<(
+        &'a qiongli_platform::VerifiedNativeReleaseCandidate,
+        &'a qiongli_config::LoadedUpdateState,
+    )>,
 }
 
 #[cfg(test)]
@@ -114,6 +131,7 @@ pub(crate) fn empty_reconciliation_journal(
     target_pack_sha256: &str,
 ) -> ReconciliationJournalV1 {
     ReconciliationJournalV1 {
+        native_release: None,
         document_kind: JOURNAL_DOCUMENT_KIND.to_string(),
         schema_version: JOURNAL_SCHEMA_VERSION,
         transaction_id: transaction_id.to_string(),
@@ -148,6 +166,46 @@ pub(crate) fn prepare_update_reconciliation(
     {
         return Err("native-update-reconciliation-identity-mismatch");
     }
+    let native_release = preparation
+        .native_release
+        .map(|(candidate, loaded)| {
+            let (cli, _) = preparation
+                .cli_update
+                .ok_or("native-activation-release-invalid")?;
+            let release = &candidate.candidate().signed_portable_release.envelope;
+            if candidate.candidate().artifact.version != preparation.target_version
+                || release.resource_pack_sha256 != preparation.content.pack().pack_sha256()
+                || release.binary_sha256 != cli.source_sha256
+                || loaded.state.active_transaction.is_some()
+                || candidate.candidate().generation <= loaded.state.last_accepted_generation
+            {
+                return Err("native-activation-release-invalid");
+            }
+            Ok(NativeActivationReleaseV1 {
+                candidate_digest_sha256: candidate.signed_payload_sha256().to_string(),
+                previous_update_revision: loaded.revision,
+                previous_last_accepted_generation: loaded.state.last_accepted_generation,
+                previous_last_known_good: loaded.state.last_known_good.clone(),
+                next: qiongli_config::UpdateLastKnownGood {
+                    version: candidate.candidate().artifact.version.clone(),
+                    channel: match candidate.candidate().artifact.channel {
+                        qiongli_platform::ReleaseChannel::Alpha => {
+                            qiongli_config::UpdateReleaseChannel::Alpha
+                        }
+                        qiongli_platform::ReleaseChannel::Beta => {
+                            qiongli_config::UpdateReleaseChannel::Beta
+                        }
+                        qiongli_platform::ReleaseChannel::Stable => {
+                            qiongli_config::UpdateReleaseChannel::Stable
+                        }
+                    },
+                    generation: candidate.candidate().generation,
+                    archive_sha256: release.archive_sha256.clone(),
+                    resource_pack_sha256: release.resource_pack_sha256.clone(),
+                },
+            })
+        })
+        .transpose()?;
     let transaction_root = preparation
         .store
         .staging_root()
@@ -157,8 +215,9 @@ pub(crate) fn prepare_update_reconciliation(
         let journal = load_reconciliation_journal(preparation.store, preparation.transaction_id)?;
         if journal.target_version != preparation.target_version
             || journal.target_pack_sha256 != preparation.content.pack().pack_sha256()
-            || (journal.schema_version == CLI_JOURNAL_SCHEMA_VERSION)
+            || (journal.schema_version >= CLI_JOURNAL_SCHEMA_VERSION)
                 != preparation.cli_update.is_some()
+            || journal.native_release != native_release
         {
             return Err("native-update-reconciliation-identity-mismatch");
         }
@@ -204,8 +263,11 @@ pub(crate) fn prepare_update_reconciliation(
             )?;
         }
         let journal = ReconciliationJournalV1 {
+            native_release,
             document_kind: JOURNAL_DOCUMENT_KIND.to_string(),
-            schema_version: if preparation.cli_update.is_some() {
+            schema_version: if preparation.native_release.is_some() {
+                RELEASE_JOURNAL_SCHEMA_VERSION
+            } else if preparation.cli_update.is_some() {
                 CLI_JOURNAL_SCHEMA_VERSION
             } else {
                 JOURNAL_SCHEMA_VERSION
@@ -301,7 +363,7 @@ struct NativeActivationRecord {
     outcome: Option<NativeActivationOutcome>,
 }
 
-/// Executes an already approved v2 reconciliation journal. The caller owns
+/// Executes an already approved v2/v3 reconciliation journal. The caller owns
 /// candidate trust, human approval, process pinning and the health check.
 pub fn activate_native_reconciliation(
     store: &UpdateStateStore,
@@ -319,12 +381,20 @@ pub fn activate_native_reconciliation(
     if native_record_exists(store, transaction_id, NATIVE_ACTIVATION_RECORD)? {
         return Err("native-activation-recovery-required");
     }
+    let initial = store.load().map_err(|error| error.reason_code())?;
+    if let Some(release) = &journal.native_release
+        && (initial.revision != release.previous_update_revision
+            || !matches_pre_activation_release(&initial.state, release))
+    {
+        return Err("native-activation-state-changed");
+    }
     verify_prepared_reconciliation(&journal)?;
     write_native_activation_record(store, &journal, expected_journal_sha256, None)?;
     set_native_activation_phase(
         store,
         &journal,
         Some(qiongli_config::UpdateTransactionPhase::Activating),
+        Some(initial.revision),
     )?;
     let attempt = activate_prepared_reconciliation(&journal).and_then(|()| health());
     let outcome = if attempt.is_ok() {
@@ -428,8 +498,10 @@ fn checked_native_journal(
     expected: &str,
 ) -> Result<ReconciliationJournalV1, &'static str> {
     let journal = load_reconciliation_journal(store, transaction_id)?;
-    if journal.schema_version != CLI_JOURNAL_SCHEMA_VERSION
-        || !valid_sha256(expected)
+    if !matches!(
+        journal.schema_version,
+        CLI_JOURNAL_SCHEMA_VERSION | RELEASE_JOURNAL_SCHEMA_VERSION
+    ) || !valid_sha256(expected)
         || reconciliation_journal_sha256(&journal)? != expected
     {
         return Err("native-activation-journal-mismatch");
@@ -461,8 +533,12 @@ fn set_native_activation_phase(
     store: &UpdateStateStore,
     journal: &ReconciliationJournalV1,
     phase: Option<qiongli_config::UpdateTransactionPhase>,
+    expected_revision: Option<u64>,
 ) -> Result<(), &'static str> {
     let loaded = store.load().map_err(|error| error.reason_code())?;
+    if expected_revision.is_some_and(|revision| revision != loaded.revision) {
+        return Err("native-activation-state-changed");
+    }
     if loaded
         .state
         .active_transaction
@@ -498,13 +574,46 @@ fn finish_native_activation(
     journal: &ReconciliationJournalV1,
     outcome: NativeActivationOutcome,
 ) -> Result<(), &'static str> {
+    let loaded = store.load().map_err(|error| error.reason_code())?;
+    refuse_other_activation(store, journal)?;
+    let mut next_state = loaded.state.clone();
+    if let Some(release) = &journal.native_release {
+        let already_committed = outcome == NativeActivationOutcome::Committed
+            && loaded.state.active_transaction.is_none()
+            && loaded.state.last_accepted_generation == release.next.generation
+            && loaded.state.last_known_good.as_ref() == Some(&release.next);
+        if !already_committed
+            && (!matches_pre_activation_release(&loaded.state, release)
+                || (outcome == NativeActivationOutcome::Committed
+                    && loaded.state.active_transaction.is_none()))
+        {
+            return Err("native-activation-state-changed");
+        }
+        if outcome == NativeActivationOutcome::Committed {
+            next_state.last_accepted_generation = release.next.generation;
+            next_state.last_known_good = Some(release.next.clone());
+        }
+        next_state.active_transaction = None;
+    }
     match outcome {
         NativeActivationOutcome::Committed => cleanup_committed_reconciliation(journal)?,
         NativeActivationOutcome::RolledBack => cleanup_rolled_back_reconciliation(journal)?,
     }
-    // Keep the immutable journal/outcome for bounded replay; clearing reservation
-    // never removes the only durable evidence of the completed decision.
-    set_native_activation_phase(store, journal, None)
+    // Keep the immutable journal/outcome for replay. The release metadata and
+    // reservation are committed together only after the durable outcome and cleanup.
+    if journal.native_release.is_none() {
+        return set_native_activation_phase(store, journal, None, None);
+    }
+    if next_state == loaded.state {
+        return Ok(());
+    }
+    let commit = store
+        .replace(loaded.revision, next_state)
+        .map_err(|error| error.reason_code())?;
+    if commit.cleanup_required {
+        return Err("native-update-state-cleanup-required");
+    }
+    Ok(())
 }
 
 fn native_record_exists(
@@ -1603,24 +1712,85 @@ fn registration_plan_sha256(
     })?))
 }
 
+fn validate_activation_release(
+    release: &NativeActivationReleaseV1,
+    journal: &ReconciliationJournalV1,
+) -> Result<(), &'static str> {
+    const MAX_REVISION: u64 = 9_007_199_254_740_991;
+    if !valid_sha256(&release.candidate_digest_sha256)
+        || release.previous_update_revision > MAX_REVISION
+        || release.next.generation <= release.previous_last_accepted_generation
+        || release.next.version != journal.target_version
+        || release.next.resource_pack_sha256 != journal.target_pack_sha256
+    {
+        return Err("native-activation-release-invalid");
+    }
+    for known_good in std::iter::once(&release.next).chain(release.previous_last_known_good.iter())
+    {
+        let channel = match known_good.channel {
+            qiongli_config::UpdateReleaseChannel::Alpha => qiongli_platform::ReleaseChannel::Alpha,
+            qiongli_config::UpdateReleaseChannel::Beta => qiongli_platform::ReleaseChannel::Beta,
+            qiongli_config::UpdateReleaseChannel::Stable => {
+                qiongli_platform::ReleaseChannel::Stable
+            }
+        };
+        if known_good.generation == 0
+            || known_good.generation > MAX_REVISION
+            || !valid_sha256(&known_good.archive_sha256)
+            || !valid_sha256(&known_good.resource_pack_sha256)
+            || qiongli_platform::current_target_native_artifact_identity(
+                &known_good.version,
+                channel,
+            )
+            .is_err()
+        {
+            return Err("native-activation-release-invalid");
+        }
+    }
+    if release
+        .previous_last_known_good
+        .as_ref()
+        .is_some_and(|known_good| known_good.generation > release.previous_last_accepted_generation)
+    {
+        return Err("native-activation-release-invalid");
+    }
+    Ok(())
+}
+
+fn matches_pre_activation_release(
+    state: &qiongli_config::UpdateState,
+    release: &NativeActivationReleaseV1,
+) -> bool {
+    state.last_accepted_generation == release.previous_last_accepted_generation
+        && state.last_known_good == release.previous_last_known_good
+}
+
 fn validate_journal(journal: &ReconciliationJournalV1) -> Result<(), &'static str> {
     validate_transaction_id(&journal.transaction_id)?;
     validate_v2_version(&journal.target_version)?;
     if journal.document_kind != JOURNAL_DOCUMENT_KIND
         || !matches!(
             journal.schema_version,
-            JOURNAL_SCHEMA_VERSION | CLI_JOURNAL_SCHEMA_VERSION
+            JOURNAL_SCHEMA_VERSION | CLI_JOURNAL_SCHEMA_VERSION | RELEASE_JOURNAL_SCHEMA_VERSION
         )
         || !valid_sha256(&journal.target_pack_sha256)
         || journal.operations.len()
             > MAX_OPERATIONS
-                + if journal.schema_version == CLI_JOURNAL_SCHEMA_VERSION {
+                + if journal.schema_version >= CLI_JOURNAL_SCHEMA_VERSION {
                     2
                 } else {
                     0
                 }
     {
         return Err("native-update-reconciliation-invalid");
+    }
+    if (journal.schema_version == RELEASE_JOURNAL_SCHEMA_VERSION)
+        != journal.native_release.is_some()
+    {
+        return Err("native-activation-release-invalid");
+    }
+    if let Some(release) = &journal.native_release {
+        validate_activation_release(release, journal)?;
     }
     let cli = journal
         .operations
@@ -1634,7 +1804,7 @@ fn validate_journal(journal: &ReconciliationJournalV1) -> Result<(), &'static st
         .collect::<Vec<_>>();
     match (journal.schema_version, cli.as_slice()) {
         (JOURNAL_SCHEMA_VERSION, []) => {}
-        (CLI_JOURNAL_SCHEMA_VERSION, [binary, receipt])
+        (CLI_JOURNAL_SCHEMA_VERSION | RELEASE_JOURNAL_SCHEMA_VERSION, [binary, receipt])
             if binary.surface == ReconciliationSurface::CliBinary
                 && receipt.surface == ReconciliationSurface::CliReceipt
                 && binary.old_product_version == receipt.old_product_version
@@ -2172,6 +2342,7 @@ mod tests {
         assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
         assert_eq!(fs::read(&initial.receipt_path).unwrap(), old_receipt);
         let mut journal = ReconciliationJournalV1 {
+            native_release: None,
             document_kind: JOURNAL_DOCUMENT_KIND.into(),
             schema_version: CLI_JOURNAL_SCHEMA_VERSION,
             transaction_id: transaction.into(),
@@ -2180,7 +2351,7 @@ mod tests {
             operations,
         };
         verify_prepared_reconciliation(&journal).unwrap();
-        for version in [JOURNAL_SCHEMA_VERSION, 3] {
+        for version in [JOURNAL_SCHEMA_VERSION, RELEASE_JOURNAL_SCHEMA_VERSION, 4] {
             journal.schema_version = version;
             assert!(activate_prepared_reconciliation(&journal).is_err());
             assert_eq!(fs::read(&initial.target).unwrap(), b"old-cli");
@@ -2290,6 +2461,7 @@ mod tests {
             )
             .unwrap();
             let journal = ReconciliationJournalV1 {
+                native_release: None,
                 document_kind: JOURNAL_DOCUMENT_KIND.into(),
                 schema_version: CLI_JOURNAL_SCHEMA_VERSION,
                 transaction_id: id.clone(),
@@ -2507,6 +2679,7 @@ mod tests {
         .unwrap();
         let staged_registry_inode = fs::metadata(&registry_operation.staged).unwrap().ino();
         let mut journal = ReconciliationJournalV1 {
+            native_release: None,
             document_kind: JOURNAL_DOCUMENT_KIND.to_string(),
             schema_version: JOURNAL_SCHEMA_VERSION,
             transaction_id: transaction_id.to_string(),

@@ -639,7 +639,17 @@ pub fn prepare_native_candidate_activation(
     settings
         .prepare_store()
         .map_err(|error| error.reason_code())?;
-    let transaction_id = format!("update-{}", &expected_preflight_digest[..32]);
+    let transaction_binding = serde_json::to_vec(&(
+        expected_preflight_digest,
+        loaded.revision,
+        workflow.revision(),
+        workflow.variant_sha256(),
+    ))
+    .map_err(|_| "native-activation-preview-serialization-failed")?;
+    let transaction_id = format!(
+        "update-{}",
+        &encode_hex(&Sha256::digest(transaction_binding))[..32]
+    );
     crate::update_reconcile::prepare_reconciliation_transaction_root(&store, &transaction_id)?;
     let result = (|| {
         let _lock = crate::update_reconcile::acquire_replacement_lock(&store)?;
@@ -680,6 +690,7 @@ pub fn prepare_native_candidate_activation(
                 targets: &[candidate.target()],
                 now_unix,
                 cli_update: Some((&plan, &preview.previous_pack_sha256)),
+                native_release: Some((candidate, &loaded)),
             },
         )?;
         if workflow_store

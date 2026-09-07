@@ -159,6 +159,26 @@ journal reader rejects linked or insecure state/update/staging/transaction direc
 The Rust-generated output contract is `candidate-activation-discarded-v1`. Started
 activations still require recovery; discard never rolls back active destinations.
 
+Native candidate preparation now emits reconciliation journal v3. Its required
+`native_release` binding includes the verified candidate digest, prior update
+revision/accepted generation/known-good identity, and the next signed release's
+version/channel/generation/archive/resource digests. The existing journal hash and
+activation outcome bind these fields together. v1/v2 omit this field and retain
+canonical bytes and behavior; v3 requires the CLI pair and release binding, while
+unknown versions and mixed version/field shapes refuse.
+
+Activation checks the prepared update revision and prior release state before
+reserving the transaction through CAS. Successful health first records a durable
+committed outcome; cleanup then advances accepted generation and known-good state
+while clearing the reservation in one state CAS. Failure or undecided recovery
+preserves prior release metadata. Recovery can finish a committed cleanup without
+rerunning health, and completed replay does not increase the revision. Unexpected
+release-state changes refuse before cleanup. Preparation transaction IDs now include
+update/workflow revisions so a rolled-back attempt can be prepared again without
+overwriting historical records. The caller still owns fresh candidate/approval and
+process verification; public activation/recovery commands and competing-write
+exclusion remain pending.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

@@ -934,3 +934,44 @@ recovery using the existing journal/health owners. Prepared transaction cancella
 is now available; first-stage integration, real Host research/approval and named
 cross-platform package qualification remain incomplete. Accepted ledger rows and
 publication state are unchanged.
+
+
+## CLI-403 eighteenth increment — journal-bound accepted release state
+
+Base: `8a999ac2`; branch: `codex/cli-activation-release-state`.
+Native candidate preparation now emits journal v3 with the candidate digest, prior
+update revision/release metadata and the next signed release identity. The existing
+approved journal digest and immutable outcome record therefore bind release state
+without another sidecar format. v1/v2 retain their canonical representation and
+legacy callers explicitly omit the binding. v3 requires the CLI pair and validated
+release metadata; mixed/missing fields and unknown versions refuse.
+
+The coordinator checks the prepared state revision before reservation. Successful
+health records the committed decision before cleanup and atomically advances the
+accepted generation/known-good identity while clearing the reservation afterward.
+Failed health and undecided recovery preserve the old release state. Committed
+cleanup recovery finishes that same decision; completed replay preserves revision.
+Unexpected release metadata refuses before cleanup. Transaction IDs now include
+update/workflow revisions so retry after rollback cannot collide with the retained
+prior journal. Public CLI output schemas and activation record v1 are unchanged.
+
+Checks on macOS: the 9 focused activation/parser/schema/reconciliation unit tests
+passed; the final expanded CLI-pair compatibility case also passed after adding the
+unknown-v4 negative. The signed-candidate integration test passed for failed health,
+panic/unwind during health, committed cleanup blocked by a foreign file, and normal
+success. It verifies old release preservation, signed generation/archive promotion,
+recovery replay without revision increments, journal metadata tamper refusal, stale
+state-revision refusal before health, and preparation with a new ID after rollback.
+These are synthetic binary/health fixtures, not real cross-version executable or
+SIGKILL qualification. The existing real CLI discard subprocess still passes with
+v3 preparation. The successor fixture now uses generation 30 after 29; its test key
+window was expanded to include 30 after the first run correctly rejected it.
+
+Library Clippy passed after applying its nested-condition suggestion, with the
+existing Rust 1.98 exception. Formatting, whitespace, schema-policy validation and
+generated roadmap checks passed. Final review found no actionable issue in this
+metadata/commit scope. Next: exclude competing managed writers and connect public
+activation/recovery commands with fresh signed-candidate and approval revalidation,
+process checks and the existing bounded real CLI health callback. Real Host
+research/approval, native Windows state support and named package qualification
+remain open. First-stage and ledger acceptance remain incomplete; no publication.

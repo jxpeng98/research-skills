@@ -2147,3 +2147,22 @@ No signed candidate, actual model Host integration, Windows update qualification
 research approval or program acceptance is claimed. Next: prepare a trusted Windows
 test candidate through the existing release owner and repeat managed installation.
 Only this evidence note changes tracked files; unchanged runtime suites are reused.
+
+
+## Windows partial closeout and next development increment
+
+The maintainer explicitly paused the Windows lane after `d6d50131`: **partially
+complete**, not accepted or supported-installation qualified. Compilation and
+Parallels Windows ARM x64-emulation runtime checks are complete; trusted Windows
+installation/update, clean-consumer and native x64 qualification remain open.
+CLI-403 stays active overall; its ledger blocker records the paused platform lane.
+No new ledger state or acceptance record is introduced.
+
+The next bounded outcome returns to CLI-404/405: use the current candidate through
+a real Full Host and resume the isolated project without a Qiongli window. First
+inspect the existing candidate/client-cache and project/checkpoint owners, then
+exercise a read-only Host session and continuation; fix only concrete gaps found.
+Reuse the existing review packet for any later research apply, which still needs
+its exact human decision. This priority change is not approval of that packet.
+CLI-410 qualification preparation follows; CLI-406 collaboration expansion retains
+its baseline dependency. Windows retesting is no longer the immediate next task.

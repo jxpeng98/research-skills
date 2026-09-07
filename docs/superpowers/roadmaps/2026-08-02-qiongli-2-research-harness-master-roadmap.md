@@ -62,8 +62,8 @@ product acceptance. CLI First is the product direction; CI remains verification.
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
-| **NOW** | `CLI-403` independent package trust using existing signed native payload owners; installed CLI startup/restart baseline is locally integrated. `CLI-401/402` source integration is merged; program acceptance remains separate. |
-| **NEXT** | `CLI-403` independent trusted resources/install, `CLI-404` window-free Host integration and human approval, then `CLI-405` one Host's research journey and same-device handoff. `SEC-401`—`SEC-403` remain prerequisites for enabling research writes. |
+| **NOW** | `CLI-404/405` current-candidate window-free Host use and project continuation. Windows `CLI-403` is partially complete and paused by the maintainer: cross-build and Parallels runtime evidence exist; trusted installation/update qualification remains open. `CLI-401/402` source integration is merged; program acceptance remains separate. |
+| **NEXT** | Finish the selected Host research/approval/continuation journey and `CLI-410` baseline qualification preparation. Resume Windows trusted installation as a separate qualification lane when selected; it does not block independent development. `SEC-401`—`SEC-403` remain prerequisites for enabling research writes. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 

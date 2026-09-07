@@ -281,7 +281,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-07",
-      "blocker": ""
+      "blocker": "Windows partially complete; maintainer paused this lane after cross-build and Parallels x64-emulation runtime checks. Trusted installation rejected the source build; signed Windows candidate, installation/update and native x64 qualification remain open. Other CLI work may continue."
     },
     {
       "id": "CLI-404",

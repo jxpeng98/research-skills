@@ -2166,3 +2166,34 @@ Reuse the existing review packet for any later research apply, which still needs
 its exact human decision. This priority change is not approval of that packet.
 CLI-410 qualification preparation follows; CLI-406 collaboration expansion retains
 its baseline dependency. Windows retesting is no longer the immediate next task.
+
+
+## CLI-404 model-initiated read and Host approval boundary
+
+Base `4b201c62`; branch `codex/live-host-approval-boundary`. The existing named
+macOS candidate from `8c6450f0` was configured as a process-scoped Full MCP server
+for authenticated Codex, with only project-read and route tools enabled. No global
+Host configuration changed. Automatic approval review rejected use of the existing
+research fixture because external disclosure lacked specific authority; it did
+not execute. An approved safer run used a newly created empty synthetic article
+project, isolated configuration, an ephemeral Host session and a read-only sandbox.
+
+The actual model discovered and invoked `qiongli_project_read`. The Host rejected
+it with `MCP tool call requires approval, but approval policy is never`; no project
+data returned. Host process exit zero is therefore not successful product-read
+evidence. The event log contains exactly one completed, failed MCP call and no
+fallback. A local assertion verified that outcome. This advances model-initiated
+Full tool discovery evidence only, not project continuation or research acceptance.
+
+The native automatic-approval option conflicts with the explicit read-only sandbox
+flag. A proposed retry using its workspace-write default was rejected by automatic
+approval review as unauthorized permission expansion and did not execute. No trust
+guard or product code was weakened. Next: obtain explicit authority for the Host
+approval mode on this empty fixture before retrying; research disclosure and the
+pending research write remain separately unapproved.
+
+Private invocation, JSONL events and receipt are under
+`packages/qiongli-native/target/cli404-live-read-4b201c62/`. These bind an older
+candidate, not current-head package qualification. Windows remains paused and no
+acceptance state changes. Only this evidence note is committed; runtime suites
+are unchanged.

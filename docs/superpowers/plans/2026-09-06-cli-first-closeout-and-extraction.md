@@ -1600,3 +1600,39 @@ Whitespace, generated-index and frozen-source boundary checks passed. The pendin
 human Inbox preview is unchanged and unapplied. Broader adversarial evidence,
 human approval and first-stage integration remain incomplete; no acceptance or
 publication state changed.
+
+
+## CLI-404 live Host routing probe — current installation is not the candidate
+
+Base: `d1e64ff0`; branch: `codex/live-host-qualification-gap`.
+The current Codex conversation exposes native Qiongli tool names. An actual
+`qiongli_orchestrator_route` call with `platform=codex` and a bounded two-source
+comparison/review request (explicitly routing only) returned `mode=preview`,
+`runtime_profile=marketplace_lite`, `preview_only=true`, `project_writes_allowed=false`
+and `upgrade.required_for_execution=true`. No project read or write was requested.
+This proves actual Host-to-tool connectivity, but contradicts a Full-ready claim.
+
+Read-only local inspection found the cached personal `qiongli-next/2.0.0-alpha.3`
+manifest invokes `./bin/qiongli mcp serve --profile full --transport stdio`.
+The binary reports `qiongli 2.0.0-alpha.3`, exits zero, and has SHA-256
+`6561b33f347a44bedbc6709523e1ba53d24e24289553b25924a1acb29c6ee7a0`, matching its v2
+bundle receipt with `mcp_profile=full`. These cached bytes are not the current
+alpha.5 candidate. The live response is consistent with the historical Full/Lite
+routing defect already fixed and tested in current source; no duplicate fix or
+manual cache edit was made. Tool declaration visibility alone is not readiness.
+
+The first-stage scope remains CLI-401–405 plus CLI-410 preparation. Current source
+and temporary packages cover independent builds/resources and substantial macOS
+install/update/recovery. Open requirements include clean-machine qualification
+for the declared supported platform scope (empty PATH is insufficient), a named
+candidate in the actual Host, authorized two-source research, human-approved
+canonical writing and actual restart/same-device continuation. The existing
+pending Inbox preview is only an engineering approval exercise, not P01's formal
+comparison note or P05's real Host journey. Program acceptance is still incomplete.
+
+Next actions need to retain this distinction: qualify the chosen package and Host
+in an isolated authorized environment, then execute the research journey with
+approved test sources and human decisions. Existing user installation/account
+settings were inspected only for public version/launch metadata and not modified;
+no credentials, private research, remote push or publication were used. Whitespace,
+generated-index and frozen-source checks passed for this evidence-only update.

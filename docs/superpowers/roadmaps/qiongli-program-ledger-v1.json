@@ -297,7 +297,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-07",
-      "blocker": "Real isolated Codex and Claude plugin integration passed; exact pending Inbox preview awaits a human decision. SEC prerequisites and full approval qualification remain unaccepted."
+      "blocker": "Isolated Codex/Claude install tests passed, but the current live Host route returns Lite from cached alpha.3. A named candidate in an authorized Host, human approval and SEC qualification remain open."
     },
     {
       "id": "CLI-405",

@@ -42,7 +42,8 @@ pub use candidate_install::{
     NativeCandidateRegistrationLifecycleCommit, NativeCandidateRegistrationVerification,
     apply_native_release_candidate_local, discover_native_candidate_managed_root,
     prepare_native_candidate_managed_root, remove_native_release_candidate_local,
-    verify_installed_native_candidate_product, verify_native_release_candidate_local,
+    stage_native_release_candidate_local, verify_installed_native_candidate_product,
+    verify_native_release_candidate_local,
 };
 pub use candidate_source::{
     NativeCandidatePluginSourceCommit, NativeCandidatePluginSourceDisposition,

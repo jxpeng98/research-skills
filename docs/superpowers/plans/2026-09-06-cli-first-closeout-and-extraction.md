@@ -529,3 +529,35 @@ Review found no actionable findings. Integrate locally after the frozen-source
 guard and reuse these results. Next: native package update/rollback and active
 process/version consistency, followed by CLI-404/405 qualification. First-stage
 integration remains incomplete; ledger acceptance is unchanged.
+
+## CLI-403 sixth increment — side-by-side candidate staging
+
+Base: `afb7d5d7`; branch: `codex/cli-candidate-version-staging`.
+Complete candidate apply previously coupled payload installation to fixed Host
+source installation, preventing a newer version from being staged beside an
+existing integration. The new stage owner shares payload preparation and immutable
+signed-record persistence with apply. It writes no Host source/registration or
+installed command. Complete apply keeps its existing commit and compensation order;
+stage persistence failure compensates only its fresh payload.
+
+The existing candidate integration test now composes two independently signed
+version identities, stages the newer payload, verifies its installed identity and
+compares the older integration's full receipt closure unchanged. Replay returns
+AlreadyApplied. Existing payload rollback removes the stage and invalidates its
+product authority while the prior product and integration still verify. Expired
+staging refuses; rollback refuses modified staged bytes and preserves that canary.
+
+Validation on macOS: the expanded candidate integration test passed (1.85 seconds),
+including prior installation conflict/compensation cases. Affected Clippy passed
+with the existing local Rust 1.98 `chunks_exact_to_as_chunks` exception; formatting
+and whitespace checks passed. Review found no actionable findings. These are
+synthetic version identities using the small existing test binary, not actual
+two-version executable or live-process qualification. No release fixture suite is
+repeated for this shared-owner extraction.
+
+Next: wire digest-bound staging into the CLI, then activate/reconcile through the
+existing owners with recovery and current-process/version checks. Current candidate
+verification expects the running build's source/version/content; support for newer
+downloaded content must be explicit rather than bypassing that check. Active-version
+rollback, cross-platform runtime and CLI-404/405 acceptance remain open. Local
+integration does not complete the first-stage objective or change accepted rows.

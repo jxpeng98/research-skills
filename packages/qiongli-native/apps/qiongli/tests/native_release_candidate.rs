@@ -636,6 +636,173 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
         )
         .is_err()
     );
+    // A newer payload is staged beside the active integration, never over it.
+    let mut next_artifact = artifact.clone();
+    next_artifact.version = "2.0.0-alpha.6".to_string();
+    let next_id = native_artifact_id(&next_artifact).unwrap();
+    let next_artifact_target =
+        approve_native_artifact_target(fixture.target("next-artifact", &next_id), &next_artifact)
+            .unwrap();
+    compose_native_artifact(
+        &content,
+        &next_artifact,
+        &fixture.source_binary,
+        &next_artifact_target,
+    )
+    .unwrap();
+    let next_archive_target = approve_native_portable_archive_target(
+        fixture.target(
+            "next-archive",
+            &native_portable_archive_file_name(&next_artifact).unwrap(),
+        ),
+        &next_artifact,
+    )
+    .unwrap();
+    let next_archive =
+        compose_native_portable_archive(&content, &next_artifact_target, &next_archive_target)
+            .unwrap();
+    let mut next_grant = portable_grant.grant.clone();
+    next_grant.artifact = next_artifact.clone();
+    let next_grant = sign_grant(next_grant, &launch_key, "candidate-launch-test-key");
+    let mut next_release = signed_release.clone();
+    next_release.envelope =
+        build_native_release_envelope(29, &next_archive, &next_grant, NOW - 30, NOW + 1_800)
+            .unwrap();
+    next_release.signature.value_hex = encode_hex(
+        &release_key
+            .sign(&native_release_envelope_signing_bytes(&next_release.envelope).unwrap())
+            .to_bytes(),
+    );
+    let mut next_candidate = signed_candidate.clone();
+    next_candidate.candidate = build_native_release_candidate(
+        29,
+        SOURCE_COMMIT,
+        &next_release,
+        [
+            plugin_grant(
+                &next_artifact,
+                ClientActivationTarget::Codex,
+                &assembled.manifest().binary_sha256,
+                content.pack_sha256(),
+                &launch_key,
+            ),
+            plugin_grant(
+                &next_artifact,
+                ClientActivationTarget::ClaudeCode,
+                &assembled.manifest().binary_sha256,
+                content.pack_sha256(),
+                &launch_key,
+            ),
+        ],
+        NOTES,
+        NOW,
+        NOW + 1_200,
+    )
+    .unwrap();
+    let next_candidate = resign_candidate(next_candidate, &release_key);
+    let next_context = NativeReleaseCandidateVerificationContext {
+        expected_artifact: &next_artifact,
+        ..codex_context
+    };
+    let next_verified = next_candidate
+        .verify(
+            &authority,
+            &next_context,
+            &content,
+            &next_archive_target,
+            NOTES,
+        )
+        .unwrap();
+    assert!(
+        qiongli_platform::stage_native_release_candidate_local(
+            &content,
+            &next_verified,
+            &home,
+            NOW + 2_000
+        )
+        .is_err()
+    );
+    let staged = qiongli_platform::stage_native_release_candidate_local(
+        &content,
+        &next_verified,
+        &home,
+        NOW + 4,
+    )
+    .unwrap();
+    assert_eq!(staged.disposition, InstallDisposition::Applied);
+    let next_binary = home
+        .join(".qiongli/native/payloads")
+        .join(&next_id)
+        .join(qiongli_platform::native_artifact_binary_path(&next_artifact).unwrap());
+    verify_installed_native_candidate_product(
+        &content,
+        &authority,
+        &next_context,
+        &home,
+        &next_binary,
+    )
+    .unwrap();
+    assert_eq!(
+        verify_native_release_candidate_local(
+            &content,
+            &home,
+            ClientActivationTarget::Codex,
+            &codex_install.payload.receipt.install_id
+        )
+        .unwrap(),
+        codex_verified
+    );
+    assert_eq!(
+        qiongli_platform::stage_native_release_candidate_local(
+            &content,
+            &next_verified,
+            &home,
+            NOW + 5
+        )
+        .unwrap()
+        .disposition,
+        InstallDisposition::AlreadyApplied
+    );
+    let root = qiongli_platform::discover_native_candidate_managed_root(&home).unwrap();
+    let executor = qiongli_platform::ManagedNativePayloadExecutor::new(root);
+    let staged_binary_bytes = fs::read(&next_binary).unwrap();
+    fs::write(&next_binary, b"modified staged payload canary").unwrap();
+    assert!(
+        executor
+            .rollback(&staged.receipt.install_id, &content, NOW + 6)
+            .is_err()
+    );
+    assert_eq!(
+        fs::read(&next_binary).unwrap(),
+        b"modified staged payload canary"
+    );
+    fs::write(&next_binary, staged_binary_bytes).unwrap();
+    executor
+        .rollback(&staged.receipt.install_id, &content, NOW + 6)
+        .unwrap();
+    assert!(!next_binary.exists());
+    assert!(
+        verify_installed_native_candidate_product(
+            &content,
+            &authority,
+            &next_context,
+            &home,
+            &next_binary
+        )
+        .is_err()
+    );
+    assert_eq!(
+        verify_native_release_candidate_local(
+            &content,
+            &home,
+            ClientActivationTarget::Codex,
+            &codex_install.payload.receipt.install_id
+        )
+        .unwrap(),
+        codex_verified
+    );
+    verify_product().expect("prior product remains available after staged-version rollback");
+
     let recovery_marker = home
         .join(".qiongli/native/payloads")
         .join(".qiongli-native-payload-transaction.json");

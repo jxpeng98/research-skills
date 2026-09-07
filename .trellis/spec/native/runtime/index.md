@@ -104,6 +104,16 @@ Shell profile updates keep their existing preview/digest/approval rules. This do
 not qualify Windows PATH handling, update/rollback, human approval across Hosts or
 a release.
 
+`stage_native_release_candidate_local` reuses the same payload preparation and
+signature-record persistence as complete candidate installation, without changing
+Host sources, registrations or the installed command. Its trusted caller must
+obtain exact-candidate filesystem-write approval. Versioned payloads can coexist;
+the existing payload executor can roll back a staged install while preserving the
+prior integration. Modified staged bytes are refused, not deleted. Full candidate
+apply retains its original source/registration compensation and metadata commit
+ordering. Staging alone does not switch the active command/integration or qualify
+live-process update and rollback; public update command wiring remains pending.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

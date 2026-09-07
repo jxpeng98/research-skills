@@ -153,57 +153,9 @@ pub fn apply_native_release_candidate_local(
     now_unix: u64,
 ) -> Result<NativeCandidateLocalInstallCommit, NativeCandidateLocalInstallError> {
     let home = home.as_ref();
-    let managed_root = prepare_native_candidate_managed_root(home)
-        .map_err(NativeCandidateLocalInstallError::Transaction)?;
-    let candidate_path = managed_root.path().join(
-        native_release_candidate_file_name(&candidate.candidate().artifact)
-            .map_err(NativeCandidateLocalInstallError::Candidate)?,
-    );
-    let candidate_bytes = candidate
-        .signed_candidate()
-        .to_canonical_json()
-        .map_err(NativeCandidateLocalInstallError::Candidate)?;
-    check_candidate_record(&candidate_path, &candidate_bytes)
-        .map_err(NativeCandidateLocalInstallError::Transaction)?;
-    let root = AllowedRootV1 {
-        id: MANAGED_ROOT_ID.to_string(),
-        root: SymbolicRoot::QiongliManagedData,
-    };
-    let payload_plan = preview_native_payload_install(
-        plan_metadata(candidate, "payload", now_unix)?,
-        candidate.portable_release(),
-        target_descriptor(candidate),
-        root,
-    )
-    .map_err(NativeCandidateLocalInstallError::Platform)?
-    .verify_with_grant_capability(candidate.portable_release().launch_grant(), now_unix)
-    .map_err(NativeCandidateLocalInstallError::Platform)?;
-    let payload_approval = approve_install_plan(&payload_plan, &PAYLOAD_APPROVALS, now_unix)
-        .map_err(NativeCandidateLocalInstallError::Transaction)?;
-    let payload_executor = ManagedNativePayloadExecutor::new(managed_root.clone());
-    let payload = payload_executor
-        .apply(
-            &payload_plan,
-            &payload_approval,
-            pack,
-            candidate.portable_release(),
-            now_unix,
-        )
-        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let (managed_root, payload) = apply_candidate_payload(pack, candidate, home, now_unix)?;
     let payload_fresh = payload.disposition == InstallDisposition::Applied;
-    if payload_executor
-        .verify(&payload.receipt.install_id, pack)
-        .is_err()
-    {
-        compensate_payload(
-            &payload_executor,
-            &payload.receipt.install_id,
-            pack,
-            payload_fresh,
-            now_unix,
-        )?;
-        return Err(NativeCandidateLocalInstallError::RecoveryRequired);
-    }
+    let payload_executor = ManagedNativePayloadExecutor::new(managed_root.clone());
 
     let installed_binary = managed_root
         .path()
@@ -284,9 +236,9 @@ pub fn apply_native_release_candidate_local(
         return Err(NativeCandidateLocalInstallError::RecoveryRequired);
     }
 
-    if let Err(error) = persist_candidate_record(&managed_root, &candidate_path, &candidate_bytes) {
+    if let Err(error) = persist_verified_candidate(&managed_root, candidate) {
         compensate_registration_source_and_payload(&registration, home, &compensation)?;
-        return Err(NativeCandidateLocalInstallError::Transaction(error));
+        return Err(error);
     }
 
     Ok(NativeCandidateLocalInstallCommit {
@@ -296,6 +248,108 @@ pub fn apply_native_release_candidate_local(
         registration,
         outstanding_host_action: HostAction::InstallOrEnablePlugin,
     })
+}
+
+/// Stages a verified version without changing Host integrations or the installed
+/// command. Existing payload transactions own recovery and can roll back this
+/// stage while a prior version and its integrations remain intact.
+/// The trusted caller must obtain filesystem-write approval for the exact
+/// candidate before entering this boundary; a release signature is not approval.
+pub fn stage_native_release_candidate_local(
+    pack: &LoadedResourcePack<'_>,
+    candidate: &VerifiedNativeReleaseCandidate,
+    home: impl AsRef<Path>,
+    now_unix: u64,
+) -> Result<NativePayloadInstallCommit, NativeCandidateLocalInstallError> {
+    let (root, payload) = apply_candidate_payload(pack, candidate, home.as_ref(), now_unix)?;
+    if let Err(error) = persist_verified_candidate(&root, candidate) {
+        compensate_payload(
+            &ManagedNativePayloadExecutor::new(root),
+            &payload.receipt.install_id,
+            pack,
+            payload.disposition == InstallDisposition::Applied,
+            now_unix,
+        )?;
+        return Err(error);
+    }
+    Ok(payload)
+}
+
+fn apply_candidate_payload(
+    pack: &LoadedResourcePack<'_>,
+    candidate: &VerifiedNativeReleaseCandidate,
+    home: &Path,
+    now_unix: u64,
+) -> Result<(ApprovedManagedRoot, NativePayloadInstallCommit), NativeCandidateLocalInstallError> {
+    let managed_root = prepare_native_candidate_managed_root(home)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let candidate_path = managed_root.path().join(
+        native_release_candidate_file_name(&candidate.candidate().artifact)
+            .map_err(NativeCandidateLocalInstallError::Candidate)?,
+    );
+    let candidate_bytes = candidate
+        .signed_candidate()
+        .to_canonical_json()
+        .map_err(NativeCandidateLocalInstallError::Candidate)?;
+    check_candidate_record(&candidate_path, &candidate_bytes)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let root = AllowedRootV1 {
+        id: MANAGED_ROOT_ID.to_string(),
+        root: SymbolicRoot::QiongliManagedData,
+    };
+    let payload_plan = preview_native_payload_install(
+        plan_metadata(candidate, "payload", now_unix)?,
+        candidate.portable_release(),
+        target_descriptor(candidate),
+        root,
+    )
+    .map_err(NativeCandidateLocalInstallError::Platform)?
+    .verify_with_grant_capability(candidate.portable_release().launch_grant(), now_unix)
+    .map_err(NativeCandidateLocalInstallError::Platform)?;
+    let payload_approval = approve_install_plan(&payload_plan, &PAYLOAD_APPROVALS, now_unix)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let payload_executor = ManagedNativePayloadExecutor::new(managed_root.clone());
+    let payload = payload_executor
+        .apply(
+            &payload_plan,
+            &payload_approval,
+            pack,
+            candidate.portable_release(),
+            now_unix,
+        )
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let payload_fresh = payload.disposition == InstallDisposition::Applied;
+    if payload_executor
+        .verify(&payload.receipt.install_id, pack)
+        .is_err()
+    {
+        compensate_payload(
+            &payload_executor,
+            &payload.receipt.install_id,
+            pack,
+            payload_fresh,
+            now_unix,
+        )?;
+        return Err(NativeCandidateLocalInstallError::RecoveryRequired);
+    }
+
+    Ok((managed_root, payload))
+}
+
+fn persist_verified_candidate(
+    root: &ApprovedManagedRoot,
+    candidate: &VerifiedNativeReleaseCandidate,
+) -> Result<(), NativeCandidateLocalInstallError> {
+    let path = root.path().join(
+        native_release_candidate_file_name(&candidate.candidate().artifact)
+            .map_err(NativeCandidateLocalInstallError::Candidate)?,
+    );
+    let bytes = candidate
+        .signed_candidate()
+        .to_canonical_json()
+        .map_err(NativeCandidateLocalInstallError::Candidate)?;
+    persist_candidate_record(root, &path, &bytes)
+        .map_err(NativeCandidateLocalInstallError::Transaction)
 }
 
 // Immutable signed metadata is retained with lifecycle receipts after uninstall.

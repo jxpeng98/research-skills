@@ -2233,3 +2233,38 @@ Next bounded increment: exercise the existing checkpoint owner on synthetic inpu
 before any real research continuation. Keep Windows qualification paused and reuse
 existing candidate/build results until their inputs change. Only this evidence
 note changes tracked files; no runtime source fix was required.
+
+
+## CLI-404 synthetic checkpoint interruption and reissue
+
+Base `67d397d5`; branch `codex/synthetic-checkpoint-recovery`. The maintainer
+requested the next synthetic-data verification. Reused the named `8c6450f0` macOS
+candidate in a fresh empty project and isolated config. Direct Full MCP processes
+used an explicitly synthetic `other-local` Host descriptor; its ready fields are
+test inputs, not evidence that another real Host was installed or trusted.
+
+Fifteen actual MCP observations passed. After the start response, SIGKILL ended
+the owned server with exit -9. A new process discovered the same generation-2
+checkpoint, and `next` returned the identical A1 handoff, document and handoff
+digests without advancing the run. Seven refusals covered wrong digest, wrong
+generation, changed Host binding, pause while a task is active, resume while
+running, duplicate start and the old reference after cancellation. Rejected
+operations left the observed checkpoint unchanged.
+
+Cancellation advanced to generation 3; another SIGKILL after its response retained
+that exact cancelled state in a new process. `next` on the current terminal
+reference returned no handoff and could not continue. Project/library revisions
+remained 1 and no capture was created. The active run reports `canPause=false`,
+`canRecover=false` and `recoveryRequired=false`: this Host path uses unchanged
+handoff reissue after process exit. Positive pause/resume or destructive recovery
+is not inferred from the negative calls. Neither kill targeted an in-flight write,
+and this does not qualify arbitrary power loss, candidate submission, real Host
+identity, or scholarly continuation.
+
+Private `probe.py`, individual responses/stderr, `verify.py` and `receipt.json` are
+under `packages/qiongli-native/target/cli404-checkpoint-67d397d5/`. The verifier
+passed all 15 observations, seven exact refusal codes and both signal exits.
+No source fix was needed; tracked changes contain only this evidence note. Next:
+validate synthetic candidate/evidence submission across the existing handoff owner,
+including stale and cross-process evidence refusal, before research continuation.
+Windows remains paused; pending research authorization and acceptance are unchanged.

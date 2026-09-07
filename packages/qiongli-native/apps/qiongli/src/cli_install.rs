@@ -746,7 +746,7 @@ pub(crate) fn apply_cli_install(plan: &CliInstallPlan) -> Result<&'static str, &
     })
 }
 
-fn verify_cli_install_plan(plan: &CliInstallPlan) -> Result<(), &'static str> {
+pub(crate) fn verify_cli_install_plan(plan: &CliInstallPlan) -> Result<(), &'static str> {
     validate_install_roots(&plan.home)?;
     validate_target_ancestors(&plan.home, &plan.target)?;
     if regular_file_sha256(&plan.source)? != plan.source_sha256 {

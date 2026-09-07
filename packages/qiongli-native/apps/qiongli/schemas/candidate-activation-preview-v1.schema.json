@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateActivationPreviewOutput",
+  "description": "A read-only identity snapshot. This digest is not an activation approval.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "command": {
+      "$ref": "#/$defs/ActivationPreviewCommand"
+    },
+    "target": {
+      "type": "string",
+      "pattern": "^(codex|claude-code)$"
+    },
+    "previous_version": {
+      "type": "string"
+    },
+    "candidate_version": {
+      "type": "string"
+    },
+    "previous_install_id": {
+      "type": "string",
+      "pattern": "^native-payload-[0-9a-f]{64}$"
+    },
+    "previous_pack_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "cli_plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "preflight_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mutation": {
+      "$ref": "#/$defs/PreviewMutation"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "target",
+    "previous_version",
+    "candidate_version",
+    "previous_install_id",
+    "previous_pack_sha256",
+    "candidate_digest_sha256",
+    "cli_plan_sha256",
+    "preflight_digest_sha256",
+    "mutation"
+  ],
+  "$defs": {
+    "ActivationPreviewCommand": {
+      "type": "string",
+      "enum": [
+        "install-candidate-activate-preview"
+      ]
+    },
+    "PreviewMutation": {
+      "type": "string",
+      "enum": [
+        "none"
+      ]
+    }
+  }
+}

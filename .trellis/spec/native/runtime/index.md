@@ -122,6 +122,18 @@ candidate, launch or write authority. Install, repair, removal and running-produ
 verification retain their existing pack-bound and signature checks. Activation must
 also bind this predecessor evidence to the selected Host and managed CLI receipts.
 
+`install candidate activate-preview` verifies the signed release inputs and the
+current process at the fixed staged payload path, then binds the selected older
+payload, Host source/registration and installed CLI receipts. It requires
+`--previous-install-id`, the same artifact stream/platform, and an increasing
+version. The existing CLI plan owner binds command bytes, receipt bytes and retained
+backups; its preconditions are rechecked after predecessor verification. The output
+is a read-only identity snapshot with `preflight_digest_sha256`, never an approval
+or transaction reservation. It does not include managed Skills/settings changes;
+activation preparation must bind those separately and revalidate all observed state.
+The public contract is Rust-generated `candidate-activation-preview-v1`; existing
+candidate preview/stage/apply wire formats remain unchanged.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

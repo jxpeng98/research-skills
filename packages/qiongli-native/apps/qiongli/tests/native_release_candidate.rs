@@ -763,6 +763,77 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
         .disposition,
         InstallDisposition::AlreadyApplied
     );
+    let next_product = qiongli_platform::verify_native_packaged_product(
+        &content,
+        &authority,
+        &home,
+        &next_binary,
+        &next_artifact.version,
+        SOURCE_COMMIT,
+        NOW + 5,
+    )
+    .unwrap();
+    let previous_id = &codex_install.payload.receipt.install_id;
+    assert!(
+        qiongli::preview_native_candidate_activation(&next_product, &next_verified, previous_id)
+            .is_err()
+    );
+    let command = if cfg!(windows) {
+        home.join("AppData/Local/Qiongli/bin/qiongli.exe")
+    } else {
+        home.join(".local/bin/qiongli")
+    };
+    fs::create_dir_all(command.parent().unwrap()).unwrap();
+    fs::copy(&installed_binary, &command).unwrap();
+    let cli_receipt = home.join(".qiongli/v2/cli/install-receipt.json");
+    fs::create_dir_all(cli_receipt.parent().unwrap()).unwrap();
+    let receipt = json!({
+        "schema_version": 3, "product_version": artifact.version,
+        "installed_sha256": codex_install.payload.receipt.operation.binary_sha256,
+        "target_name": command.file_name().unwrap().to_str().unwrap(),
+        "retained_backup_name": null
+    });
+    let receipt_bytes = serde_json::to_vec(&receipt).unwrap();
+    fs::write(&cli_receipt, &receipt_bytes).unwrap();
+    let activation =
+        || qiongli::preview_native_candidate_activation(&next_product, &next_verified, previous_id);
+    let first = serde_json::to_value(activation().unwrap()).unwrap();
+    assert_eq!(first["previous_version"], artifact.version);
+    assert_eq!(first["candidate_version"], next_artifact.version);
+    assert_eq!(first["mutation"], "none");
+    assert!(first.get("approval_digest_sha256").is_none());
+    assert_eq!(serde_json::to_value(activation().unwrap()).unwrap(), first);
+    assert_eq!(fs::read(&cli_receipt).unwrap(), receipt_bytes);
+    assert!(
+        qiongli::preview_native_candidate_activation(&product, &next_verified, previous_id)
+            .is_err()
+    );
+    assert!(
+        qiongli::preview_native_candidate_activation(
+            &next_product,
+            &next_verified,
+            &staged.receipt.install_id
+        )
+        .is_err()
+    );
+    assert!(qiongli::preview_native_candidate_activation(&product, &codex, previous_id).is_err());
+    let command_bytes = fs::read(&command).unwrap();
+    fs::write(&command, b"foreign command canary").unwrap();
+    assert!(activation().is_err());
+    assert_eq!(fs::read(&command).unwrap(), b"foreign command canary");
+    fs::write(&command, command_bytes).unwrap();
+    let mut wrong_receipt = receipt.clone();
+    wrong_receipt["product_version"] = json!(next_artifact.version);
+    fs::write(&cli_receipt, serde_json::to_vec(&wrong_receipt).unwrap()).unwrap();
+    assert!(activation().is_err());
+    fs::write(&cli_receipt, serde_json::to_vec_pretty(&receipt).unwrap()).unwrap();
+    let changed = serde_json::to_value(activation().unwrap()).unwrap();
+    assert_ne!(
+        first["preflight_digest_sha256"],
+        changed["preflight_digest_sha256"]
+    );
+    fs::write(&cli_receipt, receipt_bytes).unwrap();
+
     let root = qiongli_platform::discover_native_candidate_managed_root(&home).unwrap();
     let executor = qiongli_platform::ManagedNativePayloadExecutor::new(root);
     let staged_binary_bytes = fs::read(&next_binary).unwrap();

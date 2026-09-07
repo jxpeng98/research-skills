@@ -4078,6 +4078,13 @@ fn source_build_has_no_release_authority_and_cannot_preview_native_install() {
         vec![
             "install".into(),
             "candidate".into(),
+            "activate-preview".into(),
+            "--previous-install-id".into(),
+            format!("native-payload-{}", "a".repeat(64)).into(),
+        ],
+        vec![
+            "install".into(),
+            "candidate".into(),
             "stage".into(),
             "--expected-approval-digest".into(),
             "a".repeat(64).into(),

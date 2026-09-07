@@ -486,6 +486,30 @@ pub fn verify_native_release_candidate_local(
     let payload = ManagedNativePayloadExecutor::new(managed_root)
         .verify(install_id, pack)
         .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    verify_candidate_receipt_closure(home, target, payload)
+}
+
+/// Checks a predecessor's payload, Host source and registration as one owned
+/// installation without requiring the successor's resource pack or granting authority.
+pub fn verify_receipt_owned_native_candidate_local(
+    home: impl AsRef<Path>,
+    target: ClientActivationTarget,
+    install_id: &str,
+) -> Result<NativeCandidateLocalVerification, NativeCandidateLocalInstallError> {
+    let home = home.as_ref();
+    let root = discover_native_candidate_managed_root(home)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    let payload = ManagedNativePayloadExecutor::new(root)
+        .verify_receipt_owned(install_id)
+        .map_err(NativeCandidateLocalInstallError::Transaction)?;
+    verify_candidate_receipt_closure(home, target, payload)
+}
+
+fn verify_candidate_receipt_closure(
+    home: &Path,
+    target: ClientActivationTarget,
+    payload: NativePayloadInstallVerification,
+) -> Result<NativeCandidateLocalVerification, NativeCandidateLocalInstallError> {
     let source_target = discover_native_candidate_plugin_source_target(home, target)
         .map_err(NativeCandidateLocalInstallError::Source)?;
     let source = verify_native_candidate_plugin_source(&source_target)

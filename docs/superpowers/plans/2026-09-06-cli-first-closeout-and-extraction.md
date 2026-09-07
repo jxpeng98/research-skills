@@ -820,3 +820,37 @@ outcome/last-known-good metadata, process and competing-write guards, and recove
 The current check is not a cross-version executable health journey or activation
 command. Real Hosts, Windows runtime and named candidate qualification remain
 unverified. First-stage and ledger acceptance remain open; no publication occurred.
+
+
+## CLI-403 fifteenth increment — activation identity preview
+
+Base: `2af0d211`; branch: `codex/cli-activation-preflight`.
+The release-engineering `install candidate activate-preview` command now requires
+signed candidate/archive/notes, a selected Host and `--previous-install-id`. It
+verifies the running staged product against the exact candidate, joins the existing
+payload/source/registration receipt closure with the managed native CLI copy, and
+requires a newer version in the same artifact stream/platform. Its snapshot digest
+binds the candidate, target, CLI plan and predecessor receipts. CLI preconditions
+are rechecked after predecessor discovery. No transaction, mutation or approval is
+created. The platform closure helper reuses existing validation; pack-bound callers
+retain their original behavior.
+
+Checks on macOS: activation parser/contract tests passed (2); the signed-candidate
+integration fixture passed (1), including old/new identity mismatch, same-version
+refusal, missing/changed command, mismatched CLI receipt and exact receipt-byte
+binding. The real source-build CLI refusal test passed (1), preserving static errors
+and path redaction. The integration fixture uses small synthetic executable bytes
+and version identities, not a cross-version running-binary qualification. Library
+and generator Clippy passed with the existing Rust 1.98 exception. Public schema
+policy validation and its 12 tests passed. Draft 2020-12 schema and fixture are
+Rust-generated with an additive policy record. Final diff review found no actionable
+issue; format, whitespace and generated-roadmap checks passed.
+
+Next: prepare the complete activation transaction, including managed Skills and
+settings state; obtain digest-bound write/config/Host approvals; connect signed
+release generation/last-known-good metadata, competing-write exclusion and recovery
+to the existing coordinator and process health check. The new preflight digest is
+explicitly not activation authorization. Successful packaged command execution,
+real Hosts and platform qualification remain outstanding. First-stage integration
+and program acceptance remain incomplete; no accepted ledger or publication state
+changed.

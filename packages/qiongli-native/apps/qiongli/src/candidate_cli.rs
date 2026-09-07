@@ -51,6 +51,10 @@ pub(crate) struct CandidateReceiptOptions {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum CandidateCliCommand {
+    ActivatePreview {
+        options: CandidateReleaseOptions,
+        previous_install_id: String,
+    },
     StagePreview(CandidateReleaseOptions),
     Stage {
         options: CandidateReleaseOptions,
@@ -68,6 +72,7 @@ pub(crate) enum CandidateCliCommand {
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub(crate) enum CandidateCliOutput {
+    ActivationPreview(CandidateActivationPreviewOutput),
     Stage(CandidateStageOutput),
     Preview(CandidatePreviewOutput),
     Apply(CandidateApplyOutput),
@@ -112,6 +117,35 @@ pub(crate) fn execute(
     content: &EmbeddedContent,
 ) -> Result<CandidateCliOutput, &'static str> {
     match command {
+        CandidateCliCommand::ActivatePreview {
+            options,
+            previous_install_id,
+        } => {
+            let now = now_unix()?;
+            let authority = require_authority(authority)?;
+            let source = require_source_commit(expected_source_commit)?;
+            let prepared = prepare_candidate(&options, authority, source, content, now)?;
+            let home = home.ok_or("native-candidate-home-unavailable")?;
+            let executable =
+                std::env::current_exe().map_err(|_| "native-activation-process-unavailable")?;
+            let product = qiongli_platform::verify_native_packaged_product(
+                content.pack(),
+                authority,
+                home,
+                &executable,
+                &prepared.verified.candidate().artifact.version,
+                source,
+                now,
+            )
+            .map_err(|error| error.reason_code())?;
+            Ok(CandidateCliOutput::ActivationPreview(
+                preview_native_candidate_activation(
+                    &product,
+                    &prepared.verified,
+                    &previous_install_id,
+                )?,
+            ))
+        }
         CandidateCliCommand::StagePreview(options) => {
             let prepared = prepare_candidate(
                 &options,
@@ -308,6 +342,159 @@ pub fn candidate_stage_contract_json() -> Result<String, serde_json::Error> {
     })
     .collect::<Vec<_>>();
     serde_json::to_string_pretty(&serde_json::json!({"schema": schema, "fixtures": fixtures}))
+}
+
+/// A read-only identity snapshot. This digest is not an activation approval.
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CandidateActivationPreviewOutput {
+    #[schemars(range(min = 1, max = 1))]
+    schema_version: u32,
+    command: ActivationPreviewCommand,
+    #[schemars(regex(pattern = "^(codex|claude-code)$"))]
+    target: String,
+    previous_version: String,
+    candidate_version: String,
+    #[schemars(regex(pattern = "^native-payload-[0-9a-f]{64}$"))]
+    previous_install_id: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    previous_pack_sha256: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    candidate_digest_sha256: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    cli_plan_sha256: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    preflight_digest_sha256: String,
+    mutation: PreviewMutation,
+}
+
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+enum ActivationPreviewCommand {
+    #[serde(rename = "install-candidate-activate-preview")]
+    Preview,
+}
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+enum PreviewMutation {
+    #[serde(rename = "none")]
+    None,
+}
+
+/// The caller supplies freshly verified running-product and candidate authority.
+/// Checks do not reserve a transaction or authorize activation; apply must revalidate.
+pub fn preview_native_candidate_activation(
+    product: &qiongli_platform::VerifiedPackagedProduct,
+    candidate: &VerifiedNativeReleaseCandidate,
+    previous_install_id: &str,
+) -> Result<CandidateActivationPreviewOutput, &'static str> {
+    if product.artifact() != &candidate.candidate().artifact
+        || product.control_sha256() != candidate.signed_payload_sha256()
+        || product.product_source_commit() != candidate.candidate().source_commit
+        || product.resource_pack_sha256()
+            != candidate
+                .candidate()
+                .signed_portable_release
+                .envelope
+                .resource_pack_sha256
+    {
+        return Err("native-activation-candidate-process-mismatch");
+    }
+    let previous = qiongli_platform::verify_receipt_owned_native_candidate_local(
+        product.home(),
+        candidate.target(),
+        previous_install_id,
+    )
+    .map_err(|error| error.reason_code())?;
+    let mut expected = previous.payload.receipt.artifact.clone();
+    expected
+        .version
+        .clone_from(&candidate.candidate().artifact.version);
+    if expected != candidate.candidate().artifact
+        || semver::Version::parse(&candidate.candidate().artifact.version)
+            .map_err(|_| "native-activation-version-invalid")?
+            <= semver::Version::parse(&previous.payload.receipt.artifact.version)
+                .map_err(|_| "native-activation-version-invalid")?
+    {
+        return Err("native-activation-predecessor-incompatible");
+    }
+    let home = product.home();
+    let target = crate::cli_install::cli_target(home);
+    let plan = crate::cli_install::preview_cli_install(
+        home,
+        product.current_executable(),
+        &candidate.candidate().artifact.version,
+    )?;
+    crate::cli_install::installed_native_cli_source(
+        home,
+        &target,
+        &previous.payload.receipt.artifact,
+    )?
+    .ok_or("native-activation-predecessor-cli-unavailable")?;
+    crate::cli_install::verify_cli_install_plan(&plan)?;
+    if plan.source_sha256
+        != candidate
+            .candidate()
+            .signed_portable_release
+            .envelope
+            .binary_sha256
+    {
+        return Err("native-activation-candidate-process-mismatch");
+    }
+    let registration = match &previous.registration {
+        NativeCandidateRegistrationVerification::Codex(value) => {
+            serde_json::to_value(&value.receipt)
+        }
+        NativeCandidateRegistrationVerification::ClaudeCode(value) => {
+            serde_json::to_value(&value.receipt)
+        }
+    }
+    .map_err(|_| "native-activation-preview-serialization-failed")?;
+    let bytes = serde_json::to_vec(&(
+        "QIONGLI-NATIVE-ACTIVATION-PREFLIGHT-V1",
+        candidate.signed_payload_sha256(),
+        candidate.target(),
+        plan.plan_sha256(),
+        &previous.payload.receipt,
+        &previous.source.receipt_sha256,
+        registration,
+    ))
+    .map_err(|_| "native-activation-preview-serialization-failed")?;
+    Ok(CandidateActivationPreviewOutput {
+        schema_version: 1,
+        command: ActivationPreviewCommand::Preview,
+        target: match candidate.target() {
+            ClientActivationTarget::Codex => "codex",
+            ClientActivationTarget::ClaudeCode => "claude-code",
+        }
+        .to_string(),
+        previous_version: previous.payload.receipt.artifact.version,
+        candidate_version: candidate.candidate().artifact.version.clone(),
+        previous_install_id: previous_install_id.to_string(),
+        previous_pack_sha256: previous.payload.receipt.operation.pack_sha256,
+        candidate_digest_sha256: candidate.signed_payload_sha256().to_string(),
+        cli_plan_sha256: plan.plan_sha256().to_string(),
+        preflight_digest_sha256: encode_hex(&Sha256::digest(bytes)),
+        mutation: PreviewMutation::None,
+    })
+}
+
+pub fn candidate_activation_preview_contract_json() -> Result<String, serde_json::Error> {
+    let schema = schemars::generate::SchemaSettings::draft2020_12()
+        .into_generator()
+        .into_root_schema_for::<CandidateActivationPreviewOutput>();
+    let fixture = CandidateActivationPreviewOutput {
+        schema_version: 1,
+        command: ActivationPreviewCommand::Preview,
+        target: "codex".to_string(),
+        previous_version: "2.0.0-alpha.5".to_string(),
+        candidate_version: "2.0.0-alpha.6".to_string(),
+        previous_install_id: format!("native-payload-{}", "1".repeat(64)),
+        previous_pack_sha256: "2".repeat(64),
+        candidate_digest_sha256: "3".repeat(64),
+        cli_plan_sha256: "4".repeat(64),
+        preflight_digest_sha256: "5".repeat(64),
+        mutation: PreviewMutation::None,
+    };
+    serde_json::to_string_pretty(&serde_json::json!({"schema": schema, "fixture": fixture}))
 }
 
 pub(crate) struct PreparedCandidate {
@@ -748,6 +935,28 @@ pub(crate) struct CandidateRemoveOutput {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn activation_preview_contract_matches_generated_and_consumer() {
+        let generated: serde_json::Value =
+            serde_json::from_str(&candidate_activation_preview_contract_json().unwrap()).unwrap();
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../schemas/candidate-activation-preview-v1.schema.json"
+        ))
+        .unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../tests/fixtures/candidate-activation-preview-v1.json"
+        ))
+        .unwrap();
+        assert_eq!(generated["schema"], schema);
+        assert_eq!(generated["fixture"], fixture);
+        let decoded: CandidateActivationPreviewOutput =
+            serde_json::from_value(fixture.clone()).unwrap();
+        assert_eq!(serde_json::to_value(decoded).unwrap(), fixture);
+        let mut invalid = fixture;
+        invalid["approval_digest_sha256"] = serde_json::json!("a".repeat(64));
+        assert!(serde_json::from_value::<CandidateActivationPreviewOutput>(invalid).is_err());
+    }
 
     #[test]
     fn candidate_stage_contract_matches_generated_schema_and_fixtures() {

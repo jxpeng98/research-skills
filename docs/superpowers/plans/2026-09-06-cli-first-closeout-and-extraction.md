@@ -2384,3 +2384,37 @@ CLI-405 becomes active with this evidence; CLI-404's blocker now reflects comple
 research disclosure/intake and remaining consolidation/continuation. No acceptance
 record changes. Next: the concrete academic review decision, then canonical writing
 and same-device continuation; named research qualification remains incomplete.
+
+
+## CLI-405 approved canonical consolidation and local restart verification
+
+Base `b2efd858`; branch `codex/approved-research-consolidation`. The maintainer
+explicitly replied “批准” to the concrete consolidation preview. Recomputed with
+fixed reviewedAtUnix `1788820817`, the entire preview matched, including digest
+`73f09cc56bf8a9f04740997f07d3b28042f2d24cfd7a3ddf08f02bcc5286ad37`. The existing
+`dfebb17c` candidate applied it once with both required approvals.
+
+The created `context/research_state.md` is exactly 1955 bytes with SHA-256
+`fc687bfbce6fcef41e492123bf3f51b1aeb83b37cbb6f6c5a02ef181455500b6`. The receipt
+acknowledgement is `ack_c9142066082486c15498f050caca7e439603447d90d88fbcb755025018c7c6f4`.
+Separate CLI processes confirmed semantic/library revision 2, no pending Inbox
+entry and one applied capture. The canonical file preserves abstract-only limits;
+it does not silently incorporate the later fulltext addendum or claim full B2.
+
+A new external Codex continuation was prepared but automatic approval review
+rejected disclosure of the consolidated metadata/graph as outside the earlier
+draft-validation scope. That process never executed. Local graph inspection still
+completed: revision 2, two nodes and one structural containment edge; diagnostic
+`missing-stable-id` for `field:main_question_or_thesis`. It does not expose a
+claim/evidence/literature graph. The initial all-files-unchanged assertion detected
+a newly created empty portfolio `.catalog.lock`; inspection verified this was the
+only change and canonical files were unchanged. The lock is not research content.
+
+Private `consolidation-authorization.json`, exact commit, post-write Inbox/project
+views, graph snapshot and `consolidation-verification.json` are stored in the
+existing `target/cli405-approved-8134b085/` directory under the native package.
+No source patch or unaffected suite rerun was needed. CLI-404/405 blockers now
+reflect completed approval/intake/consolidation and remaining external continuation
+authority, semantic research work and Host/SEC qualification. Acceptance is unchanged.
+Next: explicitly authorized read-only external continuation of the revision-2
+artifact/metadata/graph, then the actual same-device Host handoff.

@@ -297,7 +297,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-07",
-      "blocker": "Current candidate and real Codex research-project read/text review passed; the exact human-authorized Inbox intake completed. Academic consolidation, real research continuation and SEC qualification remain open."
+      "blocker": "Current candidate, real Codex draft review, human-authorized Inbox intake and canonical consolidation passed. External continuation of revision-2 data needs explicit disclosure authority; Host/SEC qualification remains open."
     },
     {
       "id": "CLI-405",
@@ -312,7 +312,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-07",
-      "blocker": "Authorized REALM/RAG draft review and exact Inbox intake completed. Concrete consolidation preview awaits academic approval; canonical note and same-device scholarly continuation remain open."
+      "blocker": "Approved REALM/RAG capture consolidated to research_state.md at revision 2; local restart verified. Graph is structural only. External continuation disclosure was rejected; full scholarly continuation and same-device Host handoff remain open."
     },
     {
       "id": "CLI-406",

@@ -1962,3 +1962,59 @@ skills explicitly require artifact apply approval; this is the real interaction
 under qualification, not a development phase sign-off. Ledger acceptance remains
 unchanged. Whitespace, generated-index and frozen-source checks passed; no runtime
 code changed and no unchanged suites were rerun.
+
+
+## CLI-410 preparation — first-stage completion audit at 712265cf
+
+This is an evidence-to-requirement audit, not another status ledger. ADR 0218 and
+the roadmap still define CLI-401–405 plus CLI-410 preparation as this stage.
+The supplied September 5 acceptance notes enumerate B01–B06, H01–H03, P01–P05
+and R01–R04 for the declared baseline scope. L01–L12 belong to later collaboration;
+publication/announcement and cross-device work are not authorized by this goal.
+The previous turn made progress by producing an actual two-source review candidate.
+No human reply to its exact Inbox approval request has arrived.
+
+Current source check: `cargo tree --manifest-path packages/qiongli-native/Cargo.toml
+-p qiongli --no-default-features --edges normal,build --locked --offline --prefix none`
+exited zero. Its 194 distinct package names contain no tauri/gtk/gdk/webkit/wry/rfd
+prefix. This verifies this host's selected normal/build graph, not all target-specific
+dependencies, test graphs or a clean-machine run. Prior compilation/test evidence
+retains its named source/platform scope.
+
+| Requirement | Evidence available | What still prevents a full claim |
+|---|---|---|
+| B01 build isolation | Current selected normal/build dependency graph; earlier native CLI builds and tests | Target-specific graphs/builds must match each declared supported package |
+| B02 no product window | Named candidate empty args, version, window refusal, MCP and managed-operation probes | One end-to-end approved research/continuation journey on the declared Host combination |
+| B03 independent resources | Candidates run outside checkout with installed payload/resource authority | The entire stated path/cwd/old-GUI-removal matrix is not established by empty PATH |
+| B04 clean consumer | Real Debian ARM64 container lacks Python/Node/Cargo and exercises the candidate | A container does not satisfy the notes' clean VM/physical-machine requirement; macOS/Windows clean-consumer evidence remains absent |
+| B05 trust | Named package tamper, partial approval, candidate staging and installed health refusal probes | Aggregate all required trust cases at the chosen release candidate/target; prior sources are not silently promoted |
+| B06 lifecycle | Real isolated Codex/Claude installs/removal and macOS/Linux commit/rollback receipts | Whole supported platform/Host lifecycle and repair combinations are not yet qualified |
+| H01 live Host readiness | Real client cache installs and direct Full MCP probes | Current conversation still routes through old alpha.3 Lite behavior; a current Full model-initiated journey is missing |
+| H02 clean stdio | Protocol probes and MCP process tests | Approved live business journey remains unrun |
+| H03 authentication boundary | Native adapter assigns authentication to the Host; no alternate credentials or transport used | Actual absent/expired account, quota and denied-tool cases are not proved by parser fixtures |
+| P01 two-source formal note | REALM/RAG abstract-level comparison, two real source links, valid pending capture preview | Human intake approval, full source review as needed, concrete consolidation preview and approved canonical note are missing |
+| P02 domain truth | Candidate explicitly marks abstract-only coverage and avoids unsupported performance ranking; local evidence tests exist | Complete missing/truncated/unconfirmed/sparse-domain matrix in the real journey remains unqualified |
+| P03 human approval | Real missing-approval refusal; exact immutable pending review packet | No positive human-origin approval evidence; automatic goal continuation is not approval |
+| P04 replay boundary | Existing cross-MCP-process evidence replay refusal and changed-input/approval checks | Evidence authentication is not itself an approval-token lifecycle; killing an approval holder and restarting must be qualified against the actual approval owner |
+| P05 restart/second Host | Protocol checkpoint/replay and installed startup/restart primitives | No second actual Host has continued this approved scholarly project after the first exited |
+| R01 regression | Existing scoped project/Capture/Graph/MCP/install/migration tests | Their historical results do not prove every retained feature at one named baseline package |
+| R02 update/recovery | Real macOS/Linux two-version commit, SIGKILL rollback, health/MCP and live-CLI refusal | SIGKILL at one observed boundary does not establish arbitrary power loss, migration windows or Windows recovery |
+| R03 diagnostic privacy | Candidate receipt path-redaction/unrelated-state checks and redacted MCP tests | Live Host research/error evidence still needs scoped privacy review; local private fixtures must not be published as redacted receipts |
+| R04 qualification preparation | Existing runner and actual named test candidate/source/hash receipts | Declare the supported source/package/platform/Host combination, fill gaps above; production signing and publication remain separate authority |
+
+Read-only receipt revalidation found all four files present and their SHA-256 values
+unchanged: Linux activation `9c63ffba…a28f3c`, macOS SIGKILL `63ae0039…6d73`,
+macOS real-client Full cache `210b6bbe…f483e`, and clean Debian candidate consumer
+`adae0525…a64dbc` (full paths/hashes appear in their earlier entries). Their scopes
+are intentionally not combined into a fictitious current-head universal package.
+The two-source capture still matches SHA-256
+`292c6574a43564f400c820ae3c108d0ffdf8b17ecce956225c8848bb35f8f784`,
+and its target history file is absent. No candidate or approval data was edited.
+
+Next work must close these actual gaps, not add another generic framework or repeat
+already-passing suites. Research apply depends on the pending human decision and
+Full Host qualification; offline platform support and release-scope preparation can
+continue independently. Windows native activation remains explicitly unsupported
+in current source; do not claim its earlier App tests as CLI package qualification.
+No acceptance count changed. This audit passed whitespace, generated-index and
+frozen-source checks and required no runtime suite or publication action.

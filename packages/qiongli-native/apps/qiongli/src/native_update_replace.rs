@@ -55,6 +55,9 @@ enum ReplacementCheckpoint {
     AfterRecoveryApplicationRestore,
     BeforeRollbackStateClear,
     BeforeRecoveryMarkerClear,
+    BeforeCommittedBackupCleanup,
+    AfterCommittedBackupCleanup,
+    BeforeCommittedMarkerClear,
 }
 
 #[cfg(test)]
@@ -298,6 +301,8 @@ pub(crate) fn confirm_replacement_health(
         }
         let reconciliation = load_reconciliation_journal(store, transaction_id)?;
         if reconciliation_journal_sha256(&reconciliation)? != journal.reconciliation_journal_sha256
+            || reconciliation.target_version != journal.target_version
+            || reconciliation.target_pack_sha256 != journal.resource_pack_sha256
         {
             return Err("native-update-health-check-failed");
         }
@@ -391,6 +396,7 @@ fn legacy_application_binary(application: &Path) -> Result<PathBuf, &'static str
 fn legacy_rollback_record(
     store: &UpdateStateStore,
     journal: &ReplacementJournalV1,
+    original_application: &Path,
 ) -> Result<LegacyRollbackRecord, &'static str> {
     let loaded = store.load().map_err(|error| error.reason_code())?;
     let prior_release_sha256 = sha256_hex(
@@ -418,7 +424,7 @@ fn legacy_rollback_record(
         }
         return Ok(record);
     }
-    let old = legacy_application_binary(&journal.backup_application)?;
+    let old = legacy_application_binary(original_application)?;
     let record = LegacyRollbackRecord {
         schema_version: 1,
         marker_sha256,
@@ -431,6 +437,45 @@ fn legacy_rollback_record(
     )?;
     sync_directory(&root)?;
     Ok(record)
+}
+
+/// Finish only a durably committed legacy update; never rerun health or roll back.
+/// The caller owns filesystem-write approval and process checks.
+pub fn recover_legacy_committed_cleanup(
+    home: &Path,
+    store: &UpdateStateStore,
+    expected_marker_sha256: &str,
+) -> Result<(), &'static str> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (home, store, expected_marker_sha256);
+        Err("native-update-target-unsupported")
+    }
+    #[cfg(target_os = "macos")]
+    {
+        if !valid_sha256(expected_marker_sha256) {
+            return Err("native-update-journal-invalid");
+        }
+        let _home_lock = crate::update_reconcile::acquire_native_home_write_lock(home)?;
+        let _lock = acquire_replacement_lock(store)?;
+        let marker = crate::update_reconcile::read_installation_marker(home)?;
+        if sha256_hex(&marker) != expected_marker_sha256 {
+            return Err("native-activation-journal-mismatch");
+        }
+        let journal: ReplacementJournalV1 =
+            serde_json::from_slice(&marker).map_err(|_| "native-update-journal-invalid")?;
+        validate_journal(&journal, store, &journal.transaction_id)?;
+        let reconciliation = load_reconciliation_journal(store, &journal.transaction_id)?;
+        if reconciliation_journal_sha256(&reconciliation)? != journal.reconciliation_journal_sha256
+            || reconciliation.target_version != journal.target_version
+            || reconciliation.target_pack_sha256 != journal.resource_pack_sha256
+        {
+            return Err("native-update-reconciliation-invalid");
+        }
+        cleanup_committed_replacement(store, &journal, &reconciliation)?;
+        replacement_checkpoint(ReplacementCheckpoint::BeforeCommittedMarkerClear)?;
+        crate::update_reconcile::clear_installation_marker(home, &marker)
+    }
 }
 
 /// Roll back an interrupted legacy health window using the exact approved Home marker.
@@ -479,6 +524,8 @@ pub fn recover_legacy_health_interruption(
         }
         let reconciliation = load_reconciliation_journal(store, &journal.transaction_id)?;
         if reconciliation_journal_sha256(&reconciliation)? != journal.reconciliation_journal_sha256
+            || reconciliation.target_version != journal.target_version
+            || reconciliation.target_pack_sha256 != journal.resource_pack_sha256
         {
             return Err("native-update-reconciliation-invalid");
         }
@@ -524,7 +571,7 @@ pub fn recover_legacy_health_interruption(
                 &journal.canonical_binary_sha256,
             )?;
         }
-        let record = legacy_rollback_record(store, &journal)?;
+        let record = legacy_rollback_record(store, &journal, &journal.backup_application)?;
         let old_application = if backup_present {
             &journal.backup_application
         } else {
@@ -595,6 +642,7 @@ fn continue_replacement_after_handoff(
     }
     let marker = serde_json::to_vec(journal).map_err(|_| "native-update-journal-invalid")?;
     crate::update_reconcile::bind_installation_marker(home, &marker)?;
+    legacy_rollback_record(store, journal, &journal.destination_application)?;
     if let Err(error) = activate_application(journal) {
         if error == "native-update-recovery-required" {
             mark_recovery_required(store, &journal.transaction_id);
@@ -648,18 +696,56 @@ fn cleanup_committed_replacement(
     journal: &ReplacementJournalV1,
     reconciliation: &crate::update_reconcile::ReconciliationJournalV1,
 ) -> Result<(), &'static str> {
-    cleanup_committed_reconciliation(reconciliation)?;
-    fs::remove_dir_all(&journal.backup_application)
+    confirm_committed_state(store, journal)?;
+    validate_staged_executable(
+        &legacy_application_binary(&journal.destination_application)?,
+        &journal.canonical_binary_sha256,
+    )?;
+    let record: LegacyRollbackRecord = serde_json::from_slice(&read_private_file(
+        &store
+            .staging_root()
+            .join(&journal.transaction_id)
+            .join(LEGACY_ROLLBACK_RECORD),
+        MAX_JOURNAL_BYTES,
+    )?)
+    .map_err(|_| "native-update-recovery-record-invalid")?;
+    if record.schema_version != 1
+        || !valid_sha256(&record.prior_release_sha256)
+        || !valid_sha256(&record.old_binary_sha256)
+        || record.marker_sha256
+            != sha256_hex(
+                &serde_json::to_vec(journal).map_err(|_| "native-update-journal-invalid")?,
+            )
+    {
+        return Err("native-update-recovery-record-invalid");
+    }
+    let backup_present = journal
+        .backup_application
+        .try_exists()
         .map_err(|_| "native-update-backup-cleanup-required")?;
+    if backup_present {
+        validate_staged_executable(
+            &legacy_application_binary(&journal.backup_application)?,
+            &record.old_binary_sha256,
+        )?;
+    } else {
+        ensure_absent(&journal.backup_application)?;
+    }
+    cleanup_committed_reconciliation(reconciliation)?;
+    replacement_checkpoint(ReplacementCheckpoint::BeforeCommittedBackupCleanup)?;
+    if backup_present {
+        fs::remove_dir_all(&journal.backup_application)
+            .map_err(|_| "native-update-backup-cleanup-required")?;
+    }
     sync_directory(
         journal
             .backup_application
             .parent()
             .ok_or("native-update-installation-layout-invalid")?,
     )?;
-    let transaction_root = store.staging_root().join(&journal.transaction_id);
-    fs::remove_dir_all(&transaction_root).map_err(|_| "native-update-staging-cleanup-required")?;
-    sync_directory(&store.staging_root())
+    replacement_checkpoint(ReplacementCheckpoint::AfterCommittedBackupCleanup)?;
+    // ponytail: retain transaction evidence and downloads; add bounded garbage collection separately.
+    sync_directory(&store.staging_root().join(&journal.transaction_id))
 }
 
 #[cfg(target_os = "macos")]
@@ -762,7 +848,7 @@ fn rollback_activated_application(
             return Err("native-update-state-cleanup-required");
         }
     }
-    legacy_rollback_record(store, journal)?;
+    legacy_rollback_record(store, journal, &journal.backup_application)?;
     let failed = store
         .staging_root()
         .join(&journal.transaction_id)
@@ -997,6 +1083,7 @@ fn confirm_committed_state(
         .ok_or("native-update-health-state-invalid")?;
     if loaded.state.active_transaction.is_some()
         || loaded.state.last_accepted_generation != journal.generation
+        || last_known_good.channel != journal.target_channel
         || last_known_good.version != journal.target_version
         || last_known_good.generation != journal.generation
         || last_known_good.archive_sha256 != journal.archive_sha256
@@ -1521,6 +1608,7 @@ fn ensure_absent(path: &Path) -> Result<(), &'static str> {
 }
 
 fn remove_replacement_contract(transaction_root: &Path) {
+    let _ = fs::remove_file(transaction_root.join(LEGACY_ROLLBACK_RECORD));
     let _ = fs::remove_file(transaction_root.join(JOURNAL_FILE));
     let _ = fs::remove_file(transaction_root.join(HEALTH_TOKEN_FILE));
     let _ = sync_directory(transaction_root);
@@ -1720,13 +1808,6 @@ mod tests {
             fixture.journal.canonical_binary_sha256 = sha256_hex(b"new-canonical");
             fixture.journal.reconciliation_journal_sha256 =
                 reconciliation_journal_sha256(&fixture.reconciliation).unwrap();
-            write_new_private_file(
-                &fixture
-                    .transaction_root
-                    .join(crate::update_reconcile::RECONCILIATION_JOURNAL_FILE),
-                &serde_json_canonicalizer::to_vec(&fixture.reconciliation).unwrap(),
-            )
-            .unwrap();
             let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let _ = continue_replacement_after_handoff(
                     &fixture.root,
@@ -1848,6 +1929,88 @@ mod tests {
             assert_rolled_back(&fixture);
             fs::remove_dir_all(fixture.root).unwrap();
         }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn committed_cleanup_recovers_without_rolling_back_or_advancing_state() {
+        let fixture = replacement_fixture("committed-cleanup-recovery", false);
+        assert_eq!(
+            with_replacement_interruption(
+                ReplacementCheckpoint::BeforeCommittedBackupCleanup,
+                || continue_replacement_after_handoff(
+                    &fixture.root,
+                    &fixture.store,
+                    &fixture.journal,
+                    &fixture.reconciliation,
+                    || commit_replacement_health(&fixture.store, &fixture.journal).map(|_| ())
+                )
+            ),
+            Err(TEST_INTERRUPTION)
+        );
+        let digest = sha256_hex(&serde_json::to_vec(&fixture.journal).unwrap());
+        assert_eq!(
+            recover_legacy_committed_cleanup(&fixture.root, &fixture.store, &"0".repeat(64)),
+            Err("native-activation-journal-mismatch")
+        );
+        let loaded = fixture.store.load().unwrap();
+        let mut changed = loaded.state.clone();
+        changed.last_known_good.as_mut().unwrap().archive_sha256 = "e".repeat(64);
+        let changed = fixture.store.replace(loaded.revision, changed).unwrap();
+        assert_eq!(
+            recover_legacy_committed_cleanup(&fixture.root, &fixture.store, &digest),
+            Err("native-update-health-state-invalid")
+        );
+        fixture
+            .store
+            .replace(changed.revision, loaded.state)
+            .unwrap();
+        let before = fixture.store.load().unwrap();
+        for (application, original) in [
+            (
+                &fixture.journal.destination_application,
+                b"new-known-good".as_slice(),
+            ),
+            (
+                &fixture.journal.backup_application,
+                b"old-known-good".as_slice(),
+            ),
+        ] {
+            let binary = legacy_application_binary(application).unwrap();
+            fs::write(&binary, b"foreign-bytes").unwrap();
+            assert_eq!(
+                recover_legacy_committed_cleanup(&fixture.root, &fixture.store, &digest),
+                Err("native-update-staged-application-drift")
+            );
+            assert!(fixture.journal.backup_application.exists());
+            fs::write(&binary, original).unwrap();
+        }
+        for checkpoint in [
+            ReplacementCheckpoint::AfterCommittedBackupCleanup,
+            ReplacementCheckpoint::BeforeCommittedMarkerClear,
+        ] {
+            assert_eq!(
+                with_replacement_interruption(checkpoint, || recover_legacy_committed_cleanup(
+                    &fixture.root,
+                    &fixture.store,
+                    &digest
+                )),
+                Err(TEST_INTERRUPTION)
+            );
+            assert!(!fixture.journal.backup_application.exists());
+            assert!(fixture.transaction_root.join(JOURNAL_FILE).exists());
+            assert_eq!(fixture.store.load().unwrap(), before);
+            assert!(
+                fixture
+                    .root
+                    .join(".qiongli/native/active-installation.json")
+                    .exists()
+            );
+        }
+        recover_legacy_committed_cleanup(&fixture.root, &fixture.store, &digest).unwrap();
+        assert_eq!(fixture.store.load().unwrap(), before);
+        assert_committed(&fixture);
+        fs::remove_dir_all(fixture.root).unwrap();
     }
 
     #[cfg(target_os = "macos")]
@@ -2209,9 +2372,18 @@ mod tests {
         let destination = applications.join(APPLICATION_NAME);
         create_directory_with_file(&destination, b"old-known-good");
         let backup = applications.join(format!(".Qiongli.app.qiongli-backup-{transaction_id}"));
-        let journal = journal_fixture(destination, staged, backup);
+        let mut journal = journal_fixture(destination, staged, backup);
+        journal.canonical_binary_sha256 = sha256_hex(b"new-known-good");
+        journal.resource_pack_sha256 = "2".repeat(64);
         let reconciliation =
             empty_reconciliation_journal(transaction_id, "2.0.0-alpha.2", &"2".repeat(64));
+        journal.reconciliation_journal_sha256 =
+            reconciliation_journal_sha256(&reconciliation).unwrap();
+        write_new_private_file(
+            &transaction_root.join(crate::update_reconcile::RECONCILIATION_JOURNAL_FILE),
+            &serde_json_canonicalizer::to_vec(&reconciliation).unwrap(),
+        )
+        .unwrap();
         ReplacementFixture {
             root,
             store,
@@ -2238,6 +2410,12 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     fn assert_retryable_staged(fixture: &ReplacementFixture) {
+        assert!(
+            !fixture
+                .transaction_root
+                .join(LEGACY_ROLLBACK_RECORD)
+                .exists()
+        );
         assert!(
             !fixture
                 .root
@@ -2307,7 +2485,7 @@ mod tests {
             b"new-known-good"
         );
         assert!(!fixture.journal.backup_application.exists());
-        assert!(!fixture.transaction_root.exists());
+        assert!(fixture.transaction_root.join(JOURNAL_FILE).exists());
     }
 
     #[cfg(target_os = "macos")]

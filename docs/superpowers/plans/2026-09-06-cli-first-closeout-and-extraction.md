@@ -1223,3 +1223,35 @@ from deletion stopped inside the failed application tree; if the remaining tree 
 prove identity the owner refuses. Then native activation/recovery still needs public
 candidate/approval/process wiring. First-stage integration remains incomplete; no push
 or publication occurred.
+
+
+## CLI-403 twenty-seventh increment — recover committed cleanup
+
+Base: `6fe5b562`; branch: `codex/cli-committed-recovery`.
+Added `recover_legacy_committed_cleanup`, a library owner that only finishes a durably
+accepted legacy update. It binds the exact marker/configured journal and canonical
+Host journal version/pack/digest, verifies the complete known-good identity including
+channel, and checks installed new/remaining old binary identities. It never reruns
+health, rolls back, or advances state. Missing backups after completed deletion are
+valid for retry; substituted or unverifiable identities refuse.
+
+The prior-release/old-binary record is now captured before application activation so
+committed cleanup has the same identity evidence as rollback. Verified pre-activation
+restoration discards that snapshot with its obsolete handoff contract. Committed
+cleanup keeps the transaction journal, snapshot and downloads rather than deleting
+its own evidence before marker removal. Bounded garbage collection is deferred; this
+retention ceiling is explicit in the owner.
+
+Checks on macOS: all 13 replacement tests passed. The new case interrupts before and
+after backup removal and before marker clearing, rejects wrong marker digest, changed
+accepted archive identity, and drift in either application binary. Retry preserves
+the exact state revision and installed new version. A malformed channel/version test
+was correctly rejected by the state owner; a valid changed archive identity tests the
+recovery layer instead. Final library Clippy, whitespace, roadmap-index and
+frozen-source boundary checks passed.
+No public JSON contract, ledger acceptance or publication status changed.
+
+Next: expose approved recovery through CLI with process checks, then connect native
+activation using fresh candidate/approval verification and installed CLI health. Real
+process-kill qualification and cleanup interrupted inside an application tree remain
+open; unverifiable partial trees still refuse. First-stage integration is incomplete.

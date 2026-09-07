@@ -67,7 +67,9 @@ pub use desktop_contract::{
 #[doc(hidden)]
 pub use mcp::FULL_HOST_ORCHESTRATION_CONTROL_TOOL_NAMES;
 pub use mcp::{serve_full_mcp, serve_lite_mcp};
-pub use native_update_replace::{recover_legacy_health_interruption, run_native_update_helper};
+pub use native_update_replace::{
+    recover_legacy_committed_cleanup, recover_legacy_health_interruption, run_native_update_helper,
+};
 use qiongli_content::{EmbeddedContent, ResourcePackLoaderError};
 use qiongli_platform::{
     NativeReleaseAuthority, NativeReleaseAuthorityError, VerifiedZoteroCompanionArtifact,

@@ -259,8 +259,7 @@ installed new canonical binary hash. It reserves RecoveryRequired through state 
 before rollback so late legacy health cannot commit, then reuses Host/application
 rollback, cleanup and exact marker clearing. It does not rerun health. Caller-owned
 filesystem approval/process checks and a public CLI entry point remain pending, as
-do committed cleanup and real process-kill qualification. Unsupported
-layouts/states refuse rather than guessing a completed recovery.
+does real process-kill qualification. Unsupported layouts/states refuse rather than guessing a completed recovery.
 
 Legacy rollback persists private `legacy-rollback-v1.json` before moving the application.
 Its strict version-1 shape binds the Home marker digest, a hash of the prior accepted
@@ -272,8 +271,22 @@ application must still match the new canonical binary before deletion. Successfu
 rollback keeps the record and journal as evidence. Unknown versions, changed marker/
 release bindings, substituted paths and binary drift refuse. Tested checkpoints are
 between filesystem operations; deletion interrupted inside a failed application tree
-can still require manual recovery if its identity cannot be verified. Committed
-cleanup and the public CLI remain pending.
+can still require manual recovery if its identity cannot be verified. The public CLI
+and process qualification remain pending.
+
+`recover_legacy_committed_cleanup` is the library entry for an already accepted legacy
+update. It validates the exact marker, configured journal, canonical Host journal and
+matching version/pack, complete last-known-good identity (including channel), installed
+new binary and any remaining old backup against retained identity evidence. It only
+finishes cleanup and clears its own marker; it never runs health or changes accepted
+state. Old identity is now recorded before activation so this evidence exists on both
+commit and rollback paths. Verified pre-activation restoration removes that snapshot
+with its old handoff contract to allow a fresh attempt.
+
+Committed cleanup retains transaction evidence/downloads and supports an already
+removed backup. Cleanup stopped inside a backup tree still refuses if identity can no
+longer be established. Bounded garbage collection and public approval/process wiring
+remain separate work; retaining evidence does not claim complete package qualification.
 
 ## Quality Check
 

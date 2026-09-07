@@ -11,7 +11,7 @@ use crate::{
     ApprovalRequirement, Architecture, ArtifactIdentityV1, CapabilityProfile,
     ClaudeRegistrationExecutor, ClientActivationCoordinator, ClientActivationDisposition,
     ClientActivationState, ClientActivationTarget, CodexRegistrationExecutor,
-    DesktopPackageManifestV1, GrantVerificationContext, InstallPlanMetadataV1, InstallerKind,
+    GrantVerificationContext, InstallPlanMetadataV1, InstallerKind,
     NativeCandidatePluginSourceDisposition, NativeCandidatePluginSourceVerification,
     NativeClientPluginGrantV1, NativeReleaseAuthority, OperatingSystem, ProductId, ReleaseChannel,
     TrustedPublicKey, VerifiedLaunchGrant, approve_install_plan, discover_claude_user,
@@ -207,8 +207,9 @@ impl Debug for PackagedProductInstallCapability {
 
 #[derive(Clone)]
 pub struct VerifiedPackagedProduct {
-    manifest: DesktopPackageManifestV1,
-    control: PackagedProductControlV1,
+    artifact: ArtifactIdentityV1,
+    product_source_commit: String,
+    resource_pack_sha256: String,
     current_executable: PathBuf,
     home: PathBuf,
     managed_product_root: PathBuf,
@@ -220,13 +221,18 @@ pub struct VerifiedPackagedProduct {
 
 impl VerifiedPackagedProduct {
     #[must_use]
-    pub const fn manifest(&self) -> &DesktopPackageManifestV1 {
-        &self.manifest
+    pub const fn artifact(&self) -> &ArtifactIdentityV1 {
+        &self.artifact
     }
 
     #[must_use]
-    pub const fn control(&self) -> &PackagedProductControlV1 {
-        &self.control
+    pub fn product_source_commit(&self) -> &str {
+        &self.product_source_commit
+    }
+
+    #[must_use]
+    pub fn resource_pack_sha256(&self) -> &str {
+        &self.resource_pack_sha256
     }
 
     #[must_use]
@@ -324,10 +330,10 @@ impl Debug for VerifiedPackagedProduct {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("VerifiedPackagedProduct")
-            .field("artifact", &self.manifest.artifact)
+            .field("artifact", &self.artifact)
             .field(
                 "plugin_identity",
-                &self.control.desired_state.plugin_identity,
+                &PackagedProductPluginIdentity::QiongliNext,
             )
             .field("current_executable", &"<verified-packaged-executable>")
             .field("home", &"<verified-current-user-home>")
@@ -463,8 +469,9 @@ pub fn verify_packaged_product(
         .resolve_profile("marketplace-lite")
         .map_err(|_| PackagedProductControlError::ProductMismatch)?;
     Ok(VerifiedPackagedProduct {
-        manifest,
-        control,
+        artifact: manifest.artifact,
+        product_source_commit: manifest.product_source_commit,
+        resource_pack_sha256: manifest.resource_pack_sha256,
         current_executable,
         home: input.home.to_path_buf(),
         managed_product_root: input.home.join(".qiongli"),
@@ -472,6 +479,70 @@ pub fn verify_packaged_product(
         capabilities,
         trusted_keys: input.release_authority.launch_grant_keys().to_vec(),
         minimum_generation: input.release_authority.minimum_launch_grant_generation(),
+    })
+}
+
+/// Establishes the same operation capability from an independently signed native
+/// installation. Callers provide embedded identity and current_exe(), never model paths.
+#[allow(clippy::too_many_arguments)]
+pub fn verify_native_packaged_product(
+    pack: &LoadedResourcePack<'_>,
+    authority: &NativeReleaseAuthority,
+    home: &Path,
+    current_executable: &Path,
+    product_version: &str,
+    source_commit: &str,
+    now_unix: u64,
+) -> Result<VerifiedPackagedProduct, crate::NativeCandidateLocalInstallError> {
+    let artifact =
+        crate::current_target_native_artifact_identity(product_version, authority.channel())
+            .map_err(|_| crate::NativeCandidateLocalInstallError::InstalledBinaryInvalid)?;
+    let mut capabilities = Vec::with_capacity(2);
+    let mut identity = None;
+    for target in [
+        ClientActivationTarget::Codex,
+        ClientActivationTarget::ClaudeCode,
+    ] {
+        let verified = crate::verify_installed_native_candidate_product(
+            pack,
+            authority,
+            &crate::NativeReleaseCandidateVerificationContext {
+                now_unix,
+                expected_source_commit: source_commit,
+                expected_artifact: &artifact,
+                requested_target: target,
+            },
+            home,
+            current_executable,
+        )?;
+        let digest = crate::native_release_candidate_signing_bytes(verified.candidate())
+            .map(|bytes| sha256_hex(&bytes))
+            .map_err(crate::NativeCandidateLocalInstallError::Candidate)?;
+        let current = (digest, verified.current_executable().to_path_buf());
+        if identity.as_ref().is_some_and(|prior| prior != &current) {
+            return Err(crate::NativeCandidateLocalInstallError::ReceiptClosureInvalid);
+        }
+        identity = Some(current);
+        capabilities.push(PackagedProductInstallCapability {
+            target,
+            grant: verified.plugin_grant().clone(),
+        });
+    }
+    let (control_sha256, current_executable) =
+        identity.ok_or(crate::NativeCandidateLocalInstallError::ReceiptClosureInvalid)?;
+    Ok(VerifiedPackagedProduct {
+        artifact,
+        product_source_commit: source_commit.to_string(),
+        resource_pack_sha256: pack.pack_sha256().to_string(),
+        current_executable,
+        home: home.to_path_buf(),
+        managed_product_root: home.join(".qiongli"),
+        control_sha256,
+        capabilities: capabilities
+            .try_into()
+            .map_err(|_| crate::NativeCandidateLocalInstallError::ReceiptClosureInvalid)?,
+        trusted_keys: authority.launch_grant_keys().to_vec(),
+        minimum_generation: authority.minimum_launch_grant_generation(),
     })
 }
 
@@ -1296,10 +1367,9 @@ mod tests {
     fn verified_package_derives_only_two_bounded_in_memory_capabilities() {
         let fixture = Fixture::new("verified");
         let product = fixture.verify().unwrap();
-        assert_eq!(
-            product.control().desired_state.plugin_identity.slug(),
-            "qiongli-next"
-        );
+        assert_eq!(product.artifact().version, fixture.version);
+        assert_eq!(product.product_source_commit(), SOURCE_COMMIT);
+        assert_eq!(product.resource_pack_sha256(), test_pack().pack_sha256());
         assert!(product.capability(ClientActivationTarget::Codex).is_some());
         assert!(
             product

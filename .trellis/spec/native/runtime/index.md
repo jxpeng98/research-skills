@@ -81,9 +81,17 @@ receipt, a freshly verified candidate/source/Host grant, and the matching execut
 at the fixed managed path. Recovery journals, changed bytes, linked records, expired
 signatures and removed payloads refuse authority. Temporary or orphan records do not
 restore authority; successful replay can complete an interrupted metadata commit.
-The app boundary must supply current_exe(), embedded identity, trust roots and time.
-App-backed operation routing and source-build refusals remain until that caller is
-connected; this primitive does not create approval or qualify a release.
+The app boundary supplies current_exe(), embedded identity, trust roots and time.
+`verify_running_packaged_product` selects the native verifier for executables under
+the fixed managed payload root; other executables retain the desktop/managed-shim
+verification path. A path match only selects verification and never grants authority.
+`VerifiedPackagedProduct` stores verified artifact/source/resource facts and scoped
+Host capabilities, not a fabricated desktop manifest. Shared install, migration
+and reconciliation owners consume those facts. Native plans bind the signed
+candidate digest; desktop plans retain their existing control-document digest.
+Each prepare/apply still re-verifies product authority and existing approvals/CAS.
+Source builds without embedded authority remain read-only. This does not qualify
+human approval across Hosts, CLI shim/update compatibility or a release.
 
 ## Quality Check
 

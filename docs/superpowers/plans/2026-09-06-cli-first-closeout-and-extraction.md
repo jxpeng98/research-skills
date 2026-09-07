@@ -449,3 +449,45 @@ and whitespace checks passed. Final review found no actionable findings; native
 Linux/Windows, crash injection and actual product-entry qualification remain open.
 Integrate locally after the frozen-source guard, reusing these checks. CLI-403 and
 accepted ledger status remain unchanged; no publication or remote synchronization.
+
+## CLI-403 fourth increment — independent product operation routing
+
+Base: `a92820aa`; branch: `codex/cli-product-operation-authority`.
+The running-product boundary now routes executables in the fixed native payload
+root through signed installed-candidate verification with embedded source/version,
+authority and current time. Both signed Host capabilities must verify against the
+same candidate digest and executable. Other paths retain desktop/managed-shim
+verification and source builds retain their existing refusal.
+
+`VerifiedPackagedProduct` now exposes verified artifact, source and resource facts
+instead of retaining a desktop manifest/control document. Both delivery verifiers
+construct those facts after their own checks. Existing installation, reconciliation
+and migration consumers use the shared accessors; no fake Desktop identity, wire
+schema changes or new operation engine. Native plan identity binds the signed
+candidate preimage digest; desktop control digest semantics remain unchanged.
+
+Validation on macOS:
+- Candidate integration test passed (1.60 seconds), including native product
+  capabilities and existing operation-owner preview/apply with wrong-digest refusal.
+- Eight packaged-product regressions and eight managed-operation regressions passed,
+  including changed-state refusal, source-build refusal, digest/approval/expiry,
+  canonical contracts and user-data preservation. Affected-target Clippy passed
+  with the existing local Rust 1.98 `chunks_exact_to_as_chunks` exception.
+- The actual `native_candidate_acceptance` runner passed using ephemeral signing,
+  empty PATH and isolated homes outside the checkout. For both target directories,
+  the installed CLI generated an integration-removal plan, refused missing approval,
+  applied the approved plan, and restored installation before the existing full
+  candidate uninstall check. All 22 reported checks passed.
+- Output: `/Users/pengjiaxin/Work/qiongli-cli403-product-authority-20260907`;
+  `acceptance-evidence.json` SHA-256:
+  `0c12f27f262c0882ba83822f4ef058270d3db08806f1d897f2386d59a434f6cd`.
+  Source label is `a92820aaccfa443eb55955b2a1cf76d9cbc80e0c` plus this working
+  diff, not an immutable release candidate. `publication_allowed=false`;
+  real Hosts, production signing and Linux/Windows runtime remain unqualified.
+- Formatting, whitespace and generated index checks passed. Review found no
+  actionable findings. Local integration reuses these results.
+
+Next: standalone CLI shim/PATH installation and update/rollback compatibility,
+then CLI-404 trusted human approval and CLI-405 real research/recovery evidence.
+The first-stage objective and CLI-403 remain active; local merge does not accept
+the program or authorize publication.

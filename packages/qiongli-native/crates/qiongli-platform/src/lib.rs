@@ -228,7 +228,7 @@ pub use product_control::{
     packaged_product_control_path, preview_packaged_product_batch_install,
     preview_packaged_product_batch_install_with_variant, preview_packaged_product_install,
     preview_packaged_product_install_with_variant, remove_packaged_product_install,
-    verify_packaged_product, verify_packaged_product_install,
+    verify_native_packaged_product, verify_packaged_product, verify_packaged_product_install,
     verify_packaged_product_install_with_variant, verify_receipt_owned_packaged_product_install,
 };
 pub use release_authority::{

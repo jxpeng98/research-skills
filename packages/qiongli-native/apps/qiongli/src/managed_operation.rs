@@ -789,7 +789,7 @@ fn apply_integration_content_update(
         &crate::update_reconcile::ReconciliationPreparation {
             store: &store,
             transaction_id: &transaction_id,
-            target_version: &product.manifest().artifact.version,
+            target_version: &product.artifact().version,
             content,
             platform_home: product.home(),
             claude_config_root: &claude_config_root,

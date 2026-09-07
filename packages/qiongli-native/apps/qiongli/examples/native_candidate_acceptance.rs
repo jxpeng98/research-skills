@@ -999,7 +999,7 @@ fn run_acceptance(
             fs::remove_file(marketplace)
                 .map_err(|_| "candidate-acceptance-conflict-cleanup-failed")?;
         }
-        let apply = run_product(binary, root, &home, apply_args)?;
+        let apply = run_product(binary, root, &home, apply_args.clone())?;
         let apply_json = parse_output_json(&apply)?;
         if apply_json["install_id"] != install_id
             || apply_json["outstanding_host_action"] != "install-or-enable-plugin"
@@ -1048,6 +1048,11 @@ fn run_acceptance(
             }
             _ => return Err("candidate-acceptance-client-target-invalid"),
         }
+        check_managed_product_remove(&installed_binary, root, &home, target)?;
+        // Restore through the already-approved candidate so the original complete
+        // candidate removal check still covers payload, source and registration.
+        run_product(binary, root, &home, apply_args)?;
+        assert_canaries_unchanged(&canaries)?;
         let remove = run_product(
             binary,
             root,
@@ -1093,6 +1098,7 @@ fn run_acceptance(
             "cli_window_refusal": "passed",
             "installed_payload_runtime": "passed",
             "installed_payload_restart": "passed",
+            "installed_product_managed_operation": "passed",
             "embedded_skills": "passed",
             "ui_startup_preflight": "passed",
             "lite_mcp": "passed",
@@ -1527,6 +1533,56 @@ fn ensure_private_child_directory(root: &Path, leaf: &str) -> Result<PathBuf, &'
         create_private_directory(&path)?;
         Ok(path)
     }
+}
+
+fn check_managed_product_remove(
+    binary: &Path,
+    root: &Path,
+    home: &Path,
+    target: &str,
+) -> Result<(), &'static str> {
+    let plan = run_product(
+        binary,
+        root,
+        home,
+        ["app", "plan", "integrations-remove", "--target", target],
+    )?;
+    let plan_json = parse_output_json(&plan)?;
+    let digest = plan_json["plan_digest_sha256"]
+        .as_str()
+        .filter(|value| valid_sha256(value))
+        .ok_or("candidate-acceptance-managed-plan-invalid")?;
+    let path = home.join("managed-integration-remove-plan.json");
+    write_private_new(&path, &plan.stdout)?;
+    let args = vec![
+        OsString::from("app"),
+        OsString::from("apply"),
+        OsString::from("--plan"),
+        path.into_os_string(),
+        OsString::from("--expected-plan-digest"),
+        OsString::from(digest),
+    ];
+    run_product_expected_failure(
+        binary,
+        root,
+        home,
+        args.clone(),
+        "managed-operation-approval-required",
+    )?;
+    let mut approved = args;
+    approved.extend(
+        [
+            "--approve-filesystem-write",
+            "--approve-client-config-change",
+            "--approve-host-trust",
+        ]
+        .map(OsString::from),
+    );
+    let result = run_product(binary, root, home, approved)?;
+    if parse_output_json(&result)?["result"] != "removed" {
+        return Err("candidate-acceptance-managed-remove-invalid");
+    }
+    Ok(())
 }
 
 fn check_cli_entry(binary: &Path, root: &Path, home: &Path) -> Result<(), &'static str> {

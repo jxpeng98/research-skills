@@ -550,6 +550,48 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
         )
     };
     verify_product().expect("persisted candidate and active receipt must revalidate");
+    let product = qiongli_platform::verify_native_packaged_product(
+        &content,
+        &authority,
+        &home,
+        &installed_binary,
+        env!("CARGO_PKG_VERSION"),
+        SOURCE_COMMIT,
+        NOW + 3,
+    )
+    .expect("standalone candidate must establish shared product capabilities");
+    assert_eq!(product.artifact(), &artifact);
+    assert_eq!(product.product_source_commit(), SOURCE_COMMIT);
+    for target in [
+        ClientActivationTarget::Codex,
+        ClientActivationTarget::ClaudeCode,
+    ] {
+        assert_eq!(
+            product
+                .capability(target)
+                .unwrap()
+                .grant()
+                .authorized_scope(),
+            target.integration_scope()
+        );
+    }
+    let preview =
+        qiongli_platform::preview_packaged_product_install(&product, ClientActivationTarget::Codex)
+            .unwrap();
+    let mut wrong_preview = preview.clone();
+    wrong_preview.plan_digest_sha256 = "0".repeat(64);
+    assert!(
+        qiongli_platform::apply_packaged_product_install(
+            &content,
+            &product,
+            &wrong_preview,
+            NOW + 4
+        )
+        .is_err()
+    );
+    qiongli_platform::apply_packaged_product_install(&content, &product, &preview, NOW + 4)
+        .expect("existing operation owner must accept native product authority");
+
     fs::remove_file(&record_path).unwrap();
     assert!(
         verify_product().is_err(),

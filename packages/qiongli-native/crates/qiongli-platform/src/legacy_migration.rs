@@ -1031,10 +1031,9 @@ pub fn verify_legacy_migration_cutover(
         return Err(LegacyMigrationCutoverError::ApprovalMissing);
     }
     let plan = approved.plan();
-    let manifest = product.manifest();
-    if manifest.artifact.version != plan.product_version
-        || manifest.product_source_commit != plan.source_commit
-        || manifest.resource_pack_sha256 != plan.resource_pack_sha256
+    if product.artifact().version != plan.product_version
+        || product.product_source_commit() != plan.source_commit
+        || product.resource_pack_sha256() != plan.resource_pack_sha256
     {
         return Err(LegacyMigrationCutoverError::ProductIdentityMismatch);
     }

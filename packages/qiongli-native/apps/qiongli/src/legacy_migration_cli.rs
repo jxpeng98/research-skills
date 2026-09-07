@@ -183,9 +183,9 @@ fn preview(
         inventory,
         LegacyMigrationPlanInput {
             plan_id: &format!("migration-{now_unix}-{}", std::process::id()),
-            product_version: &product.manifest().artifact.version,
-            source_commit: &product.manifest().product_source_commit,
-            resource_pack_sha256: &product.manifest().resource_pack_sha256,
+            product_version: &product.artifact().version,
+            source_commit: product.product_source_commit(),
+            resource_pack_sha256: product.resource_pack_sha256(),
             created_at_unix: now_unix,
             provider_resolutions: &provider_resolutions,
         },
@@ -241,9 +241,9 @@ fn apply(
         .map_err(|error| error.reason_code())?;
     let targets = migration_targets(&plan);
     let product = verify_running_packaged_product(environment, content)?;
-    if product.manifest().artifact.version != plan.product_version
-        || product.manifest().product_source_commit != plan.source_commit
-        || product.manifest().resource_pack_sha256 != plan.resource_pack_sha256
+    if product.artifact().version != plan.product_version
+        || product.product_source_commit() != plan.source_commit
+        || product.resource_pack_sha256() != plan.resource_pack_sha256
     {
         return Err("legacy-migration-product-identity-mismatch");
     }

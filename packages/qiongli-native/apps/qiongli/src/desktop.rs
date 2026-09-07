@@ -6279,7 +6279,7 @@ impl NativeDesktopService {
             &crate::update_reconcile::ReconciliationPreparation {
                 store: &store,
                 transaction_id: &transaction_id,
-                target_version: &product.manifest().artifact.version,
+                target_version: &product.artifact().version,
                 content: &self.content,
                 platform_home: product.home(),
                 claude_config_root: &claude_config_root,
@@ -9503,6 +9503,18 @@ pub(crate) fn verify_running_packaged_product(
         Ok(path) => path,
         Err(_) => return Err("packaged-product-executable-invalid"),
     };
+    if process_executable.starts_with(home.join(".qiongli/native/payloads")) {
+        return qiongli_platform::verify_native_packaged_product(
+            content.pack(),
+            &authority,
+            home,
+            &process_executable,
+            env!("CARGO_PKG_VERSION"),
+            source_commit,
+            now_unix()?,
+        )
+        .map_err(|error| error.reason_code());
+    }
     let direct_manifest_path = running_desktop_manifest_path(&process_executable);
     let (current_executable, desktop_manifest_path, expected_control_sha256) =
         if direct_manifest_path.is_file() {

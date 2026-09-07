@@ -144,13 +144,14 @@ pub const fn embedded_macos_team_id() -> Option<&'static str> {
 
 pub use candidate_cli::{
     CandidateActivationPreparedOutput, CandidateActivationPreviewOutput,
-    candidate_activation_prepared_contract_json, candidate_activation_preview_contract_json,
-    candidate_stage_contract_json, prepare_native_candidate_activation,
-    preview_native_candidate_activation,
+    candidate_activation_discarded_contract_json, candidate_activation_prepared_contract_json,
+    candidate_activation_preview_contract_json, candidate_stage_contract_json,
+    prepare_native_candidate_activation, preview_native_candidate_activation,
 };
 
 pub use update_reconcile::{
-    NativeActivationOutcome, activate_native_reconciliation, recover_native_reconciliation,
+    NativeActivationOutcome, activate_native_reconciliation, discard_native_reconciliation,
+    recover_native_reconciliation,
 };
 
 pub use candidate_cli::check_native_cli_health;

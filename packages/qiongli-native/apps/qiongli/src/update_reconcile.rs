@@ -379,6 +379,49 @@ pub fn recover_native_reconciliation(
     Ok(outcome)
 }
 
+/// Discards only an unactivated native preparation after exact-journal filesystem
+/// approval. Started activations must use recovery instead. Missing journals refuse.
+pub fn discard_native_reconciliation(
+    store: &UpdateStateStore,
+    transaction_id: &str,
+    expected_journal_sha256: &str,
+) -> Result<(), &'static str> {
+    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    store.load().map_err(|error| error.reason_code())?;
+    let _lock = acquire_replacement_lock(store)?;
+    let journal = checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    if store
+        .load()
+        .map_err(|error| error.reason_code())?
+        .state
+        .active_transaction
+        .is_some()
+        || native_record_exists(store, transaction_id, NATIVE_ACTIVATION_RECORD)?
+        || native_record_exists(store, transaction_id, NATIVE_ACTIVATION_OUTCOME)?
+    {
+        return Err("native-activation-recovery-required");
+    }
+    let root = store.staging_root().join(transaction_id);
+    for entry in fs::read_dir(&root).map_err(|_| "native-update-reconciliation-cleanup-required")? {
+        if entry
+            .map_err(|_| "native-update-reconciliation-cleanup-required")?
+            .file_name()
+            != RECONCILIATION_JOURNAL_FILE
+        {
+            return Err("native-update-reconciliation-cleanup-required");
+        }
+    }
+    for operation in &journal.operations {
+        ensure_absent(&operation.backup)?;
+    }
+    // The shared owner verifies every old destination and every remaining staged
+    // file before deletion, including retries after interrupted staged cleanup.
+    cleanup_rolled_back_reconciliation(&journal)?;
+    checked_native_journal(store, transaction_id, expected_journal_sha256)?;
+    remove_committed_reconciliation_journal(store, transaction_id)?;
+    remove_reconciliation_transaction_root(store, transaction_id)
+}
+
 fn checked_native_journal(
     store: &UpdateStateStore,
     transaction_id: &str,
@@ -589,6 +632,18 @@ pub(crate) fn load_reconciliation_journal(
         .staging_root()
         .join(transaction_id)
         .join(RECONCILIATION_JOURNAL_FILE);
+    for directory in [
+        store.state_root().to_path_buf(),
+        store
+            .staging_root()
+            .parent()
+            .ok_or("native-update-reconciliation-invalid")?
+            .to_path_buf(),
+        store.staging_root(),
+        store.staging_root().join(transaction_id),
+    ] {
+        verify_existing_private_directory(&directory)?;
+    }
     let bytes = read_private_file(&path, MAX_JOURNAL_BYTES)?;
     let journal: ReconciliationJournalV1 =
         serde_json::from_slice(&bytes).map_err(|_| "native-update-reconciliation-invalid")?;
@@ -1872,23 +1927,27 @@ fn create_private_directory(path: &Path) -> Result<(), &'static str> {
     }
 }
 
+fn verify_existing_private_directory(path: &Path) -> Result<(), &'static str> {
+    let metadata =
+        fs::symlink_metadata(path).map_err(|_| "native-update-reconciliation-target-invalid")?;
+    if metadata.file_type().is_symlink() || !metadata.is_dir() {
+        return Err("native-update-reconciliation-target-invalid");
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+        if metadata.uid() != rustix::process::geteuid().as_raw()
+            || metadata.permissions().mode() & 0o077 != 0
+        {
+            return Err("native-update-reconciliation-target-invalid");
+        }
+    }
+    Ok(())
+}
+
 fn ensure_private_directory(path: &Path) -> Result<(), &'static str> {
     match fs::symlink_metadata(path) {
-        Ok(metadata) => {
-            if metadata.file_type().is_symlink() || !metadata.is_dir() {
-                return Err("native-update-reconciliation-target-invalid");
-            }
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::{MetadataExt, PermissionsExt};
-                if metadata.uid() != rustix::process::geteuid().as_raw()
-                    || metadata.permissions().mode() & 0o077 != 0
-                {
-                    return Err("native-update-reconciliation-target-invalid");
-                }
-            }
-            Ok(())
-        }
+        Ok(_) => verify_existing_private_directory(path),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             create_private_directory(path)
         }
@@ -2002,7 +2061,7 @@ fn validate_destination(path: &Path) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn validate_transaction_id(value: &str) -> Result<(), &'static str> {
+pub(crate) fn validate_transaction_id(value: &str) -> Result<(), &'static str> {
     if value.strip_prefix("update-").is_some_and(|suffix| {
         suffix.len() == 32 && suffix.bytes().all(|byte| byte.is_ascii_hexdigit())
     }) {

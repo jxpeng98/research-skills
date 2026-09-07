@@ -908,6 +908,14 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
             prepare_activation(digest),
             Err("native-update-replacement-active")
         ));
+        assert!(
+            qiongli::discard_native_reconciliation(
+                &store,
+                transaction_id,
+                prepared["journal_sha256"].as_str().unwrap()
+            )
+            .is_err()
+        );
         let current = store.load().unwrap();
         let mut blocked = current.state.clone();
         blocked.active_transaction = None;
@@ -918,6 +926,76 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
             Err("native-activation-generation-rejected")
         ));
         assert_eq!(fs::read(&journal).unwrap(), bytes);
+        let journal_digest = prepared["journal_sha256"].as_str().unwrap();
+        let cancel = |expected: &str| {
+            qiongli::discard_native_reconciliation(&store, transaction_id, expected)
+        };
+        assert!(cancel(&"0".repeat(64)).is_err());
+        let transaction_root = journal.parent().unwrap();
+        let canary = transaction_root.join("foreign-file");
+        fs::write(&canary, b"preserve foreign file").unwrap();
+        assert!(cancel(journal_digest).is_err());
+        assert_eq!(fs::read(&canary).unwrap(), b"preserve foreign file");
+        fs::remove_file(canary).unwrap();
+        let record = transaction_root.join("native-activation.json");
+        fs::write(&record, b"{}").unwrap();
+        assert!(matches!(
+            cancel(journal_digest),
+            Err("native-activation-recovery-required")
+        ));
+        fs::remove_file(record).unwrap();
+        let moved = store.staging_root().join("saved-transaction");
+        fs::rename(transaction_root, &moved).unwrap();
+        std::os::unix::fs::symlink(&moved, transaction_root).unwrap();
+        assert!(cancel(journal_digest).is_err());
+        assert_eq!(
+            fs::read(moved.join("reconciliation-journal.json")).unwrap(),
+            bytes
+        );
+        fs::remove_file(transaction_root).unwrap();
+        fs::rename(moved, transaction_root).unwrap();
+        let decoded: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        let backup = Path::new(decoded["operations"][0]["backup"].as_str().unwrap());
+        fs::write(backup, b"preserve unexpected backup").unwrap();
+        assert!(cancel(journal_digest).is_err());
+        assert_eq!(fs::read(backup).unwrap(), b"preserve unexpected backup");
+        fs::remove_file(backup).unwrap();
+        // Resume cancellation after a prior attempt removed one staged receipt.
+        let staged_receipt = decoded["operations"].as_array().unwrap().last().unwrap()["staged"]
+            .as_str()
+            .unwrap();
+        fs::remove_file(staged_receipt).unwrap();
+        let before_cancel = store.load().unwrap();
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_qiongli"))
+            .env_clear()
+            .env("HOME", &home)
+            .env("USERPROFILE", &home)
+            .env("QIONGLI_CONFIG_HOME", &configured)
+            .env("PATH", "")
+            .args([
+                "install",
+                "candidate",
+                "activate-discard",
+                "--transaction-id",
+                transaction_id,
+                "--expected-journal-digest",
+                journal_digest,
+                "--approve-filesystem-write",
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let output: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(output["command"], "install-candidate-activate-discard");
+        assert_eq!(output["journal_sha256"], journal_digest);
+        assert!(!transaction_root.exists());
+        assert_eq!(store.load().unwrap(), before_cancel);
+        assert_eq!(serde_json::to_value(activation().unwrap()).unwrap(), first);
+        assert!(cancel(journal_digest).is_err());
     }
     let root = qiongli_platform::discover_native_candidate_managed_root(&home).unwrap();
     let executor = qiongli_platform::ManagedNativePayloadExecutor::new(root);

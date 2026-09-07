@@ -51,6 +51,10 @@ pub(crate) struct CandidateReceiptOptions {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum CandidateCliCommand {
+    ActivateDiscard {
+        transaction_id: String,
+        expected_journal_sha256: String,
+    },
     ActivatePrepare {
         options: CandidateReleaseOptions,
         previous_install_id: String,
@@ -77,6 +81,7 @@ pub(crate) enum CandidateCliCommand {
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub(crate) enum CandidateCliOutput {
+    ActivationDiscarded(CandidateActivationDiscardedOutput),
     ActivationPrepared(CandidateActivationPreparedOutput),
     ActivationPreview(CandidateActivationPreviewOutput),
     Stage(CandidateStageOutput),
@@ -124,6 +129,25 @@ pub(crate) fn execute(
 ) -> Result<CandidateCliOutput, &'static str> {
     let home = environment.platform_home();
     match command {
+        CandidateCliCommand::ActivateDiscard {
+            transaction_id,
+            expected_journal_sha256,
+        } => {
+            let store = crate::desktop::update_store(environment)?;
+            crate::update_reconcile::discard_native_reconciliation(
+                &store,
+                &transaction_id,
+                &expected_journal_sha256,
+            )?;
+            Ok(CandidateCliOutput::ActivationDiscarded(
+                CandidateActivationDiscardedOutput {
+                    schema_version: 1,
+                    command: ActivationDiscardCommand::Discard,
+                    transaction_id,
+                    journal_sha256: expected_journal_sha256,
+                },
+            ))
+        }
         CandidateCliCommand::ActivatePrepare {
             options,
             previous_install_id,
@@ -747,6 +771,35 @@ pub fn candidate_activation_prepared_contract_json() -> Result<String, serde_jso
     serde_json::to_string_pretty(&serde_json::json!({"schema": schema, "fixture": fixture}))
 }
 
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CandidateActivationDiscardedOutput {
+    #[schemars(range(min = 1, max = 1))]
+    schema_version: u32,
+    command: ActivationDiscardCommand,
+    #[schemars(regex(pattern = "^update-[0-9a-fA-F]{32}$"))]
+    transaction_id: String,
+    #[schemars(regex(pattern = "^[0-9a-f]{64}$"))]
+    journal_sha256: String,
+}
+#[derive(Debug, Serialize, serde::Deserialize, schemars::JsonSchema)]
+enum ActivationDiscardCommand {
+    #[serde(rename = "install-candidate-activate-discard")]
+    Discard,
+}
+pub fn candidate_activation_discarded_contract_json() -> Result<String, serde_json::Error> {
+    let schema = schemars::generate::SchemaSettings::draft2020_12()
+        .into_generator()
+        .into_root_schema_for::<CandidateActivationDiscardedOutput>();
+    let fixture = CandidateActivationDiscardedOutput {
+        schema_version: 1,
+        command: ActivationDiscardCommand::Discard,
+        transaction_id: format!("update-{}", "1".repeat(32)),
+        journal_sha256: "2".repeat(64),
+    };
+    serde_json::to_string_pretty(&serde_json::json!({"schema": schema, "fixture": fixture}))
+}
+
 pub(crate) struct PreparedCandidate {
     verified: VerifiedNativeReleaseCandidate,
     approval_digest_sha256: String,
@@ -1185,6 +1238,28 @@ pub(crate) struct CandidateRemoveOutput {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn activation_discarded_contract_matches_generated_and_consumer() {
+        let generated: serde_json::Value =
+            serde_json::from_str(&candidate_activation_discarded_contract_json().unwrap()).unwrap();
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../schemas/candidate-activation-discarded-v1.schema.json"
+        ))
+        .unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../tests/fixtures/candidate-activation-discarded-v1.json"
+        ))
+        .unwrap();
+        assert_eq!(generated["schema"], schema);
+        assert_eq!(generated["fixture"], fixture);
+        let decoded: CandidateActivationDiscardedOutput =
+            serde_json::from_value(fixture.clone()).unwrap();
+        assert_eq!(serde_json::to_value(decoded).unwrap(), fixture);
+        let mut invalid = fixture;
+        invalid["activated"] = serde_json::json!(true);
+        assert!(serde_json::from_value::<CandidateActivationDiscardedOutput>(invalid).is_err());
+    }
 
     #[test]
     fn activation_prepared_contract_matches_generated_and_consumer() {

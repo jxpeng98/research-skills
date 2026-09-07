@@ -337,6 +337,26 @@
           ],
           "migration_path": null,
           "removal_gate": null
+        },
+        {
+          "change_id": "public-cli-json/candidate-activation-discarded-v1",
+          "contract_id": "public-cli-json/candidate-activation-discarded",
+          "from_version": "absent",
+          "to_version": "1",
+          "classification": "additive",
+          "rust_sources": [
+            "packages/qiongli-native/apps/qiongli/src/candidate_cli.rs"
+          ],
+          "generated_schema": "packages/qiongli-native/apps/qiongli/schemas/candidate-activation-discarded-v1.schema.json",
+          "golden_fixtures": [
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/candidate-activation-discarded-v1.json"
+          ],
+          "consumer_checks": [
+            "packages/qiongli-native/apps/qiongli/src/candidate_cli.rs",
+            "packages/qiongli-native/apps/qiongli/tests/native_release_candidate.rs"
+          ],
+          "migration_path": null,
+          "removal_gate": null
         }
       ]
     }

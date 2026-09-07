@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "command": "install-candidate-activate-discard",
+  "transaction_id": "update-11111111111111111111111111111111",
+  "journal_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+}

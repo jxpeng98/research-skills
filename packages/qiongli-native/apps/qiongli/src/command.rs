@@ -52,7 +52,7 @@ const UPDATE_USAGE: &str = "Qiongli native update\n\nUsage:\n  qiongli update st
 
 const MCP_USAGE: &str = "Qiongli native MCP\n\nUsage:\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli mcp --help\n\nFull profile adds redacted Research Library, capture, academic graph, and local checkpoint controls. The connected host owns model execution and returns revision-bound candidates through the host handoff contract.\n";
 
-const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
+const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate-discard --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
 
 const MIGRATION_USAGE: &str = "Qiongli 1.x replacement migration\n\nUsage:\n  qiongli migrate-1x inspect\n  qiongli migrate-1x preview [--provider-resolution <provider>=<keep-v2|use-legacy|merge-compatible>]...\n  qiongli migrate-1x apply --migration-id <id> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change] [--approve-secret-store-write]\n  qiongli migrate-1x continue --migration-id <id> --confirm-host-activation\n  qiongli migrate-1x continue --migration-id <id> --approve-cleanup\n  qiongli migrate-1x continue --migration-id <id> --finalize\n  qiongli migrate-1x status --migration-id <id>\n  qiongli migrate-1x recover --migration-id <id>\n  qiongli migrate-1x --help\n";
 
@@ -1185,6 +1185,53 @@ fn parse_candidate_install_args(args: &[OsString]) -> Result<CandidateCliCommand
         ));
     };
     match subcommand {
+        "activate-discard" => {
+            let mut transaction_id = None;
+            let mut digest = None;
+            let mut approved = false;
+            let mut args = args[1..].iter();
+            while let Some(option) = args.next() {
+                match option.to_str() {
+                    Some("--approve-filesystem-write") if !approved => approved = true,
+                    Some("--transaction-id") if transaction_id.is_none() => {
+                        transaction_id = Some(
+                            args.next()
+                                .and_then(|value| value.to_str())
+                                .filter(|value| {
+                                    crate::update_reconcile::validate_transaction_id(value).is_ok()
+                                })
+                                .ok_or_else(|| {
+                                    install_usage_error("activation transaction id is invalid")
+                                })?
+                                .to_string(),
+                        );
+                    }
+                    Some("--expected-journal-digest") if digest.is_none() => {
+                        digest = Some(
+                            args.next()
+                                .and_then(|value| parse_sha256(value))
+                                .ok_or_else(|| {
+                                    install_usage_error("activation journal digest is invalid")
+                                })?,
+                        );
+                    }
+                    _ => {
+                        return Err(install_usage_error(
+                            "unexpected or duplicate activation discard option",
+                        ));
+                    }
+                }
+            }
+            if !approved {
+                return Err(install_usage_error("filesystem-write approval is required"));
+            }
+            Ok(CandidateCliCommand::ActivateDiscard {
+                transaction_id: transaction_id
+                    .ok_or_else(|| install_usage_error("activation transaction id is required"))?,
+                expected_journal_sha256: digest
+                    .ok_or_else(|| install_usage_error("activation journal digest is required"))?,
+            })
+        }
         "activate-preview" | "activate-prepare" => {
             let prepare = subcommand == "activate-prepare";
             let mut release_args = Vec::new();
@@ -2878,6 +2925,43 @@ fn windows_drive_home() -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn activation_discard_requires_exact_transaction_digest_and_approval() {
+        let mut args: Vec<OsString> = vec![
+            "activate-discard".into(),
+            "--transaction-id".into(),
+            format!("update-{}", "1".repeat(32)).into(),
+            "--expected-journal-digest".into(),
+            "2".repeat(64).into(),
+        ];
+        assert!(super::parse_candidate_install_args(&args).is_err());
+        args.push("--approve-filesystem-write".into());
+        assert!(matches!(
+            super::parse_candidate_install_args(&args),
+            Ok(super::CandidateCliCommand::ActivateDiscard { .. })
+        ));
+        for flag in [
+            "--approve-filesystem-write",
+            "--approve-host-trust",
+            "--approve-client-config-change",
+        ] {
+            let mut invalid = args.clone();
+            invalid.push(flag.into());
+            assert!(super::parse_candidate_install_args(&invalid).is_err());
+        }
+        let mut invalid = args.clone();
+        invalid[2] = "../foreign".into();
+        assert!(super::parse_candidate_install_args(&invalid).is_err());
+        invalid = args.clone();
+        invalid[4] = "invalid".into();
+        assert!(super::parse_candidate_install_args(&invalid).is_err());
+        args.extend([
+            "--transaction-id".into(),
+            format!("update-{}", "3".repeat(32)).into(),
+        ]);
+        assert!(super::parse_candidate_install_args(&args).is_err());
+    }
 
     #[test]
     fn activation_preview_requires_one_predecessor_and_no_approval() {

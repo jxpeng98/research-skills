@@ -896,3 +896,41 @@ The prepared approval digest must be revalidated against the same journal and
 state revisions before any live rename. Cross-platform state support, real Host
 research/approval and named package qualification remain open. First-stage
 integration and ledger acceptance remain incomplete; no publication occurred.
+
+
+## CLI-403 seventeenth increment — cancel an unactivated preparation
+
+Base: `473e4a5a`; branch: `codex/cli-activation-discard`.
+`install candidate activate-discard` requires an exact transaction/journal digest and
+filesystem-write approval. It uses the replacement lock and existing whole-set
+cleanup owner, refusing active update state, activation records, backup files and
+foreign transaction-root entries. Remaining staged files can be cleaned after an
+interrupted deletion. Cleanup uses the already checked journal; the digest is
+rechecked before removing its file and empty root. A missing journal refuses and
+cannot be mistaken for successful cancellation. This command needs no fresh release
+authority, executes no candidate binary and never switches installed destinations.
+
+The shared journal reader now verifies private, non-linked state/update/staging/
+transaction directories, reusing the existing directory checks. The new CLI output
+has a Rust-generated Draft 2020-12 schema, golden fixture and additive policy record;
+existing reconciliation and activation record formats remain unchanged.
+
+Validation on macOS: 9 activation/parser/contract/reconciliation unit tests passed;
+all 10 direct replacement-owner tests passed after the shared reader change. The
+signed-candidate integration case passed with a real source-build CLI child
+successfully cancelling a synthetic candidate preparation with empty PATH. It
+verified wrong digest, foreign active transaction, activation record, extra file,
+unexpected backup and linked transaction-root refusals; resuming after a staged
+receipt deletion preserved the old command/Host identities and update state.
+Missing-journal replay refused. Final snapshot-use hardening reran only this affected
+integration case and Clippy. Library/generator Clippy, public schema validation,
+12 policy tests, formatting, whitespace and roadmap-index checks passed. Review
+found no remaining actionable issue in the cancellation scope. This is a real
+cancellation subprocess, not cross-version activation or real Host qualification.
+
+Next: bind signed release generation and last-known-good metadata into the durable
+activation outcome, exclude competing managed writers, then expose activation and
+recovery using the existing journal/health owners. Prepared transaction cancellation
+is now available; first-stage integration, real Host research/approval and named
+cross-platform package qualification remain incomplete. Accepted ledger rows and
+publication state are unchanged.

@@ -145,8 +145,19 @@ revision and workflow revision/variant into a separate activation approval diges
 Workflow/update state is rechecked after staging. An existing transaction refuses
 without overwriting its journal. Fresh failed preparation uses existing guarded
 cleanup. The Rust-generated public contract is `candidate-activation-prepared-v1`;
-reconciliation v2 wire semantics remain unchanged. Actual activation, prepared-state
-discard and native recovery command wiring remain separate pending work.
+reconciliation v2 wire semantics remain unchanged. Actual activation and native recovery command wiring remain separate pending work.
+
+`install candidate activate-discard` cancels an unactivated v2 preparation using
+`--transaction-id`, `--expected-journal-digest` and filesystem-write approval. It
+needs no new candidate authority because it cannot activate or adopt a product.
+Under the replacement lock it rejects any active transaction, activation record,
+backup or unknown transaction-root entry. Cleanup uses the exact checked journal
+and the existing whole-set ownership checks, allowing already-removed staged files.
+The journal digest is checked again before removing the journal and empty transaction
+root. Missing journals refuse rather than claiming a successful replay. The shared
+journal reader rejects linked or insecure state/update/staging/transaction directories.
+The Rust-generated output contract is `candidate-activation-discarded-v1`. Started
+activations still require recovery; discard never rolls back active destinations.
 
 ## Quality Check
 

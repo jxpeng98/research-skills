@@ -363,3 +363,38 @@ fast-forward merge after the frozen-source guard. The isolated worktree contains
 only workflow/policy changes. CLI-403 source, ledger updates and evidence remain
 uncommitted in the original worktree. Remote rules, push and publication are
 outside this action. Next development remains the CLI-403 package boundary.
+
+## CLI-403 second increment — extracted payload release verification
+
+Base: local `2.x` at `dd4bc808`; branch: `codex/cli-extracted-release-trust`.
+The native release owner can now verify an approved extracted artifact directory
+without its original archive. `verify_extracted_artifact` reuses the existing
+release signature/key/generation/time checks and launch-grant verifier. The native
+artifact owner revalidates the actual file tree; its manifest, binary and resource
+digests must match the signed envelope and caller's expected artifact identity.
+The archive verifier retains its archive-byte checks and shares the trust checks.
+
+This is the bounded verification primitive for independent CLI trust. It returns
+the existing scoped launch grant, not a forged Desktop product or write approval.
+No wire schema, installer, dependency or persisted receipt format changes. Existing
+source-build restrictions remain. Next: preserve and freshly verify signed
+candidate provenance at the installed root, bind the running executable, then
+connect the existing managed-operation owner. Updates/rollback remain later scope.
+
+Validation on macOS:
+- `cargo test ... -p qiongli --test native_portable_archive --locked --offline`:
+  1 integration test passed (135.48 seconds). Existing archive/installation and
+  CLI/MCP checks passed alongside the new checks with both archives moved away,
+  untrusted key, invalid release/launch signatures, early/expired/stale releases,
+  stale launch grant, wrong scope/channel/version, signed manifest mismatch and
+  binary tampering. Restoring the binary passed a fresh verification.
+- `cargo test ... -p qiongli-platform --lib native_release::tests --locked --offline`:
+  3 tests passed. Affected integration-target Clippy passed with the existing
+  local Rust 1.98 `chunks_exact_to_as_chunks` exception.
+- Formatting, whitespace and generated roadmap consistency passed. Final review
+  against local `2.x` found no actionable findings. Linux/Windows execution,
+  production signing, running-process authority and real Hosts are not qualified.
+
+Integrate the scoped commit locally through the frozen-source guard and fast-forward
+merge. Reuse these results; no remote synchronization or publication. CLI-403 and
+all accepted ledger rows retain their existing status.

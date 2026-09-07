@@ -668,6 +668,97 @@ fn portable_archive_is_deterministic_safe_and_runtime_independent() {
     let installed_binary = installed_path.join(&first.payload().manifest().binary_path);
     assert_runtime(&fixture, &installed_binary, first.payload().manifest());
 
+    // Installed trust must not depend on either archive still being available.
+    let saved_first = first_path.with_extension("saved");
+    let saved_second = second_path.with_extension("saved");
+    fs::rename(&first_path, &saved_first).unwrap();
+    fs::rename(&second_path, &saved_second).unwrap();
+    let verify_extracted =
+        |release: &SignedNativeReleaseEnvelopeV1,
+         context: &NativeReleaseVerificationContext<'_>| {
+            release.verify_extracted_artifact(
+                std::slice::from_ref(&trusted_release),
+                std::slice::from_ref(&trusted),
+                context,
+                content.pack(),
+                &installed_target,
+            )
+        };
+    verify_extracted(&signed_release, &release_context)
+        .expect("installed signed payload must verify without its archive");
+    let mut expired_context = release_context;
+    expired_context.now_unix = NOW + 1_800;
+    let mut stale_launch_context = release_context;
+    stale_launch_context.minimum_launch_grant_generation = 14;
+    let mut wrong_scope_context = release_context;
+    wrong_scope_context.requested_scope = IntegrationScope::ClaudeCodeLocal;
+    let mut wrong_channel_context = release_context;
+    wrong_channel_context.expected_channel = ReleaseChannel::Stable;
+    let mut wrong_artifact = artifact.clone();
+    wrong_artifact.version = "2.0.0-alpha.99".to_string();
+    let mut wrong_artifact_context = release_context;
+    wrong_artifact_context.expected_artifact = &wrong_artifact;
+    for (context, expected) in [
+        (early_context, NativeReleaseError::ReleaseNotYetValid),
+        (expired_context, NativeReleaseError::ReleaseExpired),
+        (stale_context, NativeReleaseError::ReleaseReplayed),
+        (stale_launch_context, NativeReleaseError::LaunchGrantInvalid),
+        (wrong_scope_context, NativeReleaseError::LaunchGrantInvalid),
+        (
+            wrong_channel_context,
+            NativeReleaseError::ReleaseChannelMismatch,
+        ),
+        (
+            wrong_artifact_context,
+            NativeReleaseError::ReleaseArtifactMismatch,
+        ),
+    ] {
+        assert_eq!(
+            verify_extracted(&signed_release, &context).unwrap_err(),
+            expected
+        );
+    }
+    assert_eq!(
+        signed_release
+            .verify_extracted_artifact(
+                &[],
+                std::slice::from_ref(&trusted),
+                &release_context,
+                content.pack(),
+                &installed_target,
+            )
+            .unwrap_err(),
+        NativeReleaseError::ReleaseKeyUntrusted,
+    );
+    let mut changed_manifest = signed_release.clone();
+    changed_manifest.envelope.artifact_manifest_sha256 = "0".repeat(64);
+    assert_eq!(
+        verify_extracted(&changed_manifest, &release_context).unwrap_err(),
+        NativeReleaseError::ReleaseSignatureInvalid,
+    );
+    let changed_manifest = resign_release(changed_manifest, &release_signing_key);
+    assert_eq!(
+        verify_extracted(&changed_manifest, &release_context).unwrap_err(),
+        NativeReleaseError::ReleasePayloadMismatch,
+    );
+    assert_eq!(
+        verify_extracted(&invalid_launch, &release_context).unwrap_err(),
+        NativeReleaseError::LaunchGrantInvalid,
+    );
+    let original_binary = fs::read(&installed_binary).unwrap();
+    let mut tampered_binary = original_binary.clone();
+    tampered_binary[0] ^= 1;
+    fs::write(&installed_binary, &tampered_binary).unwrap();
+    assert_eq!(
+        verify_extracted(&signed_release, &release_context).unwrap_err(),
+        NativeReleaseError::ReleasePayloadMismatch,
+    );
+    fs::write(&installed_binary, &original_binary).unwrap();
+    verify_extracted(&signed_release, &release_context)
+        .expect("restored payload must verify with a fresh read");
+    fs::rename(saved_first, &first_path).unwrap();
+    fs::rename(saved_second, &second_path).unwrap();
+
     assert_eq!(
         compose_native_portable_archive(content.pack(), &source_target, &first_target),
         Err(NativePortableArchiveError::TargetExists)

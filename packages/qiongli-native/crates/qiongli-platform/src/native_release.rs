@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use crate::grant::{decode_fixed_hex, is_lower_hex, sha256_hex, valid_identifier};
 use crate::{
     ArtifactIdentityV1, GrantMode, GrantVerificationContext, IntegrationScope,
-    NativePortableArchiveTarget, ReleaseChannel, SignatureAlgorithm, SignedLaunchGrantV1,
-    TrustedPublicKey, VerifiedLaunchGrant, VerifiedNativePortableArchive,
-    native_portable_archive_file_name, verify_native_portable_archive,
+    NativeArtifactTarget, NativePortableArchiveTarget, ReleaseChannel, SignatureAlgorithm,
+    SignedLaunchGrantV1, TrustedPublicKey, VerifiedLaunchGrant, VerifiedNativePortableArchive,
+    native_portable_archive_file_name, verify_native_artifact, verify_native_portable_archive,
 };
 
 pub const NATIVE_RELEASE_ENVELOPE_SCHEMA_VERSION: u32 = 1;
@@ -128,6 +128,75 @@ impl SignedNativeReleaseEnvelopeV1 {
         pack: &LoadedResourcePack<'_>,
         archive_target: &NativePortableArchiveTarget,
     ) -> Result<VerifiedNativeReleaseEnvelope, NativeReleaseError> {
+        let signing_bytes = self.verify_release_authority(release_keys, context)?;
+        if archive_target.artifact() != context.expected_artifact {
+            return Err(NativeReleaseError::ReleaseArtifactMismatch);
+        }
+
+        let archive = verify_native_portable_archive(pack, archive_target)
+            .map_err(|_| NativeReleaseError::ArchiveInvalid)?;
+        let manifest = archive.payload().manifest();
+        if archive.artifact() != &self.envelope.artifact
+            || archive.file_name() != self.envelope.archive_file_name
+            || archive.size_bytes() != self.envelope.archive_size_bytes
+            || archive.archive_sha256() != self.envelope.archive_sha256
+            || archive.manifest_sha256() != self.envelope.artifact_manifest_sha256
+            || manifest.content.pack_sha256 != self.envelope.resource_pack_sha256
+            || manifest.artifact_content_root_sha256 != self.envelope.artifact_content_root_sha256
+            || manifest.binary_sha256 != self.envelope.binary_sha256
+            || pack.pack_sha256() != self.envelope.resource_pack_sha256
+        {
+            return Err(NativeReleaseError::ReleasePayloadMismatch);
+        }
+
+        let launch_grant = self.verify_launch_grant(launch_grant_keys, context)?;
+
+        Ok(VerifiedNativeReleaseEnvelope {
+            signed: self.clone(),
+            signed_payload_sha256: sha256_hex(&signing_bytes),
+            release_key_id: self.signature.key_id.clone(),
+            verified_at_unix: context.now_unix,
+            archive_target: archive_target.clone(),
+            archive,
+            launch_grant,
+        })
+    }
+
+    /// Revalidates an extracted payload against its signed release without retaining
+    /// the archive. This returns only the scoped launch grant: it does not bind the
+    /// calling process, establish candidate source provenance, or approve writes.
+    pub fn verify_extracted_artifact(
+        &self,
+        release_keys: &[TrustedReleasePublicKey],
+        launch_grant_keys: &[TrustedPublicKey],
+        context: &NativeReleaseVerificationContext<'_>,
+        pack: &LoadedResourcePack<'_>,
+        target: &NativeArtifactTarget,
+    ) -> Result<VerifiedLaunchGrant, NativeReleaseError> {
+        self.verify_release_authority(release_keys, context)?;
+        if target.artifact() != context.expected_artifact {
+            return Err(NativeReleaseError::ReleaseArtifactMismatch);
+        }
+        let payload = verify_native_artifact(pack, target)
+            .map_err(|_| NativeReleaseError::ReleasePayloadMismatch)?;
+        let manifest = payload.manifest();
+        if manifest.artifact != self.envelope.artifact
+            || payload.manifest_sha256() != self.envelope.artifact_manifest_sha256
+            || manifest.content.pack_sha256 != self.envelope.resource_pack_sha256
+            || manifest.artifact_content_root_sha256 != self.envelope.artifact_content_root_sha256
+            || manifest.binary_sha256 != self.envelope.binary_sha256
+            || pack.pack_sha256() != self.envelope.resource_pack_sha256
+        {
+            return Err(NativeReleaseError::ReleasePayloadMismatch);
+        }
+        self.verify_launch_grant(launch_grant_keys, context)
+    }
+
+    fn verify_release_authority(
+        &self,
+        release_keys: &[TrustedReleasePublicKey],
+        context: &NativeReleaseVerificationContext<'_>,
+    ) -> Result<Vec<u8>, NativeReleaseError> {
         self.validate_structure()?;
         validate_release_keys(release_keys)?;
         let key = release_keys
@@ -159,28 +228,18 @@ impl SignedNativeReleaseEnvelopeV1 {
         if self.envelope.artifact.channel != context.expected_channel {
             return Err(NativeReleaseError::ReleaseChannelMismatch);
         }
-        if &self.envelope.artifact != context.expected_artifact
-            || archive_target.artifact() != context.expected_artifact
-        {
+        if &self.envelope.artifact != context.expected_artifact {
             return Err(NativeReleaseError::ReleaseArtifactMismatch);
         }
 
-        let archive = verify_native_portable_archive(pack, archive_target)
-            .map_err(|_| NativeReleaseError::ArchiveInvalid)?;
-        let manifest = archive.payload().manifest();
-        if archive.artifact() != &self.envelope.artifact
-            || archive.file_name() != self.envelope.archive_file_name
-            || archive.size_bytes() != self.envelope.archive_size_bytes
-            || archive.archive_sha256() != self.envelope.archive_sha256
-            || archive.manifest_sha256() != self.envelope.artifact_manifest_sha256
-            || manifest.content.pack_sha256 != self.envelope.resource_pack_sha256
-            || manifest.artifact_content_root_sha256 != self.envelope.artifact_content_root_sha256
-            || manifest.binary_sha256 != self.envelope.binary_sha256
-            || pack.pack_sha256() != self.envelope.resource_pack_sha256
-        {
-            return Err(NativeReleaseError::ReleasePayloadMismatch);
-        }
+        Ok(signing_bytes)
+    }
 
+    fn verify_launch_grant(
+        &self,
+        launch_grant_keys: &[TrustedPublicKey],
+        context: &NativeReleaseVerificationContext<'_>,
+    ) -> Result<VerifiedLaunchGrant, NativeReleaseError> {
         let launch_context = GrantVerificationContext {
             now_unix: context.now_unix,
             minimum_generation: context.minimum_launch_grant_generation,
@@ -190,21 +249,10 @@ impl SignedNativeReleaseEnvelopeV1 {
             requested_mode: context.requested_mode,
             requested_scope: context.requested_scope,
         };
-        let launch_grant = self
-            .envelope
+        self.envelope
             .signed_launch_grant
             .verify(launch_grant_keys, &launch_context)
-            .map_err(|_| NativeReleaseError::LaunchGrantInvalid)?;
-
-        Ok(VerifiedNativeReleaseEnvelope {
-            signed: self.clone(),
-            signed_payload_sha256: sha256_hex(&signing_bytes),
-            release_key_id: key.key_id.clone(),
-            verified_at_unix: context.now_unix,
-            archive_target: archive_target.clone(),
-            archive,
-            launch_grant,
-        })
+            .map_err(|_| NativeReleaseError::LaunchGrantInvalid)
     }
 
     fn validate_structure(&self) -> Result<(), NativeReleaseError> {

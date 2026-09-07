@@ -63,6 +63,15 @@ the desktop feature; `ui --startup-check` reports shared service readiness only.
 Embedded resource, release authority and Companion checks always run in the
 build script. CLI-only compilation is not standalone package qualification.
 
+`SignedNativeReleaseEnvelopeV1::verify_extracted_artifact` verifies an approved
+native artifact directory against the signed release and launch grant without
+requiring the original archive. It reuses release-key/generation/time policy and
+the artifact owner's full file-tree validation, binding the manifest, binary and
+resource digests to the expected artifact and requested launch scope. Its result
+is a scoped launch grant, not running-process identity, candidate source provenance
+or approval to write. App-backed product authority and source-build refusals remain
+until the standalone caller and persisted signed-candidate binding are implemented.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

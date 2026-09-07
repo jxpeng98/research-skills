@@ -297,7 +297,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-07",
-      "blocker": "Isolated Codex/Claude install tests passed, but the current live Host route returns Lite from cached alpha.3. A named candidate in an authorized Host, human approval and SEC qualification remain open."
+      "blocker": "Named test candidate passes both real-client caches and Full route checks. Current conversation still uses alpha.3; an authorized model research session, human approval and SEC qualification remain open."
     },
     {
       "id": "CLI-405",

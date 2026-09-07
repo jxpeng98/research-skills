@@ -9,6 +9,7 @@ use std::process::{Command, Output, Stdio};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use ed25519_dalek::{Signer, SigningKey};
+use qiongli::FULL_HOST_ORCHESTRATION_CONTROL_TOOL_NAMES;
 use qiongli_platform::{
     Architecture, ArtifactIdentityV1, CLAUDE_PLUGIN_BUNDLE_RECEIPT_FILE,
     CODEX_PLUGIN_BUNDLE_RECEIPT_FILE, ClientActivationTarget, GrantMode, GrantSignatureV1,
@@ -25,7 +26,7 @@ use qiongli_platform::{
     native_release_candidate_signing_bytes, native_release_envelope_signing_bytes,
     native_release_notes_file_name, verify_claude_plugin_bundle, verify_codex_plugin_bundle,
 };
-use qiongli_runtime::LITE_PUBLIC_TOOL_NAMES;
+use qiongli_runtime::{FULL_PROJECT_PUBLIC_TOOL_NAMES, LITE_PUBLIC_TOOL_NAMES};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
@@ -1951,7 +1952,10 @@ fn run_real_codex_client(
         "cached_mcp_empty_path_succeeded": true,
         "client_remove_succeeded": true,
         "client_absence_verified": true,
-        "lite_tool_count": LITE_PUBLIC_TOOL_NAMES.len()
+        "lite_tool_count": LITE_PUBLIC_TOOL_NAMES.len(),
+        "full_tool_count": LITE_PUBLIC_TOOL_NAMES.len() + FULL_PROJECT_PUBLIC_TOOL_NAMES.len()
+            + FULL_HOST_ORCHESTRATION_CONTROL_TOOL_NAMES.len(),
+        "full_route_profile_verified": true
     }))
 }
 
@@ -2111,7 +2115,10 @@ fn run_real_claude_client(root: &Path, home: &Path, client: &Path) -> Result<Val
         "cached_mcp_empty_path_succeeded": true,
         "client_remove_succeeded": true,
         "client_absence_verified": true,
-        "lite_tool_count": LITE_PUBLIC_TOOL_NAMES.len()
+        "lite_tool_count": LITE_PUBLIC_TOOL_NAMES.len(),
+        "full_tool_count": LITE_PUBLIC_TOOL_NAMES.len() + FULL_PROJECT_PUBLIC_TOOL_NAMES.len()
+            + FULL_HOST_ORCHESTRATION_CONTROL_TOOL_NAMES.len(),
+        "full_route_profile_verified": true
     }))
 }
 
@@ -2323,42 +2330,38 @@ fn run_mcp(binary: &Path, root: &Path, home: &Path) -> Result<(), &'static str> 
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    run_mcp_command(command, root)
+    run_mcp_command(command, root, false)
 }
 
 fn run_cached_mcp(executable: &Path, root: &Path, home: &Path) -> Result<(), &'static str> {
-    let mut command = Command::new(executable);
-    command
-        .env_clear()
-        .env("PATH", "")
-        .env("HOME", home)
-        .env("USERPROFILE", home)
-        .env("QIONGLI_CONFIG_HOME", home.join(".qiongli/config"))
-        .current_dir(root)
-        .args([
-            "mcp",
-            "serve",
-            "--transport",
-            "stdio",
-            "--profile",
-            "marketplace-lite",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    for name in ["SYSTEMROOT", "WINDIR", "TEMP", "TMP", "TMPDIR"] {
-        if let Some(value) = env::var_os(name) {
-            command.env(name, value);
+    for profile in ["marketplace-lite", "full"] {
+        let mut command = Command::new(executable);
+        command
+            .env_clear()
+            .env("PATH", "")
+            .env("HOME", home)
+            .env("USERPROFILE", home)
+            .env("QIONGLI_CONFIG_HOME", home.join(".qiongli/config"))
+            .current_dir(root)
+            .args(["mcp", "serve", "--transport", "stdio", "--profile", profile])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        for name in ["SYSTEMROOT", "WINDIR", "TEMP", "TMP", "TMPDIR"] {
+            if let Some(value) = env::var_os(name) {
+                command.env(name, value);
+            }
         }
+        run_mcp_command(command, root, profile == "full")?;
     }
-    run_mcp_command(command, root)
+    Ok(())
 }
 
-fn run_mcp_command(mut command: Command, root: &Path) -> Result<(), &'static str> {
+fn run_mcp_command(mut command: Command, root: &Path, full: bool) -> Result<(), &'static str> {
     let mut child = command
         .spawn()
         .map_err(|_| "candidate-acceptance-mcp-start-failed")?;
-    let requests = [
+    let mut requests = vec![
         json!({
             "jsonrpc": "2.0",
             "id": 1,
@@ -2374,6 +2377,14 @@ fn run_mcp_command(mut command: Command, root: &Path) -> Result<(), &'static str
             "params": {"name": "qiongli_config_status", "arguments": {}}
         }),
     ];
+    if full {
+        requests.push(json!({
+            "jsonrpc": "2.0", "id": 4, "method": "tools/call",
+            "params": {"name": "qiongli_orchestrator_route", "arguments": {
+                "request": "Compare two literature sources with independent review and auditable handoff."
+            }}
+        }));
+    }
     {
         let stdin = child
             .stdin
@@ -2402,7 +2413,7 @@ fn run_mcp_command(mut command: Command, root: &Path) -> Result<(), &'static str
         .map(serde_json::from_str::<Value>)
         .collect::<Result<Vec<_>, _>>()
         .map_err(|_| "candidate-acceptance-mcp-output-invalid")?;
-    if responses.len() != 3 {
+    if responses.len() != if full { 4 } else { 3 } {
         return Err("candidate-acceptance-mcp-output-invalid");
     }
     let tools = responses
@@ -2414,7 +2425,12 @@ fn run_mcp_command(mut command: Command, root: &Path) -> Result<(), &'static str
         .iter()
         .filter_map(|tool| tool["name"].as_str())
         .collect::<Vec<_>>();
-    if names != LITE_PUBLIC_TOOL_NAMES {
+    let mut expected = LITE_PUBLIC_TOOL_NAMES.to_vec();
+    if full {
+        expected.extend(FULL_PROJECT_PUBLIC_TOOL_NAMES);
+        expected.extend(FULL_HOST_ORCHESTRATION_CONTROL_TOOL_NAMES);
+    }
+    if names != expected {
         return Err("candidate-acceptance-mcp-tools-invalid");
     }
     let call = responses
@@ -2423,6 +2439,30 @@ fn run_mcp_command(mut command: Command, root: &Path) -> Result<(), &'static str
         .ok_or("candidate-acceptance-mcp-call-invalid")?;
     if call["result"]["structuredContent"]["config_path"] != "<managed-native-config>" {
         return Err("candidate-acceptance-mcp-call-invalid");
+    }
+    if full {
+        let route = responses
+            .iter()
+            .find(|value| value["id"] == 4)
+            .ok_or("candidate-acceptance-full-route-invalid")?;
+        validate_full_route(&route["result"]["structuredContent"])?;
+    }
+    Ok(())
+}
+
+fn validate_full_route(route: &Value) -> Result<(), &'static str> {
+    if route["route"] != "orchestrator_mcp"
+        || route["requires_full_runtime"] != true
+        || [
+            "preview_only",
+            "runtime_profile",
+            "recommended_runtime",
+            "upgrade",
+        ]
+        .iter()
+        .any(|field| route.get(field).is_some())
+    {
+        return Err("candidate-acceptance-full-route-invalid");
     }
     Ok(())
 }
@@ -2700,6 +2740,26 @@ mod tests {
         assert!(valid_external_command(root.clone()).is_err());
         assert!(valid_external_command(PathBuf::from("relative-python")).is_err());
         fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn full_route_rejects_lite_and_incomplete_responses() {
+        let full = json!({"route": "orchestrator_mcp", "requires_full_runtime": true});
+        assert!(validate_full_route(&full).is_ok());
+        assert!(validate_full_route(&Value::Null).is_err());
+        let mut incomplete = full.clone();
+        incomplete["requires_full_runtime"] = json!(false);
+        assert!(validate_full_route(&incomplete).is_err());
+        for field in [
+            "preview_only",
+            "runtime_profile",
+            "recommended_runtime",
+            "upgrade",
+        ] {
+            let mut mixed = full.clone();
+            mixed[field] = Value::Null;
+            assert!(validate_full_route(&mixed).is_err());
+        }
     }
 
     #[test]

@@ -1675,3 +1675,40 @@ Native two-version activation was not rerun because no predecessor was provided;
 prior SIGKILL evidence remains separately scoped. Clean-machine qualification,
 production signing, human-approved academic writing and first-stage acceptance are
 still open. Whitespace, generated-index and frozen-source checks passed.
+
+
+## CLI-404 cached candidate Full MCP qualification
+
+Base/product source: `8c6450f0a744812958154fa94a6bb9612d309de6`;
+branch: `codex/candidate-full-mcp-qualification`.
+The existing cached MCP runner now probes both Marketplace Lite and Full from
+both actual client caches with empty PATH. It preserves the 14-tool Lite check,
+requires all 32 Full tools, then calls the Full orchestration route. Full must
+return `orchestrator_mcp` and `requires_full_runtime=true`, without Lite preview,
+runtime or upgrade fields. The same process/output validator still requires clean
+stdio, exact response count and redacted config status. Client receipts now record
+Full tool count and route verification only after these calls succeed.
+
+Eight runner tests passed, including rejection of missing, incomplete or mixed
+Full/Lite responses; example Clippy passed. The real macOS aarch64 candidate run
+also passed with Codex 0.153.4 and Claude Code 2.1.263. Evidence:
+`/Users/pengjiaxin/Work/qiongli-cli404-candidate-full-mcp-8c6450f0/acceptance-evidence.json`;
+SHA-256 `210b6bbee64ff3977d7bad08abbcd7d2aecc461fede187cde358c5601f7f483e`.
+Archive SHA-256:
+`a63fe31aacb82b59430e6589308beb8179cfcdda8a9129b1e926ab798d1ffca3`;
+candidate SHA-256:
+`74c256cd0fc03fcd4b9ef172b08bc1df3a45ed4c67c9184a75495f462a1ba130`.
+Both candidate-backed client entries report 14 Lite / 32 Full tools and
+`full_route_profile_verified=true`; strict plugin validators, install/cache/remove
+and the 27 existing baseline fields also passed. Product code is unchanged; this
+branch changes the acceptance runner. Whitespace, generated index and frozen-source
+checks passed.
+
+The runner launches cached MCP protocol probes directly after actual client
+installation; this is not a model-initiated research session. Test signing remains
+ephemeral and `publication_allowed=false`. The current conversation still uses its
+old alpha.3 installation. Next: authorized research inputs and an actual candidate
+Host session, the pending human decision, canonical note writing and same-device
+continuation. No scientific correctness, SEC acceptance or first-stage completion
+is inferred from the successful route. Prior update/recovery evidence retains its
+separate scope; it was not rerun here.

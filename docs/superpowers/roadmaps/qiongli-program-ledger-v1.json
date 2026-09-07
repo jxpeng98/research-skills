@@ -296,8 +296,8 @@
       ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-07",
-      "blocker": "Current candidate, real Codex draft review, human-authorized Inbox intake and canonical consolidation passed. External continuation of revision-2 data needs explicit disclosure authority; Host/SEC qualification remains open."
+      "updated_at": "2026-09-08",
+      "blocker": "Current candidate, real Codex draft review, human-authorized Inbox/consolidation and authorized revision-2 same-Host reads passed. Full Host/SEC qualification remains open."
     },
     {
       "id": "CLI-405",
@@ -311,8 +311,8 @@
       ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-07",
-      "blocker": "Approved REALM/RAG capture consolidated to research_state.md at revision 2; local restart verified. Graph is structural only. External continuation disclosure was rejected; full scholarly continuation and same-device Host handoff remain open."
+      "updated_at": "2026-09-08",
+      "blocker": "Approved capture is canonical at revision 2; authorized new Codex session read file text, metadata and graph with unchanged files. Graph has no semantic nodes; complete scholarly artifacts/workflow and actual second-Host continuation remain open."
     },
     {
       "id": "CLI-406",

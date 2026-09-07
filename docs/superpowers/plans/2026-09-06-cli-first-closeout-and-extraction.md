@@ -2418,3 +2418,29 @@ reflect completed approval/intake/consolidation and remaining external continuat
 authority, semantic research work and Host/SEC qualification. Acceptance is unchanged.
 Next: explicitly authorized read-only external continuation of the revision-2
 artifact/metadata/graph, then the actual same-device Host handoff.
+
+
+## CLI-405 authorized revision-2 read-only continuation — September 8
+
+Base `73009f20`; branch `codex/authorized-research-continuation`. The maintainer
+explicitly authorized a new Codex session to read the consolidated file, metadata
+and graph. The exact canonical text was supplied with its previously verified
+SHA-256; the `dfebb17c` candidate served actual Full project/graph reads. The session
+identity differs from the earlier draft review. Project and graph both returned
+revision 2; the graph source digest matched the authorized research-state file.
+Two graph attempts with unsupported `revision`/`expected_revision` arguments were
+rejected with -32602 before the corrected project-only request succeeded. There
+were two successful reads, two argument refusals and no other tool use. Full
+project/config file-set and SHA-256 snapshots were unchanged.
+
+The Host accurately separated supplied canonical text from extracted graph data:
+two structural nodes, one containment edge, zero semantic nodes, missing stable
+main-question identity and `no-recognized-artifacts` readiness. Its bounded
+continuation note preserved abstract-only limits and proposed source-grounded
+full-paper work. This is same-Host session continuation, not second-Host handoff,
+complete B2, or a claim/evidence graph. Private evidence in the existing
+`target/cli405-approved-8134b085/` directory includes the authorized invocation,
+events, continuation note and receipt. The earlier rejected invocation remains
+separate. No source code or research state changed. Next: complete the scholarly
+artifact gaps through reviewed source-bound changes and qualify same-device
+second-Host continuation. Current acceptance counts remain unchanged.

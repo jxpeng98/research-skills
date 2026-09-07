@@ -340,6 +340,18 @@ outcome describes local transaction completion, not a live Host reload or named-
 acceptance. Successful real packaged activation and process-kill qualification remain
 separate evidence requirements.
 
+The nonpublishing `native_candidate_acceptance` example accepts optional
+`--predecessor-manifest <absolute-Cargo.toml>`. It builds that source with the same
+in-memory test authority, reads its actual CLI version and requires it to precede the
+current candidate. Both packages use existing artifact/archive/signature owners;
+the temporary authority supports predecessor generation 1 and successor generation 2.
+The journey installs the real predecessor CLI, stages the successor, then runs public
+activation preview/prepare/activate, installed version/health/MCP and recovery replay.
+Omitting the manifest records this journey as not run. A caller-derived predecessor
+build proves runtime switching only; it does not attest to historical published source,
+production signing, resource-pack migration or live Host reload. Private keys are never
+persisted, and the receipt retains `publication_allowed=false`.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

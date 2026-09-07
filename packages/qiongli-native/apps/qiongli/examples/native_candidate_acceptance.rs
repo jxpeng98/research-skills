@@ -31,7 +31,7 @@ use sha2::{Digest, Sha256};
 
 const RELEASE_KEY_ID: &str = "community-alpha-acceptance-release-key";
 const LAUNCH_KEY_ID: &str = "community-alpha-acceptance-launch-key";
-const GENERATION: u64 = 1;
+const GENERATION: u64 = 2;
 const RELEASE_VALIDITY_SECONDS: u64 = 3_600;
 const CANDIDATE_VALIDITY_SECONDS: u64 = 1_800;
 const MAX_STAGED_PRODUCT_BYTES: u64 = 128 * 1024 * 1024;
@@ -104,94 +104,18 @@ fn run() -> Result<(), &'static str> {
         .map_err(|_| "candidate-acceptance-candidate-name-invalid")?;
     let notes_name = native_release_notes_file_name(&artifact)
         .map_err(|_| "candidate-acceptance-notes-name-invalid")?;
-    let notes = render_release_notes(
+    let (signed_candidate, notes) = sign_candidate_bundle(
         &artifact,
-        &artifact_id,
-        &archive_name,
-        &candidate_name,
-        &notes_name,
+        &archive,
+        &assembled.manifest().binary_sha256,
+        content.pack().pack_sha256(),
+        &arguments.source_commit,
+        (&release_key, &launch_key),
+        GENERATION,
     )?;
     let notes_size_bytes =
         u64::try_from(notes.len()).map_err(|_| "candidate-acceptance-notes-size-invalid")?;
     let notes_sha256 = sha256_hex(&notes);
-
-    let now_unix = now_unix()?;
-    let portable_grant = sign_grant(
-        LaunchGrantV1 {
-            schema_version: 1,
-            generation: GENERATION,
-            artifact: artifact.clone(),
-            binary_sha256: assembled.manifest().binary_sha256.clone(),
-            resource_pack_sha256: content.pack().pack_sha256().to_string(),
-            allowed_modes: vec![GrantMode::LiteMcp],
-            integration_scopes: vec![
-                IntegrationScope::CodexLocal,
-                IntegrationScope::ClaudeCodeLocal,
-            ],
-            not_before_unix: now_unix.saturating_sub(60),
-            expires_at_unix: now_unix.saturating_add(RELEASE_VALIDITY_SECONDS),
-        },
-        &launch_key,
-    )?;
-    let envelope = build_native_release_envelope(
-        GENERATION,
-        &archive,
-        &portable_grant,
-        now_unix.saturating_sub(30),
-        now_unix.saturating_add(RELEASE_VALIDITY_SECONDS),
-    )
-    .map_err(|_| "candidate-acceptance-release-envelope-invalid")?;
-    let release_signature = release_key.sign(
-        &native_release_envelope_signing_bytes(&envelope)
-            .map_err(|_| "candidate-acceptance-release-signing-input-invalid")?,
-    );
-    let signed_release = SignedNativeReleaseEnvelopeV1 {
-        envelope,
-        signature: NativeReleaseSignatureV1 {
-            algorithm: SignatureAlgorithm::Ed25519,
-            key_id: RELEASE_KEY_ID.to_string(),
-            value_hex: encode_hex(&release_signature.to_bytes()),
-        },
-    };
-    let candidate = build_native_release_candidate(
-        GENERATION,
-        &arguments.source_commit,
-        &signed_release,
-        [
-            plugin_grant(
-                &artifact,
-                ClientActivationTarget::Codex,
-                &assembled.manifest().binary_sha256,
-                content.pack().pack_sha256(),
-                &launch_key,
-                now_unix,
-            )?,
-            plugin_grant(
-                &artifact,
-                ClientActivationTarget::ClaudeCode,
-                &assembled.manifest().binary_sha256,
-                content.pack().pack_sha256(),
-                &launch_key,
-                now_unix,
-            )?,
-        ],
-        &notes,
-        now_unix,
-        now_unix.saturating_add(CANDIDATE_VALIDITY_SECONDS),
-    )
-    .map_err(|_| "candidate-acceptance-candidate-invalid")?;
-    let candidate_signature = release_key.sign(
-        &native_release_candidate_signing_bytes(&candidate)
-            .map_err(|_| "candidate-acceptance-candidate-signing-input-invalid")?,
-    );
-    let signed_candidate = SignedNativeReleaseCandidateV1 {
-        candidate,
-        signature: NativeReleaseSignatureV1 {
-            algorithm: SignatureAlgorithm::Ed25519,
-            key_id: RELEASE_KEY_ID.to_string(),
-            value_hex: encode_hex(&candidate_signature.to_bytes()),
-        },
-    };
     let candidate_path = candidate_root.join(&candidate_name);
     let candidate_bytes = signed_candidate
         .to_canonical_json()
@@ -207,8 +131,6 @@ fn run() -> Result<(), &'static str> {
         &candidate_root,
         [&archive_name, &candidate_name, &notes_name],
     )?;
-    drop(release_key);
-    drop(launch_key);
 
     let runtime_target = approve_native_artifact_target(runtime_root.join(&artifact_id), &artifact)
         .map_err(|_| "candidate-acceptance-runtime-target-invalid")?;
@@ -243,6 +165,25 @@ fn run() -> Result<(), &'static str> {
         &arguments.external_clients,
         &verified_candidate,
     )?;
+    let activation_journey = if let Some(manifest) = &arguments.predecessor_manifest {
+        run_native_activation_journey(
+            &arguments.output,
+            manifest,
+            &build_root,
+            &authority_path,
+            &arguments.source_commit,
+            &authority,
+            (&release_key, &launch_key),
+            &verified_candidate,
+            &candidate_path,
+            &archive_path,
+            &notes_path,
+        )?
+    } else {
+        json!({"status": "not-run", "reason": "predecessor-manifest-not-provided"})
+    };
+    drop(release_key);
+    drop(launch_key);
     let evidence = json!({
         "schema_version": 1,
         "record_type": "qiongli-native-candidate-acceptance",
@@ -270,6 +211,7 @@ fn run() -> Result<(), &'static str> {
             }
         },
         "checks": acceptance.checks,
+        "native_activation_journey": activation_journey,
         "external_gates": {
             "real_client": acceptance.real_client,
             "displayed_window": {
@@ -293,10 +235,364 @@ fn run() -> Result<(), &'static str> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
+fn sign_candidate_bundle(
+    artifact: &ArtifactIdentityV1,
+    archive: &qiongli_platform::VerifiedNativePortableArchive,
+    binary_sha256: &str,
+    pack_sha256: &str,
+    source_commit: &str,
+    keys: (&SigningKey, &SigningKey),
+    generation: u64,
+) -> Result<(SignedNativeReleaseCandidateV1, Vec<u8>), &'static str> {
+    let (release_key, launch_key) = keys;
+    let artifact_id =
+        native_artifact_id(artifact).map_err(|_| "candidate-acceptance-artifact-invalid")?;
+    let archive_name = native_portable_archive_file_name(artifact)
+        .map_err(|_| "candidate-acceptance-archive-invalid")?;
+    let candidate_name = native_release_candidate_file_name(artifact)
+        .map_err(|_| "candidate-acceptance-candidate-name-invalid")?;
+    let notes_name = native_release_notes_file_name(artifact)
+        .map_err(|_| "candidate-acceptance-notes-name-invalid")?;
+    let notes = render_release_notes(
+        artifact,
+        &artifact_id,
+        &archive_name,
+        &candidate_name,
+        &notes_name,
+    )?;
+
+    let now_unix = now_unix()?;
+    let portable_grant = sign_grant(
+        LaunchGrantV1 {
+            schema_version: 1,
+            generation,
+            artifact: artifact.clone(),
+            binary_sha256: binary_sha256.to_string(),
+            resource_pack_sha256: pack_sha256.to_string(),
+            allowed_modes: vec![GrantMode::LiteMcp],
+            integration_scopes: vec![
+                IntegrationScope::CodexLocal,
+                IntegrationScope::ClaudeCodeLocal,
+            ],
+            not_before_unix: now_unix.saturating_sub(60),
+            expires_at_unix: now_unix.saturating_add(RELEASE_VALIDITY_SECONDS),
+        },
+        launch_key,
+    )?;
+    let envelope = build_native_release_envelope(
+        generation,
+        archive,
+        &portable_grant,
+        now_unix.saturating_sub(30),
+        now_unix.saturating_add(RELEASE_VALIDITY_SECONDS),
+    )
+    .map_err(|_| "candidate-acceptance-release-envelope-invalid")?;
+    let release_signature = release_key.sign(
+        &native_release_envelope_signing_bytes(&envelope)
+            .map_err(|_| "candidate-acceptance-release-signing-input-invalid")?,
+    );
+    let signed_release = SignedNativeReleaseEnvelopeV1 {
+        envelope,
+        signature: NativeReleaseSignatureV1 {
+            algorithm: SignatureAlgorithm::Ed25519,
+            key_id: RELEASE_KEY_ID.to_string(),
+            value_hex: encode_hex(&release_signature.to_bytes()),
+        },
+    };
+    let candidate = build_native_release_candidate(
+        generation,
+        source_commit,
+        &signed_release,
+        [
+            plugin_grant(
+                artifact,
+                ClientActivationTarget::Codex,
+                binary_sha256,
+                pack_sha256,
+                launch_key,
+                now_unix,
+                generation,
+            )?,
+            plugin_grant(
+                artifact,
+                ClientActivationTarget::ClaudeCode,
+                binary_sha256,
+                pack_sha256,
+                launch_key,
+                now_unix,
+                generation,
+            )?,
+        ],
+        &notes,
+        now_unix,
+        now_unix.saturating_add(CANDIDATE_VALIDITY_SECONDS),
+    )
+    .map_err(|_| "candidate-acceptance-candidate-invalid")?;
+    let candidate_signature = release_key.sign(
+        &native_release_candidate_signing_bytes(&candidate)
+            .map_err(|_| "candidate-acceptance-candidate-signing-input-invalid")?,
+    );
+    let signed_candidate = SignedNativeReleaseCandidateV1 {
+        candidate,
+        signature: NativeReleaseSignatureV1 {
+            algorithm: SignatureAlgorithm::Ed25519,
+            key_id: RELEASE_KEY_ID.to_string(),
+            value_hex: encode_hex(&candidate_signature.to_bytes()),
+        },
+    };
+    Ok((signed_candidate, notes))
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_native_activation_journey(
+    root: &Path,
+    predecessor_manifest: &Path,
+    build_root: &Path,
+    authority_path: &Path,
+    source_commit: &str,
+    authority: &NativeReleaseAuthority,
+    keys: (&SigningKey, &SigningKey),
+    successor: &qiongli_platform::VerifiedNativeReleaseCandidate,
+    candidate_path: &Path,
+    archive_path: &Path,
+    notes_path: &Path,
+) -> Result<Value, &'static str> {
+    if !cfg!(target_os = "macos") {
+        return Err("candidate-activation-journey-target-unsupported");
+    }
+    let home = create_child_directory(root, "activation-home")?;
+    let built = build_product_manifest(
+        build_root,
+        authority_path,
+        source_commit,
+        predecessor_manifest,
+    )?;
+    let version_output = run_product(&built, root, &home, ["--version"])?;
+    let version = std::str::from_utf8(&version_output.stdout)
+        .map_err(|_| "candidate-predecessor-version-invalid")?
+        .trim()
+        .strip_prefix("qiongli ")
+        .ok_or("candidate-predecessor-version-invalid")?;
+    let previous_version =
+        semver::Version::parse(version).map_err(|_| "candidate-predecessor-version-invalid")?;
+    if previous_version
+        >= semver::Version::parse(&successor.candidate().artifact.version)
+            .map_err(|_| "candidate-predecessor-version-invalid")?
+    {
+        return Err("candidate-predecessor-version-invalid");
+    }
+    let content =
+        qiongli::embedded_content().map_err(|_| "candidate-acceptance-embedded-content-invalid")?;
+    let artifact = current_target_native_artifact_identity(version, ReleaseChannel::Alpha)
+        .map_err(|_| "candidate-predecessor-version-invalid")?;
+    let previous_root = create_child_directory(root, "predecessor")?;
+    let staged_binary = previous_root.join("source-cli");
+    stage_product_binary(&built, &staged_binary)?;
+    let artifact_target = approve_native_artifact_target(
+        previous_root.join(native_artifact_id(&artifact).map_err(|error| error.reason_code())?),
+        &artifact,
+    )
+    .map_err(|error| error.reason_code())?;
+    let assembled =
+        compose_native_artifact(content.pack(), &artifact, &staged_binary, &artifact_target)
+            .map_err(|error| error.reason_code())?;
+    let previous_archive = approve_native_portable_archive_target(
+        previous_root.join(
+            native_portable_archive_file_name(&artifact).map_err(|error| error.reason_code())?,
+        ),
+        &artifact,
+    )
+    .map_err(|error| error.reason_code())?;
+    let archive =
+        compose_native_portable_archive(content.pack(), &artifact_target, &previous_archive)
+            .map_err(|error| error.reason_code())?;
+    let (signed, notes) = sign_candidate_bundle(
+        &artifact,
+        &archive,
+        &assembled.manifest().binary_sha256,
+        content.pack().pack_sha256(),
+        source_commit,
+        keys,
+        1,
+    )?;
+    let previous_candidate = signed
+        .verify(
+            authority,
+            &qiongli_platform::NativeReleaseCandidateVerificationContext {
+                now_unix: now_unix()?,
+                expected_source_commit: source_commit,
+                expected_artifact: &artifact,
+                requested_target: ClientActivationTarget::Codex,
+            },
+            content.pack(),
+            &previous_archive,
+            &notes,
+        )
+        .map_err(|error| error.reason_code())?;
+    let installed = qiongli_platform::apply_native_release_candidate_local(
+        content.pack(),
+        &previous_candidate,
+        &home,
+        now_unix()?,
+    )
+    .map_err(|error| error.reason_code())?;
+    let previous_id = &installed.payload.receipt.install_id;
+    let previous_binary = installed_candidate_binary(&home, &artifact)?;
+    run_managed_fixture_operation(&previous_binary, root, &home, "cli-install", None)?;
+    let command = home.join(".local/bin/qiongli");
+    if run_product(&command, root, &home, ["--version"])?.stdout != version_output.stdout {
+        return Err("candidate-predecessor-installed-version-invalid");
+    }
+    let previous_hash =
+        sha256_hex(&fs::read(&command).map_err(|_| "candidate-predecessor-read-failed")?);
+    let config =
+        qiongli_config::resolve_config_root(Some(home.join(".qiongli/config").as_os_str()), &home)
+            .map_err(|error| error.reason_code())?;
+    let store =
+        qiongli_config::UpdateStateStore::new(config, qiongli_config::UpdateStreamPreference::Beta);
+    let initial = store.load().map_err(|error| error.reason_code())?;
+    let mut state = initial.state;
+    state.last_accepted_generation = 1;
+    state.last_known_good = Some(qiongli_config::UpdateLastKnownGood {
+        version: version.to_string(),
+        channel: qiongli_config::UpdateReleaseChannel::Alpha,
+        generation: 1,
+        archive_sha256: archive.archive_sha256().to_string(),
+        resource_pack_sha256: content.pack().pack_sha256().to_string(),
+    });
+    store
+        .replace(initial.revision, state)
+        .map_err(|error| error.reason_code())?;
+    qiongli_platform::stage_native_release_candidate_local(
+        content.pack(),
+        successor,
+        &home,
+        now_unix()?,
+    )
+    .map_err(|error| error.reason_code())?;
+    let next_binary = installed_candidate_binary(&home, &successor.candidate().artifact)?;
+    let common: Vec<OsString> = vec![
+        "--candidate".into(),
+        candidate_path.into(),
+        "--archive".into(),
+        archive_path.into(),
+        "--release-notes".into(),
+        notes_path.into(),
+        "--target".into(),
+        "codex".into(),
+        "--previous-install-id".into(),
+        previous_id.into(),
+    ];
+    let invoke = |subcommand: &str, extra: &[OsString]| -> Result<Value, &'static str> {
+        let mut args: Vec<OsString> = vec!["install".into(), "candidate".into(), subcommand.into()];
+        args.extend(common.clone());
+        args.extend_from_slice(extra);
+        parse_output_json(&run_product(&next_binary, root, &home, args)?)
+    };
+    let preview = invoke("activate-preview", &[])?;
+    let preflight = preview["preflight_digest_sha256"]
+        .as_str()
+        .ok_or("candidate-activation-preview-invalid")?;
+    let prepared = invoke(
+        "activate-prepare",
+        &[
+            "--expected-preflight-digest".into(),
+            preflight.into(),
+            "--approve-filesystem-write".into(),
+        ],
+    )?;
+    let transaction = prepared["transaction_id"]
+        .as_str()
+        .ok_or("candidate-activation-preparation-invalid")?;
+    let journal = prepared["journal_sha256"]
+        .as_str()
+        .ok_or("candidate-activation-preparation-invalid")?;
+    let approval = prepared["approval_digest_sha256"]
+        .as_str()
+        .ok_or("candidate-activation-preparation-invalid")?;
+    let result = invoke(
+        "activate",
+        &[
+            "--transaction-id".into(),
+            transaction.into(),
+            "--expected-journal-digest".into(),
+            journal.into(),
+            "--expected-approval-digest".into(),
+            approval.into(),
+            "--approve-filesystem-write".into(),
+            "--approve-client-config-change".into(),
+            "--approve-host-trust".into(),
+        ],
+    )?;
+    if result["outcome"] != "committed"
+        || result["transaction_id"] != transaction
+        || result["journal_sha256"] != journal
+    {
+        return Err("candidate-activation-outcome-invalid");
+    }
+    let next_version = run_product(&command, root, &home, ["--version"])?;
+    if next_version.stdout
+        != format!("qiongli {}\n", successor.candidate().artifact.version).as_bytes()
+        || sha256_hex(&fs::read(&command).map_err(|_| "candidate-activation-command-read-failed")?)
+            == previous_hash
+    {
+        return Err("candidate-activation-version-switch-invalid");
+    }
+    qiongli::check_native_cli_health(&home, &home.join(".qiongli/config"), successor)?;
+    run_mcp(&command, root, &home)?;
+    let committed = store.load().map_err(|error| error.reason_code())?;
+    if committed.state.last_accepted_generation != successor.candidate().generation
+        || committed.state.active_transaction.is_some()
+        || committed
+            .state
+            .last_known_good
+            .as_ref()
+            .is_none_or(|release| {
+                release.version != successor.candidate().artifact.version
+                    || release.archive_sha256
+                        != successor
+                            .candidate()
+                            .signed_portable_release
+                            .envelope
+                            .archive_sha256
+            })
+    {
+        return Err("candidate-activation-release-state-invalid");
+    }
+    let recovered = parse_output_json(&run_product(
+        &next_binary,
+        root,
+        &home,
+        [
+            "install",
+            "candidate",
+            "activate-recover",
+            "--transaction-id",
+            transaction,
+            "--expected-journal-digest",
+            journal,
+            "--approve-filesystem-write",
+        ],
+    )?)?;
+    if recovered["outcome"] != "committed"
+        || store.load().map_err(|error| error.reason_code())? != committed
+    {
+        return Err("candidate-activation-replay-invalid");
+    }
+    Ok(
+        json!({"status": "passed", "predecessor_version": version, "successor_version": successor.candidate().artifact.version,
+        "predecessor_binary_sha256": previous_hash, "successor_binary_sha256": successor.candidate().signed_portable_release.envelope.binary_sha256,
+        "target": "codex", "public_activation": "committed", "installed_health_and_mcp": "passed", "recovery_replay": "unchanged",
+        "predecessor_source": "caller-provided-manifest-built-with-ephemeral-authority", "publication_allowed": false}),
+    )
+}
+
 struct Arguments {
     output: PathBuf,
     source_commit: String,
     external_clients: ExternalClients,
+    predecessor_manifest: Option<PathBuf>,
 }
 
 struct ExternalClients {
@@ -319,6 +615,7 @@ impl Arguments {
         let mut plugin_validator = None;
         let mut plugin_validator_python = None;
         let mut claude_binary = None;
+        let mut predecessor_manifest = None;
         let mut index = 0;
         while index < values.len() {
             let option = values[index]
@@ -340,6 +637,9 @@ impl Arguments {
                 }
                 "--plugin-validator-python" if plugin_validator_python.is_none() => {
                     plugin_validator_python = Some(PathBuf::from(value))
+                }
+                "--predecessor-manifest" if predecessor_manifest.is_none() => {
+                    predecessor_manifest = Some(valid_external_file(PathBuf::from(value))?);
                 }
                 "--claude-bin" if claude_binary.is_none() => {
                     claude_binary = Some(PathBuf::from(value))
@@ -372,6 +672,7 @@ impl Arguments {
             output,
             source_commit,
             external_clients: ExternalClients { codex, claude },
+            predecessor_manifest,
         })
     }
 }
@@ -396,12 +697,12 @@ fn authority_bytes(
     serde_json_canonicalizer::to_vec(&json!({
         "schema_version": 1,
         "channel": "alpha",
-        "minimum_release_generation": GENERATION,
-        "minimum_launch_grant_generation": GENERATION,
+        "minimum_release_generation": 1,
+        "minimum_launch_grant_generation": 1,
         "release_keys": [{
             "key_id": RELEASE_KEY_ID,
             "public_key_hex": encode_hex(&release_key.verifying_key().to_bytes()),
-            "minimum_generation": GENERATION,
+            "minimum_generation": 1,
             "maximum_generation_exclusive": GENERATION + 1
         }],
         "launch_grant_keys": [{
@@ -423,6 +724,15 @@ fn build_product(
         .and_then(Path::parent)
         .map(|root| root.join("Cargo.toml"))
         .ok_or("candidate-acceptance-manifest-unavailable")?;
+    build_product_manifest(build_root, authority_path, source_commit, &manifest)
+}
+
+fn build_product_manifest(
+    build_root: &Path,
+    authority_path: &Path,
+    source_commit: &str,
+    manifest: &Path,
+) -> Result<PathBuf, &'static str> {
     let cargo = env::var_os("CARGO").unwrap_or_else(|| OsString::from("cargo"));
     let status = Command::new(cargo)
         .args([
@@ -726,6 +1036,7 @@ fn plugin_grant(
     pack_sha256: &str,
     key: &SigningKey,
     now_unix: u64,
+    generation: u64,
 ) -> Result<NativeClientPluginGrantV1, &'static str> {
     let mut artifact = portable_artifact.clone();
     artifact.installer_kind = InstallerKind::PluginBundle;
@@ -734,7 +1045,7 @@ fn plugin_grant(
         signed_launch_grant: sign_grant(
             LaunchGrantV1 {
                 schema_version: 1,
-                generation: GENERATION,
+                generation,
                 artifact,
                 binary_sha256: binary_sha256.to_string(),
                 resource_pack_sha256: pack_sha256.to_string(),
@@ -1044,10 +1355,7 @@ fn run_acceptance(
         }
         assert_canaries_unchanged(&canaries)?;
         discover_native_candidate_managed_root(&home).map_err(|error| error.reason_code())?;
-        let installed_binary = home
-            .join(".qiongli/native/payloads")
-            .join(native_artifact_id(artifact).map_err(|error| error.reason_code())?)
-            .join(native_artifact_binary_path(artifact).map_err(|error| error.reason_code())?);
+        let installed_binary = installed_candidate_binary(&home, artifact)?;
         check_cli_entry(&installed_binary, root, &home)?;
         run_mcp(&installed_binary, root, &home)?;
         // A fresh process must read the same installed resources after shutdown.
@@ -1768,6 +2076,16 @@ fn run_managed_fixture_operation(
     Ok(result)
 }
 
+fn installed_candidate_binary(
+    home: &Path,
+    artifact: &ArtifactIdentityV1,
+) -> Result<PathBuf, &'static str> {
+    Ok(home
+        .join(".qiongli/native/payloads")
+        .join(native_artifact_id(artifact).map_err(|error| error.reason_code())?)
+        .join(native_artifact_binary_path(artifact).map_err(|error| error.reason_code())?))
+}
+
 fn check_cli_entry(binary: &Path, root: &Path, home: &Path) -> Result<(), &'static str> {
     let help = run_product(binary, root, home, ["--help"])?;
     let empty = run_product(binary, root, home, std::iter::empty::<&str>())?;
@@ -2153,6 +2471,35 @@ fn now_unix() -> Result<u64, &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn predecessor_manifest_is_explicit_and_optional() {
+        let mut args = vec![
+            OsString::from("--output"),
+            env::temp_dir()
+                .join("qiongli-predecessor-arguments")
+                .into_os_string(),
+            OsString::from("--source-commit"),
+            OsString::from("0000000000000000000000000000000000000000"),
+        ];
+        assert!(
+            Arguments::parse(args.clone())
+                .unwrap()
+                .predecessor_manifest
+                .is_none()
+        );
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
+        args.extend([
+            "--predecessor-manifest".into(),
+            manifest.clone().into_os_string(),
+        ]);
+        assert_eq!(
+            Arguments::parse(args.clone()).unwrap().predecessor_manifest,
+            Some(fs::canonicalize(manifest).unwrap())
+        );
+        args.extend(["--predecessor-manifest".into(), "relative.toml".into()]);
+        assert!(Arguments::parse(args).is_err());
+    }
 
     #[test]
     fn codex_external_client_arguments_are_all_or_nothing() {

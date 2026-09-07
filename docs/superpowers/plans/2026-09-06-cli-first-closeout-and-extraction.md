@@ -1379,3 +1379,41 @@ candidate, then real process-kill recovery and named-candidate/platform/Host qua
 Current positive commit tests still use the lower-level coordinator's health callback;
 they are not successful packaged public-activation evidence. First-stage integration and
 program acceptance remain incomplete; no push or publication.
+
+
+## CLI-403 thirty-second increment — real public activation journey
+
+Base: `57bfd7b8`; branch: `codex/cli-public-activation-journey`.
+Extended the existing nonpublishing candidate runner with optional
+`--predecessor-manifest`. It shares the existing package/signature construction for
+both generations, builds and reads the actual predecessor version, then installs its
+CLI before staging the successor. Public preview, preparation and activation run from
+the staged successor. Actual installed version, binary change, health and MCP are checked;
+public recovery replay must preserve the exact committed update state.
+
+The real macOS run passed: `2.0.0-alpha.4` -> `2.0.0-alpha.5`, Codex target, temporary
+signed generations 1 -> 2. The predecessor was built from a `git archive` of
+`57bfd7b8dca007e2432b26797e8032f68695c80f` with only the workspace version and nine
+matching lockfile version entries changed to alpha.4 in an isolated source copy.
+This is a real executable/version switch using the same content pack, not a historical
+published predecessor, resource-pack migration or immutable release qualification.
+The successor product source is the base commit; harness changes are on this branch.
+
+Evidence: `/Users/pengjiaxin/Work/qiongli-cli403-public-activation-20260907-r2/acceptance-evidence.json`;
+SHA-256 `5dc93c197b84ba4ff3539f67f0b20ab47199ad231d6a163937d8943feb39be39`.
+The receipt contains the existing 27 baseline evidence fields plus the passed native
+activation journey, old/new binary identities, committed outcome, installed health/MCP
+and unchanged recovery replay. `publication_allowed=false`; real external clients,
+displayed window and production signing remain not run. Test signing keys stayed in memory.
+
+Six runner tests, 15 release-version/boundary tests and final example Clippy passed.
+Extraction initially left needless borrows, fixed before final Clippy. The first real
+journey exposed a harness path error: install receipt IDs were incorrectly used as
+artifact directories. A shared helper now reuses the existing artifact path owner for
+both old/new and baseline launches. The initial failed output is retained separately;
+the complete real journey was rerun successfully after the fix. Whitespace, roadmap
+index and frozen-source boundary checks passed; unchanged focused results were reused.
+
+Next: real process-kill recovery using these runnable packages, then remaining platform
+and live Host/named-candidate qualification. First-stage integration and program
+acceptance remain incomplete. No push or publication occurred.

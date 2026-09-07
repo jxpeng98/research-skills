@@ -2018,3 +2018,44 @@ continue independently. Windows native activation remains explicitly unsupported
 in current source; do not claim its earlier App tests as CLI package qualification.
 No acceptance count changed. This audit passed whitespace, generated-index and
 frozen-source checks and required no runtime suite or publication action.
+
+
+## CLI-403 direct Linux VM consumer and Unicode path evidence
+
+Base: `6389d186`; branch: `codex/linux-vm-consumer-evidence`. The preceding audit
+identified VM and path qualification gaps. Read-only inspection of the already
+running `podman-machine-default` found Fedora CoreOS 43.20251110.3.1 on Linux
+ARM64 and `/usr/bin/python3`. It cannot establish the no-Python clean-machine B04
+requirement, and no installed system dependency was removed or hidden to claim it.
+
+The existing Linux two-version candidate binary was copied over SSH into a unique
+private `/var/tmp/qiongli-cli-vm-6389d186-*` directory inside that VM, under a Chinese
+name containing a space. Host and guest SHA-256 matched
+`8c990c0ceff7275ffb9193008a196549fb488791f76377f086567d8f86599a13`,
+the successor binary in the existing Linux activation receipt. Commands executed
+directly in the VM, not in a new container, from that unrelated fixture directory
+with cleared environment, empty PATH and isolated Home/config. Python orchestrated
+SSH on the development Mac; Qiongli did not invoke a language runtime in the VM.
+
+All eleven recorded checks passed: exact version, help, embedded content, UI refusal,
+project create preview, missing-approval refusal, approved empty engineering-project
+creation, project show in a new process, Full MCP, export preview and approved export.
+After missing approval, no project directory existed. MCP emitted only three JSON
+responses, no stderr, exactly 32 tools and a Full route without Lite upgrade fields.
+The portable export manifest was verified in the VM after the real CLI operation.
+Only the fixture-owned VM directory was written; existing containers, suspended VMs,
+Host configuration, system dependencies and research data were not changed.
+
+Local evidence: `packages/qiongli-native/target/cli-linux-vm-consumer-6389d186/`
+contains the runnable `consumer-script.py`, exact private VM path, environment
+observation, individual command outputs and `receipt.json`.
+Receipt SHA-256: `2edda697c0e9a1f458560e9f2ee61cd1a7e3dfbf0cb602a12f553149d9c1eac6`.
+The private path and raw outputs are local engineering evidence, not publishable
+redacted diagnostics. The receipt explicitly limits this to the candidate binary,
+an existing Python-containing VM and an empty engineering project. It adds native
+VM/Unicode-path evidence to B02/B03 and startup/export checks; it does not qualify
+B04, package installation/update in that VM, P01 research, human approval or P05.
+The pending research previews remain unapplied; acceptance status is unchanged.
+Whitespace, generated-index and frozen-source checks passed; runtime source did not
+change and existing source suites were not repeated. Next: a genuinely suitable
+clean-consumer environment and the pending actual Host/human research chain.

@@ -2268,3 +2268,40 @@ No source fix was needed; tracked changes contain only this evidence note. Next:
 validate synthetic candidate/evidence submission across the existing handoff owner,
 including stale and cross-process evidence refusal, before research continuation.
 Windows remains paused; pending research authorization and acceptance are unchanged.
+
+
+## CLI-404 synthetic candidate and evidence submission
+
+Base `37433b34`; branch `codex/synthetic-evidence-submission`. The previous goal
+turn produced checkpoint interruption evidence and therefore counts as progress.
+This increment exercised the existing candidate/evidence owner through the named
+`8c6450f0` macOS binary, using a fresh empty project and synthetic Host descriptor.
+The first script used candidate schema 1 and was correctly rejected with
+`host-candidate-binding-mismatch`; inspection confirmed the canonical candidate
+schema is 2. Its process was reaped and test run cancelled. The corrected run uses
+a separate directory and retains the failed evidence without weakening validation.
+
+The schema-2 run passed authenticated read/submission in one MCP process. It
+rejected cross-project reads, forged evidence, evidence replay from a second MCP
+process, and stale read/submission after successful advancement. SHA-256 snapshots
+prove forged/cross-process and stale requests changed neither project nor config
+files. Rejected replay did not consume the original process's valid evidence: the
+original candidate was accepted once, completed one task and issued the next
+handoff. Candidate plaintext was absent from project files, semantic/library
+revision remained 1, no capture existed, and the engineering run was cancelled.
+This is protocol evidence, not model-produced research or human writing approval.
+
+Private runnable evidence: `packages/qiongli-native/target/cli404-evidence-v2-37433b34/`
+contains `verify_submission.py`, responses and `receipt.json`; it reuses the previous
+private probe's process/CLI helpers. The failed schema-1 attempt remains at
+`target/cli404-evidence-37433b34/` under the same native package. Product code needed
+no change, and unchanged source suites were not repeated.
+
+The next first-stage requirement is the actual approved scholarly journey, not
+another repetition of synthetic baseline checks. The pending two-source capture
+SHA-256 remains `292c6574a43564f400c820ae3c108d0ffdf8b17ecce956225c8848bb35f8f784`
+and its target history file remains absent. Its exact Inbox approval and external
+research Host disclosure remain unapproved; synthetic-fixture approval does not
+cover either. Canonical consolidation, actual research continuation and named
+package qualification remain unproved. Windows stays partially complete/paused.
+The first-stage goal is not achieved and no acceptance record changes.

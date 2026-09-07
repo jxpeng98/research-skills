@@ -232,6 +232,15 @@ Initial candidate-directory creation tolerates a concurrent `AlreadyExists` only
 by revalidating the resulting directory's type, ownership and private permissions.
 It never adopts a link or relaxes the security check.
 
+Legacy Desktop rollback now restores the old application without clearing the active
+transaction or deleting its evidence. A shared completion step first finishes Host
+reconciliation cleanup, removes the failed application, syncs the transaction directory,
+and only then clears the failed transaction through CAS. Cleanup failure preserves the
+active transaction and retained journal/health contract; files and links substituted at
+the failed-application path refuse. Completed rollback keeps the journal and health
+contract as evidence rather than recursively deleting the transaction root. Durable
+Home marker/recovery wiring for legacy replacement remains separate pending work.
+
 ## Quality Check
 
 - Run the closest crate or integration test first.

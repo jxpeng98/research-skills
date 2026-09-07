@@ -1108,3 +1108,28 @@ Next: complete durable cross-config coordination for interrupted legacy Desktop
 replacement, then expose native activation/recovery using fresh candidate/approval
 and real installed-CLI health checks. First-stage integration remains incomplete;
 no push, publication or acceptance advancement.
+
+
+## CLI-403 twenty-third increment — preserve legacy rollback evidence
+
+Base: `d9fddb25`; branch: `codex/cli-legacy-rollback-evidence`.
+Review of the legacy recovery path found rollback removed the transaction directory
+and cleared active state before Host cleanup. A later cleanup failure therefore lost
+its recovery evidence. Application restoration now preserves both. All three failure
+callers use one completion owner: finish Host cleanup, remove the failed application,
+sync its directory, then clear active state through CAS. Journal/health evidence is
+retained even after completed rollback. A missing failed application can resume cleanup;
+a substituted file or link refuses without clearing state.
+
+Checks on macOS: all 11 replacement-owner tests passed before the final explicit link
+check; the expanded health-rollback case was rerun afterward. It verifies retained
+old application bytes, active state and journal on a substituted-file cleanup failure,
+dangling-link refusal, then successful completion after restoring the failed directory.
+Final library Clippy, whitespace, roadmap-index and frozen-source boundary checks
+passed after the explicit link check. These owner-level fixtures do not prove real process interruption
+or public recovery. Public schemas, accepted ledger rows and publication state did not
+change.
+
+Next: use the now-retained evidence for durable legacy Home exclusion and recovery;
+then expose native activation/recovery with the existing signed candidate, approval
+and installed CLI health owners. First-stage integration remains incomplete.

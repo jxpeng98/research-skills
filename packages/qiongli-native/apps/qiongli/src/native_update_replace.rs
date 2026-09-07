@@ -393,8 +393,7 @@ fn continue_replacement_after_handoff(
     }
     if let Err(error) = activate_prepared_reconciliation(reconciliation) {
         rollback_activated_application(store, journal)?;
-        cleanup_rolled_back_reconciliation(reconciliation)
-            .map_err(|_| "native-update-reconciliation-cleanup-required")?;
+        finish_rolled_back_replacement(store, journal, reconciliation)?;
         return Err(error);
     }
     if transition_phase(
@@ -408,8 +407,7 @@ fn continue_replacement_after_handoff(
         rollback_active_reconciliation(reconciliation)
             .map_err(|_| "native-update-recovery-required")?;
         rollback_activated_application(store, journal)?;
-        cleanup_rolled_back_reconciliation(reconciliation)
-            .map_err(|_| "native-update-reconciliation-cleanup-required")?;
+        finish_rolled_back_replacement(store, journal, reconciliation)?;
         return Err("native-update-recovery-required");
     }
     if let Err(error) = run_health() {
@@ -419,8 +417,7 @@ fn continue_replacement_after_handoff(
         rollback_active_reconciliation(reconciliation)
             .map_err(|_| "native-update-recovery-required")?;
         rollback_activated_application(store, journal)?;
-        cleanup_rolled_back_reconciliation(reconciliation)
-            .map_err(|_| "native-update-reconciliation-cleanup-required")?;
+        finish_rolled_back_replacement(store, journal, reconciliation)?;
         return Err(health_failure_reason(error));
     }
     confirm_committed_state(store, journal)?;
@@ -540,12 +537,29 @@ fn rollback_activated_application(
             .parent()
             .ok_or("native-update-installation-layout-invalid")?,
     )?;
-    let _ = fs::remove_dir_all(&failed);
-    clear_failed_transaction(store, &journal.transaction_id)?;
-    let transaction_root = store.staging_root().join(&journal.transaction_id);
-    let _ = fs::remove_dir_all(&transaction_root);
-    let _ = sync_directory(&store.staging_root());
     Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn finish_rolled_back_replacement(
+    store: &UpdateStateStore,
+    journal: &ReplacementJournalV1,
+    reconciliation: &crate::update_reconcile::ReconciliationJournalV1,
+) -> Result<(), &'static str> {
+    cleanup_rolled_back_reconciliation(reconciliation)
+        .map_err(|_| "native-update-reconciliation-cleanup-required")?;
+    let transaction_root = store.staging_root().join(&journal.transaction_id);
+    let failed = transaction_root.join(FAILED_APPLICATION_DIRECTORY);
+    match fs::symlink_metadata(&failed) {
+        Ok(metadata) if metadata.is_dir() && !metadata.file_type().is_symlink() => {
+            fs::remove_dir_all(&failed).map_err(|_| "native-update-staging-cleanup-required")?;
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        _ => return Err("native-update-staging-cleanup-required"),
+    }
+    sync_directory(&transaction_root)?;
+    // Keep the journal and health contract as recovery evidence across the state CAS.
+    clear_failed_transaction(store, &journal.transaction_id)
 }
 
 #[cfg(target_os = "macos")]
@@ -1613,14 +1627,43 @@ mod tests {
             backup,
         );
 
+        write_new_private_file(&transaction_root.join(JOURNAL_FILE), b"rollback-evidence").unwrap();
         rollback_activated_application(&store, &journal).unwrap();
+        assert!(store.load().unwrap().state.active_transaction.is_some());
+        let reconciliation =
+            empty_reconciliation_journal(transaction_id, "2.0.0-alpha.2", &"2".repeat(64));
+        let failed = transaction_root.join(FAILED_APPLICATION_DIRECTORY);
+        let saved = transaction_root.join("saved-failed-application");
+        fs::rename(&failed, &saved).unwrap();
+        fs::write(&failed, b"foreign-file").unwrap();
+        assert_eq!(
+            finish_rolled_back_replacement(&store, &journal, &reconciliation),
+            Err("native-update-staging-cleanup-required")
+        );
+        assert!(store.load().unwrap().state.active_transaction.is_some());
+        assert_eq!(
+            fs::read(transaction_root.join(JOURNAL_FILE)).unwrap(),
+            b"rollback-evidence"
+        );
+        assert_eq!(fs::read(&failed).unwrap(), b"foreign-file");
+        fs::remove_file(&failed).unwrap();
+        std::os::unix::fs::symlink(transaction_root.join("missing-target"), &failed).unwrap();
+        assert_eq!(
+            finish_rolled_back_replacement(&store, &journal, &reconciliation),
+            Err("native-update-staging-cleanup-required")
+        );
+        assert!(store.load().unwrap().state.active_transaction.is_some());
+        fs::remove_file(&failed).unwrap();
+        fs::rename(&saved, &failed).unwrap();
+        finish_rolled_back_replacement(&store, &journal, &reconciliation).unwrap();
 
         assert_eq!(
             fs::read(destination.join("payload")).unwrap(),
             b"known-good"
         );
         assert!(store.load().unwrap().state.active_transaction.is_none());
-        assert!(!transaction_root.exists());
+        assert!(transaction_root.join(JOURNAL_FILE).exists());
+        assert!(!failed.exists());
         let _ = fs::remove_dir_all(root);
     }
 
@@ -1810,7 +1853,13 @@ mod tests {
             b"old-known-good"
         );
         assert!(!fixture.journal.backup_application.exists());
-        assert!(!fixture.transaction_root.exists());
+        assert!(fixture.transaction_root.join(JOURNAL_FILE).exists());
+        assert!(
+            !fixture
+                .transaction_root
+                .join(FAILED_APPLICATION_DIRECTORY)
+                .exists()
+        );
     }
 
     #[cfg(target_os = "macos")]

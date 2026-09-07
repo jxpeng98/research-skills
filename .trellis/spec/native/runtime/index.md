@@ -90,8 +90,19 @@ Host capabilities, not a fabricated desktop manifest. Shared install, migration
 and reconciliation owners consume those facts. Native plans bind the signed
 candidate digest; desktop plans retain their existing control-document digest.
 Each prepare/apply still re-verifies product authority and existing approvals/CAS.
-Source builds without embedded authority remain read-only. This does not qualify
-human approval across Hosts, CLI shim/update compatibility or a release.
+Source builds without embedded authority remain read-only.
+
+The existing CLI install/remove/PATH owners also support the native payload as
+their source. The installed command copy uses the unchanged v3 receipt: its fixed
+command path, version and binary digest must match the fixed versioned native
+payload. This resolver is only a hint; every product operation still revalidates
+the source's signed candidate, active receipt and embedded identity. Arbitrary
+copies, changed command/payload bytes, absent receipts and legacy receipts cannot
+establish native product authority. Desktop authority-bearing receipts retain their
+existing route. Native source discovery no longer invents a sibling `qiongli-cli`.
+Shell profile updates keep their existing preview/digest/approval rules. This does
+not qualify Windows PATH handling, update/rollback, human approval across Hosts or
+a release.
 
 ## Quality Check
 

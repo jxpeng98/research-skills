@@ -1048,7 +1048,57 @@ fn run_acceptance(
             }
             _ => return Err("candidate-acceptance-client-target-invalid"),
         }
-        check_managed_product_remove(&installed_binary, root, &home, target)?;
+        run_managed_fixture_operation(&installed_binary, root, &home, "cli-install", None)?;
+        let command_binary = if cfg!(windows) {
+            home.join("AppData/Local/Qiongli/bin/qiongli.exe")
+        } else {
+            home.join(".local/bin/qiongli")
+        };
+        check_cli_entry(&command_binary, root, &home)?;
+        run_mcp(&command_binary, root, &home)?;
+        #[cfg(unix)]
+        {
+            const PROFILE_CANARY: &[u8] = b"# candidate shell profile canary\n";
+            let profile = home.join(".bash_profile");
+            write_private_new(&profile, PROFILE_CANARY)?;
+            run_managed_fixture_operation(
+                &command_binary,
+                root,
+                &home,
+                "cli-path-configure",
+                None,
+            )?;
+            if !fs::read(&profile)
+                .map_err(|_| "candidate-acceptance-profile-read-failed")?
+                .starts_with(PROFILE_CANARY)
+            {
+                return Err("candidate-acceptance-profile-canary-changed");
+            }
+            let login = product_command(Path::new("/bin/bash"), root, &home)
+                .args(["--login", "-c", "qiongli --version"])
+                .output()
+                .map_err(|_| "candidate-acceptance-login-start-failed")?;
+            if !login.status.success()
+                || login.stdout != format!("qiongli {}\n", env!("CARGO_PKG_VERSION")).as_bytes()
+            {
+                return Err("candidate-acceptance-login-path-invalid");
+            }
+        }
+        let removed = run_managed_fixture_operation(
+            &command_binary,
+            root,
+            &home,
+            "integrations-remove",
+            Some(target),
+        )?;
+        if removed["result"] != "removed" {
+            return Err("candidate-acceptance-managed-remove-invalid");
+        }
+        run_managed_fixture_operation(&installed_binary, root, &home, "cli-remove", None)?;
+        if command_binary.exists() {
+            return Err("candidate-acceptance-command-remove-invalid");
+        }
+
         // Restore through the already-approved candidate so the original complete
         // candidate removal check still covers payload, source and registration.
         run_product(binary, root, &home, apply_args)?;
@@ -1099,6 +1149,9 @@ fn run_acceptance(
             "installed_payload_runtime": "passed",
             "installed_payload_restart": "passed",
             "installed_product_managed_operation": "passed",
+            "installed_command_runtime_and_authority": "passed",
+            "installed_command_remove": "passed",
+            "unix_login_path": if cfg!(unix) { "passed" } else { "not-run" },
             "embedded_skills": "passed",
             "ui_startup_preflight": "passed",
             "lite_mcp": "passed",
@@ -1535,24 +1588,24 @@ fn ensure_private_child_directory(root: &Path, leaf: &str) -> Result<PathBuf, &'
     }
 }
 
-fn check_managed_product_remove(
+fn run_managed_fixture_operation(
     binary: &Path,
     root: &Path,
     home: &Path,
-    target: &str,
-) -> Result<(), &'static str> {
-    let plan = run_product(
-        binary,
-        root,
-        home,
-        ["app", "plan", "integrations-remove", "--target", target],
-    )?;
+    operation: &str,
+    target: Option<&str>,
+) -> Result<Value, &'static str> {
+    let mut plan_args = vec!["app", "plan", operation];
+    if let Some(target) = target {
+        plan_args.extend(["--target", target]);
+    }
+    let plan = run_product(binary, root, home, plan_args)?;
     let plan_json = parse_output_json(&plan)?;
     let digest = plan_json["plan_digest_sha256"]
         .as_str()
         .filter(|value| valid_sha256(value))
         .ok_or("candidate-acceptance-managed-plan-invalid")?;
-    let path = home.join("managed-integration-remove-plan.json");
+    let path = home.join(format!("managed-{operation}-plan.json"));
     write_private_new(&path, &plan.stdout)?;
     let args = vec![
         OsString::from("app"),
@@ -1570,19 +1623,17 @@ fn check_managed_product_remove(
         "managed-operation-approval-required",
     )?;
     let mut approved = args;
-    approved.extend(
-        [
-            "--approve-filesystem-write",
-            "--approve-client-config-change",
-            "--approve-host-trust",
-        ]
-        .map(OsString::from),
-    );
-    let result = run_product(binary, root, home, approved)?;
-    if parse_output_json(&result)?["result"] != "removed" {
-        return Err("candidate-acceptance-managed-remove-invalid");
+    approved.push(OsString::from("--approve-filesystem-write"));
+    if operation == "integrations-remove" {
+        approved
+            .extend(["--approve-client-config-change", "--approve-host-trust"].map(OsString::from));
     }
-    Ok(())
+    let result = run_product(binary, root, home, approved)?;
+    let result = parse_output_json(&result)?;
+    if result["operation"] != operation {
+        return Err("candidate-acceptance-managed-operation-invalid");
+    }
+    Ok(result)
 }
 
 fn check_cli_entry(binary: &Path, root: &Path, home: &Path) -> Result<(), &'static str> {
@@ -1799,6 +1850,8 @@ fn product_command(binary: &Path, root: &Path, home: &Path) -> Command {
         .env("USERPROFILE", home)
         .env("QIONGLI_CONFIG_HOME", home.join(".qiongli/config"))
         .current_dir(root);
+    #[cfg(unix)]
+    command.env("SHELL", "/bin/bash");
     for name in ["SYSTEMROOT", "WINDIR", "TEMP", "TMP", "TMPDIR"] {
         if let Some(value) = env::var_os(name) {
             command.env(name, value);

@@ -238,6 +238,21 @@ pub(crate) fn bundled_cli_path(home: Option<&Path>) -> Option<PathBuf> {
 }
 
 fn bundled_cli_path_for(executable: &Path, home: Option<&Path>) -> Option<PathBuf> {
+    if let Some(home) = home {
+        if executable.starts_with(home.join(".qiongli/native/payloads")) {
+            return Some(executable.to_path_buf());
+        }
+        if let Ok(Some(authority)) = crate::embedded_release_authority()
+            && let Ok(artifact) = qiongli_platform::current_target_native_artifact_identity(
+                env!("CARGO_PKG_VERSION"),
+                authority.channel(),
+            )
+            && let Ok(Some(source)) = installed_native_cli_source(home, executable, &artifact)
+        {
+            return Some(source);
+        }
+    }
+
     let bundled_name = if cfg!(windows) {
         "qiongli-cli.exe"
     } else {
@@ -269,6 +284,50 @@ pub(crate) fn cli_target_matches_bundled(
         | TargetObservation::Unsupported => return Ok(false),
     };
     Ok(target_sha256 == regular_file_sha256(bundled)?)
+}
+
+/// Resolves only the receipt-owned command copy to its fixed native source.
+/// This is an identity hint, not authority: the caller must verify that source's
+/// active installation and signed candidate with embedded identity and trust roots.
+pub(crate) fn installed_native_cli_source(
+    home: &Path,
+    current_executable: &Path,
+    artifact: &qiongli_platform::ArtifactIdentityV1,
+) -> Result<Option<PathBuf>, &'static str> {
+    let target = cli_target(home);
+    let Ok(installed) = fs::canonicalize(&target) else {
+        return Ok(None);
+    };
+    let current = fs::canonicalize(current_executable)
+        .map_err(|_| "qiongli-cli-product-authority-unavailable")?;
+    if current != installed {
+        return Ok(None);
+    }
+    validate_install_roots(home)?;
+    validate_target_ancestors(home, &target)?;
+    let receipt = read_receipt(&cli_receipt_path(home))?
+        .ok_or("qiongli-cli-product-authority-unavailable")?;
+    if receipt.packaged_authority.is_some() || receipt.schema_version != CLI_RECEIPT_SCHEMA_VERSION
+    {
+        return Ok(None);
+    }
+    if receipt.product_version != artifact.version
+        || regular_file_sha256(&target)? != receipt.installed_sha256
+        || regular_file_sha256(&current)? != receipt.installed_sha256
+    {
+        return Err("qiongli-cli-product-authority-changed");
+    }
+    let source = home
+        .join(".qiongli/native/payloads")
+        .join(qiongli_platform::native_artifact_id(artifact).map_err(|error| error.reason_code())?)
+        .join(
+            qiongli_platform::native_artifact_binary_path(artifact)
+                .map_err(|error| error.reason_code())?,
+        );
+    if regular_file_sha256(&source)? != receipt.installed_sha256 {
+        return Err("qiongli-cli-product-authority-changed");
+    }
+    Ok(Some(source))
 }
 
 pub(crate) fn installed_cli_product_authority(
@@ -1601,6 +1660,57 @@ mod tests {
     use super::*;
 
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn native_command_copy_resolves_only_with_matching_receipt_and_payload() {
+        let home = test_root("native-command");
+        let artifact = qiongli_platform::current_target_native_artifact_identity(
+            "2.0.0-alpha.5",
+            qiongli_platform::ReleaseChannel::Alpha,
+        )
+        .unwrap();
+        let source = home
+            .join(".qiongli/native/payloads")
+            .join(qiongli_platform::native_artifact_id(&artifact).unwrap())
+            .join(qiongli_platform::native_artifact_binary_path(&artifact).unwrap());
+        fs::create_dir_all(source.parent().unwrap()).unwrap();
+        fs::write(&source, b"native test executable").unwrap();
+        let plan = preview_cli_install(&home, &source, &artifact.version).unwrap();
+        apply_cli_install(&plan).unwrap();
+        let installed = cli_target(&home);
+        assert_eq!(
+            bundled_cli_path_for(&source, Some(&home)),
+            Some(source.clone())
+        );
+        assert_eq!(
+            installed_native_cli_source(&home, &installed, &artifact).unwrap(),
+            Some(source.clone())
+        );
+        let receipt_path = cli_receipt_path(&home);
+        let current_receipt = fs::read(&receipt_path).unwrap();
+        let mut legacy: serde_json::Value = serde_json::from_slice(&current_receipt).unwrap();
+        legacy["schema_version"] = serde_json::json!(AUTHORITY_CLI_RECEIPT_SCHEMA_VERSION);
+        fs::write(&receipt_path, serde_json::to_vec(&legacy).unwrap()).unwrap();
+        assert_eq!(
+            installed_native_cli_source(&home, &installed, &artifact).unwrap(),
+            None
+        );
+        fs::write(&receipt_path, current_receipt).unwrap();
+        let copy = home.join("unmanaged-copy");
+        fs::copy(&installed, &copy).unwrap();
+        assert_eq!(
+            installed_native_cli_source(&home, &copy, &artifact).unwrap(),
+            None
+        );
+        fs::write(&installed, b"changed command").unwrap();
+        assert!(installed_native_cli_source(&home, &installed, &artifact).is_err());
+        fs::copy(&source, &installed).unwrap();
+        fs::write(&source, b"changed payload").unwrap();
+        assert!(installed_native_cli_source(&home, &installed, &artifact).is_err());
+        fs::remove_file(cli_receipt_path(&home)).unwrap();
+        assert!(installed_native_cli_source(&home, &installed, &artifact).is_err());
+        fs::remove_dir_all(home).unwrap();
+    }
 
     fn test_root(name: &str) -> PathBuf {
         let unique = SystemTime::now()

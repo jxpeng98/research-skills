@@ -9515,6 +9515,27 @@ pub(crate) fn verify_running_packaged_product(
         )
         .map_err(|error| error.reason_code());
     }
+    let native_artifact = qiongli_platform::current_target_native_artifact_identity(
+        env!("CARGO_PKG_VERSION"),
+        authority.channel(),
+    )
+    .map_err(|error| error.reason_code())?;
+    if let Some(source) = crate::cli_install::installed_native_cli_source(
+        home,
+        &process_executable,
+        &native_artifact,
+    )? {
+        return qiongli_platform::verify_native_packaged_product(
+            content.pack(),
+            &authority,
+            home,
+            &source,
+            env!("CARGO_PKG_VERSION"),
+            source_commit,
+            now_unix()?,
+        )
+        .map_err(|error| error.reason_code());
+    }
     let direct_manifest_path = running_desktop_manifest_path(&process_executable);
     let (current_executable, desktop_manifest_path, expected_control_sha256) =
         if direct_manifest_path.is_file() {

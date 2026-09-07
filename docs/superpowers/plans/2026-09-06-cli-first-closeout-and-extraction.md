@@ -491,3 +491,41 @@ Next: standalone CLI shim/PATH installation and update/rollback compatibility,
 then CLI-404 trusted human approval and CLI-405 real research/recovery evidence.
 The first-stage objective and CLI-403 remain active; local merge does not accept
 the program or authorize publication.
+
+## CLI-403 fifth increment — native command install and PATH
+
+Base: `c38c1e40`; branch: `codex/cli-native-command-install`.
+Native payload executables now resolve as the CLI install source instead of an
+imagined sibling `qiongli-cli`. The existing copy/install, backup, remove and PATH
+owners and v3 receipt format are reused. For a command copy at the fixed user bin
+path, the receipt version and digest must match the fixed native artifact derived
+from embedded version/channel. The running-product owner then freshly verifies
+that source's active installation and signed candidate. The path/digest resolver
+itself grants no authority. Legacy receipts and Desktop bindings retain their
+previous routing; there is no extra receipt or unsigned trust flag.
+
+Checks on macOS:
+- All 21 CLI installation/PATH tests passed. The native resolver test additionally
+  passed after adding legacy-receipt refusal, alongside changed command/source,
+  arbitrary copy and missing-receipt checks. Source-process authority refusal passed.
+- Actual candidate acceptance passed in
+  `/Users/pengjiaxin/Work/qiongli-cli403-command-install-final-20260907`.
+  Both isolated target homes installed the command through `app plan/apply`, ran
+  CLI/MCP and managed integration removal from the command copy, configured Bash
+  PATH, launched `qiongli --version` in a fresh login shell, and removed the owned
+  command. Shell-profile and existing user-state canaries were preserved.
+- Evidence SHA-256:
+  `2e7edbaacf372fd0384fef00860f97007d01a46a67fae507ebcd64a2b639779a`.
+  The source label is `c38c1e4087de0ea2e084c5c47abc99b121d69e39` plus this
+  working diff. Ephemeral signing and `publication_allowed=false` remain explicit;
+  this is not immutable release qualification. Windows PATH, native Linux/Windows
+  execution and real Hosts remain unqualified.
+- The first candidate run refused the fixture's extra Host approval flags on a
+  filesystem-only CLI operation (`managed-operation-approval-unexpected`). The
+  fixture now supplies exactly the operation's approvals; product validation was
+  retained. Final Clippy, formatting, whitespace and index checks passed.
+
+Review found no actionable findings. Integrate locally after the frozen-source
+guard and reuse these results. Next: native package update/rollback and active
+process/version consistency, followed by CLI-404/405 qualification. First-stage
+integration remains incomplete; ledger acceptance is unchanged.

@@ -627,3 +627,30 @@ Their coordinated recovery and current-process checks need implementation and
 real versioned execution evidence. This prerequisite fix is not qualification of
 that missing flow, CLI-404/405, additional platforms or first-stage acceptance.
 Ledger acceptance is unchanged; no remote operation or publication is included.
+
+## CLI-403 ninth increment — CLI replacement receipt CAS
+
+Base: `822e1489`; branch: `codex/cli-install-receipt-cas`.
+The CLI replacement owner checked source and target bytes but did not bind the
+previous installation receipt. A targeted regression reproduced a successful
+replacement after that receipt's version changed. Preview now includes the exact
+validated receipt byte digest (or absence) in its private native plan digest.
+Apply re-observes it and the retained predecessor backup before any filesystem
+mutation. The same receipt read supplies both decoded fields and byte identity.
+All callers, including managed CLI plans, use this shared check. Persisted receipt
+and public JSON shapes are unchanged; older approval digests require a new preview.
+
+Checks on macOS: all 22 CLI install tests and all 8 managed-operation tests passed;
+library Clippy passed with the existing Rust 1.98 exception. The final regression
+also passed with receipt modification, deletion, appearance, backup tampering,
+unchanged old command/receipt/canary assertions and successful replacement after
+restoring the exact preview state. Formatting and whitespace checks passed. Review
+found no actionable findings in this scope. No package qualification suite was
+repeated for this owner-only fix.
+
+The next implementation remains coordinated CLI binary/receipt and Host-surface
+activation, crash recovery and active-version rollback. The existing reconciliation
+journal does not yet include the CLI pair; its schema must evolve explicitly if
+those surfaces are added, retaining old journal recovery. This preflight CAS check
+is not a cross-process lock or complete multi-file transaction and does not claim
+those guarantees. First-stage and program acceptance remain open and unchanged.

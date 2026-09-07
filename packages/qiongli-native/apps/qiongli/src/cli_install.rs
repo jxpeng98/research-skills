@@ -59,6 +59,7 @@ pub(crate) struct CliInstallPlan {
     source_sha256: String,
     expected_target: TargetObservation,
     previous_managed: bool,
+    previous_receipt_sha256: Option<String>,
     retained_backup_name: Option<String>,
     retained_backup_sha256: Option<String>,
     packaged_authority: Option<CliProductAuthorityBinding>,
@@ -194,6 +195,7 @@ struct CliInstallPlanDigest<'a> {
     target_name: &'a str,
     expected_target: String,
     previous_managed: bool,
+    previous_receipt_sha256: Option<&'a str>,
     retained_backup_name: Option<&'a str>,
     retained_backup_sha256: Option<&'a str>,
     packaged_executable: Option<&'a str>,
@@ -609,7 +611,9 @@ pub(crate) fn preview_cli_install(
         return Err("qiongli-cli-target-type-unsupported");
     }
     let receipt_path = cli_receipt_path(home);
-    let previous_receipt = read_receipt(&receipt_path)?;
+    let observed_receipt = read_receipt_with_digest(&receipt_path)?;
+    let previous_receipt_sha256 = observed_receipt.as_ref().map(|(_, digest)| digest.clone());
+    let previous_receipt = observed_receipt.map(|(receipt, _)| receipt);
     let previous_managed =
         previous_receipt
             .as_ref()
@@ -654,6 +658,7 @@ pub(crate) fn preview_cli_install(
         target_name,
         expected_target: expected_target.fingerprint(),
         previous_managed,
+        previous_receipt_sha256: previous_receipt_sha256.as_deref(),
         retained_backup_name: retained_backup_name.as_deref(),
         retained_backup_sha256: retained_backup_sha256.as_deref(),
         packaged_executable,
@@ -674,6 +679,7 @@ pub(crate) fn preview_cli_install(
         source_sha256,
         expected_target,
         previous_managed,
+        previous_receipt_sha256,
         retained_backup_name,
         retained_backup_sha256,
         packaged_authority,
@@ -692,6 +698,23 @@ pub(crate) fn apply_cli_install(plan: &CliInstallPlan) -> Result<&'static str, &
     }
     if observe_target(&plan.target)? != plan.expected_target {
         return Err("qiongli-cli-target-changed");
+    }
+
+    let observed_receipt = read_receipt_with_digest(&plan.receipt_path)?;
+    if observed_receipt.as_ref().map(|(_, digest)| digest.as_str())
+        != plan.previous_receipt_sha256.as_deref()
+    {
+        return Err("qiongli-cli-receipt-changed");
+    }
+    if plan.previous_managed {
+        let receipt = &observed_receipt
+            .as_ref()
+            .ok_or("qiongli-cli-receipt-changed")?
+            .0;
+        let retained = retained_backup_binding(&plan.home, receipt)?;
+        if retained.0 != plan.retained_backup_name || retained.1 != plan.retained_backup_sha256 {
+            return Err("qiongli-cli-backup-changed");
+        }
     }
 
     let bin_dir = plan.target.parent().ok_or("qiongli-cli-target-invalid")?;
@@ -1339,6 +1362,12 @@ fn sha256_bytes(bytes: &[u8]) -> String {
 }
 
 fn read_receipt(path: &Path) -> Result<Option<CliInstallReceiptV1>, &'static str> {
+    Ok(read_receipt_with_digest(path)?.map(|(receipt, _)| receipt))
+}
+
+fn read_receipt_with_digest(
+    path: &Path,
+) -> Result<Option<(CliInstallReceiptV1, String)>, &'static str> {
     let metadata = match fs::symlink_metadata(path) {
         Ok(metadata) => metadata,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
@@ -1400,7 +1429,7 @@ fn read_receipt(path: &Path) -> Result<Option<CliInstallReceiptV1>, &'static str
     {
         return Err("qiongli-cli-receipt-invalid");
     }
-    Ok(Some(receipt))
+    Ok(Some((receipt, sha256_bytes(&bytes))))
 }
 
 fn valid_sha256(value: &str) -> bool {
@@ -1921,6 +1950,61 @@ mod tests {
         assert_eq!(backups.len(), 1);
         assert_eq!(fs::read(backups[0].path()).unwrap(), b"legacy-cli");
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn update_refuses_receipt_and_retained_backup_drift_before_writes() {
+        let root = test_root("update-receipt-cas");
+        let home = root.join("home");
+        fs::create_dir(&home).unwrap();
+        let source = write_source(&root, b"native-cli-old");
+        let target = cli_target(&home);
+        fs::create_dir_all(target.parent().unwrap()).unwrap();
+        fs::write(&target, b"preexisting-cli").unwrap();
+        apply_cli_install(&preview_cli_install(&home, &source, "2.0.0-alpha.2").unwrap()).unwrap();
+        let receipt_path = cli_receipt_path(&home);
+        let old_receipt = fs::read(&receipt_path).unwrap();
+        let receipt = read_receipt(&receipt_path).unwrap().unwrap();
+        let backup = home
+            .join(".qiongli/v2/cli/backups")
+            .join(receipt.retained_backup_name.as_ref().unwrap());
+        fs::write(&source, b"native-cli-new").unwrap();
+        let plan = preview_cli_install(&home, &source, "2.0.0-alpha.3").unwrap();
+        let mut changed = receipt;
+        changed.product_version = "2.0.0-alpha.1".into();
+        let changed_bytes = serde_json::to_vec(&changed).unwrap();
+        fs::write(&receipt_path, &changed_bytes).unwrap();
+        assert_eq!(apply_cli_install(&plan), Err("qiongli-cli-receipt-changed"));
+        assert_eq!(fs::read(&target).unwrap(), b"native-cli-old");
+        assert_eq!(fs::read(&receipt_path).unwrap(), changed_bytes);
+        assert_ne!(
+            plan.plan_sha256(),
+            preview_cli_install(&home, &source, "2.0.0-alpha.3")
+                .unwrap()
+                .plan_sha256()
+        );
+        fs::remove_file(&receipt_path).unwrap();
+        assert_eq!(apply_cli_install(&plan), Err("qiongli-cli-receipt-changed"));
+        assert!(!receipt_path.exists());
+        assert_eq!(fs::read(&target).unwrap(), b"native-cli-old");
+        let unowned_plan = preview_cli_install(&home, &source, "2.0.0-alpha.3").unwrap();
+        fs::write(&receipt_path, &old_receipt).unwrap();
+        assert_eq!(
+            apply_cli_install(&unowned_plan),
+            Err("qiongli-cli-receipt-changed")
+        );
+        assert_eq!(fs::read(&target).unwrap(), b"native-cli-old");
+        assert_eq!(fs::read(&receipt_path).unwrap(), old_receipt);
+        fs::write(&backup, b"modified-backup-canary").unwrap();
+        assert_eq!(apply_cli_install(&plan), Err("qiongli-cli-backup-changed"));
+        assert_eq!(fs::read(&target).unwrap(), b"native-cli-old");
+        assert_eq!(fs::read(&receipt_path).unwrap(), old_receipt);
+        assert_eq!(fs::read(&backup).unwrap(), b"modified-backup-canary");
+        fs::write(&backup, b"preexisting-cli").unwrap();
+        assert_eq!(apply_cli_install(&plan), Ok("qiongli-cli-updated"));
+        assert_eq!(fs::read(&target).unwrap(), b"native-cli-new");
+        assert_eq!(fs::read(&backup).unwrap(), b"preexisting-cli");
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

@@ -312,7 +312,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-08",
-      "blocker": "Configured Codex-to-Claude Code/DeepSeek handoff, CLI approval/restart and actual Claude tool-denial checks passed at dfebb17c. With no MCP/tools, Claude Code 2.1.263 plus DeepSeek emitted tool-shaped XML instead of reporting unavailable capability: zero real calls despite exit 0. This case failed; the native gate rejects receipts with no observed tools. Full Host/SEC qualification and selected-provider absent-account/expiry/quota cases remain open. Rich graph semantics/visualization are not first-stage gates."
+      "blocker": "Configured handoff, CLI approval/restart and denied-tool checks passed at dfebb17c. Shared native Host guidance now reports missing MCP truthfully in an explicit-guidance Claude/DeepSeek retry; original XML-only failure retained. Generated Codex/Claude bundle tests passed. New installed-candidate Host/SEC and provider account/quota qualification remain open; graph semantics/UI are not baseline gates."
     },
     {
       "id": "CLI-406",
@@ -368,16 +368,18 @@
     },
     {
       "id": "CLI-410",
-      "state": "proposed",
+      "state": "active",
       "owner": "CLI",
       "dependencies": [
         "CLI-405"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+      ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-06",
-      "blocker": ""
+      "updated_at": "2026-09-08",
+      "blocker": "Maintainer requested usable Cargo/npm/PyPI prerelease. Preparing alpha.6 native source and binary distribution; exact candidate, preserved-feature/install qualification, release trust and named publication decision remain pending. Windows remains partially complete/paused."
     },
     {
       "id": "CLI-411",

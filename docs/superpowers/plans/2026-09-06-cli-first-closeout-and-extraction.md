@@ -2651,3 +2651,43 @@ separately diagnose that integration limitation, and reconcile remaining baselin
 evidence for CLI-410 preparation. Absent-account/expiry/quota cases at the selected
 provider remain unqualified; no quota was deliberately exhausted and no alternate
 credentials were used. Windows remains partially complete/paused.
+
+
+## Shared Host missing-tool guidance — September 8
+
+Base `0403e90b`; branch `codex/cli-alpha-installable-release`. Both native Host
+Skill composers now append one shared capability-availability instruction.
+Absent tools require `qiongli-mcp-unavailable`, an explicit unverified live state,
+and reconnection guidance; denied tools stop the operation without alternate
+permissions/providers. Tool-shaped text cannot count as executed evidence.
+
+Both existing complete-bundle deterministic/tamper/runtime-independent tests
+passed with new assertions (Claude and Codex, 2 tests). The real restricted
+Claude Code/DeepSeek empty-MCP case was repeated with that exact product guidance
+loaded through `--append-system-prompt`. It returned the unavailable marker,
+distinguished supplied text from live observations, and made zero structured tool
+calls. Project/config bytes and user settings stayed unchanged. The private
+packet is `target/cli405-host-guidance-0403e90b/` under the native workspace; event
+SHA-256 is `0fcf83894e7ca63652c3db8cff2c518cce92d92980feaaff5ce587f81fd2d51a`.
+This verifies the guidance mitigation, not an installed Plugin at a new candidate
+or a guarantee that every third-party model follows it. The prior failed case
+is retained. Host/SEC and provider account/quota qualification remain open.
+
+## Installable CLI prerelease increment — September 8
+
+The maintainer requests completion followed by a usable Cargo, npm and PyPI
+prerelease. Prepare `2.0.0-alpha.6` (`2.0.0a6` on PyPI); prefer Alpha until the
+declared feature and installation matrix is qualified. Preserve current 2.x CLI,
+Plugin/MCP, retrieval, Zotero and migration/recovery behavior; App replacement,
+full 1.19 cutover and richer graph semantics retain separate gates. Windows
+remains partially complete/paused. This does not accept any program row.
+
+Smallest delivery sequence: fix missing-tool guidance; make the existing Rust
+CLI build from self-contained Cargo sources; project the same executable into
+npm and platform-specific Python wheels; install outside the checkout and run
+existing CLI/Plugin regression checks. Reuse unchanged tests. Freeze a merged
+source and exact artifacts before publication qualification and the named release
+decision; do not overwrite the unpublished alpha.5 evidence. Registry packaging
+must preserve runtime trust and research approval/CAS rather than bypass them.
+Cargo normally installs by compiling source; npm/PyPI deliver precompiled bytes.
+The frozen 1.x implementation and its publication flow remain separate.

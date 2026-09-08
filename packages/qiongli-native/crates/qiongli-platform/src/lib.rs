@@ -27,6 +27,8 @@ mod transaction;
 mod zotero_companion;
 mod zotero_companion_stage;
 
+const HOST_TOOL_AVAILABILITY_GUIDANCE: &str = include_str!("host-tool-availability.md");
+
 pub use activation::{
     CLIENT_ACTIVATION_SCHEMA_VERSION, ClientActivationCommit, ClientActivationCoordinator,
     ClientActivationDiscoveryV1, ClientActivationDisposition, ClientActivationEffect,

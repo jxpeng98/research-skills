@@ -675,6 +675,7 @@ fn generate_codex_skill(template: &[u8]) -> Result<Vec<u8>, CodexPluginBundleErr
     let projected_len = skill
         .len()
         .checked_add(CODEX_HOST_ADAPTER_GUIDANCE.len())
+        .and_then(|len| len.checked_add(crate::HOST_TOOL_AVAILABILITY_GUIDANCE.len()))
         .ok_or(CodexPluginBundleError::ProjectionInvalid)?;
     if u64::try_from(projected_len).unwrap_or(u64::MAX) > MAX_ENTRY_BYTES {
         return Err(CodexPluginBundleError::ProjectionInvalid);
@@ -682,6 +683,7 @@ fn generate_codex_skill(template: &[u8]) -> Result<Vec<u8>, CodexPluginBundleErr
     let mut projected = Vec::with_capacity(projected_len);
     projected.extend_from_slice(template);
     projected.extend_from_slice(CODEX_HOST_ADAPTER_GUIDANCE.as_bytes());
+    projected.extend_from_slice(crate::HOST_TOOL_AVAILABILITY_GUIDANCE.as_bytes());
     Ok(projected)
 }
 

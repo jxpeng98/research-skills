@@ -16,10 +16,10 @@ Markdown checkboxes are presentation only.
 | State | Count | Meaning |
 |---|---:|---|
 | `accepted` | 46 | Exact repository evidence, commit and CI run are recorded. |
-| `active` | 8 | The bounded task is currently being implemented or integrated. |
+| `active` | 9 | The bounded task is currently being implemented or integrated. |
 | `blocked` | 14 | Work cannot advance until the recorded blocker clears. |
 | `deferred` | 157 | Intentionally held behind a milestone or policy gate. |
-| `proposed` | 24 | Ordered work that has not entered implementation. |
+| `proposed` | 23 | Ordered work that has not entered implementation. |
 | `superseded` | 0 | Replaced by another recorded task or decision. |
 
 ## Tasks
@@ -62,12 +62,12 @@ Markdown checkboxes are presentation only.
 | `CLI-402` | `active` | `CLI` | Separate a pure native CLI/MCP target from graphical build, test and launch dependencies while preserving command and service behavior (LF-Q02). | `CLI-401` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md` |
 | `CLI-403` | `active` | `CLI` | Qualify independent resources, package identity, trust, installation, update and rollback without an App bundle (LF-Q03). | `CLI-402` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Windows partially complete; maintainer paused this lane after cross-build and Parallels x64-emulation runtime checks. Trusted installation rejected the source build; signed Windows candidate, installation/update and native x64 qualification remain open. Other CLI work may continue. |
 | `CLI-404` | `active` | `CLI` | Provide window-free Host integration and a verified human approval path using existing preview/apply owners (LF-Q04). | `CLI-403`<br>`SEC-403` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Current candidate, real Codex draft review, human-authorized Inbox/consolidation and authorized revision-2 same-Host reads passed. Full Host/SEC qualification remains open. |
-| `CLI-405` | `active` | `CLI` | Complete one real Host research journey and same-device handoff with source-bound candidates, approved writes and restart recovery (LF-Q05). | `CLI-404` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Configured Codex-to-Claude Code/DeepSeek handoff, CLI approval/restart and actual Claude tool-denial checks passed at dfebb17c. With no MCP/tools, Claude Code 2.1.263 plus DeepSeek emitted tool-shaped XML instead of reporting unavailable capability: zero real calls despite exit 0. This case failed; the native gate rejects receipts with no observed tools. Full Host/SEC qualification and selected-provider absent-account/expiry/quota cases remain open. Rich graph semantics/visualization are not first-stage gates. |
+| `CLI-405` | `active` | `CLI` | Complete one real Host research journey and same-device handoff with source-bound candidates, approved writes and restart recovery (LF-Q05). | `CLI-404` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Configured handoff, CLI approval/restart and denied-tool checks passed at dfebb17c. Shared native Host guidance now reports missing MCP truthfully in an explicit-guidance Claude/DeepSeek retry; original XML-only failure retained. Generated Codex/Claude bundle tests passed. New installed-candidate Host/SEC and provider account/quota qualification remain open; graph semantics/UI are not baseline gates. |
 | `CLI-406` | `proposed` | `CLI` | Extend existing task/checkpoint owners with atomic local claims, isolated candidates and exact-digest review contracts (LF-Q06). | `CLI-405` | — |
 | `CLI-407` | `proposed` | `CLI` | Complete two actual local Host sessions performing bounded work and candidate review before human commit (LF-Q07). | `CLI-406` | — |
 | `CLI-408` | `proposed` | `CLI` | Prove local claim conflict, stale sources/reviews, cancellation, duplicate commit, crash recovery and approval revocation cases (LF-Q08). | `CLI-406` | — |
 | `CLI-409` | `proposed` | `CLI` | Qualify additional Hosts independently against the same native contracts and declared capabilities (LF-Q09). | `CLI-405` | — |
-| `CLI-410` | `proposed` | `CLI` | Qualify and separately authorize the standalone CLI baseline release without waiting for local collaboration (LF-Q10). | `CLI-405` | — |
+| `CLI-410` | `active` | `CLI` | Qualify and separately authorize the standalone CLI baseline release without waiting for local collaboration (LF-Q10). | `CLI-405` | evidence: `docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md`<br>blocker: Maintainer requested usable Cargo/npm/PyPI prerelease. Preparing alpha.6 native source and binary distribution; exact candidate, preserved-feature/install qualification, release trust and named publication decision remain pending. Windows remains partially complete/paused. |
 | `CLI-411` | `proposed` | `CLI` | Qualify and separately authorize the local collaboration release after real two-Host and fault evidence (LF-Q11). | `CLI-407`<br>`CLI-408`<br>`CLI-410` | — |
 | `CLI-412` | `deferred` | `CLI` | Evaluate optional cross-device migration/synchronization only after local collaboration and a new scope decision (LF-Q12). | `CLI-411` | blocker: Optional cross-device work requires completed local collaboration and a new scope decision. |
 

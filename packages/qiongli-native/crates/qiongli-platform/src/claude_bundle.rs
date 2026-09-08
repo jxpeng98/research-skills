@@ -671,6 +671,7 @@ fn generate_claude_skill(template: &[u8]) -> Result<Vec<u8>, ClaudePluginBundleE
     let projected_len = skill
         .len()
         .checked_add(CLAUDE_HOST_ADAPTER_GUIDANCE.len())
+        .and_then(|len| len.checked_add(crate::HOST_TOOL_AVAILABILITY_GUIDANCE.len()))
         .ok_or(ClaudePluginBundleError::ProjectionInvalid)?;
     if u64::try_from(projected_len).unwrap_or(u64::MAX) > MAX_ENTRY_BYTES {
         return Err(ClaudePluginBundleError::ProjectionInvalid);
@@ -678,6 +679,7 @@ fn generate_claude_skill(template: &[u8]) -> Result<Vec<u8>, ClaudePluginBundleE
     let mut projected = Vec::with_capacity(projected_len);
     projected.extend_from_slice(template);
     projected.extend_from_slice(CLAUDE_HOST_ADAPTER_GUIDANCE.as_bytes());
+    projected.extend_from_slice(crate::HOST_TOOL_AVAILABILITY_GUIDANCE.as_bytes());
     Ok(projected)
 }
 

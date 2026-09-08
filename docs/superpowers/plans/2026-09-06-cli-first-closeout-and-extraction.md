@@ -2509,3 +2509,49 @@ then retry this already-authorized exact read-only packet and verify actual tool
 results and unchanged files. No renewed data-disclosure permission is required
 while its scope remains unchanged. No runtime source fix or unrelated suite rerun
 was warranted. First-stage acceptance and the paused Windows scope are unchanged.
+
+
+## CLI-405 second-Host continuation with configured DeepSeek — September 8
+
+Base `af382b01`; branch `codex/claude-deepseek-handoff`. The maintainer clarified
+that Claude Code uses its existing DeepSeek configuration and authorized that route
+for the same read-only packet. The previous login recommendation is superseded:
+`--restricted` ignores user settings, so the earlier test omitted the configured
+provider and attempted expired Anthropic OAuth. This was a test-invocation error,
+not evidence that the intended DeepSeek account needed authentication repair.
+
+The retry retained the exact prompt, candidate binary, restricted mode, two-tool
+allowlist, strict MCP configuration, disabled built-ins and no session persistence.
+Only the existing provider/model environment was loaded from user settings into
+the child process. Credentials were neither printed nor persisted; settings,
+hooks and plugins were not changed or enabled. The configured endpoint was
+`https://api.deepseek.com/anthropic`, model `deepseek-v4-pro[1m]`; actual assistant
+responses reported `deepseek-v4-pro`. Claude emitted `unrecognized_model` on stderr,
+but exited 0 with `is_error=false` and no permission denials. Its generic cost
+metadata label `firstParty` is not used to identify the configured upstream provider.
+
+Exactly two live MCP reads succeeded with the authorized project-only arguments.
+Project/library and graph revisions were 2; the research-state source digest was
+`fc687bfbce6fcef41e492123bf3f51b1aeb83b37cbb6f6c5a02ef181455500b6`. Projection
+identity and the entire readiness result matched the prior Codex continuation.
+The model separated supplied canonical content from live structural graph data,
+preserved abstract-only limits and identified the actual sparse/missing fields.
+There were two structural nodes, one containment edge and zero semantic nodes.
+Project/config file-set and SHA-256 snapshots, and user settings, were unchanged.
+
+This proves bounded sequential Codex-to-Claude Code/DeepSeek continuation on one
+device against candidate source `dfebb17c`; it does not prove concurrent local
+collaboration or full research/Host/security qualification. Private retry scripts,
+events, continuation note and receipt are alongside the preserved OAuth failure
+under `packages/qiongli-native/target/cli405-claude-handoff-b8ee7f6f/`, using the
+`deepseek-` prefix. Event SHA-256:
+`c2d403f4a424f1affdca18dd67c9971a60e80d7090a1f56478b30ed3195ef4bf`.
+The runnable evidence verifier checks actual calls/results and prior-Host identity;
+no model rerun or unaffected runtime suite is needed. Ledger/index and whitespace
+checks pass; all 46 accepted records retain their exact scope.
+
+Next: reconcile the remaining declared baseline matrix at this named candidate,
+especially H03 account/quota/denied-tool cases and P04 approval-holder restart,
+then CLI-410 qualification preparation. Rich graph semantics remain outside this
+first-stage gate; Windows remains partially complete/paused. No publication or
+research write is authorized by this read-only handoff.

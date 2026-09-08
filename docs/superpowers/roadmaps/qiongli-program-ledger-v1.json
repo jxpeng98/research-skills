@@ -312,7 +312,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-08",
-      "blocker": "Claude Code read-only handoff is explicitly authorized and MCP connects, but model execution fails because its OAuth session expired and refresh failed. Zero tool calls; project/config unchanged. Refresh Claude authentication and retry the same packet. Rich graph semantics/visualization are not first-stage gates."
+      "blocker": "Authorized Codex-to-Claude Code/DeepSeek read-only handoff passed at dfebb17c: two live reads, revision 2, matching canonical digest/graph readiness and unchanged project/config. The earlier OAuth failure came from the test omitting configured provider settings. Remaining declared baseline qualification includes H03 account/quota/denied-tool cases and P04 approval-holder restart. Rich graph semantics/visualization are not first-stage gates."
     },
     {
       "id": "CLI-406",

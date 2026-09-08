@@ -2555,3 +2555,50 @@ especially H03 account/quota/denied-tool cases and P04 approval-holder restart,
 then CLI-410 qualification preparation. Rich graph semantics remain outside this
 first-stage gate; Windows remains partially complete/paused. No publication or
 research write is authorized by this read-only handoff.
+
+
+## CLI-405 actual CLI approval/restart boundary — September 8
+
+Base `702fb3db`; branch `codex/cli-approval-restart-boundary`. Tracing P04 found
+that Full MCP's `HostEvidenceLedger` authenticates reads; it is not a serialized
+academic approval token. Consolidation uses the CLI parser's two explicit approval
+flags and the existing `ProjectStateService` digest/CAS owner. A passing evidence
+replay test must not be relabelled as human approval-token revocation.
+
+Extended the existing copied-binary consolidation integration test, reusing its
+synthetic capture, public commands and isolated Home. The optional test-only
+`QIONGLI_TEST_CONSOLIDATION_BINARY` selects the named package for this one test;
+ordinary test runs retain their compiled binary. The `dfebb17c` macOS ARM64
+candidate still hashes to
+`1a3ba25cf36026cb29c6e2fc1e8e40ca33b9d3600bd000287498b29ee552946d`;
+runtime owners are unchanged. No new product approval API or persisted token is added.
+
+The named binary, copied outside the checkout and run with empty PATH, passed:
+
+- editing a valid capture changes its identity/preview digest; the original intake
+  digest is refused without changing project/config files;
+- a held library write lock rejects an explicitly approved apply; another apply
+  with both flags is killed with SIGKILL while that lock prevents any commit;
+- after the killed process exits and the lock is released, fresh processes refuse
+  absent/either partial approval, while the original capture remains readable;
+- changing the review timestamp refuses the old digest; fresh explicit approvals
+  commit revision 2 once, and replay is refused with identical post-commit files.
+
+All refusal/interruption checks compare complete project/config file sets and
+bytes. The lock holds a pre-commit boundary; the test does not assert the exact
+instruction where SIGKILL lands or arbitrary mid-transaction power-loss recovery.
+Local flags encode the trusted caller's decision, not proof of its human origin;
+this does not claim a nonexistent MCP approval-token lifecycle or full P03/P04
+Host qualification. The first lock assertion used an abbreviated error code;
+correcting it to the owner's `project-library-lock-busy` required no runtime fix.
+
+Focused check: `cargo test --manifest-path packages/qiongli-native/Cargo.toml -p
+qiongli --no-default-features --locked --offline --test cli
+copied_binary_consolidates_a_reviewed_capture_without_runtime -- --exact --nocapture`,
+with the named binary override: 1 passed. Private command, candidate/test digests
+and test outputs are under `target/cli405-approval-restart-702fb3db/` in the native
+package. Format, ledger/index and whitespace checks pass; accepted rows are unchanged.
+Next: actual Host denied-tool/unsupported-capability checks and the remaining H03
+account/quota qualification at the declared provider scope, then the remaining
+CLI-410 baseline evidence. No external model call or real research mutation ran;
+Windows remains partially complete/paused.

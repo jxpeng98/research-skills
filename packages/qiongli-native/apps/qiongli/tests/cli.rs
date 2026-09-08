@@ -2512,8 +2512,27 @@ fn copied_binary_accepts_repository_capture_without_runtime() {
 
 #[test]
 fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
+    fn snapshot(root: &Path) -> std::collections::BTreeMap<PathBuf, Vec<u8>> {
+        let mut files = std::collections::BTreeMap::new();
+        if root.exists() {
+            for entry in fs::read_dir(root).unwrap() {
+                let path = entry.unwrap().path();
+                if path.is_dir() {
+                    files.extend(snapshot(&path));
+                } else {
+                    files.insert(path.clone(), fs::read(path).unwrap());
+                }
+            }
+        }
+        files
+    }
+
     let fixture = Fixture::new("tier1-capture-consolidation");
-    let source_executable = PathBuf::from(env!("CARGO_BIN_EXE_qiongli"));
+    // Qualify this same journey against a named package without replacing build output.
+    let source_executable = std::env::var_os("QIONGLI_TEST_CONSOLIDATION_BINARY").map_or_else(
+        || PathBuf::from(env!("CARGO_BIN_EXE_qiongli")),
+        PathBuf::from,
+    );
     let runtime_root = std::env::temp_dir().join(format!(
         "qiongli-tier1-consolidation-runtime-{}-{}-{}",
         std::process::id(),
@@ -2599,7 +2618,7 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
         .duration_since(UNIX_EPOCH)
         .expect("test clock must follow the Unix epoch")
         .as_secs();
-    let capture = ResearchCaptureDraftV1 {
+    let draft = ResearchCaptureDraftV1 {
         binding: ProjectBindingV1::new(
             ProjectId::parse(project_id.clone()).unwrap(),
             1,
@@ -2617,9 +2636,8 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
         evidence: Vec::new(),
         contradictions: Vec::new(),
         next_actions: vec!["Inspect the consolidated research state.".to_string()],
-    }
-    .into_capture()
-    .unwrap();
+    };
+    let capture = draft.clone().into_capture().unwrap();
     let capture_id = capture.capture_id.as_str().to_string();
     let capture_file = fixture.root.join("reviewed-capture.json");
     fs::write(&capture_file, capture.to_canonical_json().unwrap()).unwrap();
@@ -2644,6 +2662,59 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
         .as_str()
         .unwrap()
         .to_string();
+    let before_intake = (snapshot(&project_root), snapshot(&fixture.config_root));
+    let edited_capture = ResearchCaptureDraftV1 {
+        summary: "Edited synthetic candidate; the original review does not approve this text."
+            .to_string(),
+        ..draft
+    }
+    .into_capture()
+    .unwrap();
+    assert_ne!(edited_capture.capture_id, capture.capture_id);
+    fs::write(&capture_file, edited_capture.to_canonical_json().unwrap()).unwrap();
+    let edited_preview = run_configured_os(
+        &copied,
+        &fixture,
+        &[
+            "project".into(),
+            "capture".into(),
+            "preview".into(),
+            "--file".into(),
+            capture_file.as_os_str().to_owned(),
+        ],
+        true,
+    );
+    assert!(
+        edited_preview.status.success(),
+        "{}",
+        public_output(&edited_preview)
+    );
+    assert_ne!(
+        parse_json(&edited_preview)["preview"]["planDigest"],
+        intake_digest
+    );
+    let stale_intake = run_configured_os(
+        &copied,
+        &fixture,
+        &[
+            "project".into(),
+            "capture".into(),
+            "apply".into(),
+            "--file".into(),
+            capture_file.as_os_str().to_owned(),
+            "--expected-plan-digest".into(),
+            intake_digest.clone().into(),
+            "--approve-filesystem-write".into(),
+        ],
+        true,
+    );
+    assert_eq!(stale_intake.status.code(), Some(1));
+    assert_eq!(stale_intake.stderr, b"error: project-plan-mismatch\n");
+    assert_eq!(
+        before_intake,
+        (snapshot(&project_root), snapshot(&fixture.config_root))
+    );
+    fs::write(&capture_file, capture.to_canonical_json().unwrap()).unwrap();
     let intake_apply = run_configured_os(
         &copied,
         &fixture,
@@ -2705,6 +2776,99 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
         .unwrap()
         .to_string();
 
+    // Each invocation has exited: persisted previews/captures grant no next-process approval.
+    let before_consolidation = (snapshot(&project_root), snapshot(&fixture.config_root));
+    let apply_args: Vec<OsString> = vec![
+        "project".into(),
+        "capture".into(),
+        "consolidate".into(),
+        "apply".into(),
+        "--project-id".into(),
+        project_id.clone().into(),
+        "--capture-id".into(),
+        capture_id.clone().into(),
+        "--reviewed-at-unix".into(),
+        reviewed_at_unix.to_string().into(),
+        "--expected-plan-digest".into(),
+        consolidation_digest.clone().into(),
+    ];
+    let mut approved_args = apply_args.clone();
+    approved_args.extend([
+        "--approve-academic-review".into(),
+        "--approve-filesystem-write".into(),
+    ]);
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+
+        // Hold the actual write lock: no approved child can commit before it is killed.
+        let lock = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(fixture.state_root().join("research-library/.library.lock"))
+            .unwrap();
+        lock.lock().unwrap();
+        let blocked = run_configured_os(&copied, &fixture, &approved_args, true);
+        assert_eq!(blocked.status.code(), Some(1));
+        assert_eq!(blocked.stderr, b"error: project-library-lock-busy\n");
+        let mut child = fixture_command(&copied, &fixture)
+            .args(&approved_args)
+            .env("PATH", "")
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        thread::sleep(Duration::from_millis(100));
+        let before_kill = child.try_wait();
+        let killed = child.kill();
+        let output = child.wait_with_output().unwrap();
+        assert!(before_kill.unwrap().is_none());
+        assert!(killed.is_ok());
+        assert_eq!(output.status.signal(), Some(9));
+        assert!(output.stdout.is_empty());
+        drop(lock);
+        assert_eq!(
+            before_consolidation,
+            (snapshot(&project_root), snapshot(&fixture.config_root))
+        );
+    }
+    for partial_approval in [
+        None,
+        Some("--approve-academic-review"),
+        Some("--approve-filesystem-write"),
+    ] {
+        let mut args = apply_args.clone();
+        if let Some(flag) = partial_approval {
+            args.push(flag.into());
+        }
+        let refused = run_configured_os(&copied, &fixture, &args, true);
+        assert_eq!(refused.status.code(), Some(2));
+        assert!(refused.stderr.starts_with(b"error: capture consolidation apply requires review timestamp, plan digest, academic approval, and filesystem approval\n"));
+        assert_eq!(
+            before_consolidation,
+            (snapshot(&project_root), snapshot(&fixture.config_root))
+        );
+    }
+    let reopened = run_configured_os(
+        &copied,
+        &fixture,
+        &[
+            "project".into(),
+            "capture".into(),
+            "read".into(),
+            "--project-id".into(),
+            project_id.clone().into(),
+            "--capture-id".into(),
+            capture_id.clone().into(),
+        ],
+        true,
+    );
+    assert!(reopened.status.success(), "{}", public_output(&reopened));
+    assert_eq!(
+        parse_json(&reopened)["capture"],
+        serde_json::to_value(&capture).unwrap()
+    );
+
     let changed_review_time = run_configured_os(
         &copied,
         &fixture,
@@ -2731,28 +2895,12 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
         changed_review_time.stderr,
         b"error: project-plan-mismatch\n"
     );
-
-    let consolidation_apply = run_configured_os(
-        &copied,
-        &fixture,
-        &[
-            "project".into(),
-            "capture".into(),
-            "consolidate".into(),
-            "apply".into(),
-            "--project-id".into(),
-            project_id.clone().into(),
-            "--capture-id".into(),
-            capture_id.clone().into(),
-            "--reviewed-at-unix".into(),
-            reviewed_at_unix.to_string().into(),
-            "--expected-plan-digest".into(),
-            consolidation_digest.into(),
-            "--approve-academic-review".into(),
-            "--approve-filesystem-write".into(),
-        ],
-        true,
+    assert_eq!(
+        before_consolidation,
+        (snapshot(&project_root), snapshot(&fixture.config_root))
     );
+
+    let consolidation_apply = run_configured_os(&copied, &fixture, &approved_args, true);
     assert!(
         consolidation_apply.status.success(),
         "{}",
@@ -2796,6 +2944,7 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
     assert_eq!(inbox_json["inbox"]["appliedCount"], 1);
     assert_eq!(inbox_json["inbox"]["entries"][0]["state"], "applied");
 
+    let after_commit = (snapshot(&project_root), snapshot(&fixture.config_root));
     let replay_preview = run_configured_os(
         &copied,
         &fixture,
@@ -2852,6 +3001,10 @@ fn copied_binary_consolidates_a_reviewed_capture_without_runtime() {
     assert_eq!(
         replay.stderr,
         b"error: capture-consolidation-already-applied\n"
+    );
+    assert_eq!(
+        after_commit,
+        (snapshot(&project_root), snapshot(&fixture.config_root))
     );
 
     fs::remove_dir_all(runtime_root).expect("outside-checkout runtime root must be removed");

@@ -638,7 +638,9 @@ fn signed_candidate_verifies_both_target_capabilities_and_rejects_tampering() {
     );
     // A newer payload is staged beside the active integration, never over it.
     let mut next_artifact = artifact.clone();
-    next_artifact.version = "2.0.0-alpha.6".to_string();
+    let mut next_version = semver::Version::parse(&artifact.version).unwrap();
+    next_version.patch += 1;
+    next_artifact.version = next_version.to_string();
     let next_id = native_artifact_id(&next_artifact).unwrap();
     let next_artifact_target =
         approve_native_artifact_target(fixture.target("next-artifact", &next_id), &next_artifact)

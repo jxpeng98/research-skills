@@ -14,6 +14,12 @@ not gate this increment. Keep managed-product refusal and research approval/CAS;
 disclose incomplete managed activation/migration/update and non-macOS targets.
 Registry uploads remain follow-up work; no Windows lane resumption is implied.
 
+Completed: alpha.6 was published from `28d750e4` after CLI-only qualification
+(876 passed, 4 explicit ignores). All five GitHub assets matched the local hashes;
+downloaded executable/npm/wheel CLI/MCP installation checks passed. The canonical
+record is `tooling/release/acceptance/v2.0.0-alpha.6-github.json`. Full baseline,
+managed-product lifecycle and registry acceptance remain open in CLI-410.
+
 ## Outcome and authority
 
 Close the completed App/ACP source stage, merge it through a reviewed PR into

@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "source_commit": "28d750e49f8423f321d0ea2f61d9582f5eac3ea8",
+  "release": "https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.6",
+  "downloaded_sha256": {
+    "qiongli-2.0.0-alpha.6-aarch64-apple-darwin.tar.gz": "682aad01dd88a5f6f25339ce9623347326a1b87292fd241d7d81b6d535a29b0d",
+    "qiongli-2.0.0-alpha.6.tgz": "87676bd8e0c7dab20fbb0a56c9252c48e1f89e7bb139b701e3e4f6de9bde00d7",
+    "qiongli-2.0.0a6-py3-none-macosx_11_0_arm64.whl": "94f4e7b644027f05905c86d22ff62b977973c748904473a60b110402f59b2832",
+    "release-manifest.json": "5cc5efc69ce6f448d7244f13b7e95d17ba06b745e6b20ed8dfeb65712412517c",
+    "SHA256SUMS": "8fdc190bdd236daf1af5a70391a647da5dd788d5d991a883e011f3eaae5649c0"
+  },
+  "standalone_smoke": {
+    "version": "2.0.0-alpha.6",
+    "invalid_command_rejected": true,
+    "mcp_tools": {
+      "lite": 14,
+      "full": 32
+    }
+  },
+  "npm_wheel_downloaded_install": "passed",
+  "registry_publication": false,
+  "qualification": {
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+    "cli_tests_passed": 876,
+    "cli_tests_ignored": 4,
+    "cli_clippy": "passed",
+    "release_script_tests_passed": 54,
+    "target": "aarch64-apple-darwin"
+  },
+  "published_at": "2026-09-08T23:50:01Z",
+  "scope": "CLI GitHub prerelease and downloaded macOS ARM64 artifacts; no App, registry upload, full managed-product lifecycle or complete program acceptance"
+}

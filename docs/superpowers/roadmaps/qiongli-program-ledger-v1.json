@@ -375,12 +375,13 @@
       ],
       "evidence": [
         "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md",
-        "tooling/release/v2.0.0-alpha.6.md"
+        "tooling/release/v2.0.0-alpha.6.md",
+        "tooling/release/acceptance/v2.0.0-alpha.6-github.json"
       ],
       "commit": "",
       "run": "",
       "updated_at": "2026-09-09",
-      "blocker": "Maintainer authorized CLI GitHub publication under ADR 0219; App/Community Alpha promotion and offline signing keys no longer gate direct downloads. New CLI-only readiness owner awaits clean candidate qualification and public download verification. Registry uploads, managed Plugin/migration/update qualification and full baseline acceptance remain open. Windows remains partially complete/paused."
+      "blocker": "CLI GitHub alpha.6 published from 28d750e49f8423f321d0ea2f61d9582f5eac3ea8 under ADR 0219. All five public asset hashes and downloaded macOS ARM64 executable/npm/wheel CLI/MCP installs passed; CLI regression 876 passed, 4 ignored. Registry uploads, managed Plugin/migration/update qualification and full baseline acceptance remain open. App/Community Alpha signing is not a direct CLI release prerequisite. Windows remains partially complete/paused."
     },
     {
       "id": "CLI-411",

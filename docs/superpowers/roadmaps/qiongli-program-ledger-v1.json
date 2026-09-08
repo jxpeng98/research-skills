@@ -374,12 +374,13 @@
         "CLI-405"
       ],
       "evidence": [
-        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md",
+        "tooling/release/v2.0.0-alpha.6.md"
       ],
       "commit": "",
       "run": "",
       "updated_at": "2026-09-08",
-      "blocker": "Maintainer requested usable Cargo/npm/PyPI prerelease. Preparing alpha.6 native source and binary distribution; exact candidate, preserved-feature/install qualification, release trust and named publication decision remain pending. Windows remains partially complete/paused."
+      "blocker": "alpha.6 Cargo archives and macOS ARM64 npm/PyPI packages are implemented. Local installs, locked extracted-Cargo build, 48 native regressions, 2 real clean-client Host tests and Twine passed. Full signed installation lifecycle, exact merged candidate and public registry qualification/publication remain open. Cargo workspace verification hits no-hash-listed; local archive dependency patches do not prove registry resolution. Windows remains partially complete/paused."
     },
     {
       "id": "CLI-411",

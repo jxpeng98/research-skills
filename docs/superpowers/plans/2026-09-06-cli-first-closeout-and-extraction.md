@@ -2691,3 +2691,40 @@ decision; do not overwrite the unpublished alpha.5 evidence. Registry packaging
 must preserve runtime trust and research approval/CAS rather than bypass them.
 Cargo normally installs by compiling source; npm/PyPI deliver precompiled bytes.
 The frozen 1.x implementation and its publication flow remain separate.
+
+
+### Alpha.6 registry package implementation and local checks
+
+The native registry generator now projects self-contained Cargo sources and
+macOS ARM64 npm/PyPI executable packages from the current owners. Rust build.rs
+uses in-crate staged assets when present and still verifies the canonical content
+lock; source-checkout builds retain their previous path. Package assembly changes
+no project write, permission, migration or signed-install authority. All native
+version owners and the Lite compatibility lock now agree on alpha.6.
+
+Actual external-source installation exposed a missing icon input, now included.
+Archive installation exposed yanked chacha20 0.10.1; a targeted lock update to
+0.10.2 resolved it without updating unrelated versions. Cargo 1.98.1 workspace
+verification also hit its `no hash listed` internal error. The fallback check
+extracts checksum-verified archives, patches only internal dependency locations,
+keeps external dependencies locked, and compiles/installs without the checkout.
+It is source-closure evidence, not proof of a crates.io download.
+
+Final evidence and hashes are recorded once in
+[alpha.6 notes](../../../tooling/release/v2.0.0-alpha.6.md) (repository path:
+`tooling/release/v2.0.0-alpha.6.md`). Native CLI/MCP/Plugin tests: 48 passed; two
+real isolated Host installation tests: 2 passed; projection/version tests:
+7 passed; capability validation and Twine passed. npm/PyPI and extracted-Cargo
+install checks exercise version/help/content, error propagation and actual Lite
+14 / Full 32 tools. Earlier packages embedding alpha.5 content are superseded
+by the final alpha.6 local packet.
+
+Status remains Not ready for publication: complete signed install/activation,
+exact merged candidate qualification, registry access and the named publication
+decision are not yet closed. Source-built registry packages cannot substitute for
+the existing signed installation lifecycle. No credentials were printed and no
+research data, user Host configuration, remote refs or registry packages changed.
+All 46 accepted program rows retain their scope; Windows remains partially
+complete/paused. Next increment: connect the declared registry distribution to
+the existing signed CLI lifecycle and final release owner, then qualify public
+registry installation against exact authorized bytes.

@@ -61,7 +61,11 @@ fn build_embedded_assets() -> Result<(), Box<dyn Error>> {
 
 fn build_embedded_zotero_companion() -> Result<(), Box<dyn Error>> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let companion_root = manifest_dir.join("../../../qiongli-zotero-companion");
+    let companion_root = if manifest_dir.join("package-assets").exists() {
+        manifest_dir.join("package-assets/qiongli-zotero-companion")
+    } else {
+        manifest_dir.join("../../../qiongli-zotero-companion")
+    };
     let mut sources = Vec::with_capacity(ZOTERO_COMPANION_SOURCE_PATHS.len());
     for relative in ZOTERO_COMPANION_SOURCE_PATHS {
         let path = companion_root.join(relative);
@@ -164,7 +168,11 @@ fn valid_source_commit(value: &str) -> bool {
 
 fn build_embedded_pack() -> Result<(), Box<dyn Error>> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let content_root = manifest_dir.join("../../../../content");
+    let content_root = if manifest_dir.join("package-assets").exists() {
+        manifest_dir.join("package-assets/content")
+    } else {
+        manifest_dir.join("../../../../content")
+    };
     let lock_path =
         manifest_dir.join("../../crates/qiongli-content/resources/qiongli-core.lock.json");
     println!("cargo:rerun-if-changed={}", content_root.display());

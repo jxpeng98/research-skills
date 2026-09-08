@@ -79,8 +79,15 @@ Release work starts only from an explicit release task after merge to `2.x`.
 Follow the Release section of the delivery checklist and run the existing owner:
 
 ```bash
-./scripts/release_ready.sh --version <version> --staging-dir <external-dir>
+./scripts/release_ready.sh --cli-github --version <version> --staging-dir <new-external-dir>
 ```
 
 CI supplies evidence. A named human release decision authorizes publication, and
 a separate decision authorizes announcement.
+
+The CLI lane builds no App and requires no Community Alpha signing key. It
+qualifies macOS ARM64 GitHub assets and local npm/wheel installs; publication uses
+an immutable tag and `gh release`, followed by public download verification.
+Registry uploads and managed-product activation remain separate. See
+[ADR 0219](docs/architecture/decisions/0219-cli-github-release-distribution.md).
+Omit `--cli-github` only for the retained legacy/desktop diagnostic lanes.

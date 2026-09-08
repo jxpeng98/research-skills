@@ -3,6 +3,17 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Current release increment — September 9
+
+The maintainer corrected the publication target to a standalone CLI GitHub
+Release, following the 1.x distribution model (ADR 0219). Qualify a clean local
+`2.x` candidate through `release_ready.sh --cli-github`, publish an immutable tag
+and macOS ARM64 executable/npm/wheel assets, then independently download and test
+them. App/Community Alpha promotion, offline signing keys and registry login do
+not gate this increment. Keep managed-product refusal and research approval/CAS;
+disclose incomplete managed activation/migration/update and non-macOS targets.
+Registry uploads remain follow-up work; no Windows lane resumption is implied.
+
 ## Outcome and authority
 
 Close the completed App/ACP source stage, merge it through a reviewed PR into

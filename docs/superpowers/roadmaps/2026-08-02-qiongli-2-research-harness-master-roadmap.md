@@ -63,7 +63,7 @@ product acceptance. CLI First is the product direction; CI remains verification.
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
 | **NOW** | `CLI-405` bounded same-device read-only handoff from Codex to Claude Code with configured DeepSeek is verified at candidate `dfebb17c`, revision 2. The alpha.6 Cargo/npm/PyPI local packaging and install increment is implemented with 50 native/real-client checks passed; signed lifecycle and public registry qualification remain open. Reconcile remaining declared baseline evidence; a complete academic graph is not required. Windows `CLI-403` remains partially complete/paused. `CLI-401/402` source integration is merged; program acceptance remains separate. |
-| **NEXT** | Prepare `CLI-410` alpha.6 for Cargo, npm and PyPI installation alongside the remaining CLI-401—405 baseline evidence, preserving existing 2.x CLI/Plugin/MCP, retrieval, Zotero, recovery and research approval gates. Windows trusted installation remains a separate paused lane. Rich Graph v1 semantics belong to `PLT-322` in M2; optional visualization does not block the CLI baseline. |
+| **NEXT** | Publish `CLI-410` alpha.6 as a standalone CLI GitHub Release under ADR 0219, with macOS ARM64 executable and npm/wheel download assets. App/Community Alpha promotion and offline signing keys do not gate this lane. Cargo/npm/PyPI registry uploads and full managed Plugin/install qualification remain separately tracked; research approval/CAS checks remain unchanged. Windows installation remains partially complete/paused. Rich Graph v1 belongs to `PLT-322` in M2. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 
@@ -1300,6 +1300,12 @@ require the corresponding specialist reviewer. CI and generated review summaries
 evidence, not reviewer approval.
 
 ### 19.7 Merge, release publication and update push
+
+For the standalone CLI Alpha GitHub download lane, ADR 0219 supersedes the
+App/Community Alpha signing and promotion prerequisites below. Qualify a clean
+local `2.x` source, publish its immutable tag and checked CLI assets, and verify
+public downloads. Existing signed managed-product/update contracts remain intact;
+registry publication and program acceptance are separate claims.
 
 Merge authorization and publication authorization are separate. After merge, release
 qualification starts again from the exact integration commit. The release sequence is:

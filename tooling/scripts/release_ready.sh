@@ -15,6 +15,7 @@ PRE_ARGS=()
 PYPI_ARGS=()
 RELEASE_STAGING_DIR=""
 RELEASE_STAGING_AUTO=0
+CLI_GITHUB=0
 
 cleanup() {
   if [[ "$RELEASE_STAGING_AUTO" -eq 1 && -n "$RELEASE_STAGING_DIR" && -d "$RELEASE_STAGING_DIR" ]]; then
@@ -46,10 +47,13 @@ Description:
     3) local plugin install acceptance in an isolated sandbox
     4) package preflight (build + twine + install smoke)
 
-  Native 2.x stops after step 2 and remains non-publishing; steps 3-4 apply
-  only to the legacy 1.x release line.
+  Native 2.x without --cli-github retains the desktop diagnostic lane.
+  --cli-github instead qualifies standalone executable/npm/wheel GitHub assets;
+  all readiness modes are local and never publish.
 
 Options:
+  --cli-github        Qualify standalone CLI GitHub Release assets (macOS ARM64).
+                      No App or Community Alpha signing/promotion dependency.
   --version <v>        Required version input (for example 0.2.0, v0.2.0-beta.1,
                        or v2.0.0-alpha.3).
   --from-tag <tag>     Optional baseline tag passed into release note generation.
@@ -157,6 +161,10 @@ ensure_clean_worktree() {
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --cli-github)
+      CLI_GITHUB=1
+      shift
+      ;;
     --version)
       [[ $# -ge 2 ]] || { echo "[release-ready] missing value for --version" >&2; exit 2; }
       VERSION="$2"
@@ -203,6 +211,11 @@ done
 [[ -n "$VERSION" ]] || { echo "[release-ready] --version is required" >&2; usage; exit 2; }
 
 cd "$ROOT_DIR"
+
+if [[ "$CLI_GITHUB" -eq 1 ]]; then
+  [[ -n "$RELEASE_STAGING_DIR" ]] || { echo "[release-ready] --cli-github requires --staging-dir" >&2; exit 2; }
+  exec python3 tooling/scripts/native_cli_release.py --version "$VERSION" --out-dir "$RELEASE_STAGING_DIR"
+fi
 
 PACKAGE_VERSION="$(normalize_field package_version)"
 REPO_TAG="$(normalize_field repo_version)"

@@ -380,7 +380,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-09",
-      "blocker": "Publication explicitly requested. Release-ready at c89be856 stopped on a macOS test-only process-launch lint; scoped fix passes pinned Rust 1.97 Clippy. All 11 artifact hashes match. npm authentication returns 401; existing offline signing key location is pending. npm/PyPI workflows exclude native 2.x. Full signed lifecycle, final candidate/registry qualification remain open; no public release or tag. Windows remains partially complete/paused."
+      "blocker": "Maintainer authorized CLI GitHub publication under ADR 0219; App/Community Alpha promotion and offline signing keys no longer gate direct downloads. New CLI-only readiness owner awaits clean candidate qualification and public download verification. Registry uploads, managed Plugin/migration/update qualification and full baseline acceptance remain open. Windows remains partially complete/paused."
     },
     {
       "id": "CLI-411",

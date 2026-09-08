@@ -33,6 +33,7 @@ decision must be recorded as a new superseding ADR.
 | `ARC-217` | [ADR 0217](0217-app-owned-acp-and-all-chat-state.md) | Accepted | App-owned ACP v1 sessions and Qiongli-owned All Chat State supersede the external-Host-only default |
 
 | `ARC-218` | [ADR 0218](0218-cli-first-local-host-collaboration.md) | Accepted | CLI-first delivery and same-device Host collaboration supersede the App ACP default; retained GUI source and historical evidence remain |
+| `CLI-410` | [ADR 0219](0219-cli-github-release-distribution.md) | Accepted | Standalone CLI Alpha GitHub assets are independent of App/Community Alpha promotion; managed-product trust remains unchanged |
 
 ## Decision lifecycle
 

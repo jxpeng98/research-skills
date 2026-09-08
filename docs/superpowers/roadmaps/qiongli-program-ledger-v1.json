@@ -312,7 +312,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-08",
-      "blocker": "Approved research state and same-Codex revision-2 continuation are verified. Next is actual same-device second-Host continuation; Claude Code auth and bounded read-only packet are prepared, disclosure decision pending. Rich graph semantics/visualization are not first-stage gates under the September 8 decision."
+      "blocker": "Claude Code read-only handoff is explicitly authorized and MCP connects, but model execution fails because its OAuth session expired and refresh failed. Zero tool calls; project/config unchanged. Refresh Claude authentication and retry the same packet. Rich graph semantics/visualization are not first-stage gates."
     },
     {
       "id": "CLI-406",

@@ -2479,3 +2479,33 @@ artifact digest, record an independent continuation note and compare file snapsh
 First-stage acceptance remains separate from this roadmap correction; Windows stays
 partially complete/paused. Lightweight ledger/index and whitespace checks pass;
 unchanged runtime and package suites are reused.
+
+
+## CLI-405 authorized Claude handoff blocked by expired authentication
+
+Base `2d749890`; branch `codex/claude-readonly-handoff`. The maintainer explicitly
+authorized execution of the prepared Claude Code/Anthropic read-only handoff.
+The canonical artifact hash and exact invocation were rechecked before execution.
+Claude started with restricted mode, strict MCP configuration, no built-in tools,
+only the two permitted reads, no session persistence and no permission bypass.
+
+Actual stdout reports `qiongli_test` connected, but the model request failed:
+`Failed to authenticate: OAuth session expired and could not be refreshed`. The
+process exited 1; its final event has `is_error=true` despite subtype `success`.
+There were zero tool calls and no model continuation. Local auth status still
+reports loggedIn=true/oauth_token, so that preflight is not proof of a usable
+session. Relevant credential override environment variables were absent (only
+presence was checked; no secret was printed or copied). No alternative provider,
+credential or permission mode was attempted.
+
+Project/config file-set and SHA-256 snapshots were unchanged. Private authorization,
+events, stderr, process result and verified failure receipt are under the existing
+`target/cli405-claude-handoff-b8ee7f6f/` native-package directory. This is observed
+MCP connectivity plus an authentication failure, not successful two-Host handoff.
+It contributes a concrete failed-auth observation without accepting the whole H03
+account/quota/denied-tool matrix. `claude auth login --help` confirms the normal
+subscription login route. Next: the maintainer refreshes Claude authentication,
+then retry this already-authorized exact read-only packet and verify actual tool
+results and unchanged files. No renewed data-disclosure permission is required
+while its scope remains unchanged. No runtime source fix or unrelated suite rerun
+was warranted. First-stage acceptance and the paused Windows scope are unchanged.

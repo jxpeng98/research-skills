@@ -2373,6 +2373,10 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     #[test]
+    #[allow(
+        clippy::disallowed_methods,
+        reason = "this test launches a copied OS sleep executable to verify live-process detection"
+    )]
     fn process_inspection_detects_a_live_application_and_allows_it_after_exit() {
         let root = test_root("live-process-inspection");
         let application = root.join("Qiongli 测试.app");

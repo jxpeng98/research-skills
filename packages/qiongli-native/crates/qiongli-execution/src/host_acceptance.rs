@@ -765,6 +765,24 @@ mod tests {
     }
 
     #[test]
+    fn receipt_rejects_success_claims_without_observed_tools() {
+        let fixture = fixture();
+        let mut claimed_success = receipt(&fixture);
+        claimed_success.validate_against(&fixture).unwrap();
+        // A successful Host exit or tool-shaped response text is not a tool observation.
+        claimed_success.observed_tool_ids.clear();
+        assert_eq!(
+            claimed_success.validate_against(&fixture),
+            Err(HostAcceptanceError::InvalidReceipt)
+        );
+        let bytes = serde_json_canonicalizer::to_vec(&claimed_success).unwrap();
+        assert_eq!(
+            HostAcceptanceReceiptV1::from_canonical_json(&bytes),
+            Err(HostAcceptanceError::InvalidReceipt)
+        );
+    }
+
+    #[test]
     fn receipt_rejects_direct_execution_and_unknown_fields() {
         let fixture = fixture();
         let mut invalid_receipt = receipt(&fixture);

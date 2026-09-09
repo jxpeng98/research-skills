@@ -4717,7 +4717,7 @@ fn native_activation_public_entry_refuses_source_authority_without_writes() {
     assert_ne!(output.status.code(), Some(2));
     let reason = String::from_utf8_lossy(&output.stderr);
     assert!(
-        reason.contains(if cfg!(target_os = "macos") {
+        reason.contains(if cfg!(any(target_os = "macos", target_os = "linux")) {
             "native-release-authority-unavailable"
         } else {
             "native-update-target-unsupported"

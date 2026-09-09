@@ -82,7 +82,8 @@ def main() -> None:
     bash = 'bash'
     if os.name == 'nt':
         git_bin = Path(shutil.which('git')).parent
-        candidates = [git_bin / 'bash.exe', git_bin.parent / 'bin/bash.exe']
+        candidates = [git_bin / 'bash.exe', git_bin.parent / 'bin/bash.exe',
+                      git_bin.parent.parent / 'bin/bash.exe']
         bash = next((str(path) for path in candidates if path.is_file()), None)
         if bash is None:
             raise ValueError('Git for Windows Bash is required; WSL Bash is not supported')

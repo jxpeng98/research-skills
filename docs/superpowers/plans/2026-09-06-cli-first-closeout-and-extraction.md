@@ -3,6 +3,18 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Next increment: three-platform registry installation — September 9
+
+The maintainer has resumed Windows/Linux CLI package work and requested npm
+`next` plus PyPI Alpha/Beta versions; Cargo is deferred (ADR 0220).
+Use `2.0.0-alpha.7` / `2.0.0a7` for the next candidate, retaining alpha.6.
+Fix OS/CPU binary selection and Windows wrapper/venv paths; build and install
+on macOS ARM64, Windows x64 and Linux x64; assemble one npm package and three
+wheels, then repeat installation on each native runner. Reuse the existing
+publisher workflow filenames and npm/pypi environments. Publish only exact-source
+CI-qualified assets and verify public registry installation afterward.
+This resumes CLI package checks, not historical App/managed-install acceptance.
+
 ## Current release increment — September 9
 
 The maintainer corrected the publication target to a standalone CLI GitHub

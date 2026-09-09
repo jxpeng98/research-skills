@@ -13,6 +13,11 @@ import sys
 import tarfile
 import tomllib
 
+try:
+    from .native_registry_packages import npm_command
+except ImportError:
+    from native_registry_packages import npm_command
+
 
 def run(argv, *, root, env, input=None, check=True):
     return subprocess.run([str(arg) for arg in argv], cwd=root, env=env, input=input,
@@ -20,11 +25,12 @@ def run(argv, *, root, env, input=None, check=True):
 
 
 def check_cli(executable, *, version, root, env):
-    assert run([executable, '--version'], root=root, env=env).stdout.strip() == f'qiongli {version}'
-    assert 'qiongli project' in run([executable, '--help'], root=root, env=env).stdout
-    content = run([executable, 'content', 'list'], root=root, env=env)
+    command = executable if isinstance(executable, list) else [executable]
+    assert run(command + ['--version'], root=root, env=env).stdout.strip() == f'qiongli {version}'
+    assert 'qiongli project' in run(command + ['--help'], root=root, env=env).stdout
+    content = run(command + ['content', 'list'], root=root, env=env)
     assert json.loads(content.stdout)
-    invalid = run([executable, 'not-a-command'], root=root, env=env, check=False)
+    invalid = run(command + ['not-a-command'], root=root, env=env, check=False)
     assert invalid.returncode != 0 and not invalid.stdout and 'error:' in invalid.stderr
     tools = {}
     for profile, expected_count in [('lite', 14), ('full', 32)]:
@@ -34,7 +40,7 @@ def check_cli(executable, *, version, root, env):
             {'jsonrpc': '2.0', 'id': 3, 'method': 'tools/call', 'params': {
                 'name': 'qiongli_config_status', 'arguments': {}}},
         ]
-        output = run([executable, 'mcp', 'serve', '--profile', profile, '--transport', 'stdio'],
+        output = run(command + ['mcp', 'serve', '--profile', profile, '--transport', 'stdio'],
                      root=root, env=env, input=''.join(json.dumps(r) + '\n' for r in requests))
         assert not output.stderr, output.stderr
         messages = {m['id']: m for m in map(json.loads, output.stdout.splitlines())}
@@ -93,11 +99,14 @@ def main():
     parser.add_argument('--cargo-archives', action='store_true', help='build only from the checked .crate archives with local dependency patches')
     parser.add_argument('--cargo-target-dir', type=Path, help='optional Cargo build cache to reuse')
     parser.add_argument('--cargo-installed', type=Path, help='optional independently installed Cargo executable')
+    parser.add_argument('--version', help='verify the expected native version')
     args = parser.parse_args()
     package_root = args.packages.resolve()
     root = args.out_dir.resolve()
     root.mkdir(parents=True, exist_ok=False)
     receipt = json.loads((package_root / 'registry-packages.json').read_text())
+    if args.version:
+        assert receipt['version'] == args.version
     paths = {}
     for artifact in receipt['artifacts']:
         path = package_root / artifact['file']
@@ -110,20 +119,29 @@ def main():
     home.mkdir(mode=0o700)
     env.update(HOME=str(home), USERPROFILE=str(home), QIONGLI_CONFIG_HOME=str(home / 'config'),
                PIP_DISABLE_PIP_VERSION_CHECK='1', MISE_SKIP_RESHIM='1')
+    if os.name == 'nt':
+        env.update(APPDATA=str(home / 'AppData/Roaming'), LOCALAPPDATA=str(home / 'AppData/Local'))
     node = Path(subprocess.check_output(['node', '-p', 'process.execPath'], text=True).strip())
     env['PATH'] = str(node.parent) + os.pathsep + env['PATH']
     for key in ('CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'PYTHONPATH', 'PYTHONHOME'):
         env.pop(key, None)
     python_root = root / 'python'
     run([sys.executable, '-m', 'venv', python_root], root=root, env=env)
-    run([python_root / 'bin/python', '-m', 'pip', 'install', '--no-index', '--no-deps', paths['.whl']], root=root, env=env)
+    python_bin = python_root / ('Scripts' if os.name == 'nt' else 'bin')
+    suffix = '.exe' if os.name == 'nt' else ''
+    run([python_bin / ('python' + suffix), '-m', 'pip', 'install', '--no-index', '--no-deps', paths['.whl']], root=root, env=env)
     npm_root = root / 'npm'
-    run(['npm', 'install', '--global', '--prefix', npm_root, '--cache', root / 'npm-cache',
-         '--ignore-scripts', '--no-audit', '--no-fund', '--offline', paths['.tgz']], root=root, env=env)
+    run(npm_command('install', '--global', '--prefix', npm_root, '--cache', root / 'npm-cache',
+         '--ignore-scripts', '--no-audit', '--no-fund', '--offline', paths['.tgz']), root=root, env=env)
     checks = {}
-    for name, executable in [('npm', npm_root / 'bin/qiongli'), ('pypi', python_root / 'bin/qiongli')]:
+    npm_executable = [node, npm_root / 'node_modules/qiongli/bin/qiongli.mjs'] if os.name == 'nt' else npm_root / 'bin/qiongli'
+    for name, executable in [('npm', npm_executable), ('pypi', python_bin / ('qiongli' + suffix))]:
         checks[name] = check_cli(executable, version=receipt['version'], root=root, env=env)
-        assert run([executable.with_name('ql'), '--version'], root=root, env=env).stdout == f"qiongli {receipt['version']}\n"
+        if name == 'npm' and os.name == 'nt':
+            for alias in ('qiongli', 'ql'):
+                assert (npm_root / (alias + '.cmd')).is_file()
+        else:
+            assert run([executable.with_name('ql' + suffix), '--version'], root=root, env=env).stdout == f"qiongli {receipt['version']}\n"
     if args.cargo_archives:
         executable = install_cargo_archives(package_root, receipt, root, env,
                                             args.cargo_target_dir or root / 'cargo-target')

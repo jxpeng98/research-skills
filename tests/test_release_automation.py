@@ -816,7 +816,9 @@ class ReleaseAutomationTests(unittest.TestCase):
                 self.assertIn("ref: ${{ github.ref }}", content)
                 self.assertIn("RELEASE_TAG: ${{ github.ref_name }}", content)
                 self.assertIn('bash scripts/verify_release_tag_version.sh --root "$RUNNER_TEMP/qiongli-dist" --tag "${RELEASE_TAG}"', content)
-                self.assertIn("if: ${{ !startsWith(github.ref_name, 'v2.') }}", content)
+                self.assertIn("if: ${{ github.event_name == 'push' && !startsWith(github.ref_name, 'v2.') }}", content)
+                self.assertIn("types: [published]", content)
+                self.assertIn("--require-ci", content)
                 self.assertIn('release_line="$(python3 scripts/release_version.py "${RELEASE_TAG}" --print-field release_line)"', content)
                 self.assertIn('if [[ "$release_line" == "native-2x" ]]; then', content)
 
@@ -852,7 +854,7 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn("--root <dir>", content)
         self.assertIn('ROOT_DIR="$(cd "$2" && pwd)"', content)
         self.assertIn('cd "$ROOT_DIR"', content)
-        self.assertIn('python3 scripts/release_version.py "$TAG" --print-field "$field"', content)
+        self.assertIn('"${QIONGLI_PYTHON:-python3}" scripts/release_version.py "$TAG" --print-field "$field"', content)
         self.assertIn('expected_package_version="$(release_field package_version)"', content)
         self.assertIn('expected_release_line="$(release_field release_line)"', content)
         self.assertIn('expected_channel="$(release_field channel)"', content)
@@ -888,7 +890,7 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('plugins/qiongli-next/skills/qiongli-workflow/skills/registry.yaml', content)
         self.assertIn('plugins/qiongli/.claude-plugin/plugin.json', content)
         self.assertNotIn('plugins/qiongli/gemini-extension.json', content)
-        self.assertIn('python3 scripts/audit_distribution_payloads.py --root "$ROOT_DIR"', content)
+        self.assertIn('"${QIONGLI_PYTHON:-python3}" scripts/audit_distribution_payloads.py --root "$ROOT_DIR"', content)
 
     def test_native_preflight_uses_external_plan_and_native_cargo_gates(self) -> None:
         content = RELEASE_PREFLIGHT.read_text(encoding="utf-8")

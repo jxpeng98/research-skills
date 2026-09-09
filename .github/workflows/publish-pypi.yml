@@ -1,6 +1,8 @@
 name: Publish to PyPI
 
 on:
+  release:
+    types: [published]
   push:
     tags:
       - "v*"
@@ -11,7 +13,7 @@ permissions:
 
 jobs:
   build-and-publish:
-    if: ${{ !startsWith(github.ref_name, 'v2.') }}
+    if: ${{ github.event_name == 'push' && !startsWith(github.ref_name, 'v2.') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -63,3 +65,49 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ${{ runner.temp }}/qiongli-dist/dist
+
+  publish-native:
+    if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v2.') }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    environment: pypi
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - name: Download verified three-platform release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/assets"
+          python tooling/scripts/native_release_assets.py verify --root "$RUNNER_TEMP/assets" --version "$RELEASE_TAG" --commit "$GITHUB_SHA" --require-ci
+      - name: Select platform wheels
+        run: |
+          python - <<'PYTHON'
+          import os, pathlib, shutil
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          out = root / 'pypi'
+          out.mkdir()
+          for wheel in (root / 'assets').glob('*.whl'):
+              shutil.copyfile(wheel, out / wheel.name)
+          PYTHON
+          python -m pip install twine
+          python -m twine check "$RUNNER_TEMP/pypi/"*.whl
+      - name: Publish native wheels through existing trusted publisher
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ${{ runner.temp }}/pypi

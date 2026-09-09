@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage native Cargo sources and macOS ARM64 npm/PyPI packages; never publish."""
+"""Stage native CLI distribution packages; never publish."""
 from __future__ import annotations
 
 import argparse
@@ -8,6 +8,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -24,6 +25,18 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 NATIVE = ROOT / 'packages/qiongli-native'
+TARGETS = {
+    'aarch64-apple-darwin': ('darwin', 'arm64', 'qiongli'),
+    'x86_64-unknown-linux-gnu': ('linux', 'x64', 'qiongli'),
+    'x86_64-pc-windows-msvc': ('win32', 'x64', 'qiongli.exe'),
+}
+
+
+def npm_command(*args):
+    if os.name == 'nt':
+        npm = Path(shutil.which('npm.cmd')).parent / 'node_modules/npm/bin/npm-cli.js'
+        return [shutil.which('node'), str(npm), *map(str, args)]
+    return ['npm', *map(str, args)]
 
 
 def regular_bytes(path: Path) -> bytes:
@@ -83,11 +96,13 @@ def stage_cargo(out: Path, version: str) -> Path:
 NPM_LAUNCHER = '''#!/usr/bin/env node
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-if (process.platform !== 'darwin' || process.arch !== 'arm64') {
-  console.error('This Qiongli package supports macOS Apple Silicon only.');
+const targets = { 'darwin-arm64': 'aarch64-apple-darwin/qiongli', 'linux-x64': 'x86_64-unknown-linux-gnu/qiongli', 'win32-x64': 'x86_64-pc-windows-msvc/qiongli.exe' };
+const target = targets[`${process.platform}-${process.arch}`];
+if (!target) {
+  console.error(`Unsupported Qiongli platform: ${process.platform}/${process.arch}`);
   process.exit(1);
 }
-const child = spawn(fileURLToPath(new URL('../native/qiongli', import.meta.url)), process.argv.slice(2), { stdio: 'inherit' });
+const child = spawn(fileURLToPath(new URL(`../native/${target}`, import.meta.url)), process.argv.slice(2), { stdio: 'inherit' });
 for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, () => child.kill(signal));
 child.on('error', () => { console.error('Unable to start the packaged Qiongli executable.'); process.exitCode = 1; });
 child.on('close', (code, signal) => {
@@ -101,16 +116,20 @@ import sys
 
 
 def main():
-    executable = Path(__file__).parent / "bin" / "qiongli"
+    executable = Path(__file__).parent / "bin" / ("qiongli.exe" if os.name == "nt" else "qiongli")
+    if os.name == "nt":
+        import subprocess
+        raise SystemExit(subprocess.call([str(executable), *sys.argv[1:]]))
     os.execv(str(executable), [str(executable), *sys.argv[1:]])
 '''
 
 
 def wheel(out: Path, version: str, platform_tag: str, binary: bytes, readme: str) -> Path:
     dist = f'qiongli-{version}.dist-info'
+    binary_name = 'qiongli.exe' if platform_tag == 'win_amd64' else 'qiongli'
     files = {
         'qiongli_native/__init__.py': PYTHON_LAUNCHER.encode(),
-        'qiongli_native/bin/qiongli': binary,
+        f'qiongli_native/bin/{binary_name}': binary,
         f'{dist}/METADATA': (f'Metadata-Version: 2.4\nName: qiongli\nVersion: {version}\nSummary: Native academic research CLI\nRequires-Python: >=3.9\nLicense-Expression: MIT\nLicense-File: LICENSE\nDescription-Content-Type: text/markdown\n\n{readme}').encode(),
         f'{dist}/WHEEL': f'Wheel-Version: 1.0\nGenerator: qiongli-native-registry-packages\nRoot-Is-Purelib: false\nTag: py3-none-{platform_tag}\n'.encode(),
         f'{dist}/entry_points.txt': b'[console_scripts]\nqiongli = qiongli_native:main\nql = qiongli_native:main\n',
@@ -128,63 +147,117 @@ def wheel(out: Path, version: str, platform_tag: str, binary: bytes, readme: str
         for name, data in sorted(files.items()):
             info = zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0))
             info.create_system = 3
-            mode = 0o755 if name == 'qiongli_native/bin/qiongli' else 0o644
+            mode = 0o755 if name == f'qiongli_native/bin/{binary_name}' else 0o644
             info.external_attr = (stat.S_IFREG | mode) << 16
             info.compress_type = zipfile.ZIP_DEFLATED
             archive.writestr(info, data)
     return path
 
 
-def binary_packages(out: Path, binary_path: Path, version: str) -> list[Path]:
+def validate_binary(binary: bytes, target: str) -> None:
+    if target == 'aarch64-apple-darwin':
+        valid = binary[:8] == bytes.fromhex('cffaedfe0c000001')
+    elif target == 'x86_64-unknown-linux-gnu':
+        valid = binary[:6] == b'\x7fELF\x02\x01' and binary[18:20] == b'\x3e\x00'
+    elif target == 'x86_64-pc-windows-msvc':
+        offset = int.from_bytes(binary[60:64], 'little')
+        valid = binary[:2] == b'MZ' and offset >= 64 and binary[offset:offset+6] == b'PE\x00\x00\x64\x86'
+    else:
+        valid = False
+    if not valid:
+        raise ValueError(f'executable format/architecture does not match {target}')
+
+
+def package_readme(version: str) -> str:
+    return f"""# Qiongli {version}
+
+Native CLI for macOS Apple Silicon, Windows x64, and Linux x64 (glibc 2.35+).
+Includes embedded research content and Lite/Full MCP. No App is required.
+The Host owns models and credentials. No executable download runs at install time.
+Run `qiongli --help` and `qiongli doctor` after installation.
+Research writes retain preview, explicit approval and revision checks.
+Managed Plugin/Skill activation, automatic migration and signed self-update still
+require their existing product authority; a registry install does not grant it.
+Use your package manager to pin, upgrade or remove this prerelease; preserve data
+and backups. Full 1.x replacement and other CPU architectures are not claimed.
+"""
+
+
+def npm_package(out: Path, binaries: dict[str, Path], version: str) -> Path:
+    identity = parse_release_version(version)
+    npm = out / 'npm'
+    (npm / 'bin').mkdir(parents=True)
+    (npm / 'bin/qiongli.mjs').write_text(NPM_LAUNCHER)
+    (npm / 'bin/qiongli.mjs').chmod(0o755)
+    for target, binary in binaries.items():
+        data = regular_bytes(binary)
+        validate_binary(data, target)
+        dest = npm / 'native' / target / TARGETS[target][2]
+        dest.parent.mkdir(parents=True)
+        dest.write_bytes(data)
+        dest.chmod(0o755)
+    (npm / 'README.md').write_text(package_readme(version))
+    shutil.copyfile(ROOT / 'LICENSE', npm / 'LICENSE')
+    # ponytail: bundle three binaries in one package; split only if download size becomes a problem.
+    (npm / 'package.json').write_text(json.dumps({
+        'name': 'qiongli', 'version': identity.npm_version, 'description': 'Native academic research CLI',
+        'type': 'module', 'license': 'MIT',
+        'repository': {'type': 'git', 'url': 'git+https://github.com/jxpeng98/qiongli.git'},
+        'bin': {'qiongli': 'bin/qiongli.mjs', 'ql': 'bin/qiongli.mjs'},
+        'os': sorted({TARGETS[t][0] for t in binaries}), 'cpu': sorted({TARGETS[t][1] for t in binaries}),
+        'engines': {'node': '>=18'}, 'files': ['bin/', 'native/', 'README.md', 'LICENSE'],
+        'publishConfig': {'access': 'public', 'tag': identity.npm_dist_tag},
+    }, indent=2) + '\n')
+    packed = json.loads(subprocess.check_output(npm_command(
+        'pack', '--json', '--ignore-scripts', '--pack-destination', out,
+        '--cache', out / 'npm-cache'), cwd=npm, text=True))
+    tarball = out / packed[0]['filename']
+    with tarfile.open(tarball) as archive:
+        for target, binary in binaries.items():
+            if archive.extractfile(f'package/native/{target}/{TARGETS[target][2]}').read() != regular_bytes(binary):
+                raise ValueError('npm archive changed the candidate executable')
+    return tarball
+
+
+def binary_packages(out: Path, binary_path: Path, version: str,
+                    target: str = 'aarch64-apple-darwin') -> list[Path]:
     binary = regular_bytes(binary_path)
-    # Reject mislabeled native bytes, then derive the deployment floor from Mach-O.
-    if binary[:8] != bytes.fromhex('cffaedfe0c000001'):
-        raise ValueError('binary must be a thin macOS ARM64 Mach-O executable')
-    load_commands = subprocess.check_output(['otool', '-l', str(binary_path)], text=True)
-    versions = re.findall(r'^\s*minos (\d+)\.(\d+)(?:\.\d+)?$', load_commands, re.M)
-    if len(versions) != 1:
-        raise ValueError('cannot determine one macOS deployment target')
-    major, minor = versions[0]
+    validate_binary(binary, target)
     reported = subprocess.check_output([str(binary_path), '--version'], text=True).strip()
     if reported != f'qiongli {version}':
         raise ValueError('executable version does not match the native workspace')
+    if target == 'aarch64-apple-darwin':
+        commands = subprocess.check_output(['otool', '-l', str(binary_path)], text=True)
+        versions = re.findall(r'^\s*minos (\d+)\.(\d+)(?:\.\d+)?$', commands, re.M)
+        if len(versions) != 1:
+            raise ValueError('cannot determine one macOS deployment target')
+        major, minor = versions[0]
+        platform_tag = f'macosx_{major}_{minor}_arm64'
+    else:
+        platform_tag = 'win_amd64' if target.endswith('msvc') else 'linux_x86_64'
     identity = parse_release_version(version)
-    readme = f'''# Qiongli {version}\n\nNative CLI prerelease for macOS {major}.{minor}+ on Apple Silicon.\nIncludes the existing native CLI and embedded content, MCP and Zotero resources.\nModels and credentials remain in your chosen Host. No download runs at install time.\n\nRun `qiongli --help` and `qiongli doctor` after installation.\nProject writes retain preview, explicit approval and revision checks.\nRegistry installation does not grant managed-update or signed Plugin activation\nauthority. Those commands still require their existing signed release inputs.\n\nThis package does not claim full 1.19 replacement, Windows support, or an App.\nUse your package manager to pin, upgrade or remove this prerelease.\n'''
-    npm = out / 'npm'
-    (npm / 'bin').mkdir(parents=True)
-    (npm / 'native').mkdir()
-    (npm / 'bin/qiongli.mjs').write_text(NPM_LAUNCHER)
-    (npm / 'bin/qiongli.mjs').chmod(0o755)
-    (npm / 'native/qiongli').write_bytes(binary)
-    (npm / 'native/qiongli').chmod(0o755)
-    (npm / 'README.md').write_text(readme)
-    shutil.copyfile(ROOT / 'LICENSE', npm / 'LICENSE')
-    (npm / 'package.json').write_text(json.dumps({
-        'name': 'qiongli', 'version': version, 'description': 'Native academic research CLI',
-        'type': 'module', 'license': 'MIT', 'repository': 'github:jxpeng98/qiongli',
-        'bin': {'qiongli': 'bin/qiongli.mjs', 'ql': 'bin/qiongli.mjs'},
-        'os': ['darwin'], 'cpu': ['arm64'], 'engines': {'node': '>=18'},
-        'files': ['bin/', 'native/', 'README.md', 'LICENSE'],
-        'publishConfig': {'access': 'public', 'tag': identity.channel},
-    }, indent=2) + '\n')
-    # npm owns tarball conventions and executable entrypoint handling.
-    packed = json.loads(subprocess.check_output([
-        'npm', 'pack', '--json', '--ignore-scripts', '--pack-destination', str(out),
-        '--cache', str(out / 'npm-cache'),
-    ], cwd=npm, text=True))
-    tarball = out / packed[0]['filename']
-    with tarfile.open(tarball) as archive:
-        if archive.extractfile('package/native/qiongli').read() != binary:
-            raise ValueError('npm archive changed the candidate executable')
-    whl = wheel(out, identity.package_version, f'macosx_{major}_{minor}_arm64', binary, readme)
-    return [tarball, whl]
+    whl = wheel(out, identity.package_version, platform_tag, binary, package_readme(version))
+    if platform_tag == 'linux_x86_64':
+        repaired = out / 'manylinux'
+        subprocess.run(['auditwheel', 'repair', '--only-plat', '--plat', 'manylinux_2_35_x86_64',
+                        '--wheel-dir', str(repaired), str(whl)], check=True)
+        files = list(repaired.glob('*.whl'))
+        if len(files) != 1:
+            raise ValueError('expected exactly one audited Linux wheel')
+        with zipfile.ZipFile(files[0]) as archive:
+            if archive.read('qiongli_native/bin/qiongli') != binary:
+                raise ValueError('Linux executable needs shared library bundling in standalone/npm too')
+        whl.unlink()
+        whl = Path(shutil.move(files[0], out / files[0].name))
+    return [npm_package(out, {target: binary_path}, version), whl]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out-dir', required=True, type=Path)
     parser.add_argument('--package-cargo', action='store_true', help='also create Cargo archives without claiming verification')
-    parser.add_argument('--binary', type=Path, help='optional macOS ARM64 candidate; omit for Cargo staging only')
+    parser.add_argument('--binary', type=Path, help='optional target-native candidate')
+    parser.add_argument('--target', choices=TARGETS, default='aarch64-apple-darwin')
     args = parser.parse_args()
     out = args.out_dir.expanduser().absolute()
     if out.exists() or out.is_symlink() or ROOT == out.resolve() or ROOT in out.resolve().parents:
@@ -194,7 +267,7 @@ def main() -> None:
         parser.error('expected native 2.x version')
     out.mkdir(parents=True)
     workspace = stage_cargo(out, version)
-    artifacts = binary_packages(out, args.binary.absolute(), version) if args.binary else []
+    artifacts = binary_packages(out, args.binary.absolute(), version, args.target) if args.binary else []
     if args.package_cargo:
         subprocess.run(['cargo', 'package', '--manifest-path', str(workspace / 'Cargo.toml'),
                         '--workspace', '--no-default-features', '--no-verify', '--offline',
@@ -204,7 +277,7 @@ def main() -> None:
             shutil.copyfile(archive, target)
             artifacts.append(target)
     receipt = {'version': version, 'status': 'staged-unpublished', 'cargo_source': str(workspace),
-               'binary_target': 'aarch64-apple-darwin' if args.binary else None,
+               'binary_target': args.target if args.binary else None,
                'binary_sha256': hashlib.sha256(regular_bytes(args.binary)).hexdigest() if args.binary else None,
                'cargo_verification': 'not-run',
                'artifacts': [{'file': p.name, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest(), 'bytes': p.stat().st_size} for p in artifacts]}

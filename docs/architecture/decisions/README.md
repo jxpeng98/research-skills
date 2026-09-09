@@ -35,6 +35,8 @@ decision must be recorded as a new superseding ADR.
 | `ARC-218` | [ADR 0218](0218-cli-first-local-host-collaboration.md) | Accepted | CLI-first delivery and same-device Host collaboration supersede the App ACP default; retained GUI source and historical evidence remain |
 | `CLI-410` | [ADR 0219](0219-cli-github-release-distribution.md) | Accepted | Standalone CLI Alpha GitHub assets are independent of App/Community Alpha promotion; managed-product trust remains unchanged |
 
+| `CLI-410` | [ADR 0220](0220-three-platform-cli-registry-distribution.md) | Accepted | Three-platform native CLI installation with npm next and PEP 440 PyPI versions; Cargo deferred |
+
 ## Decision lifecycle
 
 1. New architectural choices receive the next ADR number and a task ID.

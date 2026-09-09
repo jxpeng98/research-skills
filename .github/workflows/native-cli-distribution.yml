@@ -1,0 +1,125 @@
+name: Native CLI distribution
+
+on:
+  push:
+    branches: ['2.x', 'codex/cli-distribution-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-distribution-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and install (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-14, target: aarch64-apple-darwin}
+          - {os: ubuntu-22.04, target: x86_64-unknown-linux-gnu}
+          - {os: windows-2022, target: x86_64-pc-windows-msvc}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: dtolnay/rust-toolchain@1.97.0
+        with:
+          components: rustfmt, clippy
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/qiongli-native/target
+          key: cli-${{ matrix.target }}-1.97-${{ hashFiles('packages/qiongli-native/Cargo.lock') }}-${{ github.sha }}
+          restore-keys: cli-${{ matrix.target }}-1.97-${{ hashFiles('packages/qiongli-native/Cargo.lock') }}-
+      - name: Install Linux wheel audit tools
+        if: runner.os == 'Linux'
+        run: python -m pip install auditwheel patchelf
+      - name: Build, package and install on target
+        shell: bash
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('packages/qiongli-native/Cargo.toml','rb'))['workspace']['package']['version'])")
+          python tooling/scripts/native_cli_release.py --version "$version" --target '${{ matrix.target }}' --out-dir "$RUNNER_TEMP/cli-candidate"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ runner.temp }}/cli-candidate/assets
+          if-no-files-found: error
+
+  assemble:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/targets
+      - name: Assemble one npm package and all wheels
+        shell: bash
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('packages/qiongli-native/Cargo.toml','rb'))['workspace']['package']['version'])")
+          python tooling/scripts/native_release_assets.py assemble --root "$RUNNER_TEMP/targets" --out "$RUNNER_TEMP/combined/assets" --version "$version" --commit "$GITHUB_SHA"
+          python tooling/scripts/native_release_assets.py verify --root "$RUNNER_TEMP/combined/assets" --version "$version" --commit "$GITHUB_SHA"
+          python -m pip install twine
+          python -m twine check "$RUNNER_TEMP/combined/assets/"*.whl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-release-assets
+          path: ${{ runner.temp }}/combined/assets
+          if-no-files-found: error
+
+  install:
+    name: Verify combined package (${{ matrix.os }})
+    needs: assemble
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-22.04, windows-2022]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-release-assets
+          path: ${{ runner.temp }}/assets
+      - name: Install combined npm package and platform wheel
+        shell: bash
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('packages/qiongli-native/Cargo.toml','rb'))['workspace']['package']['version'])")
+          python tooling/scripts/native_release_assets.py install-input --root "$RUNNER_TEMP/assets" --version "$version" --commit "$GITHUB_SHA"
+          python scripts/native_registry_install_check.py --packages "$RUNNER_TEMP/assets" --out-dir "$RUNNER_TEMP/install-check" --version "$version"
+      - name: Check Windows npm command shims
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "$env:RUNNER_TEMP/install-check/npm/qiongli.cmd" --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "$env:RUNNER_TEMP/install-check/npm/ql.cmd" --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: install-${{ matrix.os }}
+          path: ${{ runner.temp }}/install-check/install-check.json

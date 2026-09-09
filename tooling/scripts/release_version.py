@@ -24,7 +24,7 @@ _VERSION_PATTERN = re.compile(
     rf"(?P<major>{_NUMBER})\.(?P<minor>{_NUMBER})\.(?P<patch>{_NUMBER})"
     rf"(?:"
     rf"-(?P<semver_channel>alpha|beta)\.(?P<semver_number>{_PRERELEASE_NUMBER})"
-    rf"|(?P<compact_channel>a|b)(?P<compact_number>{_PRERELEASE_NUMBER})"
+    rf"|(?P<compact_channel>[aAbB])(?P<compact_number>{_PRERELEASE_NUMBER})"
     rf")?$"
 )
 _CHANNELS = ("alpha", "beta", "stable")
@@ -41,6 +41,7 @@ class ReleaseIdentity:
     package_version: str
     skill_version: str
     npm_version: str
+    npm_dist_tag: str
     source_branch: str
     version_source: str
     is_prerelease: bool
@@ -88,7 +89,7 @@ def parse_release_version(
         channel: ReleaseChannel = semantic_channel  # type: ignore[assignment]
         number = int(match.group("semver_number"))
     elif compact_channel is not None:
-        channel = "alpha" if compact_channel == "a" else "beta"
+        channel = "alpha" if compact_channel.lower() == "a" else "beta"
         number = int(match.group("compact_number"))
     else:
         channel = "stable"
@@ -122,6 +123,7 @@ def parse_release_version(
         package_version=package_version,
         skill_version=version,
         npm_version=version,
+        npm_dist_tag="next" if channel != "stable" else "latest",
         source_branch="2.x"
         if release_line == "native-2x"
         else ("dev" if channel == "beta" else "primary"),

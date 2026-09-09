@@ -17,6 +17,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleaseVersionContractTests(unittest.TestCase):
+    def test_registry_prerelease_channels_are_standard_and_share_one_version(self):
+        for raw, semver, pypi in [('2.0.0A1', '2.0.0-alpha.1', '2.0.0a1'),
+                                  ('2.0.0B1', '2.0.0-beta.1', '2.0.0b1'),
+                                  ('v2.0.0-alpha.7', '2.0.0-alpha.7', '2.0.0a7')]:
+            identity = parse_release_version(raw)
+            self.assertEqual(identity.npm_version, semver)
+            self.assertEqual(identity.package_version, pypi)
+            self.assertEqual(identity.repo_tag, 'v' + semver)
+            self.assertEqual(identity.npm_dist_tag, 'next')
+        self.assertEqual(parse_release_version('2.0.0').npm_dist_tag, 'latest')
+
     def test_supported_versions_have_complete_canonical_identities(self) -> None:
         cases = (
             (

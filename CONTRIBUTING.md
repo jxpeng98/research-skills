@@ -86,8 +86,12 @@ CI supplies evidence. A named human release decision authorizes publication, and
 a separate decision authorizes announcement.
 
 The CLI lane builds no App and requires no Community Alpha signing key. It
-qualifies macOS ARM64 GitHub assets and local npm/wheel installs; publication uses
+qualifies current-target CLI assets and npm/wheel installs; three-platform CI
+uses `native-cli-distribution.yml`. Publication uses
 an immutable tag and `gh release`, followed by public download verification.
-Registry uploads and managed-product activation remain separate. See
+The existing npm/PyPI workflows publish native assets on a published GitHub
+Release after exact-source CI checks; npm prereleases use `next`, and PyPI uses
+PEP 440 aN/bN versions. Cargo is deferred. Managed-product activation remains
+separate. See [ADR 0220](docs/architecture/decisions/0220-three-platform-cli-registry-distribution.md) and
 [ADR 0219](docs/architecture/decisions/0219-cli-github-release-distribution.md).
 Omit `--cli-github` only for the retained legacy/desktop diagnostic lanes.

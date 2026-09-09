@@ -48,7 +48,7 @@ cd "$ROOT_DIR"
 
 release_field() {
   local field="$1"
-  python3 scripts/release_version.py "$TAG" --print-field "$field"
+  "${QIONGLI_PYTHON:-python3}" scripts/release_version.py "$TAG" --print-field "$field"
 }
 
 expected_repo_tag="$(release_field repo_version)"
@@ -63,7 +63,7 @@ fi
 
 if [[ "$expected_release_line" == "native-2x" ]]; then
   expected_native_version="${expected_repo_tag#v}"
-  python3 - "$expected_native_version" "$expected_channel" <<'PY'
+  "${QIONGLI_PYTHON:-python3}" - "$expected_native_version" "$expected_channel" <<'PY'
 import json
 from pathlib import Path
 import re
@@ -252,7 +252,7 @@ fi
 expected_skill_version="${expected_repo_tag#v}"
 expected_npm_version="$expected_skill_version"
 
-actual_package_version="$(python3 - <<'PY'
+actual_package_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -264,7 +264,7 @@ print(match.group(1))
 PY
 )"
 
-actual_init_version="$(python3 - <<'PY'
+actual_init_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -276,7 +276,7 @@ print(match.group(1))
 PY
 )"
 
-actual_skill_version="$(python3 - <<'PY'
+actual_skill_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -292,7 +292,7 @@ PY
 
 actual_workflow_version="$(tr -d '\r\n' < content/workflow/VERSION)"
 actual_python_payload_workflow_version="$(tr -d '\r\n' < packages/python-qiongli/src/qiongli/payload/qiongli-workflow/VERSION)"
-actual_python_payload_workflow_registry_version="$(python3 - <<'PY'
+actual_python_payload_workflow_registry_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -308,7 +308,7 @@ if len(versions) != 1:
 print(versions.pop())
 PY
 )"
-actual_python_payload_registry_version="$(python3 - <<'PY'
+actual_python_payload_registry_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -325,7 +325,7 @@ print(versions.pop())
 PY
 )"
 actual_bundled_workflow_version="$(tr -d '\r\n' < packages/npm-qiongli/payload/qiongli-workflow/VERSION)"
-actual_bundled_workflow_registry_version="$(python3 - <<'PY'
+actual_bundled_workflow_registry_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -342,7 +342,7 @@ print(versions.pop())
 PY
 )"
 actual_plugin_workflow_version="$(tr -d '\r\n' < plugins/qiongli/skills/qiongli-workflow/VERSION)"
-actual_plugin_workflow_registry_version="$(python3 - <<'PY'
+actual_plugin_workflow_registry_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -359,7 +359,7 @@ print(versions.pop())
 PY
 )"
 actual_next_plugin_workflow_version="$(tr -d '\r\n' < plugins/qiongli-next/skills/qiongli-workflow/VERSION)"
-actual_next_plugin_workflow_registry_version="$(python3 - <<'PY'
+actual_next_plugin_workflow_registry_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -376,7 +376,7 @@ print(versions.pop())
 PY
 )"
 
-actual_npm_version="$(python3 - <<'PY'
+actual_npm_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import json
 from pathlib import Path
 
@@ -387,7 +387,7 @@ print(json.loads(path.read_text(encoding="utf-8"))["version"])
 PY
 )"
 
-actual_npm_lock_version="$(python3 - <<'PY'
+actual_npm_lock_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import json
 from pathlib import Path
 
@@ -402,7 +402,7 @@ except KeyError as exc:
 PY
 )"
 
-actual_bundled_init_version="$(python3 - <<'PY'
+actual_bundled_init_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -417,7 +417,7 @@ print(match.group(1))
 PY
 )"
 
-actual_bundled_registry_version="$(python3 - <<'PY'
+actual_bundled_registry_version="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import re
 from pathlib import Path
 
@@ -434,7 +434,7 @@ print(versions.pop())
 PY
 )"
 
-actual_plugin_versions="$(python3 - <<'PY'
+actual_plugin_versions="$("${QIONGLI_PYTHON:-python3}" - <<'PY'
 import json
 from pathlib import Path
 
@@ -564,6 +564,6 @@ while IFS= read -r plugin_line; do
   done
 done <<< "$actual_plugin_versions"
 
-python3 scripts/audit_distribution_payloads.py --root "$ROOT_DIR"
+"${QIONGLI_PYTHON:-python3}" scripts/audit_distribution_payloads.py --root "$ROOT_DIR"
 
 echo "[verify-release-tag] tag and repo versions are aligned: $TAG"

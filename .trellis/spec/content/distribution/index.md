@@ -30,3 +30,15 @@ boundaries.
 - `python3 scripts/validate_capability_contract.py`
 - Run the closest materialization or payload audit only when its inputs changed.
 - Confirm generated outputs were not edited directly.
+
+## CLI registry packages
+
+`release_version.py` owns SemVer/Git/npm and PEP 440 version projections;
+prerelease npm publication uses `next`. `native_registry_packages.py` owns fixed
+OS/CPU dispatch, executable bytes and platform wheels. The three-platform
+`native-cli-distribution.yml` builds and installs on each target, assembles one
+npm package and three wheels, and tests the combined package on each target.
+`native_release_assets.py` refuses mixed source/version, missing targets and
+changed bytes. Registry jobs reuse existing workflow filenames/environments and
+require a successful exact-source distribution run. No App or Cargo upload is
+part of this lane; product approval/CAS and managed trust remain unchanged.

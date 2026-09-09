@@ -280,8 +280,8 @@
       ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-07",
-      "blocker": "Windows partially complete; maintainer paused this lane after cross-build and Parallels x64-emulation runtime checks. Trusted installation rejected the source build; signed Windows candidate, installation/update and native x64 qualification remain open. Other CLI work may continue."
+      "updated_at": "2026-09-09",
+      "blocker": "Maintainer resumed Windows CLI package build/install qualification alongside Linux/macOS in ADR 0220. Native Windows x64 CI and registry installs are pending. Historical Parallels/App/managed trusted installation remains partially complete and is not accepted by this change."
     },
     {
       "id": "CLI-404",
@@ -376,12 +376,13 @@
       "evidence": [
         "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md",
         "tooling/release/v2.0.0-alpha.6.md",
-        "tooling/release/acceptance/v2.0.0-alpha.6-github.json"
+        "tooling/release/acceptance/v2.0.0-alpha.6-github.json",
+        "tooling/release/v2.0.0-alpha.7.md"
       ],
       "commit": "",
       "run": "",
       "updated_at": "2026-09-09",
-      "blocker": "CLI GitHub alpha.6 published from 28d750e49f8423f321d0ea2f61d9582f5eac3ea8 under ADR 0219. All five public asset hashes and downloaded macOS ARM64 executable/npm/wheel CLI/MCP installs passed; CLI regression 876 passed, 4 ignored. Registry uploads, managed Plugin/migration/update qualification and full baseline acceptance remain open. App/Community Alpha signing is not a direct CLI release prerequisite. Windows remains partially complete/paused."
+      "blocker": "Alpha.6 remains published. Maintainer requested alpha.7 SemVer/PEP 440, three-platform native CLI install CI, npm next and PyPI through existing publisher identities (ADR 0220); Cargo deferred. Cross-platform packaging and publisher wiring implemented; actual hosted matrix and public registry installation remain to be verified. Managed lifecycle and full baseline acceptance remain open."
     },
     {
       "id": "CLI-411",

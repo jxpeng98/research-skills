@@ -52,7 +52,7 @@ Description:
   all readiness modes are local and never publish.
 
 Options:
-  --cli-github        Qualify standalone CLI GitHub Release assets (macOS ARM64).
+  --cli-github        Qualify standalone CLI GitHub Release assets on the current target.
                       No App or Community Alpha signing/promotion dependency.
   --version <v>        Required version input (for example 0.2.0, v0.2.0-beta.1,
                        or v2.0.0-alpha.3).

@@ -3,19 +3,27 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Next increment: three-platform registry installation — September 9
+## Completed: three-platform registry installation — September 9
 
-The maintainer has resumed Windows/Linux CLI package work and requested npm
-`next` plus PyPI Alpha/Beta versions; Cargo is deferred (ADR 0220).
-Use `2.0.0-alpha.7` / `2.0.0a7` for the next candidate, retaining alpha.6.
-Fix OS/CPU binary selection and Windows wrapper/venv paths; build and install
-on macOS ARM64, Windows x64 and Linux x64; assemble one npm package and three
-wheels, then repeat installation on each native runner. Reuse the existing
-publisher workflow filenames and npm/pypi environments. Publish only exact-source
-CI-qualified assets and verify public registry installation afterward.
-This resumes CLI package checks, not historical App/managed-install acceptance.
+Alpha.7 was published from `de982b42479cddc54413317c2180ad201738413b`:
+GitHub `v2.0.0-alpha.7`, npm `next` at `2.0.0-alpha.7`, PyPI `2.0.0a7`.
+Native build and final npm/wheel install CI passed on macOS ARM64, Windows x64
+and Linux x64 (glibc 2.35+), including Windows command shims. The existing
+npm/PyPI trusted publishers succeeded. All public downloads match the tested
+bytes; downloaded registry packages also passed macOS CLI/MCP installation.
+Canonical evidence: `tooling/release/acceptance/v2.0.0-alpha.7-distribution.json`.
+The local release tooling suite passed 63 tests; workflow actionlint passed.
+Hosted checks exposed and fixed Git Bash selection, a duplicate Cargo flag,
+a stale Linux authority assertion, a Linux-only test Clippy allowance and an
+invalid job-level runner expression. Production authorization checks remain.
+Cargo stays deferred. Alpha.6 and npm latest 1.17.0 are unchanged.
 
-## Current release increment — September 9
+Next increment: reconcile the remaining declared CLI baseline and managed
+lifecycle evidence before broader baseline acceptance or collaboration claims.
+This completes the requested distribution work; it does not accept historical
+Parallels/App/managed-install or the full CLI-403/CLI-410 program scope.
+
+## Previous release increment: alpha.6 — September 9
 
 The maintainer corrected the publication target to a standalone CLI GitHub
 Release, following the 1.x distribution model (ADR 0219). Qualify a clean local

@@ -1,0 +1,198 @@
+{
+  "status": "passed",
+  "version": "2.0.0-alpha.7",
+  "source_commit": "de982b42479cddc54413317c2180ad201738413b",
+  "release": "https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.7",
+  "published_at": "2026-09-09T00:59:25Z",
+  "qualification": {
+    "conclusion": "success",
+    "databaseId": 34296331772,
+    "headSha": "de982b42479cddc54413317c2180ad201738413b",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34296331772"
+  },
+  "target_cli_mcp_tests_passed": {
+    "aarch64-apple-darwin": 41,
+    "x86_64-unknown-linux-gnu": 41,
+    "x86_64-pc-windows-msvc": 40
+  },
+  "linux_headless_clippy": "passed",
+  "release_tooling_tests_passed": 63,
+  "workflow_actionlint": "passed",
+  "combined_package_install_checks": {
+    "macos-14": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-alpha.7.tgz",
+          "sha256": "a2276acf2e932455b5a143f00984fe9c3793d2df3ea640c459a97d419eea2d4a",
+          "bytes": 19347881
+        },
+        {
+          "file": "qiongli-2.0.0a7-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "a8f1c39aed8943040dd87813e790e65f3b444bee7a2474c1e57835f17a599f6a",
+          "bytes": 6500267
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-alpha.7",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          }
+        },
+        "pypi": {
+          "version": "2.0.0-alpha.7",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          }
+        }
+      }
+    },
+    "ubuntu-22.04": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-alpha.7.tgz",
+          "sha256": "a2276acf2e932455b5a143f00984fe9c3793d2df3ea640c459a97d419eea2d4a",
+          "bytes": 19347881
+        },
+        {
+          "file": "qiongli-2.0.0a7-py3-none-manylinux_2_35_x86_64.whl",
+          "sha256": "ac477d8843e921c9c339b883f4bd3fb753c204293ca6ee86dd4014b08a709bc0",
+          "bytes": 7127362
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-alpha.7",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          }
+        },
+        "pypi": {
+          "version": "2.0.0-alpha.7",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          }
+        }
+      }
+    },
+    "windows-2022": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-alpha.7.tgz",
+          "sha256": "a2276acf2e932455b5a143f00984fe9c3793d2df3ea640c459a97d419eea2d4a",
+          "bytes": 19347881
+        },
+        {
+          "file": "qiongli-2.0.0a7-py3-none-win_amd64.whl",
+          "sha256": "21136c556c7a1fbaedb90392f4c74e755d1269f787dce82cfb8cb6e2f5ff5516",
+          "bytes": 5321810
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-alpha.7",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          }
+        },
+        "pypi": {
+          "version": "2.0.0-alpha.7",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          }
+        }
+      }
+    }
+  },
+  "github_downloaded_sha256": {
+    "qiongli-2.0.0-alpha.7.tgz": "a2276acf2e932455b5a143f00984fe9c3793d2df3ea640c459a97d419eea2d4a",
+    "qiongli-2.0.0-alpha.7-aarch64-apple-darwin.tar.gz": "79c2f4181544a8fcdf3a2ec56a601e82b0b3fbaf2d4bff47fb6cd15d818f5dd6",
+    "qiongli-2.0.0a7-py3-none-manylinux_2_35_x86_64.whl": "ac477d8843e921c9c339b883f4bd3fb753c204293ca6ee86dd4014b08a709bc0",
+    "qiongli-2.0.0-alpha.7-x86_64-pc-windows-msvc.zip": "210a84009edd193c49bbfceeefe2c158b6ac1de5a7e121fa64dcbd08c414cb1c",
+    "qiongli-2.0.0-alpha.7-x86_64-unknown-linux-gnu.tar.gz": "531814fc04d9d091f31952ed062fc161cada363e8fad908cd5a15f08a7fbf9d9",
+    "release-manifest.json": "e712af0a05e9bcee53b42c9c8c1e5ba646e79a51341fc2f9e16a3fb331ccd304",
+    "qiongli-2.0.0a7-py3-none-macosx_11_0_arm64.whl": "a8f1c39aed8943040dd87813e790e65f3b444bee7a2474c1e57835f17a599f6a",
+    "SHA256SUMS": "9374031d20e99eac2977bd51283b45f4409905304f3949590cf64e156be0fd1a",
+    "qiongli-2.0.0a7-py3-none-win_amd64.whl": "21136c556c7a1fbaedb90392f4c74e755d1269f787dce82cfb8cb6e2f5ff5516"
+  },
+  "npm_publication": {
+    "conclusion": "success",
+    "databaseId": 34297313382,
+    "headSha": "de982b42479cddc54413317c2180ad201738413b",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34297313382"
+  },
+  "pypi_publication": {
+    "conclusion": "success",
+    "databaseId": 34297313374,
+    "headSha": "de982b42479cddc54413317c2180ad201738413b",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34297313374"
+  },
+  "registry_download_verification": {
+    "npm_version": "2.0.0-alpha.7",
+    "npm_dist_tags": {
+      "latest": "1.17.0",
+      "next": "2.0.0-alpha.7"
+    },
+    "pypi_version": "2.0.0a7",
+    "downloaded_sha256": {
+      "qiongli-2.0.0a7-py3-none-macosx_11_0_arm64.whl": "a8f1c39aed8943040dd87813e790e65f3b444bee7a2474c1e57835f17a599f6a",
+      "qiongli-2.0.0a7-py3-none-manylinux_2_35_x86_64.whl": "ac477d8843e921c9c339b883f4bd3fb753c204293ca6ee86dd4014b08a709bc0",
+      "qiongli-2.0.0a7-py3-none-win_amd64.whl": "21136c556c7a1fbaedb90392f4c74e755d1269f787dce82cfb8cb6e2f5ff5516",
+      "qiongli-2.0.0-alpha.7.tgz": "a2276acf2e932455b5a143f00984fe9c3793d2df3ea640c459a97d419eea2d4a"
+    }
+  },
+  "registry_downloaded_macos_install": {
+    "status": "passed",
+    "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+    "packages": [
+      {
+        "file": "qiongli-2.0.0a7-py3-none-macosx_11_0_arm64.whl",
+        "sha256": "a8f1c39aed8943040dd87813e790e65f3b444bee7a2474c1e57835f17a599f6a"
+      },
+      {
+        "file": "qiongli-2.0.0-alpha.7.tgz",
+        "sha256": "a2276acf2e932455b5a143f00984fe9c3793d2df3ea640c459a97d419eea2d4a"
+      }
+    ],
+    "checks": {
+      "npm": {
+        "version": "2.0.0-alpha.7",
+        "invalid_command_rejected": true,
+        "mcp_tools": {
+          "lite": 14,
+          "full": 32
+        }
+      },
+      "pypi": {
+        "version": "2.0.0-alpha.7",
+        "invalid_command_rejected": true,
+        "mcp_tools": {
+          "lite": 14,
+          "full": 32
+        }
+      }
+    }
+  },
+  "scope": "Native CLI macOS ARM64, Windows x64 and Linux x64 glibc 2.35+; CI installs final package bytes on each OS, public downloads match those bytes, and downloaded registry packages are reinstalled on macOS. No App, Cargo publication, other CPU architectures, managed-product lifecycle acceptance or complete research baseline acceptance."
+}

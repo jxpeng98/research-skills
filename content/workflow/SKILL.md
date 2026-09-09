@@ -1,6 +1,6 @@
 ---
 name: qiongli
-description: "Qiongli version: v2.0.0-alpha.6. Qiongli version: v2.0.0-alpha.2. Cross-platform academic research workflow for Codex, Claude / Claude Code, and CLI. Use for academic research lifecycle work: paper planning, literature review, paper reading, gap finding, study design, manuscript writing, statistics, analysis code, reproducibility, proofread, rebuttal, submission, presentation, and stage-aware grill / critique. Route natural academic requests even when the user does not explicitly invoke $qiongli or a slash command."
+description: "Qiongli version: v2.0.0-alpha.7. Qiongli version: v2.0.0-alpha.2. Cross-platform academic research workflow for Codex, Claude / Claude Code, and CLI. Use for academic research lifecycle work: paper planning, literature review, paper reading, gap finding, study design, manuscript writing, statistics, analysis code, reproducibility, proofread, rebuttal, submission, presentation, and stage-aware grill / critique. Route natural academic requests even when the user does not explicitly invoke $qiongli or a slash command."
 ---
 
 # Qiongli Academic Workflow
@@ -9,7 +9,7 @@ Run a model-agnostic paper workflow using shared Task IDs and artifact contracts
 
 This is a **self-contained skill package**. All assets needed for execution — workflows, skill specifications, output templates, standards, and agent roles — are bundled in subdirectories of this package. No external repo access is needed.
 
-Installed Qiongli workflow version: `v2.0.0-alpha.6`
+Installed Qiongli workflow version: `v2.0.0-alpha.7`
 
 ## Quick Start
 

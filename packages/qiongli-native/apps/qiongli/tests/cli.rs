@@ -4728,3 +4728,180 @@ fn native_activation_public_entry_refuses_source_authority_without_writes() {
     assert!(!fixture.config_root.exists());
     assert!(!fixture.home.join(".qiongli").exists());
 }
+
+#[test]
+fn local_plugin_source_cli_lifecycle_requires_approval_and_preserves_drift() {
+    for host in ["codex", "claude"] {
+        let fixture = Fixture::new(&format!("plugin-source-{host}"));
+        #[cfg(windows)]
+        let destination_parent = {
+            let parent = fixture.root.join("export");
+            qiongli_windows_security::create_owner_only_directory(&parent).unwrap();
+            parent
+        };
+        #[cfg(not(windows))]
+        let destination_parent = fixture.root.clone();
+        let run = |args: &[&str]| {
+            fixture_command(Path::new(env!("CARGO_BIN_EXE_qiongli")), &fixture)
+                .env("PATH", "")
+                .env_remove("CODEX_HOME")
+                .env_remove("CLAUDE_CONFIG_DIR")
+                .args(args)
+                .output()
+                .unwrap()
+        };
+        let destination = destination_parent.join("qiongli-next");
+        let path = destination.to_str().unwrap();
+        let status = || {
+            run(&[
+                "app",
+                "plugin-source-status",
+                "--target",
+                host,
+                "--destination",
+                path,
+            ])
+        };
+        assert_eq!(parse_json(&status())["state"], "missing");
+        let preview = |action: &str| {
+            let out = run(&[
+                "app",
+                "plan",
+                action,
+                "--target",
+                host,
+                "--destination",
+                path,
+            ]);
+            assert!(out.status.success(), "{}", public_output(&out));
+            out
+        };
+        let install = preview("plugin-source-install");
+        assert!(!destination.exists());
+        assert!(!fixture.config_root.exists());
+        let plan_path = fixture.root.join("source-plan.json");
+        fs::write(&plan_path, &install.stdout).unwrap();
+        let value = parse_json(&install);
+        assert_eq!(value["schema_version"], 2);
+        let digest = value["plan_digest_sha256"].as_str().unwrap();
+        let base = [
+            "app",
+            "apply",
+            "--plan",
+            plan_path.to_str().unwrap(),
+            "--expected-plan-digest",
+            digest,
+        ];
+        let refused = run(&base);
+        assert!(!refused.status.success());
+        assert!(!destination.exists());
+        let mut approved = base.to_vec();
+        approved.push("--approve-filesystem-write");
+        let installed = run(&approved);
+        assert!(installed.status.success(), "{}", public_output(&installed));
+        assert_eq!(
+            parse_json(&installed)["result"],
+            "source-ready-host-action-required"
+        );
+        assert_eq!(parse_json(&status())["state"], "source-current");
+        assert_eq!(parse_json(&status())["host_state"], "not-verified");
+        assert!(!fixture.home.join(".codex").exists());
+        assert!(!fixture.home.join(".claude").exists());
+        assert!(!run(&approved).status.success());
+        let binary = destination.join(if cfg!(windows) {
+            "bin/qiongli.exe"
+        } else {
+            "bin/qiongli"
+        });
+        let version = fixture_command(&binary, &fixture)
+            .arg("--version")
+            .output()
+            .unwrap();
+        assert!(version.status.success(), "{}", public_output(&version));
+        assert_eq!(
+            version.stdout,
+            format!("qiongli {}\n", env!("CARGO_PKG_VERSION")).as_bytes()
+        );
+        // Update keeps exactly matching sources idempotent, without touching Host state.
+        let update = preview("plugin-source-update");
+        fs::write(&plan_path, &update.stdout).unwrap();
+        let update_value = parse_json(&update);
+        approved[5] = update_value["plan_digest_sha256"].as_str().unwrap();
+        assert!(run(&approved).status.success());
+        let removal = preview("plugin-source-remove");
+        fs::write(&plan_path, &removal.stdout).unwrap();
+        let removal_value = parse_json(&removal);
+        approved[5] = removal_value["plan_digest_sha256"].as_str().unwrap();
+        let canary = destination.join("user-note.txt");
+        fs::write(&canary, b"preserve my note").unwrap();
+        assert!(!status().status.success());
+        assert!(!run(&approved).status.success());
+        assert_eq!(fs::read(&canary).unwrap(), b"preserve my note");
+        fs::remove_file(&canary).unwrap();
+        let removed = run(&approved);
+        assert!(removed.status.success(), "{}", public_output(&removed));
+        assert!(!destination.exists());
+        assert_eq!(parse_json(&status())["state"], "missing");
+        for args in [
+            vec![
+                "app",
+                "plan",
+                "plugin-source-install",
+                "--target",
+                host,
+                "--destination",
+                "relative/qiongli-next",
+            ],
+            vec![
+                "app",
+                "plan",
+                "plugin-source-install",
+                "--target",
+                host,
+                "--target",
+                host,
+            ],
+        ] {
+            assert!(!run(&args).status.success());
+        }
+        let reserved = fixture.home.join(".codex/cache/qiongli-next");
+        assert!(
+            !run(&[
+                "app",
+                "plan",
+                "plugin-source-install",
+                "--target",
+                host,
+                "--destination",
+                reserved.to_str().unwrap()
+            ])
+            .status
+            .success()
+        );
+        #[cfg(unix)]
+        {
+            let alias = fixture.root.join("linked-parent");
+            std::os::unix::fs::symlink(&fixture.root, &alias).unwrap();
+            let linked = alias.join("qiongli-next");
+            assert!(
+                !run(&[
+                    "app",
+                    "plan",
+                    "plugin-source-install",
+                    "--target",
+                    host,
+                    "--destination",
+                    linked.to_str().unwrap()
+                ])
+                .status
+                .success()
+            );
+            assert!(
+                fs::symlink_metadata(&alias)
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+            );
+        }
+    }
+}

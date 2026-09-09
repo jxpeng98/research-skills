@@ -30,6 +30,7 @@ const PLUGIN_NAME: &str = "qiongli-next";
 const PLUGIN_MANIFEST_PATH: &str = ".claude-plugin/plugin.json";
 const OTHER_PLUGIN_MANIFEST_PATH: &str = ".codex-plugin/plugin.json";
 const MCP_MANIFEST_PATH: &str = ".mcp.json";
+const LOCAL_MARKETPLACE_PATH: &str = ".claude-plugin/marketplace.json";
 const SKILL_ROOT: &str = "skills/qiongli-workflow";
 const SKILL_MANIFEST_PATH: &str = "skills/qiongli-workflow/SKILL.md";
 const CLAUDE_HOST_ADAPTER_GUIDANCE: &str = r#"
@@ -125,6 +126,7 @@ impl Debug for ClaudePluginBundleTarget {
 pub enum ClaudePluginBundleKind {
     NativeMarketplaceLite,
     NativeHostFullMcp,
+    UserLocalHostFullMcp,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -299,11 +301,13 @@ pub fn compose_claude_plugin_bundle_with_overrides(
 ) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
     compose_claude_plugin_bundle_internal(
         pack,
-        grant,
+        Some(grant),
+        &grant.grant().binary_sha256,
         source_binary.as_ref(),
         target,
         overrides,
         false,
+        None,
     )
 }
 
@@ -316,29 +320,95 @@ pub fn replace_claude_plugin_bundle_with_overrides(
 ) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
     compose_claude_plugin_bundle_internal(
         pack,
-        grant,
+        Some(grant),
+        &grant.grant().binary_sha256,
         source_binary.as_ref(),
         target,
         overrides,
         true,
+        None,
     )
 }
 
+/// Composes an explicitly approved local source, without release installation authority.
+/// The caller must bind the binary digest and destination in its approval plan.
+pub fn compose_local_claude_plugin_source(
+    pack: &LoadedResourcePack<'_>,
+    source_binary: &Path,
+    expected_binary_sha256: &str,
+    target: &ClaudePluginBundleTarget,
+    overrides: Option<&WorkflowOverrides>,
+    expected_receipt_sha256: Option<&str>,
+) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
+    compose_claude_plugin_bundle_internal(
+        pack,
+        None,
+        expected_binary_sha256,
+        source_binary,
+        target,
+        overrides,
+        expected_receipt_sha256.is_some(),
+        expected_receipt_sha256,
+    )
+}
+
+pub fn verify_local_claude_plugin_source(
+    target: &ClaudePluginBundleTarget,
+) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
+    revalidate_target(target)?;
+    let verified = verify_bundle_tree(target.path())?;
+    if verified.receipt.package_kind != ClaudePluginBundleKind::UserLocalHostFullMcp {
+        return Err(ClaudePluginBundleError::GrantMismatch);
+    }
+    Ok(verified)
+}
+
+pub fn remove_local_claude_plugin_source(
+    target: &ClaudePluginBundleTarget,
+    expected_receipt_sha256: &str,
+) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
+    remove_bundle(
+        target,
+        ClaudePluginBundleKind::UserLocalHostFullMcp,
+        Some(expected_receipt_sha256),
+    )
+}
+
+#[allow(clippy::too_many_arguments)] // Preserve the shared signed/local transaction owner.
 fn compose_claude_plugin_bundle_internal(
     pack: &LoadedResourcePack<'_>,
-    grant: &VerifiedLaunchGrant,
+    grant: Option<&VerifiedLaunchGrant>,
+    expected_binary_sha256: &str,
     source_binary: &Path,
     target: &ClaudePluginBundleTarget,
     overrides: Option<&WorkflowOverrides>,
     replace: bool,
+    expected_receipt_sha256: Option<&str>,
 ) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
-    validate_composition_identity(pack, grant)?;
+    let (artifact, kind, signed_digest) = if let Some(grant) = grant {
+        validate_composition_identity(pack, grant)?;
+        (
+            grant.grant().artifact.clone(),
+            ClaudePluginBundleKind::NativeHostFullMcp,
+            grant.signed_payload_sha256(),
+        )
+    } else {
+        let artifact = crate::identity::local_plugin_identity(&pack.manifest().content_version)
+            .map_err(|_| ClaudePluginBundleError::ResourcePackMismatch)?;
+        (artifact, ClaudePluginBundleKind::UserLocalHostFullMcp, "")
+    };
     if target.path().file_name().and_then(|leaf| leaf.to_str()) != Some(PLUGIN_NAME) {
         return Err(ClaudePluginBundleError::InvalidTarget);
     }
     revalidate_target(target)?;
     let existing = if replace {
-        Some(verify_bundle_tree(target.path())?)
+        let existing = verify_bundle_tree(target.path())?;
+        if existing.receipt.package_kind != kind
+            || expected_receipt_sha256.is_some_and(|digest| digest != existing.receipt_sha256())
+        {
+            return Err(ClaudePluginBundleError::GrantMismatch);
+        }
+        Some(existing)
     } else {
         if path_metadata(target.path())?.is_some() {
             return Err(ClaudePluginBundleError::TargetExists);
@@ -348,12 +418,12 @@ fn compose_claude_plugin_bundle_internal(
 
     let binary_bytes = read_source_binary(source_binary)?;
     let binary_sha256 = sha256_hex(&binary_bytes);
-    if binary_sha256 != grant.grant().binary_sha256 {
+    if binary_sha256 != expected_binary_sha256 {
         return Err(ClaudePluginBundleError::BinaryDigestMismatch);
     }
 
-    let binary_path = binary_relative_path(grant.grant().artifact.os).to_string();
-    let mut files = project_bundle_files(pack, &grant.grant().artifact, &binary_path, overrides)?;
+    let binary_path = binary_relative_path(artifact.os).to_string();
+    let mut files = project_bundle_files(pack, &artifact, &binary_path, overrides)?;
     if files
         .insert(
             binary_path.clone(),
@@ -367,6 +437,15 @@ fn compose_claude_plugin_bundle_internal(
         return Err(ClaudePluginBundleError::ProjectionInvalid);
     }
 
+    if kind == ClaudePluginBundleKind::UserLocalHostFullMcp {
+        files.insert(
+            LOCAL_MARKETPLACE_PATH.to_string(),
+            BundleFile {
+                mode: LogicalMode::Regular,
+                bytes: local_marketplace_manifest(&artifact)?,
+            },
+        );
+    }
     let entries = bundle_entries(&files)?;
     let manifest_sha256 = entry_digest(&entries, PLUGIN_MANIFEST_PATH)?;
     let mcp_sha256 = entry_digest(&entries, MCP_MANIFEST_PATH)?;
@@ -374,9 +453,9 @@ fn compose_claude_plugin_bundle_internal(
     let manifest = pack.manifest();
     let receipt = ClaudePluginBundleReceiptV1 {
         schema_version: CLAUDE_PLUGIN_BUNDLE_RECEIPT_SCHEMA_VERSION,
-        package_kind: ClaudePluginBundleKind::NativeHostFullMcp,
-        artifact: grant.grant().artifact.clone(),
-        signed_grant_payload_sha256: grant.signed_payload_sha256().to_string(),
+        package_kind: kind,
+        artifact,
+        signed_grant_payload_sha256: signed_digest.to_string(),
         pack_id: manifest.pack_id.clone(),
         content_version: manifest.content_version.clone(),
         source_commit: manifest.source_commit.clone(),
@@ -468,7 +547,11 @@ pub fn verify_claude_plugin_bundle(
     target: &ClaudePluginBundleTarget,
 ) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
     revalidate_target(target)?;
-    verify_bundle_tree(target.path())
+    let verified = verify_bundle_tree(target.path())?;
+    if verified.receipt.package_kind != ClaudePluginBundleKind::NativeHostFullMcp {
+        return Err(ClaudePluginBundleError::GrantMismatch);
+    }
+    Ok(verified)
 }
 
 /// Removes only an exact receipt-verified Claude plugin bundle.
@@ -478,8 +561,21 @@ pub fn verify_claude_plugin_bundle(
 pub fn remove_claude_plugin_bundle(
     target: &ClaudePluginBundleTarget,
 ) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
+    remove_bundle(target, ClaudePluginBundleKind::NativeHostFullMcp, None)
+}
+
+fn remove_bundle(
+    target: &ClaudePluginBundleTarget,
+    kind: ClaudePluginBundleKind,
+    expected_receipt_sha256: Option<&str>,
+) -> Result<VerifiedClaudePluginBundle, ClaudePluginBundleError> {
     revalidate_target(target)?;
     let initial = verify_bundle_tree(target.path())?;
+    if initial.receipt.package_kind != kind
+        || expected_receipt_sha256.is_some_and(|digest| digest != initial.receipt_sha256())
+    {
+        return Err(ClaudePluginBundleError::GrantMismatch);
+    }
     let _lock = TargetLock::acquire(target)?;
     revalidate_target(target)?;
     let current = verify_bundle_tree(target.path())?;
@@ -564,6 +660,17 @@ fn validate_composition_identity(
         .resolve_profile("full")
         .map_err(|_| ClaudePluginBundleError::ResourcePackMismatch)?;
     Ok(())
+}
+
+fn local_marketplace_manifest(
+    artifact: &ArtifactIdentityV1,
+) -> Result<Vec<u8>, ClaudePluginBundleError> {
+    let marketplace = serde_json::json!({
+        "name": "qiongli-cli-local",
+        "owner": {"name": "Qiongli"},
+        "plugins": [{"name": PLUGIN_NAME, "version": artifact.version, "source": Value::String("./".to_string())}]
+    });
+    canonical_json(&marketplace)
 }
 
 fn project_bundle_files(
@@ -840,7 +947,11 @@ fn validate_receipt_shape(
         receipt.schema_version,
         2 | CLAUDE_PLUGIN_BUNDLE_RECEIPT_SCHEMA_VERSION
     ) || (receipt.schema_version == 2 && receipt.workflow_variant_sha256.is_some())
-        || receipt.package_kind != ClaudePluginBundleKind::NativeHostFullMcp
+        || !matches!(
+            receipt.package_kind,
+            ClaudePluginBundleKind::NativeHostFullMcp
+                | ClaudePluginBundleKind::UserLocalHostFullMcp
+        )
         || receipt.artifact.product != ProductId::Qiongli
         || receipt.artifact.profile != CapabilityProfile::Lite
         || receipt.artifact.installer_kind != InstallerKind::PluginBundle
@@ -852,7 +963,12 @@ fn validate_receipt_shape(
         || receipt.pack_id.is_empty()
         || Version::parse(&receipt.content_version).is_err()
         || !is_lower_hex(&receipt.source_commit, 40)
-        || !is_lower_hex(&receipt.signed_grant_payload_sha256, 64)
+        || match receipt.package_kind {
+            ClaudePluginBundleKind::UserLocalHostFullMcp => {
+                !receipt.signed_grant_payload_sha256.is_empty()
+            }
+            _ => !is_lower_hex(&receipt.signed_grant_payload_sha256, 64),
+        }
         || !is_lower_hex(&receipt.resource_pack_sha256, 64)
         || !is_lower_hex(&receipt.resource_content_root_sha256, 64)
         || receipt
@@ -866,6 +982,23 @@ fn validate_receipt_shape(
         || receipt.entries.is_empty()
         || receipt.entries.len() > MAX_ENTRIES
     {
+        return Err(ClaudePluginBundleError::ReceiptInvalid);
+    }
+
+    let marketplace = receipt
+        .entries
+        .iter()
+        .find(|entry| entry.path == LOCAL_MARKETPLACE_PATH);
+    if receipt.package_kind == ClaudePluginBundleKind::UserLocalHostFullMcp {
+        let bytes = local_marketplace_manifest(&receipt.artifact)?;
+        if !marketplace.is_some_and(|entry| {
+            entry.sha256 == sha256_hex(&bytes)
+                && entry.size_bytes == bytes.len() as u64
+                && entry.mode == LogicalMode::Regular
+        }) {
+            return Err(ClaudePluginBundleError::ReceiptInvalid);
+        }
+    } else if marketplace.is_some() {
         return Err(ClaudePluginBundleError::ReceiptInvalid);
     }
 
@@ -1123,7 +1256,8 @@ fn validate_bundle_path(path: &str) -> Result<(), ClaudePluginBundleError> {
             return Err(ClaudePluginBundleError::ProjectionInvalid);
         }
     }
-    let allowed = path == PLUGIN_MANIFEST_PATH
+    let allowed = path == LOCAL_MARKETPLACE_PATH
+        || path == PLUGIN_MANIFEST_PATH
         || path == MCP_MANIFEST_PATH
         || path == "bin/qiongli"
         || path == "bin/qiongli.exe"

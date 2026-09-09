@@ -77,7 +77,57 @@ call succeeds. Configure literature providers through the visible
 `qiongli_config_status` / `qiongli_configure_provider` tools, then inspect
 `qiongli_literature_status`. Models and credentials remain owned by the Host.
 
-The next integration increment will make registry-installed CLI to Plugin
-registration a complete approved lifecycle. It must preserve preview, approval,
-CAS, ownership and exact removal; bypassing packaged-product checks is not an
-installation fix.
+## Export a local Plugin source (next release)
+
+The development CLI now supports a user-approved local Plugin source without a
+signed App package. This is not yet available in public Alpha.7. It bundles the
+running native executable, Full MCP and canonical workflow content, so the Plugin
+does not depend on npm's Node/PATH wrapper after export.
+
+Choose a secure directory outside Host configuration/cache and `.qiongli` paths.
+For Codex, create an export parent and inspect the plan:
+
+```sh
+mkdir -p "$HOME/qiongli-plugins/codex"
+qiongli app plan plugin-source-install --target codex \
+  --destination "$HOME/qiongli-plugins/codex/qiongli-next" > "$HOME/plugin-plan.json"
+```
+
+Review the JSON, including destination, binary hash, expected receipt and
+`plan_digest_sha256`, then apply that exact digest:
+
+```sh
+qiongli app apply --plan "$HOME/plugin-plan.json" \
+  --expected-plan-digest <plan_digest_sha256> --approve-filesystem-write
+qiongli app plugin-source-status --target codex \
+  --destination "$HOME/qiongli-plugins/codex/qiongli-next"
+```
+
+Use `--target claude` with a separate export parent for Claude Code. The destination
+must end in `qiongli-next`; its parent must already exist and reject writes by
+other users. These commands never write Host configuration or install into caches.
+A local source is user-approved content, not a signed publisher attestation.
+
+To update after upgrading your CLI, preview `plugin-source-update` with the same
+target/destination, review and apply its new digest. Only a fully matching receipt
+may be replaced. To remove an export, first unregister its Plugin through the Host,
+then preview/apply `plugin-source-remove`. Unknown files, changed content, symlinks
+and stale receipts refuse; there is no force-delete option.
+
+The exported marketplace is `qiongli-cli-local` and the selector is
+`qiongli-next@qiongli-cli-local`. Use the Host's official local marketplace and
+Plugin commands to register the export, avoiding duplicate enabled Qiongli Plugins.
+For Codex, the isolated compatibility check used:
+
+```sh
+codex plugin marketplace add "$HOME/qiongli-plugins/codex/qiongli-next"
+codex plugin add qiongli-next@qiongli-cli-local
+```
+
+For Claude Code, validate the export with `claude plugin validate <export-path>`
+before the Host registration increment. Its actual session activation is still
+unqualified.
+Source updates require a Host refresh/new session; deleting a source does not
+unregister its Host Plugin. `source-current` and `source-ready-host-action-required`
+only describe the exported files. Automatic Host registration and real tool
+visibility/read/handoff/approved-write checks are the next increment.

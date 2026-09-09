@@ -42,7 +42,7 @@ const USAGE: &str = "Qiongli native CLI\n\nUsage:\n  qiongli\n  qiongli --versio
 
 const INSPECTION_USAGE: &str = "\nInspection:\n  qiongli paths             Show exact resolved paths\n  qiongli paths --json      Show the versioned exact-path JSON snapshot\n  qiongli doctor            Run redacted native Product Doctor checks\n  qiongli doctor --paths exact\n                            Include the exact-path snapshot explicitly\n";
 
-const APP_USAGE: &str = "Qiongli App control contract\n\nUsage:\n  qiongli app snapshot\n  qiongli app read-project-artifact --project-id <prj_id> --expected-project-revision <revision> --expected-projection-id <grp_id> <--node-id <nod_id>|--edge-id <edg_id>>\n  qiongli app verify-integrations --target <codex|claude|all>\n  qiongli app verify-skills --preset <qiongli-managed|current-project>\n  qiongli app verify-skills --target-id <skills-target-sha256>\n  qiongli app plan cli-install\n  qiongli app plan cli-remove\n  qiongli app plan cli-path-configure\n  qiongli app plan skills-reconcile --preset <qiongli-managed|current-project> --profile <profile>\n  qiongli app plan skills-update --target-id <skills-target-sha256>\n  qiongli app plan skills-remove --target-id <skills-target-sha256>\n  qiongli app plan skills-detach --target-id <skills-target-sha256>\n  qiongli app plan integrations-install --target <codex|claude|all>\n  qiongli app plan integrations-reconcile --target <codex|claude|all>\n  qiongli app plan integrations-remove --target <codex|claude|all>\n  qiongli app apply --plan <absolute-plan.json> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change --approve-host-trust]\n  qiongli app --help\n\nRead-only commands use the same native DesktopService and versioned App event contract as the GUI. Project artifact reads are revision-, projection-, and entity-bound and return only a bounded, path-redacted App event. CLI install, PATH configuration, remove or predecessor restoration, and integration repair are separate state-bound plans. Drifted Skills can be detached without changing their retained files. All mutations use a canonical, expiring, digest-bound plan and the same receipt-bound native transaction authority as the App.\n";
+const APP_USAGE: &str = "Qiongli App control contract\n\nUsage:\n  qiongli app snapshot\n  qiongli app plugin-source-status --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-install --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-update --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-remove --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app read-project-artifact --project-id <prj_id> --expected-project-revision <revision> --expected-projection-id <grp_id> <--node-id <nod_id>|--edge-id <edg_id>>\n  qiongli app verify-integrations --target <codex|claude|all>\n  qiongli app verify-skills --preset <qiongli-managed|current-project>\n  qiongli app verify-skills --target-id <skills-target-sha256>\n  qiongli app plan cli-install\n  qiongli app plan cli-remove\n  qiongli app plan cli-path-configure\n  qiongli app plan skills-reconcile --preset <qiongli-managed|current-project> --profile <profile>\n  qiongli app plan skills-update --target-id <skills-target-sha256>\n  qiongli app plan skills-remove --target-id <skills-target-sha256>\n  qiongli app plan skills-detach --target-id <skills-target-sha256>\n  qiongli app plan integrations-install --target <codex|claude|all>\n  qiongli app plan integrations-reconcile --target <codex|claude|all>\n  qiongli app plan integrations-remove --target <codex|claude|all>\n  qiongli app apply --plan <absolute-plan.json> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change --approve-host-trust]\n  qiongli app --help\n\nPlugin source operations export a user-approved local Plugin with a bundled binary; they do not register a Host or confer signed release authority. The destination parent must already exist and be secure.\n\nRead-only commands use the same native DesktopService and versioned App event contract as the GUI. Project artifact reads are revision-, projection-, and entity-bound and return only a bounded, path-redacted App event. CLI install, PATH configuration, remove or predecessor restoration, and integration repair are separate state-bound plans. Drifted Skills can be detached without changing their retained files. All mutations use a canonical, expiring, digest-bound plan and the same receipt-bound native transaction authority as the App.\n";
 
 const CONTENT_USAGE: &str = "Qiongli embedded content (read only)\n\nUsage:\n  qiongli content list\n  qiongli content --help\n\nManaged Skills mutations use `qiongli app plan skills-reconcile|skills-update|skills-remove|skills-detach` followed by `qiongli app apply`. The CLI supports the declared presets; a custom destination is not currently a CLI option. The `app` namespace uses the native service without opening a GUI. The retired `content materialize` syntax returns `managed-skills-plan-required` without writing.\n";
 
@@ -695,6 +695,15 @@ fn parse_app_args(args: &[OsString]) -> Result<Command, UsageError> {
                 .to_string();
             Ok(Command::AppVerifyManagedSkillsTarget { target_id })
         }
+        "plugin-source-status" => {
+            let (target, destination) = parse_plugin_source_target(&args[1..])?;
+            Ok(Command::AppManaged(
+                ManagedOperationCliCommand::PluginSourceStatus {
+                    target,
+                    destination,
+                },
+            ))
+        }
         "plan" => parse_app_plan_args(&args[1..]).map(Command::AppManaged),
         "apply" => parse_app_apply_args(&args[1..]).map(Command::AppManaged),
         "--help" | "snapshot" | "verify-integrations" | "verify-skills" => {
@@ -795,6 +804,19 @@ fn parse_app_plan_args(args: &[OsString]) -> Result<ManagedOperationCliCommand, 
         return Err(app_usage_error("an App plan operation is required"));
     };
     match operation {
+        "plugin-source-install" | "plugin-source-update" | "plugin-source-remove" => {
+            let (target, destination) = parse_plugin_source_target(&args[1..])?;
+            let action = match operation {
+                "plugin-source-install" => crate::plugin_source::PluginSourceAction::Install,
+                "plugin-source-update" => crate::plugin_source::PluginSourceAction::Update,
+                _ => crate::plugin_source::PluginSourceAction::Remove,
+            };
+            Ok(ManagedOperationCliCommand::PlanPluginSource {
+                action,
+                target,
+                destination,
+            })
+        }
         "cli-install" if args.len() == 1 => Ok(ManagedOperationCliCommand::PlanCliInstall),
         "cli-install" => Err(app_usage_error("unexpected App CLI install argument")),
         "cli-remove" if args.len() == 1 => Ok(ManagedOperationCliCommand::PlanCliRemove),
@@ -877,6 +899,48 @@ fn parse_app_plan_args(args: &[OsString]) -> Result<ManagedOperationCliCommand, 
         }
         _ => Err(app_usage_error("unknown App plan operation")),
     }
+}
+
+fn parse_plugin_source_target(
+    args: &[OsString],
+) -> Result<(ManagedIntegrationTargetV1, PathBuf), UsageError> {
+    let mut target = None;
+    let mut destination = None;
+    if args.len() != 4 {
+        return Err(app_usage_error(
+            "Plugin source requires --target and --destination",
+        ));
+    }
+    for pair in args.chunks_exact(2) {
+        match pair[0].to_str() {
+            Some("--target") if target.is_none() => {
+                target = Some(match pair[1].to_str() {
+                    Some("codex") => ManagedIntegrationTargetV1::Codex,
+                    Some("claude") => ManagedIntegrationTargetV1::ClaudeCode,
+                    _ => return Err(app_usage_error("Plugin source target is invalid")),
+                })
+            }
+            Some("--destination") if destination.is_none() => {
+                destination = Some(PathBuf::from(&pair[1]))
+            }
+            _ => {
+                return Err(app_usage_error(
+                    "Plugin source option is unexpected or duplicated",
+                ));
+            }
+        }
+    }
+    let destination =
+        destination.ok_or_else(|| app_usage_error("Plugin source destination is required"))?;
+    if !destination.is_absolute() {
+        return Err(app_usage_error(
+            "Plugin source destination must be absolute",
+        ));
+    }
+    Ok((
+        target.ok_or_else(|| app_usage_error("Plugin source target is required"))?,
+        destination,
+    ))
 }
 
 fn parse_app_apply_args(args: &[OsString]) -> Result<ManagedOperationCliCommand, UsageError> {

@@ -118,6 +118,29 @@ impl ArtifactIdentityV1 {
     }
 }
 
+// Local source identity describes bytes/platform only; it never verifies a release grant.
+pub(crate) fn local_plugin_identity(version: &str) -> Result<ArtifactIdentityV1, PlatformError> {
+    let parsed = Version::parse(version).map_err(|_| PlatformError::InvalidArtifactIdentity)?;
+    let channel = if parsed.pre.as_str().starts_with("alpha.") {
+        ReleaseChannel::Alpha
+    } else if parsed.pre.as_str().starts_with("beta.") {
+        ReleaseChannel::Beta
+    } else {
+        ReleaseChannel::Stable
+    };
+    let artifact = ArtifactIdentityV1 {
+        product: ProductId::Qiongli,
+        version: version.to_owned(),
+        channel,
+        profile: CapabilityProfile::Lite,
+        os: OperatingSystem::current().ok_or(PlatformError::InvalidArtifactIdentity)?,
+        arch: Architecture::current().ok_or(PlatformError::InvalidArtifactIdentity)?,
+        installer_kind: InstallerKind::PluginBundle,
+    };
+    artifact.validate()?;
+    Ok(artifact)
+}
+
 fn valid_numbered_prerelease(value: &str, channel: &str) -> bool {
     let Some(sequence) = value
         .strip_prefix(channel)

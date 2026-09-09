@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ManagedOperationPlanV1",
+  "type": "object",
+  "properties": {
+    "document_kind": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1,
+      "maximum": 2
+    },
+    "product_version": {
+      "type": "string"
+    },
+    "content_pack_sha256": {
+      "type": "string"
+    },
+    "content_root_sha256": {
+      "type": "string"
+    },
+    "created_at_unix": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0
+    },
+    "expires_at_unix": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0
+    },
+    "operation": {
+      "$ref": "#/$defs/ManagedOperationV1"
+    },
+    "approvals_required": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ManagedOperationApprovalV1"
+      }
+    },
+    "semantic_digest_sha256": {
+      "type": "string"
+    },
+    "plan_digest_sha256": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "document_kind",
+    "schema_version",
+    "product_version",
+    "content_pack_sha256",
+    "content_root_sha256",
+    "created_at_unix",
+    "expires_at_unix",
+    "operation",
+    "approvals_required",
+    "semantic_digest_sha256",
+    "plan_digest_sha256"
+  ],
+  "$defs": {
+    "ManagedOperationV1": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "source": {
+              "$ref": "#/$defs/PluginSourcePlan"
+            },
+            "kind": {
+              "type": "string",
+              "const": "plugin-source"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "preset": {
+              "$ref": "#/$defs/ManagedSkillsPresetV1"
+            },
+            "target_id": {
+              "type": "string"
+            },
+            "profile": {
+              "type": "string",
+              "enum": [
+                "skill-only",
+                "marketplace-lite",
+                "full"
+              ]
+            },
+            "expected_state": {
+              "$ref": "#/$defs/ManagedSkillsStateV1"
+            },
+            "expected_receipt_sha256": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "const": "skills-reconcile-preset"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "preset",
+            "target_id",
+            "profile",
+            "expected_state"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "target_id": {
+              "type": "string"
+            },
+            "profile": {
+              "type": "string",
+              "enum": [
+                "skill-only",
+                "marketplace-lite",
+                "full"
+              ]
+            },
+            "expected_state": {
+              "$ref": "#/$defs/ManagedSkillsStateV1"
+            },
+            "expected_receipt_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "skills-update-target"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "profile",
+            "expected_state",
+            "expected_receipt_sha256"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "target_id": {
+              "type": "string"
+            },
+            "profile": {
+              "type": "string",
+              "enum": [
+                "skill-only",
+                "marketplace-lite",
+                "full"
+              ]
+            },
+            "expected_state": {
+              "$ref": "#/$defs/ManagedSkillsStateV1"
+            },
+            "expected_receipt_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "skills-remove-target"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "profile",
+            "expected_state",
+            "expected_receipt_sha256"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "target_id": {
+              "type": "string"
+            },
+            "profile": {
+              "type": "string",
+              "enum": [
+                "skill-only",
+                "marketplace-lite",
+                "full"
+              ]
+            },
+            "expected_state": {
+              "$ref": "#/$defs/ManagedSkillsStateV1"
+            },
+            "expected_receipt_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "skills-detach-target"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "profile",
+            "expected_state",
+            "expected_receipt_sha256"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "$ref": "#/$defs/ManagedIntegrationModeV1"
+            },
+            "control_sha256": {
+              "type": "string"
+            },
+            "native_batch_plan_digest_sha256": {
+              "type": "string"
+            },
+            "installs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ManagedIntegrationInstallPreviewV1"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "const": "integrations-reconcile"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "mode",
+            "control_sha256",
+            "native_batch_plan_digest_sha256",
+            "installs"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "control_sha256": {
+              "type": "string"
+            },
+            "verifications": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ManagedIntegrationVerificationV1"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "const": "integrations-remove"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "control_sha256",
+            "verifications"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "control_sha256": {
+              "type": "string"
+            },
+            "native_plan_digest_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "cli-install"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "control_sha256",
+            "native_plan_digest_sha256"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "control_sha256": {
+              "type": "string"
+            },
+            "native_plan_digest_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "cli-remove"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "control_sha256",
+            "native_plan_digest_sha256"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "control_sha256": {
+              "type": "string"
+            },
+            "native_plan_digest_sha256": {
+              "type": "string"
+            },
+            "profile_name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "cli-path-configure"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "control_sha256",
+            "native_plan_digest_sha256",
+            "profile_name"
+          ]
+        }
+      ]
+    },
+    "PluginSourcePlan": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/PluginSourceAction"
+        },
+        "target": {
+          "$ref": "#/$defs/ManagedIntegrationTargetV1"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "binary_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "expected_receipt_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workflow_variant_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "target",
+        "destination",
+        "binary_sha256"
+      ]
+    },
+    "PluginSourceAction": {
+      "type": "string",
+      "enum": [
+        "install",
+        "update",
+        "remove"
+      ]
+    },
+    "ManagedIntegrationTargetV1": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude-code"
+      ]
+    },
+    "ManagedSkillsPresetV1": {
+      "type": "string",
+      "enum": [
+        "qiongli-managed",
+        "current-project"
+      ]
+    },
+    "ManagedSkillsStateV1": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "current",
+        "update-available",
+        "drifted"
+      ]
+    },
+    "ManagedIntegrationModeV1": {
+      "type": "string",
+      "enum": [
+        "install",
+        "repair"
+      ]
+    },
+    "ManagedIntegrationInstallPreviewV1": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/ManagedIntegrationTargetV1"
+        },
+        "effect": {
+          "$ref": "#/$defs/ManagedIntegrationEffectV1"
+        },
+        "native_plan_digest_sha256": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "effect",
+        "native_plan_digest_sha256"
+      ]
+    },
+    "ManagedIntegrationEffectV1": {
+      "type": "string",
+      "enum": [
+        "install",
+        "repair",
+        "content-update",
+        "already-current"
+      ]
+    },
+    "ManagedIntegrationVerificationV1": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/ManagedIntegrationTargetV1"
+        },
+        "evidence_digest_sha256": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "evidence_digest_sha256"
+      ]
+    },
+    "ManagedOperationApprovalV1": {
+      "type": "string",
+      "enum": [
+        "filesystem-write",
+        "client-config-change",
+        "host-trust"
+      ]
+    }
+  }
+}

@@ -47,3 +47,11 @@ Cargo uses the staged workspace and existing archive install checker (ADR 0221).
 only on a qualified native GitHub Release, and checks public registry installs.
 Cargo uses exact SemVer and both `qiongli`/`ql`; only the staged manifests permit
 publication. Credentials and successful registry resolution are separate gates.
+
+User-approved local Plugin sources (ADR 0222) reuse the native Codex/Claude
+bundle projectors, include the current executable and use a dedicated
+`qiongli-cli-local` marketplace. They are derived exports, not canonical content
+or signed products. Their `user-local-host-full-mcp` receipts contain no signed
+grant digest; signed bundle APIs reject them. Source updates/removal require the
+expected receipt inside the existing bundle transaction. Host registration,
+cache refresh and live readiness remain separately observed actions.

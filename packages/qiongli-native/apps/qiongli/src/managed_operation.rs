@@ -42,14 +42,14 @@ const PLAN_TTL_SECONDS: u64 = 600;
 const PLAN_CLOCK_SKEW_SECONDS: u64 = 60;
 const MAX_PLAN_BYTES: u64 = 64 * 1024;
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ManagedSkillsPresetV1 {
     QiongliManaged,
     CurrentProject,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ManagedSkillsStateV1 {
     Missing,
@@ -58,7 +58,9 @@ pub(crate) enum ManagedSkillsStateV1 {
     Drifted,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(
+    Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize, schemars::JsonSchema,
+)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ManagedOperationApprovalV1 {
     FilesystemWrite,
@@ -66,14 +68,16 @@ pub(crate) enum ManagedOperationApprovalV1 {
     HostTrust,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(
+    Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize, schemars::JsonSchema,
+)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ManagedIntegrationTargetV1 {
     Codex,
     ClaudeCode,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ManagedIntegrationEffectV1 {
     Install,
@@ -82,14 +86,14 @@ pub(crate) enum ManagedIntegrationEffectV1 {
     AlreadyCurrent,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum ManagedIntegrationModeV1 {
     Install,
     Repair,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct ManagedIntegrationInstallPreviewV1 {
     target: ManagedIntegrationTargetV1,
@@ -97,37 +101,44 @@ pub(crate) struct ManagedIntegrationInstallPreviewV1 {
     native_plan_digest_sha256: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct ManagedIntegrationVerificationV1 {
     target: ManagedIntegrationTargetV1,
     evidence_digest_sha256: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum ManagedOperationV1 {
+    PluginSource {
+        source: crate::plugin_source::PluginSourcePlan,
+    },
     SkillsReconcilePreset {
         preset: ManagedSkillsPresetV1,
         target_id: String,
+        #[schemars(schema_with = "profile_schema")]
         profile: ProfileId,
         expected_state: ManagedSkillsStateV1,
         expected_receipt_sha256: Option<String>,
     },
     SkillsUpdateTarget {
         target_id: String,
+        #[schemars(schema_with = "profile_schema")]
         profile: ProfileId,
         expected_state: ManagedSkillsStateV1,
         expected_receipt_sha256: String,
     },
     SkillsRemoveTarget {
         target_id: String,
+        #[schemars(schema_with = "profile_schema")]
         profile: ProfileId,
         expected_state: ManagedSkillsStateV1,
         expected_receipt_sha256: String,
     },
     SkillsDetachTarget {
         target_id: String,
+        #[schemars(schema_with = "profile_schema")]
         profile: ProfileId,
         expected_state: ManagedSkillsStateV1,
         expected_receipt_sha256: String,
@@ -157,10 +168,11 @@ pub(crate) enum ManagedOperationV1 {
     },
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct ManagedOperationPlanV1 {
     document_kind: String,
+    #[schemars(range(min = 1, max = 2))]
     schema_version: u32,
     product_version: String,
     content_pack_sha256: String,
@@ -175,6 +187,15 @@ pub(crate) struct ManagedOperationPlanV1 {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum ManagedOperationCliCommand {
+    PlanPluginSource {
+        action: crate::plugin_source::PluginSourceAction,
+        target: ManagedIntegrationTargetV1,
+        destination: PathBuf,
+    },
+    PluginSourceStatus {
+        target: ManagedIntegrationTargetV1,
+        destination: PathBuf,
+    },
     PlanSkillsReconcile {
         preset: ManagedSkillsPresetV1,
         profile: ProfileId,
@@ -224,7 +245,7 @@ struct ManagedOperationPlanBodyV1<'a> {
     semantic_digest_sha256: &'a str,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 struct ManagedOperationResultV1 {
     schema_version: u32,
@@ -250,6 +271,27 @@ pub(crate) fn execute(
     content: &EmbeddedContent,
 ) -> Result<String, &'static str> {
     match command {
+        ManagedOperationCliCommand::PlanPluginSource {
+            action,
+            target,
+            destination,
+        } => {
+            let source =
+                crate::plugin_source::plan(environment, content, *action, *target, destination)?;
+            let semantic = source.digest()?;
+            ManagedOperationPlanV1::new(
+                content,
+                now_unix()?,
+                ManagedOperationV1::PluginSource { source },
+                vec![ManagedOperationApprovalV1::FilesystemWrite],
+                semantic,
+            )?
+            .to_canonical_json()
+        }
+        ManagedOperationCliCommand::PluginSourceStatus {
+            target,
+            destination,
+        } => crate::plugin_source::status(environment, content, *target, destination),
         ManagedOperationCliCommand::PlanSkillsReconcile { preset, profile } => {
             let plan = prepare_skills_reconcile_plan(environment, content, *preset, *profile)?;
             plan.to_canonical_json()
@@ -336,7 +378,11 @@ impl ManagedOperationPlanV1 {
     ) -> Result<Self, &'static str> {
         let mut plan = Self {
             document_kind: PLAN_DOCUMENT_KIND.to_string(),
-            schema_version: PLAN_SCHEMA_VERSION,
+            schema_version: if matches!(operation, ManagedOperationV1::PluginSource { .. }) {
+                2
+            } else {
+                PLAN_SCHEMA_VERSION
+            },
             product_version: env!("CARGO_PKG_VERSION").to_string(),
             content_pack_sha256: content.pack().pack_sha256().to_string(),
             content_root_sha256: content.pack().manifest().content_root_sha256.clone(),
@@ -379,7 +425,12 @@ impl ManagedOperationPlanV1 {
 
     fn validate_for_version(&self, now_unix: u64, version: &str) -> Result<(), &'static str> {
         if self.document_kind != PLAN_DOCUMENT_KIND
-            || self.schema_version != PLAN_SCHEMA_VERSION
+            || self.schema_version
+                != if matches!(self.operation, ManagedOperationV1::PluginSource { .. }) {
+                    2
+                } else {
+                    PLAN_SCHEMA_VERSION
+                }
             || self.product_version != version
             || !valid_sha256(&self.content_pack_sha256)
             || !valid_sha256(&self.content_root_sha256)
@@ -933,6 +984,24 @@ fn apply_plan(
         root.clone(),
     )?;
     let result = match &plan.operation {
+        ManagedOperationV1::PluginSource { source } => {
+            if source.digest()? != plan.semantic_digest_sha256 {
+                return Err("managed-operation-precondition-changed");
+            }
+            let receipt = crate::plugin_source::apply(environment, content, source)?;
+            ManagedOperationResultV1 {
+                schema_version: 1,
+                command: "app-apply",
+                operation: "plugin-source",
+                targets: vec![source.destination.display().to_string()],
+                result: if source.action == crate::plugin_source::PluginSourceAction::Remove {
+                    "source-removed-host-state-unchanged"
+                } else {
+                    "source-ready-host-action-required"
+                },
+                receipt_sha256: Some(receipt),
+            }
+        }
         ManagedOperationV1::SkillsReconcilePreset {
             preset,
             target_id,
@@ -1540,6 +1609,7 @@ fn validate_workflow_variant_observation(
 
 fn validate_operation(operation: &ManagedOperationV1) -> Result<(), &'static str> {
     match operation {
+        ManagedOperationV1::PluginSource { source } => source.validate()?,
         ManagedOperationV1::SkillsReconcilePreset {
             target_id,
             expected_state,
@@ -1674,7 +1744,8 @@ fn validate_operation(operation: &ManagedOperationV1) -> Result<(), &'static str
 
 fn expected_approvals(operation: &ManagedOperationV1) -> Vec<ManagedOperationApprovalV1> {
     match operation {
-        ManagedOperationV1::SkillsReconcilePreset { .. }
+        ManagedOperationV1::PluginSource { .. }
+        | ManagedOperationV1::SkillsReconcilePreset { .. }
         | ManagedOperationV1::SkillsUpdateTarget { .. }
         | ManagedOperationV1::SkillsRemoveTarget { .. }
         | ManagedOperationV1::SkillsDetachTarget { .. }
@@ -2783,6 +2854,118 @@ mod tests {
             )
             .unwrap_err(),
             "managed-operation-plan-invalid"
+        );
+    }
+}
+
+fn profile_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    serde_json::json!({"type":"string", "enum":[ProfileId::SkillOnly, ProfileId::MarketplaceLite, ProfileId::Full]}).try_into().unwrap()
+}
+
+pub(crate) fn generated_plan_contract() -> serde_json::Value {
+    let mut plan = ManagedOperationPlanV1 {
+        document_kind: PLAN_DOCUMENT_KIND.to_owned(),
+        schema_version: 2,
+        product_version: "2.0.0-alpha.1".to_owned(),
+        content_pack_sha256: "1".repeat(64),
+        content_root_sha256: "2".repeat(64),
+        created_at_unix: 1750000000,
+        expires_at_unix: 1750000600,
+        operation: ManagedOperationV1::PluginSource {
+            source: crate::plugin_source::contract_source(),
+        },
+        approvals_required: vec![ManagedOperationApprovalV1::FilesystemWrite],
+        semantic_digest_sha256: crate::plugin_source::contract_source().digest().unwrap(),
+        plan_digest_sha256: String::new(),
+    };
+    plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+    let result = ManagedOperationResultV1 {
+        schema_version: 1,
+        command: "app-apply",
+        operation: "plugin-source",
+        targets: vec!["/example/qiongli-next".to_owned()],
+        result: "source-ready-host-action-required",
+        receipt_sha256: Some("3".repeat(64)),
+    };
+    serde_json::json!({
+        "schema": schemars::generate::SchemaSettings::draft2020_12().into_generator().into_root_schema_for::<ManagedOperationPlanV1>(),
+        "fixture": plan,
+        "result_schema": schemars::generate::SchemaSettings::draft2020_12().into_generator().into_root_schema_for::<ManagedOperationResultV1>(),
+        "result_fixture": result
+    })
+}
+
+#[cfg(test)]
+mod plugin_source_schema_tests {
+    use super::*;
+
+    #[test]
+    fn generated_source_contract_preserves_legacy_plans_and_rejects_version_relabeling() {
+        let generated: serde_json::Value =
+            serde_json::from_str(&crate::plugin_source_contract_json().unwrap()).unwrap();
+        for (actual, fixture) in [
+            (
+                &generated["managed"]["schema"],
+                include_str!("../schemas/managed-operation-v2.schema.json"),
+            ),
+            (
+                &generated["managed"]["fixture"],
+                include_str!("../tests/fixtures/plugin-source-v2.plan.json"),
+            ),
+            (
+                &generated["managed"]["result_schema"],
+                include_str!("../schemas/managed-operation-result-v1.schema.json"),
+            ),
+            (
+                &generated["managed"]["result_fixture"],
+                include_str!("../tests/fixtures/plugin-source-v1.applied.json"),
+            ),
+            (
+                &generated["status"]["schema"],
+                include_str!("../schemas/plugin-source-status-v1.schema.json"),
+            ),
+            (
+                &generated["status"]["fixture"],
+                include_str!("../tests/fixtures/plugin-source-v1.status.json"),
+            ),
+        ] {
+            assert_eq!(
+                actual,
+                &serde_json::from_str::<serde_json::Value>(fixture).unwrap()
+            );
+        }
+        let mut plan: ManagedOperationPlanV1 =
+            serde_json::from_value(generated["managed"]["fixture"].clone()).unwrap();
+        // Golden paths are display examples; use a platform-native absolute path for validation.
+        if let ManagedOperationV1::PluginSource { source } = &mut plan.operation {
+            source.destination = std::env::current_dir().unwrap().join("qiongli-next");
+            plan.semantic_digest_sha256 = source.digest().unwrap();
+        }
+        plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+        assert!(
+            plan.validate_for_version(1750000000, "2.0.0-alpha.1")
+                .is_ok()
+        );
+        plan.schema_version = 1;
+        plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+        assert!(
+            plan.validate_for_version(1750000000, "2.0.0-alpha.1")
+                .is_err()
+        );
+        plan.operation = ManagedOperationV1::CliInstall {
+            control_sha256: "4".repeat(64),
+            native_plan_digest_sha256: "5".repeat(64),
+        };
+        plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+        assert!(
+            plan.validate_for_version(1750000000, "2.0.0-alpha.1")
+                .is_ok()
+        );
+        plan.schema_version = 2;
+        plan.plan_digest_sha256 = plan.compute_digest().unwrap();
+        assert!(
+            plan.validate_for_version(1750000000, "2.0.0-alpha.1")
+                .is_err()
         );
     }
 }

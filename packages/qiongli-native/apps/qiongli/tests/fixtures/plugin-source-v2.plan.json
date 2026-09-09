@@ -1,0 +1,25 @@
+{
+  "document_kind": "qiongli-managed-operation-plan",
+  "schema_version": 2,
+  "product_version": "2.0.0-alpha.1",
+  "content_pack_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "content_root_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "created_at_unix": 1750000000,
+  "expires_at_unix": 1750000600,
+  "operation": {
+    "kind": "plugin-source",
+    "source": {
+      "action": "install",
+      "target": "codex",
+      "destination": "/example/qiongli-next",
+      "binary_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "expected_receipt_sha256": null,
+      "workflow_variant_sha256": null
+    }
+  },
+  "approvals_required": [
+    "filesystem-write"
+  ],
+  "semantic_digest_sha256": "d2a7decdc379dd67985a0f75f11b733aa86ae711f7b671668f0328d3fadf7e08",
+  "plan_digest_sha256": "48b25704252da86d1c68922517421a3eead65ff13f510289b07b269c3e3fadbf"
+}

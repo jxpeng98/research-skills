@@ -32,6 +32,7 @@ mod native_update_replace;
 mod orchestration_control;
 #[cfg(test)]
 mod platform_capacity;
+mod plugin_source;
 mod portfolio_cli;
 mod product_diagnostics;
 mod project_cli;
@@ -161,3 +162,5 @@ pub use candidate_cli::check_native_cli_health;
 pub use update_cli::update_recovery_contract_json;
 
 pub use candidate_cli::{activate_native_candidate, candidate_activation_completed_contract_json};
+
+pub use plugin_source::plugin_source_contract_json;

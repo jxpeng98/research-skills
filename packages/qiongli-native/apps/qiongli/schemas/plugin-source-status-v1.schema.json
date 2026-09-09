@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SourceStatus",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "command": {
+      "type": "string",
+      "pattern": "^plugin-source-status$"
+    },
+    "target": {
+      "$ref": "#/$defs/ManagedIntegrationTargetV1"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "pattern": "^(missing|source-current|source-update-available)$"
+    },
+    "source": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SourceObservation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "authority": {
+      "type": "string",
+      "pattern": "^user-local-source$"
+    },
+    "host_state": {
+      "type": "string",
+      "pattern": "^not-verified$"
+    },
+    "plugin_id": {
+      "type": "string",
+      "pattern": "^qiongli-next@qiongli-cli-local$"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "target",
+    "destination",
+    "state",
+    "authority",
+    "host_state",
+    "plugin_id"
+  ],
+  "$defs": {
+    "ManagedIntegrationTargetV1": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude-code"
+      ]
+    },
+    "SourceObservation": {
+      "type": "object",
+      "properties": {
+        "receipt_sha256": {
+          "type": "string"
+        },
+        "binary_sha256": {
+          "type": "string"
+        },
+        "content_pack_sha256": {
+          "type": "string"
+        },
+        "workflow_variant_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_sha256",
+        "binary_sha256",
+        "content_pack_sha256",
+        "version"
+      ]
+    }
+  }
+}

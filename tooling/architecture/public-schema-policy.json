@@ -256,6 +256,7 @@
         "packages/qiongli-native/apps/qiongli/src/legacy_migration_cli.rs",
         "packages/qiongli-native/apps/qiongli/src/managed_operation.rs",
         "packages/qiongli-native/apps/qiongli/src/native_cli.rs",
+        "packages/qiongli-native/apps/qiongli/src/plugin_source.rs",
         "packages/qiongli-native/apps/qiongli/src/portfolio_cli.rs",
         "packages/qiongli-native/apps/qiongli/src/project_cli.rs",
         "packages/qiongli-native/apps/qiongli/src/repository_capture_cli.rs",
@@ -398,6 +399,71 @@
           "consumer_checks": [
             "packages/qiongli-native/apps/qiongli/src/candidate_cli.rs",
             "packages/qiongli-native/apps/qiongli/tests/native_release_candidate.rs"
+          ],
+          "migration_path": null,
+          "removal_gate": null
+        },
+        {
+          "change_id": "public-cli-json/managed-operation-plan-v2",
+          "contract_id": "public-cli-json/managed-operation-plan",
+          "from_version": "1",
+          "to_version": "2",
+          "classification": "migratable-breaking",
+          "rust_sources": [
+            "packages/qiongli-native/apps/qiongli/src/managed_operation.rs",
+            "packages/qiongli-native/apps/qiongli/src/plugin_source.rs"
+          ],
+          "generated_schema": "packages/qiongli-native/apps/qiongli/schemas/managed-operation-v2.schema.json",
+          "golden_fixtures": [
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/plugin-source-v2.plan.json"
+          ],
+          "consumer_checks": [
+            "packages/qiongli-native/apps/qiongli/src/managed_operation.rs",
+            "packages/qiongli-native/apps/qiongli/src/plugin_source.rs",
+            "packages/qiongli-native/apps/qiongli/tests/cli.rs"
+          ],
+          "migration_path": "docs/architecture/decisions/0222-user-approved-local-plugin-sources.md",
+          "removal_gate": null
+        },
+        {
+          "change_id": "public-cli-json/managed-operation-result-v1",
+          "contract_id": "public-cli-json/managed-operation-result",
+          "from_version": "frozen-baseline",
+          "to_version": "1",
+          "classification": "additive",
+          "rust_sources": [
+            "packages/qiongli-native/apps/qiongli/src/managed_operation.rs",
+            "packages/qiongli-native/apps/qiongli/src/plugin_source.rs"
+          ],
+          "generated_schema": "packages/qiongli-native/apps/qiongli/schemas/managed-operation-result-v1.schema.json",
+          "golden_fixtures": [
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/plugin-source-v1.applied.json"
+          ],
+          "consumer_checks": [
+            "packages/qiongli-native/apps/qiongli/src/managed_operation.rs",
+            "packages/qiongli-native/apps/qiongli/src/plugin_source.rs",
+            "packages/qiongli-native/apps/qiongli/tests/cli.rs"
+          ],
+          "migration_path": null,
+          "removal_gate": null
+        },
+        {
+          "change_id": "public-cli-json/plugin-source-status-v1",
+          "contract_id": "public-cli-json/plugin-source-status",
+          "from_version": "absent",
+          "to_version": "1",
+          "classification": "additive",
+          "rust_sources": [
+            "packages/qiongli-native/apps/qiongli/src/plugin_source.rs"
+          ],
+          "generated_schema": "packages/qiongli-native/apps/qiongli/schemas/plugin-source-status-v1.schema.json",
+          "golden_fixtures": [
+            "packages/qiongli-native/apps/qiongli/tests/fixtures/plugin-source-v1.status.json"
+          ],
+          "consumer_checks": [
+            "packages/qiongli-native/apps/qiongli/src/managed_operation.rs",
+            "packages/qiongli-native/apps/qiongli/src/plugin_source.rs",
+            "packages/qiongli-native/apps/qiongli/tests/cli.rs"
           ],
           "migration_path": null,
           "removal_gate": null

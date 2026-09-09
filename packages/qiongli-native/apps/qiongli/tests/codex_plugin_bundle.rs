@@ -1017,3 +1017,114 @@ fn set_executable_mode(path: &Path) {
 
 #[cfg(not(unix))]
 fn set_executable_mode(_path: &Path) {}
+
+#[test]
+fn user_local_source_cannot_be_adopted_as_signed_and_binds_update_receipts() {
+    use qiongli_platform::{
+        compose_local_codex_plugin_source, remove_local_codex_plugin_source,
+        verify_local_codex_plugin_source,
+    };
+    let fixture = Fixture::new("user-local-source");
+    let content = qiongli::embedded_content().unwrap();
+    let path = fixture.standalone_target();
+    let target = approve_codex_plugin_bundle_target(&path).unwrap();
+    let hash = format!(
+        "{:x}",
+        Sha256::digest(fs::read(&fixture.source_binary).unwrap())
+    );
+    let first = compose_local_codex_plugin_source(
+        content.pack(),
+        &fixture.source_binary,
+        &hash,
+        &target,
+        None,
+        None,
+    )
+    .unwrap();
+    assert!(first.receipt().signed_grant_payload_sha256.is_empty());
+    assert_eq!(first, verify_local_codex_plugin_source(&target).unwrap());
+    assert!(verify_codex_plugin_bundle(&target).is_err());
+    assert!(remove_codex_plugin_bundle(&target).is_err());
+    let grant = grant_fixture(&fixture.source_binary, content.pack().pack_sha256());
+    assert!(
+        replace_codex_plugin_bundle_with_overrides(
+            content.pack(),
+            &grant.verified,
+            &fixture.source_binary,
+            &target,
+            None
+        )
+        .is_err()
+    );
+    let wrong = "0".repeat(64);
+    assert!(
+        compose_local_codex_plugin_source(
+            content.pack(),
+            &fixture.source_binary,
+            &wrong,
+            &target,
+            None,
+            Some(first.receipt_sha256())
+        )
+        .is_err()
+    );
+    assert!(
+        compose_local_codex_plugin_source(
+            content.pack(),
+            &fixture.source_binary,
+            &hash,
+            &target,
+            None,
+            Some(&wrong)
+        )
+        .is_err()
+    );
+    assert!(remove_local_codex_plugin_source(&target, &wrong).is_err());
+    let original = content
+        .pack()
+        .resource_for_profile("marketplace-lite", "workflow/SKILL.md")
+        .unwrap()
+        .unwrap();
+    let mut bytes = original.bytes().to_vec();
+    bytes.extend_from_slice(b"\nLocal source update marker.\n");
+    let overrides = WorkflowOverrides::new(
+        content.pack(),
+        BTreeMap::from([("workflow/SKILL.md".to_string(), bytes)]),
+    )
+    .unwrap()
+    .unwrap();
+    let updated = compose_local_codex_plugin_source(
+        content.pack(),
+        &fixture.source_binary,
+        &hash,
+        &target,
+        Some(&overrides),
+        Some(first.receipt_sha256()),
+    )
+    .unwrap();
+    assert_ne!(updated.receipt_sha256(), first.receipt_sha256());
+    assert!(remove_local_codex_plugin_source(&target, first.receipt_sha256()).is_err());
+    assert!(remove_local_codex_plugin_source(&target, updated.receipt_sha256()).is_ok());
+    assert!(!path.exists());
+    let signed = compose_codex_plugin_bundle(
+        content.pack(),
+        &grant.verified,
+        &fixture.source_binary,
+        &target,
+    )
+    .unwrap();
+    assert!(verify_local_codex_plugin_source(&target).is_err());
+    assert!(
+        compose_local_codex_plugin_source(
+            content.pack(),
+            &fixture.source_binary,
+            &hash,
+            &target,
+            None,
+            Some(signed.receipt_sha256())
+        )
+        .is_err()
+    );
+    assert!(remove_local_codex_plugin_source(&target, signed.receipt_sha256()).is_err());
+    assert_eq!(verify_codex_plugin_bundle(&target).unwrap(), signed);
+}

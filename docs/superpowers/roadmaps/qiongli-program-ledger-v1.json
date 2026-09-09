@@ -277,12 +277,13 @@
       ],
       "evidence": [
         "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md",
-        "tooling/release/acceptance/v2.0.0-alpha.7-distribution.json"
+        "tooling/release/acceptance/v2.0.0-alpha.7-distribution.json",
+        "docs/architecture/decisions/0222-user-approved-local-plugin-sources.md"
       ],
       "commit": "de982b42479cddc54413317c2180ad201738413b",
       "run": "34296331772",
-      "updated_at": "2026-09-09",
-      "blocker": "Alpha.7 Windows x64 native build and final npm/wheel installation passed alongside macOS/Linux; public registry bytes match the CI artifacts. Historical Parallels/App/managed trusted installation remains partial; this package release does not accept the full CLI-403 lifecycle."
+      "updated_at": "2026-09-10",
+      "blocker": "Alpha.7 Windows x64 native build and final npm/wheel installation passed alongside macOS/Linux; public registry bytes match the CI artifacts. Historical Parallels/App/managed trusted installation remains partial; this package release does not accept the full CLI-403 lifecycle. User-approved local Plugin source lifecycle is implemented under ADR 0222; source checks and isolated format/installation compatibility do not establish automatic Host lifecycle or live-session readiness."
     },
     {
       "id": "CLI-404",
@@ -308,12 +309,13 @@
         "CLI-404"
       ],
       "evidence": [
-        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md"
+        "docs/superpowers/plans/2026-09-06-cli-first-closeout-and-extraction.md",
+        "docs/architecture/decisions/0222-user-approved-local-plugin-sources.md"
       ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-08",
-      "blocker": "Configured handoff, CLI approval/restart and denied-tool checks passed at dfebb17c. Shared native Host guidance now reports missing MCP truthfully in an explicit-guidance Claude/DeepSeek retry; original XML-only failure retained. Generated Codex/Claude bundle tests passed. New installed-candidate Host/SEC and provider account/quota qualification remain open; graph semantics/UI are not baseline gates."
+      "updated_at": "2026-09-10",
+      "blocker": "Configured handoff, CLI approval/restart and denied-tool checks passed at dfebb17c. Shared native Host guidance now reports missing MCP truthfully in an explicit-guidance Claude/DeepSeek retry; original XML-only failure retained. Generated Codex/Claude bundle tests passed. New installed-candidate Host/SEC and provider account/quota qualification remain open; graph semantics/UI are not baseline gates. User-approved local Plugin source lifecycle is implemented under ADR 0222; source checks and isolated format/installation compatibility do not establish automatic Host lifecycle or live-session readiness."
     },
     {
       "id": "CLI-406",

@@ -74,8 +74,10 @@ pub use claude_bundle::{
     ClaudePluginBundleEntryV1, ClaudePluginBundleError, ClaudePluginBundleKind,
     ClaudePluginBundleReceiptV1, ClaudePluginBundleTarget, VerifiedClaudePluginBundle,
     approve_claude_plugin_bundle_target, compose_claude_plugin_bundle,
-    compose_claude_plugin_bundle_with_overrides, remove_claude_plugin_bundle,
+    compose_claude_plugin_bundle_with_overrides, compose_local_claude_plugin_source,
+    remove_claude_plugin_bundle, remove_local_claude_plugin_source,
     replace_claude_plugin_bundle_with_overrides, verify_claude_plugin_bundle,
+    verify_local_claude_plugin_source,
 };
 pub use client_inventory::{
     CLIENT_INVENTORY_SCHEMA_VERSION, ClientActionReadiness, ClientComponentInventoryV1,
@@ -102,8 +104,10 @@ pub use codex_bundle::{
     CodexPluginBundleEntryV1, CodexPluginBundleError, CodexPluginBundleKind,
     CodexPluginBundleReceiptV1, CodexPluginBundleTarget, VerifiedCodexPluginBundle,
     approve_codex_plugin_bundle_target, compose_codex_plugin_bundle,
-    compose_codex_plugin_bundle_with_overrides, remove_codex_plugin_bundle,
+    compose_codex_plugin_bundle_with_overrides, compose_local_codex_plugin_source,
+    remove_codex_plugin_bundle, remove_local_codex_plugin_source,
     replace_codex_plugin_bundle_with_overrides, verify_codex_plugin_bundle,
+    verify_local_codex_plugin_source,
 };
 pub use community_alpha::{
     MAX_NATIVE_COMMUNITY_ALPHA_CANDIDATE_SET_BYTES, MAX_NATIVE_COMMUNITY_ALPHA_PROMOTION_BYTES,

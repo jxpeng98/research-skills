@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command": "app-apply",
+  "operation": "plugin-source",
+  "targets": [
+    "/example/qiongli-next"
+  ],
+  "result": "source-ready-host-action-required",
+  "receipt_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+}

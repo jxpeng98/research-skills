@@ -52,6 +52,53 @@ Cargo Windows/Linux matrices and actual crates.io installation have not run.
 First upload requires configured registry credentials. Program acceptance is
 unchanged. Next: increment 2, the approved registry CLI Plugin lifecycle.
 
+## Increment 2a: local Plugin sources — September 10
+
+The packaged-product dependency requires a separate local authority boundary,
+so increment 2 is split at source ownership / Host mutation. ADR 0222 implements
+one complete source lifecycle: ordinary registry/source CLI → approved local
+Codex or Claude source → status/update/exact removal. It reuses the native bundle
+projectors/transactions and managed plan owner; no signing-key workaround or
+private Host-cache writer is introduced. Source destinations are explicit secure
+exports, not existing managed installations.
+
+The sources carry the running executable, Full MCP, workflow variant and their
+own `qiongli-cli-local` marketplace. A `user-local-host-full-mcp` receipt cannot
+be adopted, replaced or removed by signed bundle APIs; the inverse also refuses.
+Plans bind binary/content/variant, destination and prior receipt. Preview is
+read-only; apply requires the existing exact digest, expiry and filesystem
+approval. Drift, untracked files, unsafe paths and stale receipts preserve data.
+Source status explicitly leaves Host state unverified.
+
+Local compatibility evidence (macOS ARM64): both exported binaries passed Lite
+14 / Full 32 MCP inventories. Claude's official marketplace validation passed
+with one optional-description warning. Codex's official marketplace add and
+Plugin add succeeded in an isolated `CODEX_HOME`, using
+`qiongli-next@qiongli-cli-local`. Receipts/logs are retained under
+`packages/qiongli-native/target/local-plugin-source-check-8oyraf83/` (ignored).
+No normal client profile, existing Plugin or private research project was changed.
+This does not prove live session discovery, authentication or model execution.
+
+Focused checks: 35 CLI tests, 5 Claude bundle tests, 4 Codex bundle tests and
+11 managed-plan/schema/App-boundary tests passed (55 distinct tests); the two pre-existing live-Host
+qualification tests remain explicitly ignored. The final source lifecycle/path
+cases and bidirectional signed/local refusal cases also passed on the release
+build, including no external PATH runtime. Clippy (`qiongli` and
+`qiongli-platform` library/binaries), formatting, capability contract and the
+frozen-source boundary passed. Three Rust-generated schemas/goldens passed
+Draft 2020-12 validation and unknown-field negatives; deterministic regeneration,
+v1/v2 dual-read and relabeling refusal passed. New source plans are v2; legacy
+operations retain v1 (ADR 0216 compatibility record). The first new bundle check found the missing
+marketplace allowlist entry; the shared path/receipt validator was corrected
+before the successful runs. Current Windows/Linux source lifecycle execution
+and new-version package qualification remain pending.
+
+Next increment 2b: prepare and execute bounded official Host registration,
+refresh and removal plans, bind observed Host/source identity, and require fresh
+observations before readiness. The source commands do not automatically register,
+refresh, unregister or reload Hosts. Remove a Host registration before deleting
+its export. Existing Alpha.7 publication and program acceptance remain unchanged.
+
 ## Completed: three-platform registry installation — September 9
 
 Alpha.7 was published from `de982b42479cddc54413317c2180ad201738413b`:

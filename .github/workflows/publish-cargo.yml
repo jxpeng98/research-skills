@@ -1,0 +1,109 @@
+name: Cargo CLI distribution
+
+on:
+  push:
+    branches: ['2.x']
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v2.')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@1.97.0
+      - name: Package and verify the workspace without uploading
+        shell: bash
+        run: |
+          cargo fetch --manifest-path packages/qiongli-native/Cargo.toml --locked
+          python scripts/native_registry_packages.py --out-dir "$RUNNER_TEMP/cargo-packet" --package-cargo
+          cargo publish --manifest-path "$RUNNER_TEMP/cargo-packet/cargo-source/Cargo.toml" --workspace --no-default-features --allow-dirty --dry-run --target-dir "$RUNNER_TEMP/cargo-build"
+      - name: Install the actual crate archives and check both CLI names
+        shell: bash
+        run: |
+          python scripts/native_registry_install_check.py --packages "$RUNNER_TEMP/cargo-packet" --out-dir "$RUNNER_TEMP/cargo-install-check" --cargo-only --cargo-archives --cargo-target-dir "$RUNNER_TEMP/cargo-build"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cargo-check-${{ matrix.os }}
+          path: ${{ runner.temp }}/cargo-install-check/install-check.json
+          if-no-files-found: error
+
+  publish:
+    needs: qualify
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v2.')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    environment: crates-io
+    permissions:
+      contents: read
+      actions: read
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@1.97.0
+      - name: Check initial crates.io credentials
+        shell: bash
+        run: |
+          if [[ -z "$CARGO_REGISTRY_TOKEN" ]]; then
+            echo 'Configure CARGO_REGISTRY_TOKEN in the crates-io environment before the first publication.' >&2
+            exit 1
+          fi
+      - name: Verify the published release and exact-source native CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/assets"
+          python tooling/scripts/native_release_assets.py verify --root "$RUNNER_TEMP/assets" --version "$RELEASE_TAG" --commit "$GITHUB_SHA" --require-ci
+      - name: Publish the staged workspace with Cargo verification
+        shell: bash
+        run: |
+          python scripts/native_registry_packages.py --out-dir "$RUNNER_TEMP/cargo-packet"
+          cargo publish --manifest-path "$RUNNER_TEMP/cargo-packet/cargo-source/Cargo.toml" --workspace --no-default-features --allow-dirty
+
+  public-install:
+    needs: publish
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@1.97.0
+      - name: Install from crates.io and verify CLI/MCP
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(python scripts/release_version.py "$RELEASE_TAG" --print-field version)
+          cargo install qiongli --version "$version" --locked --root "$RUNNER_TEMP/cargo-public" --bin qiongli --bin ql
+          suffix=""
+          if [[ "$RUNNER_OS" == Windows ]]; then suffix=.exe; fi
+          python scripts/native_registry_install_check.py --cargo-only --cargo-installed "$RUNNER_TEMP/cargo-public/bin/qiongli$suffix" --version "$version" --out-dir "$RUNNER_TEMP/cargo-public-check"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cargo-public-${{ matrix.os }}
+          path: ${{ runner.temp }}/cargo-public-check/install-check.json
+          if-no-files-found: error

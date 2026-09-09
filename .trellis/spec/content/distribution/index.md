@@ -40,5 +40,10 @@ OS/CPU dispatch, executable bytes and platform wheels. The three-platform
 npm package and three wheels, and tests the combined package on each target.
 `native_release_assets.py` refuses mixed source/version, missing targets and
 changed bytes. Registry jobs reuse existing workflow filenames/environments and
-require a successful exact-source distribution run. No App or Cargo upload is
-part of this lane; product approval/CAS and managed trust remain unchanged.
+require a successful exact-source distribution run. No App upload is part of this lane; product approval/CAS and managed trust remain unchanged.
+
+Cargo uses the staged workspace and existing archive install checker (ADR 0221).
+`publish-cargo.yml` runs native source verification on three systems, publishes
+only on a qualified native GitHub Release, and checks public registry installs.
+Cargo uses exact SemVer and both `qiongli`/`ql`; only the staged manifests permit
+publication. Credentials and successful registry resolution are separate gates.

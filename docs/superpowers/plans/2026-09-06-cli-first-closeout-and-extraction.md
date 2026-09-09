@@ -3,6 +3,25 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Current increment: CLI onboarding and Cargo — September 9
+
+The maintainer accepted the CLI → Plugin/MCP → Host onboarding focus and added
+Cargo publication scope. Deliver three bounded increments:
+
+1. Align CLI command/help and workflow/install documentation, distinguish npm
+   prefix/PATH problems from mixed versions, and add Cargo's matching source CLI
+   and `ql` entry with native archive/public-install verification (ADR 0221).
+2. Make registry CLI → Plugin registration, inspection, update and removal usable
+   through existing preview/approval/CAS/receipt owners. Resolve the current
+   packaged-product authority dependency explicitly; do not bypass it.
+3. Qualify clean installation in real Codex/Claude Code Hosts: correct versions,
+   visible MCP tools, read-only project access, handoff and one approved write.
+
+Each increment follows focused checks → review → local merge into `2.x`.
+A named release gets the three-platform matrices; broader features, App and
+collaboration expansion remain outside this horizon. Cargo's first upload needs
+registry credentials; source work continues independently while they are absent.
+
 ## Completed: three-platform registry installation — September 9
 
 Alpha.7 was published from `de982b42479cddc54413317c2180ad201738413b`:

@@ -91,7 +91,9 @@ uses `native-cli-distribution.yml`. Publication uses
 an immutable tag and `gh release`, followed by public download verification.
 The existing npm/PyPI workflows publish native assets on a published GitHub
 Release after exact-source CI checks; npm prereleases use `next`, and PyPI uses
-PEP 440 aN/bN versions. Cargo is deferred. Managed-product activation remains
+PEP 440 aN/bN versions. Cargo uses `publish-cargo.yml` and the staged workspace
+(ADR 0221), with native archive checks before upload and registry install checks
+afterward. Managed-product activation remains
 separate. See [ADR 0220](docs/architecture/decisions/0220-three-platform-cli-registry-distribution.md) and
 [ADR 0219](docs/architecture/decisions/0219-cli-github-release-distribution.md).
 Omit `--cli-github` only for the retained legacy/desktop diagnostic lanes.

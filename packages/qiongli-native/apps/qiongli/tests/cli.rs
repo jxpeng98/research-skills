@@ -3580,6 +3580,7 @@ fn root_and_nested_help_use_stdout_and_return_success() {
         ["-h"].as_slice(),
         ["content", "--help"].as_slice(),
         ["config", "--help"].as_slice(),
+        ["config", "backend", "--help"].as_slice(),
         ["app", "--help"].as_slice(),
         ["install", "--help"].as_slice(),
         ["install", "native", "--help"].as_slice(),
@@ -3594,7 +3595,7 @@ fn root_and_nested_help_use_stdout_and_return_success() {
 
     let root = run(&["--help"]);
     let root_help = String::from_utf8_lossy(&root.stdout);
-    assert!(root_help.contains("qiongli ui"));
+    assert!(!root_help.contains("qiongli ui"));
     assert!(!root_help.contains("content materialize"));
     assert!(!root_help.contains("ui --candidate"));
     assert!(!root_help.contains("install candidate"));

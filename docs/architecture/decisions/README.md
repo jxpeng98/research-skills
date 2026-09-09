@@ -37,6 +37,8 @@ decision must be recorded as a new superseding ADR.
 
 | `CLI-410` | [ADR 0220](0220-three-platform-cli-registry-distribution.md) | Accepted | Three-platform native CLI installation with npm next and PEP 440 PyPI versions; Cargo deferred |
 
+| `CLI-410` | [ADR 0221](0221-cargo-cli-publication.md) | Accepted | Cargo source publication and three-platform install checks; supersedes Cargo deferral |
+
 ## Decision lifecycle
 
 1. New architectural choices receive the next ADR number and a task ID.

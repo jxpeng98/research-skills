@@ -21,6 +21,15 @@ SPEC.loader.exec_module(sync_versions_module)
 
 
 class SyncVersionsTests(unittest.TestCase):
+    def test_entrypoint_version_collapses_repeated_release_prefixes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "SKILL.md"
+            path.write_text('---\nname: qiongli\ndescription: "Qiongli version: v2.0.0-alpha.7. Qiongli version: v2.0.0-alpha.2. Research workflow."\n---\n')
+            self.assertTrue(sync_versions_module.replace_skill_entrypoint_version(path, "v2.0.0-alpha.8"))
+            result = path.read_text()
+            self.assertIn('description: "Qiongli version: v2.0.0-alpha.8. Research workflow."', result)
+            self.assertFalse(sync_versions_module.replace_skill_entrypoint_version(path, "v2.0.0-alpha.8"))
+
     def test_parse_version_normalizes_beta_layers(self) -> None:
         package_version, skill_version, repo_version, npm_version = sync_versions_module.parse_version(
             "0.2.0b3"

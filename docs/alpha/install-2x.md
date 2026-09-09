@@ -1,8 +1,8 @@
-# Qiongli 2.x Community Alpha installation
+# Retained Qiongli 2.x App installation (historical lane)
 
-> This is the single installation authority for the native Qiongli 2.x Community Alpha.
-> The npm, Python, and bootstrap/shell instructions elsewhere in this repository describe the
-> maintained 1.x product line; they do not install or prove readiness of the 2.x App.
+> Current CLI-first releases use the [CLI installation guide](../guide/cli-2x.md).
+> This page preserves the App/Community Alpha procedure for that retained lane;
+> it does not govern GitHub CLI archives, npm, PyPI or Cargo installation.
 
 The 2.x release is a self-contained desktop product. The packaged App carries the native CLI,
 Qiongli Skills, the Lite and Full MCP content, and the Codex and Claude Code integration payloads.

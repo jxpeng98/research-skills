@@ -1,8 +1,8 @@
 # CLI Command Reference (qiongli)
 
 > **Legacy product line:** This reference describes the Python, npm, and bootstrap/shell CLI in
-> Qiongli 1.x. It is not the native 2.x CLI contract. Install and verify the 2.x CLI only through
-> the [2.x Alpha installation authority](../alpha/install-2x.md).
+> Qiongli 1.x. It is not the native 2.x CLI contract. For native 2.x installation and commands, use
+> the [CLI guide](../guide/cli-2x.md); no App is required.
 
 This document outlines all "executable entry points" (pipx CLI / Python module / Bash scripts) mapping local calls and GitHub CI configurations for the `qiongli` package.
 

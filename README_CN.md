@@ -32,13 +32,13 @@
 
 ## 从哪里开始
 
-原生 Qiongli 2.x Community Alpha 只以
-[2.x App 安装说明](docs/alpha/install-2x.md)为准。下方 npm、Python、marketplace 与 bootstrap
-方式仍属于 Qiongli 1.x 产品线。
+原生 Qiongli 2 使用 [CLI 安装与命令指南](docs/guide/cli-2x.md)。
+Alpha.7 已通过 GitHub、npm `next` 和 PyPI 发布，Cargo 正在接入；不需要 App。
+下方稳定版安装说明仍属于 1.x，不能直接用于 2.x。
 
 | 目标 | 推荐入口 |
 |---|---|
-| 安装原生 2.x Community Alpha | [2.x Alpha 安装说明](docs/alpha/install-2x.md) |
+| 安装原生 2.x CLI | [CLI 安装与命令指南](docs/guide/cli-2x.md) |
 | 浏览完整文档站 | [中文文档](docs/zh/index.md)，或本地运行 `npm run docs:dev` |
 | 阅读英文说明 | [English README](README.md) 或 [Docs](docs/index.md) |
 | 先在一个客户端里安装 | [安装指南](docs/zh/guide/install.md) |

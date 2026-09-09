@@ -97,8 +97,8 @@ def replace_skill_entrypoint_version(path: Path, repo_version: str) -> bool:
     def replace_description(match: re.Match[str]) -> str:
         current = _unquote_yaml_like_string(match.group(2).strip())
         prefix = re.compile(
-            r"^(?:Qiongli(?: Next)? version:\s*)"
-            r"v?\d+\.\d+\.\d+(?:-(?:alpha|beta)\.\d+)?\.\s*"
+            r"^(?:Qiongli(?: Next)? version:\s*"
+            r"v?\d+\.\d+\.\d+(?:-(?:alpha|beta)\.\d+)?\.\s*)+"
         )
         body = prefix.sub("", current, count=1)
         description = f"{label} version: {repo_version}. {body}"

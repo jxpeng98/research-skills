@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import sys
 import zipfile
 import subprocess
@@ -78,7 +79,14 @@ def main() -> None:
         env.pop(key, None)
     def run(command, cwd=NATIVE):
         subprocess.run(command, cwd=cwd, env=env, check=True)
-    run(['bash', str(ROOT / 'scripts/verify_release_tag_version.sh'), '--root', str(ROOT), '--tag', f'v{version}'])
+    bash = 'bash'
+    if os.name == 'nt':
+        git_bin = Path(shutil.which('git')).parent
+        candidates = [git_bin / 'bash.exe', git_bin.parent / 'bin/bash.exe']
+        bash = next((str(path) for path in candidates if path.is_file()), None)
+        if bash is None:
+            raise ValueError('Git for Windows Bash is required; WSL Bash is not supported')
+    run([bash, str(ROOT / 'tooling/scripts/verify_release_tag_version.sh'), '--root', str(ROOT), '--tag', f'v{version}'])
     cargo_args = ['--no-default-features', '--locked'] + ([] if ci else ['--offline'])
     lint = not ci or platform.system() == 'Linux'
     if lint:
@@ -87,7 +95,7 @@ def main() -> None:
     run(['cargo', 'test', '-p', 'qiongli', '--release', '--target', target,
          '--test', 'cli', '--test', 'mcp_stdio', *cargo_args])
     env['QIONGLI_NATIVE_SOURCE_COMMIT'] = commit
-    run(['cargo', 'build', '-p', 'qiongli', '--bin', 'qiongli', '--no-default-features',
+    run(['cargo', 'build', '-p', 'qiongli', '--bin', 'qiongli',
          '--release', '--target', target, *cargo_args])
     metadata = json.loads(subprocess.check_output(
         ['cargo', 'metadata', '--no-deps', '--format-version', '1', '--offline'], cwd=NATIVE, env=env))

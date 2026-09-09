@@ -71,7 +71,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && 60 || 30 }}
     env:
-      CARGO_HOME: ${{ runner.temp }}/qiongli-cargo-home
       CARGO_BUILD_RUSTC_WRAPPER: ""
       CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER: ""
       CARGO_BUILD_RUSTFLAGS: ""
@@ -106,6 +105,10 @@ jobs:
           - platform: Windows
             os: windows-latest
     steps:
+      - name: Configure isolated Cargo home
+        shell: bash
+        run: echo "CARGO_HOME=$RUNNER_TEMP/qiongli-cargo-home" >> "$GITHUB_ENV"
+
       - name: Report skipped native matrix
         if: env.RUN_NATIVE_MATRIX != 'true'
         shell: bash

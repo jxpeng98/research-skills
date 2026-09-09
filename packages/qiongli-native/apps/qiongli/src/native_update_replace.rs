@@ -2045,6 +2045,10 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[allow(
+        clippy::disallowed_methods,
+        reason = "this test launches a copied OS sleep executable to verify live and unlinked process detection"
+    )]
     fn linux_process_guard_observes_a_live_and_unlinked_child() {
         let root =
             std::env::temp_dir().join(format!("qiongli-linux-live-proc-{}", std::process::id()));

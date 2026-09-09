@@ -30,7 +30,7 @@ jobs:
         run: |
           cargo fetch --manifest-path packages/qiongli-native/Cargo.toml --locked
           python scripts/native_registry_packages.py --out-dir "$RUNNER_TEMP/cargo-packet" --package-cargo
-          cargo publish --manifest-path "$RUNNER_TEMP/cargo-packet/cargo-source/Cargo.toml" --workspace --no-default-features --allow-dirty --dry-run --target-dir "$RUNNER_TEMP/cargo-build"
+          cargo publish --manifest-path "$RUNNER_TEMP/cargo-packet/cargo-source/Cargo.toml" --workspace --no-default-features --allow-dirty --locked --dry-run --target-dir "$RUNNER_TEMP/cargo-build"
       - name: Install the actual crate archives and check both CLI names
         shell: bash
         run: |
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           python scripts/native_registry_packages.py --out-dir "$RUNNER_TEMP/cargo-packet"
-          cargo publish --manifest-path "$RUNNER_TEMP/cargo-packet/cargo-source/Cargo.toml" --workspace --no-default-features --allow-dirty
+          cargo publish --manifest-path "$RUNNER_TEMP/cargo-packet/cargo-source/Cargo.toml" --workspace --no-default-features --allow-dirty --locked
 
   public-install:
     needs: publish

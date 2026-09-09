@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install staged npm/PyPI artifacts in a disposable root and exercise their CLI/MCP."""
+"""Check npm, PyPI and Cargo installations in a disposable root through CLI/MCP."""
 from __future__ import annotations
 
 import argparse

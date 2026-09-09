@@ -22,6 +22,36 @@ A named release gets the three-platform matrices; broader features, App and
 collaboration expansion remain outside this horizon. Cargo's first upload needs
 registry credentials; source work continues independently while they are absent.
 
+Increment 1 implemented at `bd0491d091d22dd397356debc32dd135f487f406`;
+the follow-up integration records the regenerated content lock and checks.
+CLI help and the 2.x guide now separate native commands, legacy 1.x commands,
+Host workflows and managed Plugin limitations. The version synchronizer removes
+repeated version prefixes. Cargo stages the existing nine crates and installs
+both `qiongli` and `ql`; its workflow adds source qualification, release-gated
+upload and public-install checks on macOS, Windows and Linux.
+
+Focused evidence on macOS ARM64 with Rust/Cargo 1.97.0:
+
+- CLI tests: 34 passed; MCP stdio tests: 7 passed. One loopback-server test first
+  hit the filesystem/network sandbox and passed when rerun with loopback access.
+- Version/registry/release tooling: 11 tests passed; capability contract,
+  formatting, version/content-lock checks and Cargo workflow actionlint passed.
+- Official workspace `cargo publish --locked --dry-run` verified all nine crates
+  without uploading. `/private/tmp/qiongli-cargo-197-dry-run.log` records the run.
+- Actual `.crate` archives installed offline with only internal crate patches;
+  both CLI names passed version/help/content/invalid-command and Lite/Full MCP
+  checks (14/32 tools). Receipt:
+  `/private/tmp/qiongli-cargo-bd0491d0-install/install-check.json`.
+- The installed-binary-only checker passed. npm and PyPI packages built from
+  that same executable passed isolated installation and CLI/MCP checks:
+  `/private/tmp/qiongli-onboarding-npm-pypi-install/install-check.json`.
+
+These are local development checks, not a new release. Public Alpha.7 remains
+unchanged; changed bytes need a new version and named release qualification.
+Cargo Windows/Linux matrices and actual crates.io installation have not run.
+First upload requires configured registry credentials. Program acceptance is
+unchanged. Next: increment 2, the approved registry CLI Plugin lifecycle.
+
 ## Completed: three-platform registry installation — September 9
 
 Alpha.7 was published from `de982b42479cddc54413317c2180ad201738413b`:

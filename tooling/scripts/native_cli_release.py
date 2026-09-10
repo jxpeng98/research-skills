@@ -19,11 +19,51 @@ import tomllib
 try:
     from .native_registry_install_check import check_cli
     from .native_marketplace_plugins import archive_name, check_plugins
-    from .native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version, package_readme
+    from .native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version
 except ImportError:
     from native_registry_install_check import check_cli
     from native_marketplace_plugins import archive_name, check_plugins
-    from native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version, package_readme
+    from native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version
+
+
+def archive_readme(version: str, target: str, commit: str) -> bytes:
+    executable = TARGETS[target][2]
+    command = f'.\\{executable}' if target.endswith('msvc') else f'./{executable}'
+    return f"""# Qiongli {version} — standalone CLI
+
+Target: {target}
+Source commit: {commit}
+
+This archive contains `{executable}`, this README and LICENSE. The executable
+embeds the research Skills, templates and Lite/Full MCP resources. It needs no
+Qiongli App, Rust, Cargo, Python, Node.js, npm or pip. Linux x64 requires glibc 2.35+.
+Models, Host applications and online literature services are configured separately.
+
+Verify the archive against SHA256SUMS from the same GitHub Release, then extract
+into a new directory. Open a terminal there (PowerShell on Windows) and run:
+
+```text
+{command} --version
+{command} --help
+{command} content list
+```
+
+You can run the executable by absolute path, or add its directory to your user
+PATH. This archive supplies `{executable}`; `ql` is a package-manager alias.
+For MCP, configure your Host with the absolute executable path and arguments
+`mcp serve --profile full --transport stdio` (or `--profile lite`). Downloading
+the CLI does not automatically register a Host Plugin or change its models.
+Research writes retain their preview, approval and revision checks.
+
+To upgrade, extract a newer release into another directory and test its version
+before changing PATH or the Host command. Keep the previous binary and research
+data; switching binaries does not reverse data migrations. Managed installation,
+migration and signed self-update retain their existing authority requirements.
+
+English guide: https://github.com/jxpeng98/qiongli/blob/{commit}/docs/guide/cli-2x.md
+中文指南: https://github.com/jxpeng98/qiongli/blob/{commit}/docs/zh/guide/cli-2x.md
+Release: https://github.com/jxpeng98/qiongli/releases/tag/v{version}
+""".encode()
 
 
 def archive_cli(path: Path, binary: Path, readme: bytes, target: str = 'aarch64-apple-darwin') -> None:
@@ -108,7 +148,7 @@ def main() -> None:
     package_paths = binary_packages(package_work, binary, version, target)
     for path in package_paths:
         (assets / path.name).write_bytes(regular_bytes(path))
-    readme = (package_readme(version) + f'\nSource commit: {commit}\nTarget: {target}\n').encode()
+    readme = archive_readme(version, target, commit)
     extension = 'zip' if target.endswith('msvc') else 'tar.gz'
     archive = assets / f'qiongli-{version}-{target}.{extension}'
     archive_cli(archive, binary, readme, target)

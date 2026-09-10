@@ -32,13 +32,13 @@
 
 ## 从哪里开始
 
-原生 Qiongli 2 使用 [CLI 安装与命令指南](docs/guide/cli-2x.md)。
-Alpha.7 已通过 GitHub、npm `next` 和 PyPI 发布，Cargo 正在接入；不需要 App。
+原生 Qiongli 2 使用 [CLI 安装与命令指南](docs/zh/guide/cli-2x.md)。
+Alpha.8 已通过 GitHub、npm `next` 和 PyPI 发布，Cargo 正在接入；不需要 App。
 下方稳定版安装说明仍属于 1.x，不能直接用于 2.x。
 
 | 目标 | 推荐入口 |
 |---|---|
-| 安装原生 2.x CLI | [CLI 安装与命令指南](docs/guide/cli-2x.md) |
+| 安装原生 2.x CLI | [CLI 安装与命令指南](docs/zh/guide/cli-2x.md) |
 | 浏览完整文档站 | [中文文档](docs/zh/index.md)，或本地运行 `npm run docs:dev` |
 | 阅读英文说明 | [English README](README.md) 或 [Docs](docs/index.md) |
 | 先在一个客户端里安装 | [安装指南](docs/zh/guide/install.md) |
@@ -46,6 +46,23 @@ Alpha.7 已通过 GitHub、npm `next` 和 PyPI 发布，Cargo 正在接入；不
 | 选择论文 workflow | [任务场景](docs/zh/guide/task-recipes.md) |
 | 使用 CLI、别名、JSON check 或自动化 | [CLI 参考](docs/zh/reference/cli.md) |
 | 理解运行时和 package 模型 | [系统架构](docs/zh/architecture.md) |
+
+## Qiongli 2.x 独立二进制下载
+
+从 [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8)
+下载完整原生 CLI，解压后即可运行 `./qiongli --help`（Windows PowerShell 使用 `.\qiongli.exe --help`）。
+研究 Skills、模板以及 Lite/Full MCP 资源已嵌入可执行文件，运行时无需安装 App、Rust、Python、Node.js、npm 或 pip。
+
+| 平台 | 二进制压缩包 |
+|---|---|
+| macOS Apple Silicon（ARM64） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [下载 `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
+| Linux x64（glibc 2.35+） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+
+运行前使用同一 Release 的 [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/SHA256SUMS)
+核对文件；[完整指南](docs/zh/guide/cli-2x.md)说明解压、PATH 和 MCP 接入步骤。
+请在 **Assets** 中选择上述平台包，GitHub 自动生成的 **Source code** 是源码。
+模型 Host 和在线文献服务仍需单独配置。
 
 ## 最新稳定版下载
 

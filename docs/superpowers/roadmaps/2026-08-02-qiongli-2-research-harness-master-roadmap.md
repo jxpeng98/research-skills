@@ -100,6 +100,13 @@ and confirmation never enables assistant-operated cleanup. Local content/Plugin
 checks and an isolated synthetic forward trial are recorded in the current plan.
 They do not establish installed-Host acceptance or authorize real-project cleanup.
 
+September 10 download-channel clarification: public alpha.8 already includes
+standalone macOS ARM64, Windows x64 and Linux x64 archives. The current plan
+records prominent bilingual download/setup documentation and a target-specific
+README for future archives, reusing the existing release owner. Independent
+public-byte verification and an empty-PATH macOS CLI/MCP observation passed;
+published artifacts and the remaining release qualification gates are unchanged.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

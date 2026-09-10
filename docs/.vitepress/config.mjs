@@ -1,4 +1,5 @@
 const enNav = [
+  { text: 'Download 2.x', link: '/guide/cli-2x' },
   { text: 'Guide', link: '/guide/' },
   { text: 'Workflows', link: '/guide/task-recipes' },
   { text: 'Examples', link: '/examples/' },
@@ -9,6 +10,7 @@ const enNav = [
 ]
 
 const zhNav = [
+  { text: '下载 2.x', link: '/zh/guide/cli-2x' },
   { text: '入门', link: '/zh/guide/' },
   { text: '工作流', link: '/zh/guide/task-recipes' },
   { text: '示例', link: '/zh/examples/' },
@@ -26,6 +28,7 @@ const enSidebar = {
         { text: 'Overview', link: '/guide/' },
         { text: 'Quickstart', link: '/quickstart' },
         { text: 'Install', link: '/guide/install' },
+        { text: '2.x CLI Downloads', link: '/guide/cli-2x' },
         { text: 'Using Agent Skills', link: '/guide/using-agent-skills' },
         { text: 'Research Workflows', link: '/guide/task-recipes' },
         { text: 'Multi-Agent Runtime', link: '/guide/multi-agent' },
@@ -110,6 +113,7 @@ const zhSidebar = {
         { text: '总览', link: '/zh/guide/' },
         { text: '快速开始', link: '/zh/quickstart' },
         { text: '安装', link: '/zh/guide/install' },
+        { text: '2.x CLI 下载', link: '/zh/guide/cli-2x' },
         { text: '使用 Agent Skills', link: '/zh/guide/using-agent-skills' },
         { text: '研究工作流', link: '/zh/guide/task-recipes' },
         { text: '多 Agent 运行', link: '/zh/guide/multi-agent' },

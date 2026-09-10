@@ -6,6 +6,9 @@ hero:
   text: "Use AI agents for academic research without losing the evidence trail."
   tagline: "Turn a topic into a paper route, task IDs, quality gates, literature and citation evidence, writing and code outputs, and review handoffs."
   actions:
+    - theme: alt
+      text: Download 2.x CLI
+      link: /guide/cli-2x#standalone-binary-download
     - theme: brand
       text: Quickstart
       link: /quickstart
@@ -31,6 +34,7 @@ features:
 
 | You want to... | Start here |
 |---|---|
+| Download the complete 2.x binary without npm or Python | [GitHub binary downloads and setup](/guide/cli-2x#standalone-binary-download) |
 | Try Qiongli in one client | [Install](/guide/install) |
 | Get from no setup to a first workspace | [Quickstart](/quickstart) |
 | Know what to type after install | [Using Agent Skills](/guide/using-agent-skills) |

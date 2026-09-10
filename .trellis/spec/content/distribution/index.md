@@ -33,6 +33,14 @@ boundaries.
 
 ## CLI registry packages
 
+`native_cli_release.py` owns standalone GitHub CLI archives and their generated,
+target-specific README. Each archive carries the executable with embedded content,
+README and LICENSE; the assembly owner retains all three platform archives and
+their hashes in the release packet. Direct-download instructions must identify
+the platform asset, checksum verification, extraction, executable name and PATH
+option without requiring a package manager or confusing GitHub source archives
+with runnable binaries. Published archives remain immutable.
+
 `release_version.py` owns SemVer/Git/npm and PEP 440 version projections;
 prerelease npm publication uses `next`. `native_registry_packages.py` owns fixed
 OS/CPU dispatch, executable bytes and platform wheels. The three-platform

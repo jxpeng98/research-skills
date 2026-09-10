@@ -1,11 +1,104 @@
 # Qiongli 2 CLI: installation and command boundaries
 
-Qiongli 2 is CLI-first. No Qiongli App window is required. npm and PyPI
-distribute the same native executable for a given version and target.
+Qiongli 2 is CLI-first. GitHub binary archives, npm and PyPI distribute the same
+native executable for a given version and target. No Qiongli App is required.
 
-## Install and identify the version
+## Standalone binary download
 
-Choose one package manager for the command on your PATH:
+Download a platform archive from [Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8).
+It contains `qiongli` (Windows: `qiongli.exe`), `README.md` and `LICENSE`.
+The executable embeds the research Skills, templates and Lite/Full MCP resources;
+you do not need a separate resource directory or a checkout of this repository.
+Running it requires no Rust, Cargo, Python, Node.js, npm or pip. Models, Host
+applications and online literature services remain separately configured.
+
+| Your platform | Complete CLI archive |
+|---|---|
+| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
+| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+
+Choose these files under **Assets**. GitHub's **Source code** archives require a
+build; the `.tgz` npm package, `.whl` Python packages and `qiongli-next-…-plugin-…`
+archives serve different installation paths. Intel macOS, Linux ARM and native
+Windows ARM builds are not part of this release.
+
+### 1. Verify the download
+
+Download [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/SHA256SUMS)
+from the same release. In the directory containing your download, run the command
+for your platform and compare its hash with the line for that exact filename in
+`SHA256SUMS`. Continue only if they match.
+
+```sh
+# macOS
+shasum -a 256 qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz
+# Linux
+sha256sum qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz
+```
+
+```powershell
+# Windows
+Get-FileHash .\qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip -Algorithm SHA256
+```
+
+### 2. Extract and run
+
+Extract into a new directory, keeping existing installations and research files
+intact. On macOS:
+
+```sh
+mkdir qiongli-2.0.0-alpha.8-macos-arm64
+tar -xzf qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-alpha.8-macos-arm64
+cd qiongli-2.0.0-alpha.8-macos-arm64
+./qiongli --version
+./qiongli --help
+./qiongli content list
+```
+
+On Linux:
+
+```sh
+mkdir qiongli-2.0.0-alpha.8-linux-x64
+tar -xzf qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-alpha.8-linux-x64
+cd qiongli-2.0.0-alpha.8-linux-x64
+./qiongli --version
+./qiongli --help
+./qiongli content list
+```
+
+On Windows, open PowerShell in your download directory:
+
+```powershell
+Expand-Archive -Path .\qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-alpha.8-windows-x64
+Set-Location .\qiongli-2.0.0-alpha.8-windows-x64
+.\qiongli.exe --version
+.\qiongli.exe --help
+.\qiongli.exe content list
+```
+
+The version output should be `qiongli 2.0.0-alpha.8`. The archive supplies the
+`qiongli` executable; npm/PyPI additionally provide the `ql` command alias.
+
+### 3. Optional PATH and Host setup
+
+You can keep using the absolute executable path. To run `qiongli` from any
+directory, add the extracted directory to your user PATH using your shell profile
+or Windows user environment settings, then open a new terminal. Use
+`type -a qiongli` on macOS/Linux or `Get-Command qiongli -All` in PowerShell to
+check which installation will run. Verify `qiongli --version` again.
+
+[Connect a Host](#connect-a-host) using the absolute executable path for Lite or
+Full MCP, or [export a local Plugin source](#export-a-local-plugin-source).
+Downloading and running the CLI does not automatically activate a Host Plugin.
+
+To upgrade, extract the new version into a separate directory, test it, then
+update PATH or the Host command. Keep the previous binary and research data for
+rollback; switching binaries does not reverse data migrations.
+
+## Package managers
+
+Alternatively, choose one package manager for the command on your PATH:
 
 ```sh
 npm install --global qiongli@next
@@ -14,19 +107,18 @@ npm install --global qiongli@next
 Or install in a Python virtual environment:
 
 ```sh
-python -m pip install --pre qiongli==2.0.0a7
+python -m pip install --pre qiongli==2.0.0a8
 ```
 
 Both expose `qiongli` and `ql`. Check both with `--version` before comparing
-behavior. Alpha.7 targets macOS ARM64, Windows x64, and Linux x64/glibc 2.35+.
-npm needs Node 18+; PyPI needs Python 3.9+. Standalone archives are available in
-the [GitHub Release](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.7).
+behavior. Alpha.8 targets macOS ARM64, Windows x64, and Linux x64/glibc 2.35+.
+npm needs Node 18+; PyPI needs Python 3.9+.
 
 Cargo support is being added for the next qualified release. It builds the
 same CLI from source, requires Rust 1.97+ and the target's native linker, and
 will expose both command names. Cargo uses the exact SemVer prerelease version,
 such as `2.0.0-alpha.8`, with `cargo install qiongli --version VERSION --locked`.
-There is no Cargo `next` channel. Alpha.7 has not been published to crates.io;
+There is no Cargo `next` channel. Alpha.8 has not been published to crates.io;
 do not use its GitHub/npm availability as proof of Cargo availability.
 
 If npm reports a successful install but the command is missing, inspect
@@ -47,7 +139,7 @@ configuration before changing a prefix shared by other globally installed tools.
 | Inspect global configuration | `qiongli config show`, `config backend status` | The Host owns model configuration and execution |
 | Start tool transport | `qiongli mcp serve --profile full --transport stdio` | Full exposes project/graph/handoff tools; Lite exposes the bounded literature subset |
 | Plan Skills installation or maintenance | `qiongli app plan skills-reconcile --preset qiongli-managed --profile full` | `app` is the retained command namespace; no GUI is needed; apply requires the returned plan/digest and explicit approval |
-| Register or repair a managed Plugin | `qiongli app plan integrations-install --target codex` (or `claude`) | Alpha.7 registry binaries lack the packaged-product authority required by this owner; `source-build-read-only` is a blocker, not success |
+| Register or repair a managed Plugin | `qiongli app plan integrations-install --target codex` (or `claude`) | Standalone/registry binaries lack the packaged-product authority required by this owner; use the separate user-approved local source export below |
 | Research routing, literature review, writing and critique | Host workflow entries such as `/paper`, `/lit-review`, `/paper-read` | Host instructions, not standalone shell subcommands |
 | Inspect/update a managed installation | `qiongli update --help`, `migrate-1x --help` | Managed authority remains required; use the package manager to upgrade a registry-installed CLI |
 
@@ -77,10 +169,10 @@ call succeeds. Configure literature providers through the visible
 `qiongli_config_status` / `qiongli_configure_provider` tools, then inspect
 `qiongli_literature_status`. Models and credentials remain owned by the Host.
 
-## Export a local Plugin source (next release)
+## Export a local Plugin source
 
-The development CLI now supports a user-approved local Plugin source without a
-signed App package. This is not yet available in public Alpha.7. It bundles the
+Alpha.8 supports a user-approved local Plugin source without a signed App
+package. It bundles the
 running native executable, Full MCP and canonical workflow content, so the Plugin
 does not depend on npm's Node/PATH wrapper after export.
 

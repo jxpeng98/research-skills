@@ -3,6 +3,56 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Completed locally: standalone GitHub download guidance — September 10
+
+Base `19d081ba`; branch `codex/github-binary-downloads`. The maintainer requested
+complete native binaries on GitHub Release alongside npm, PyPI and Marketplace,
+with README and documentation-site instructions. Public inspection confirmed
+that alpha.8 already carries all three standalone platform archives, README,
+LICENSE and embedded research content. The existing native release/assembly
+owners retain those archives; no second upload workflow is needed.
+
+English/Chinese READMEs now expose platform download links and checksum guidance.
+The CLI guide and new Chinese counterpart cover archive selection, source-code
+versus executable downloads, hashing, extraction, direct commands, PATH, MCP and
+upgrade/rollback. Documentation home actions, navigation, sidebars and legacy
+install notices lead to those guides. Public examples now identify alpha.8;
+the local Plugin export description matches that published capability.
+
+The archive owner now generates a standalone README with the declared version,
+source commit, target and correct Unix/PowerShell executable commands. It retains
+the same binary, archive names, resource owners and integrity checks. Research
+write and managed-install authority stay unchanged. Future qualified archives
+receive this README; published alpha.8 assets were not replaced.
+
+Validation: **12 focused tests passed**, covering all three archive layouts,
+README projection, executable modes/bytes, symlink refusal, mixed-source/missing
+target/tampered release rejection and existing installation documentation. Log:
+`/private/tmp/qiongli-direct-download-checks.log`. VitePress production build
+passed with existing syntax-highlighter/chunk-size warnings. Its first attempt
+found a historical plan link outside the website root; that repository path is
+now plain text, without disabling link validation. Build log:
+`/private/tmp/qiongli-direct-download-docs-build.log`. The four download tables
+match published asset names; generated English/Chinese anchors and home links
+were checked in the actual built HTML.
+
+All three public alpha.8 archives were downloaded independently and matched both
+`SHA256SUMS` and `release-manifest.json`; archive members and executable formats
+were checked. The extracted macOS binary passed version/help/content inspection,
+invalid-command refusal and actual Lite/Full MCP checks with **empty PATH** and
+isolated configuration (14/32 tools). This observation uses the published source
+`3d64767c`, pack `6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9`.
+Receipt: `/private/tmp/qiongli-direct-downloads-t3cgyrga/direct-download-receipt.json`.
+Windows/Linux execution was not repeated locally; this increment verifies their
+public bytes/layout and preserves the earlier target-native release evidence.
+
+No release, version, public asset, Host configuration or research data changed.
+Documentation-site deployment and the new archive README take effect through
+their normal publication paths. CLI-410 remains active for its existing Cargo
+and subsequent bundled-Marketplace qualification gaps. Next: include these
+instructions in the next named release and publish the reviewed documentation
+through the normal site delivery process.
+
 ## Completed locally: traceable stage consolidation — September 10
 
 Base `f94e6bcb`; branch `codex/stage-consolidation`. The maintainer requested a
@@ -3796,7 +3846,7 @@ keeps external dependencies locked, and compiles/installs without the checkout.
 It is source-closure evidence, not proof of a crates.io download.
 
 Final evidence and hashes are recorded once in
-[alpha.6 notes](../../../tooling/release/v2.0.0-alpha.6.md) (repository path:
+alpha.6 notes (repository path:
 `tooling/release/v2.0.0-alpha.6.md`). Native CLI/MCP/Plugin tests: 48 passed; two
 real isolated Host installation tests: 2 passed; projection/version tests:
 7 passed; capability validation and Twine passed. npm/PyPI and extracted-Cargo

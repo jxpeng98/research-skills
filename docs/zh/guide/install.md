@@ -1,11 +1,12 @@
 # 安装 Qiongli
 
-> 原生 2.x 请使用 [CLI 安装与命令指南](../../guide/cli-2x.md)。
+> 原生 2.x 可[直接下载独立二进制包](cli-2x.md#standalone-binary-download)，
+> 或使用 [npm / pip 安装](cli-2x.md#package-managers)。
 > 下方 npm/Python 能力差异与安装命令属于 1.x。
 
 > **产品线说明：**本页介绍 Qiongli 1.x 的 npm、Python、marketplace 与 bootstrap/shell
-> 安装方式。原生 Qiongli 2.x Community Alpha 的 App、CLI、Skills、Plugin 与 MCP 安装只以
-> [2.x Alpha 安装说明](../../alpha/install-2x.md)为准；1.x 安装不能作为 2.x 就绪证据。
+> 安装方式。保留维护的 App / Community Alpha 使用单独的
+> [历史安装说明](../../alpha/install-2x.md)，原生 2.x CLI 不要求安装 App。
 
 Qiongli 有多个安装入口，是因为不同用户需要的运行时能力不同。先选能满足目标的最小入口。
 

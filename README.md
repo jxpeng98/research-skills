@@ -33,7 +33,7 @@ The name comes from `穷理`: keep asking what principle, evidence, and limit si
 ## Start Here
 
 For native Qiongli 2, use the [CLI installation and command guide](docs/guide/cli-2x.md).
-Alpha.7 is available through GitHub, npm `next` and PyPI; Cargo is being added.
+Alpha.8 is available through GitHub, npm `next` and PyPI; Cargo is being added.
 No App is required. The stable installation instructions below describe 1.x.
 
 | Need | Best entry |
@@ -46,6 +46,24 @@ No App is required. The stable installation instructions below describe 1.x.
 | Decide which paper workflow to use | [Task Recipes](docs/guide/task-recipes.md) |
 | Use CLI commands, aliases, JSON checks, or automation | [CLI Reference](docs/reference/cli.md) |
 | Understand the runtime and package model | [Architecture](docs/architecture.md) |
+
+## Qiongli 2.x Standalone Downloads
+
+Download the complete native CLI from [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8),
+extract it, and run `./qiongli --help` (PowerShell: `.\qiongli.exe --help`).
+Research Skills, templates and Lite/Full MCP resources are embedded in the executable.
+No App, Rust, Python, Node.js, npm or pip installation is needed to run it.
+
+| Platform | Binary archive |
+|---|---|
+| macOS Apple Silicon (ARM64) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [Download `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
+| Linux x64 (glibc 2.35+) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+
+Verify with the release's [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/SHA256SUMS)
+before running. See [extraction, PATH and MCP setup](docs/guide/cli-2x.md#standalone-binary-download)
+for step-by-step instructions. Choose these platform archives from **Assets**, rather than
+GitHub's automatic **Source code** downloads. Host applications and online services remain separate.
 
 ## Latest Stable Downloads
 

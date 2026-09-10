@@ -1,12 +1,12 @@
 # Install Qiongli
 
-> Native 2.x users: follow the [CLI installation and command guide](cli-2x.md).
+> Native 2.x users: [download the standalone binary](cli-2x.md#standalone-binary-download)
+> or follow the [CLI package-manager installation guide](cli-2x.md#package-managers).
 > The npm/Python differences and installer commands below describe legacy 1.x.
 
 > **Product-line notice:** This page documents the npm, Python, marketplace, and bootstrap/shell
-> installers for Qiongli 1.x. Native Qiongli 2.x Community Alpha users must follow the single
-> [2.x Alpha installation authority](../alpha/install-2x.md); a 1.x install cannot satisfy 2.x
-> readiness.
+> installers for Qiongli 1.x. The retained App/Community Alpha lane has separate
+> [historical installation instructions](../alpha/install-2x.md); it is not required for the 2.x CLI.
 
 Qiongli has several installation surfaces because users need different levels of runtime control. Start with the smallest surface that gives you the workflow you need.
 

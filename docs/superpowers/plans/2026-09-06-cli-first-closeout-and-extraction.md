@@ -3,7 +3,46 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: flexible evidence journeys — September 10
+## Current increment: alpha.8 publication and marketplace parity — September 10
+
+The maintainer requested a new release and a comparison of the Skillsplace Codex
+Plugin with npm. The candidate is `2.0.0-alpha.8`, npm `next`, PyPI `2.0.0a8`, on
+branch `codex/cli-distribution-alpha8` from local `6f13bfce`. The GitHub/npm/PyPI
+release retains macOS ARM64, Windows x64 and Linux x64 (glibc 2.35+) support.
+The previous semantic research observation remains the next development increment.
+
+Public audit found npm `next` on alpha.7 while Skillsplace referenced the missing
+`codex/v1.19.0-beta.1` distribution ref. The marketplace synchronizer selected only
+releases with both legacy Plugin archive names, and also required a Desktop
+attachment. Stable 1.17 canonical Skill resources match; its generated subject
+projection is not the correct comparison target.
+
+Focused release/version/projection checks pass **27/27**, including changed
+content with rewritten receipt hashes, missing archive pairs, mismatched native
+packs, invalid versions/paths and fixed Windows bridge tokens. Actual native
+export packaging verifies all **428** resources against pack
+`6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9`.
+Evidence: `/private/tmp/qiongli-alpha8-release-focused.log`,
+`/private/tmp/qiongli-alpha8-marketplace-bound-dry-run/`, and the public-channel
+audit at `/private/tmp/qiongli-marketplace-parity-n02swzef/`. These local checks
+do not replace the named three-platform release run or public download checks.
+
+The native release owner now exports the verified embedded `marketplace-lite`
+profile and packages Codex/Claude archives. Canonical research resources remain
+byte-identical; host manifests and a fixed-version npm bridge are distribution
+adaptations. Public MCP uses Lite (14 tools), while explicit CLI/local sources
+retain Full (32). Archive verification binds resource bytes to the original pack
+and compares its digest with all three native executables. Skillsplace's 2.x
+synchronizer omits unshipped Desktop entries and preserves the 1.x gate.
+
+Publish only after exact-source native builds, combined installation and Plugin
+checks pass. Create immutable distribution refs from verified archives before
+updating Skillsplace's catalogs. The user requested publication; no announcement
+or private Host registration is included. Cargo has no configured `crates-io`
+environment/token and is not advertised as published. Release notes own claims
+and rollback; registry/download evidence will be recorded after publication.
+
+## Completed: flexible evidence journeys — September 10
 
 Base `052688cf`; branch `codex/flexible-evidence-journey`. The maintainer requested
 flexible execution with enforceable constraints. The new bounded cases use two

@@ -66,6 +66,12 @@ with focused compatibility checks. Preserve configured models, shared research
 state, approval/CAS and macOS/Windows/Linux delivery. This prioritizes execution;
 it does not supersede the External Host architecture or claim adapter acceptance.
 
+Current delivery priority: qualify and publish `2.0.0-alpha.8` through GitHub,
+npm `next` and PyPI `2.0.0a8`, and repair Skillsplace's stale prerelease Plugin
+reference with native content and an exact npm runtime pin. Keep the semantic
+research observation below as the next development increment. Source integration
+alone does not establish publication; Cargo credentials remain unavailable.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

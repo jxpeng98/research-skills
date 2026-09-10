@@ -1,0 +1,62 @@
+domain: accounting
+display_name: "Accounting"
+
+libraries:
+  python:
+    - pandas
+    - statsmodels
+    - linearmodels
+  r:
+    - fixest
+    - plm
+    - sandwich
+  stata:
+    - reghdfe
+    - eventdd
+    - winsor2
+
+method_templates:
+  - name: "Archival Accounting Panel Design"
+    tier: standard
+    checklist:
+      - "Define the accounting construct and source item mapping before modeling."
+      - "Document Compustat, CRSP, Audit Analytics, IBES, or hand-collected coverage."
+      - "Specify firm, industry, year, and event-time fixed effects before estimation."
+      - "Report clustering level and sensitivity to alternative clustering choices."
+    assumptions:
+      - "Construct proxies measure the intended reporting, disclosure, governance, or audit concept."
+      - "Sample filters do not mechanically create the reported accounting relation."
+    required_diagnostics:
+      - "Sample construction waterfall with observation loss by filter."
+      - "Variable definition table with winsorization and lag timing."
+      - "Balance and pre-trend diagnostics for treatment or event designs."
+    required_artifacts:
+      - "Variable construction appendix."
+      - "Robustness table for alternative proxies and sample windows."
+    failure_modes:
+      - "Construct validity depends on a single noisy proxy."
+      - "Treatment timing overlaps fiscal-year reporting windows ambiguously."
+      - "Restatement, merger, or delisting filters induce selection."
+
+constructs:
+  common_variables:
+    - accruals
+    - discretionary_accruals
+    - audit_fees
+    - restatements
+    - internal_control_weaknesses
+    - management_forecasts
+    - analyst_following
+    - earnings_quality
+  reporting_settings:
+    - financial_reporting
+    - auditing
+    - disclosure
+    - governance
+    - tax
+    - ESG_reporting
+
+quality_gates:
+  - "Every accounting proxy must include source database, item code, transformation, timing, and winsorization."
+  - "Causal claims must separate reporting-channel mechanisms from correlated governance or financing channels."
+  - "Tables must expose sample filters, fixed effects, clustering, and standard-error choices."

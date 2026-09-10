@@ -1,0 +1,20 @@
+{
+  "name": "qiongli-next",
+  "version": "2.0.0-alpha.8",
+  "description": "Native academic research workflows for Claude via the pinned npm CLI.",
+  "author": {
+    "name": "Jiaxin Peng",
+    "url": "https://github.com/jxpeng98"
+  },
+  "homepage": "https://github.com/jxpeng98/qiongli",
+  "repository": "https://github.com/jxpeng98/qiongli",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "academic-writing",
+    "literature-review",
+    "reproducibility"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

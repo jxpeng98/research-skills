@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_status.input.v2.json",
+  "title": "qiongli_literature_status input",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": ".*\\S.*",
+      "description": "Project-config context used by Full and accepted as a compatibility context by Lite."
+    }
+  },
+  "additionalProperties": false
+}

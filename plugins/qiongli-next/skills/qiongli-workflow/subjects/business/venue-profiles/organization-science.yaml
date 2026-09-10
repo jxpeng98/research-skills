@@ -1,0 +1,11 @@
+id: organization-science
+display_name: "Organization Science"
+discipline: business
+quality_bar:
+  - "Theory, mechanism, and boundary conditions must be explicit."
+  - "Process, network, organization, or strategy claims must match the evidence structure."
+  - "The paper must show why the setting sharpens a broader scholarly conversation."
+fit_notes:
+  - "Best fit for organization, strategy, innovation, platform, and process papers."
+  - "Use models, cases, or archival evidence to clarify mechanisms."
+  - "Avoid descriptive setting novelty without theoretical leverage."

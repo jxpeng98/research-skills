@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_export_import_files.output.v2.json",
+  "title": "qiongli_zotero_export_import_files structured output",
+  "type": "object",
+  "required": [
+    "status",
+    "files"
+  ],
+  "properties": {
+    "status": {
+      "const": "ok"
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

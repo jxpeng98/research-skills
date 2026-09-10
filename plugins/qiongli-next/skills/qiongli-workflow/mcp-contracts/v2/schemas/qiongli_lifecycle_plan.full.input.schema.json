@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_lifecycle_plan.full.input.v2.json",
+  "title": "qiongli_lifecycle_plan full input",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "paper_type": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "preview"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

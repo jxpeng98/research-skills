@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_experience_lessons.full.input.v2.json",
+  "title": "qiongli_experience_lessons full input",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Project directory to inspect."
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "failure_mode": {
+      "type": "string"
+    },
+    "limit": {
+      "type": "integer",
+      "default": 20
+    }
+  },
+  "additionalProperties": false
+}

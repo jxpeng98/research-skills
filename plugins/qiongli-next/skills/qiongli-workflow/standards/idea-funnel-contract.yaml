@@ -1,0 +1,103 @@
+contract_version: "1.0.0"
+name: "academic-idea-funnel-contract"
+purpose: "academic-idea-discovery-and-triage"
+artifact: "context/idea_funnel.md"
+artifact_type: "AcademicIdeaFunnel"
+stage: "A"
+entrypoints:
+  - "brainstorm"
+  - "paper"
+  - "find-gap"
+  - "stage-A"
+
+source_credit:
+  inspired_by: "Matt Pocock's grill-me skill"
+  url: "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md"
+  adaptation_note: "Qiongli uses the one-question-at-a-time interaction pattern as an academic adaptation for research idea triage; it is not a copied workflow."
+
+principles:
+  inspect_artifacts_before_asking: true
+  one_scholarly_question_at_a_time: true
+  recommended_answer_required: true
+  preserve_academic_uncertainty: true
+  never_invent_evidence_or_citations: true
+  write_reusable_decision_artifact: true
+  handoff_to_boundary_review: true
+
+trigger_conditions:
+  - "The user starts from a vague topic, broad domain, or unranked set of possible paper ideas."
+  - "The workflow is about to create Stage A outputs from unsettled scope."
+  - "The workflow invokes /paper or /find-gap before a defensible research idea has been selected."
+  - "Existing artifacts do not already settle the candidate idea, claim, gap, contribution, evidence plan, or reviewer risk."
+
+required_fields:
+  - "source_prompt"
+  - "artifact_evidence_checked"
+  - "candidate_ideas"
+  - "recommended_idea"
+  - "core_claim"
+  - "research_question"
+  - "candidate_gap"
+  - "contribution_type"
+  - "evidence_plan"
+  - "weakest_assumption"
+  - "rival_explanation"
+  - "venue_reviewer_risk"
+  - "next_stage_recommendation"
+  - "boundary_review_handoff"
+  - "revisit_trigger"
+
+candidate_idea_fields:
+  - "idea_id"
+  - "one_sentence_idea"
+  - "paper_type_fit"
+  - "candidate_gap"
+  - "contribution_type"
+  - "evidence_needed"
+  - "feasibility"
+  - "novelty_risk"
+  - "reviewer_risk"
+  - "triage_decision"
+
+stable_identity:
+  field: "idea_id"
+  format: "IF-###"
+  rules:
+    - "Every candidate row has a unique idea_id."
+    - "Recorded idea IDs are never renumbered or reused."
+    - "Rejected candidates remain addressable and use triage_decision=reject."
+
+contribution_types:
+  - "theoretical"
+  - "empirical"
+  - "methodological"
+  - "dataset"
+  - "systems-artifact"
+  - "synthesis"
+  - "policy"
+  - "pedagogical"
+
+claim_strength_options:
+  - "descriptive"
+  - "interpretive"
+  - "associative"
+  - "causal"
+  - "predictive"
+  - "methodological"
+  - "normative"
+  - "exploratory"
+
+quality_bar:
+  - "At least two candidate ideas are considered when the user supplies a broad topic."
+  - "The recommended idea must state why it could fit one paper."
+  - "The evidence plan must say what would support, weaken, or falsify the core claim."
+  - "The weakest assumption and at least one rival explanation must be explicit."
+  - "The next stage recommendation must name a canonical Qiongli task such as A1, A2, A4, A5, B1, or C1."
+  - "The boundary review handoff must identify which decisions should be locked in context/boundary_review.md."
+
+handoff_targets:
+  - "context/boundary_review.md"
+  - "context/research_state.md"
+  - "context/decision_log.md"
+  - "framing/research_question.md"
+  - "gap_analysis.md"

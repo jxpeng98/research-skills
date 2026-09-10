@@ -1,0 +1,26 @@
+venue_id: neurips
+community: Machine learning
+article_types:
+  - conference paper
+  - dataset and benchmark paper
+contribution_expectations:
+  - method, theory, benchmark, or empirical insight
+  - strong novelty and technical soundness
+methods_expectations:
+  - rigorous baselines
+  - ablations and sensitivity analysis
+evidence_standards:
+  - reproducible experiments
+  - clear compute, data, and model details
+writing_style:
+  - compact technical argument
+  - limitations and broader impact clarity
+common_reviewer_objections:
+  - incremental novelty
+  - incomplete comparisons
+formatting_constraints:
+  - NeurIPS style
+  - strict page limit
+required_reporting_standards:
+  - checklist
+  - broader impact or limitations as required

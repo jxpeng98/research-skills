@@ -1,0 +1,27 @@
+venue_id: aom
+community: Management and organization studies
+article_types:
+  - empirical paper
+  - theory paper
+  - review paper
+contribution_expectations:
+  - explicit theoretical contribution
+  - clear boundary conditions
+methods_expectations:
+  - construct validity
+  - endogeneity and alternative explanation handling
+evidence_standards:
+  - theory-linked hypotheses or propositions
+  - robustness checks or rich qualitative evidence
+writing_style:
+  - theory-forward academic prose
+  - careful construct definitions
+common_reviewer_objections:
+  - unclear theoretical contribution
+  - weak construct operationalization
+formatting_constraints:
+  - journal or conference style
+  - anonymized review files
+required_reporting_standards:
+  - ethics disclosure where relevant
+  - data availability where journal policy requires

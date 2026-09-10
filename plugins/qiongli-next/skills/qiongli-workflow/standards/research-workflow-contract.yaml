@@ -1,0 +1,1588 @@
+contract_version: "1.0.0"
+name: "research-workflow-contract"
+scope: "cross-model academic paper workflow"
+
+artifacts:
+  root: "RESEARCH/[topic]/"
+  required_core:
+    - "context/research_state.md"
+    - "context/decision_log.md"
+    - "context/stage_handoff.md"
+    - "evidence/evidence-ledger.md"
+    - "evidence/claim-evidence-ledger.csv"
+    - "protocol.md"
+    - "framing/research_question.md"
+    - "framing/contribution_statement.md"
+    - "manuscript/manuscript.md"
+    - "framing/hypothesis.md"
+    - "framing/venue_analysis.md"
+    - "theoretical_framework.md"
+    - "gap_analysis.md"
+    - "search_strategy.md"
+    - "literature/concept_extraction.md"
+    - "literature/literature_map.md"
+    - "notes/"
+    - "bibliography.bib"
+    - "search_log.md"
+    - "search_results.csv"
+    - "dedup_log.csv"
+    - "retrieval_manifest.csv"
+    - "screening/title_abstract.md"
+    - "screening/full_text.md"
+    - "screening/prisma_flow.md"
+    - "extraction_table.md"
+    - "quality_table.md"
+    - "synthesis_matrix.md"
+    - "synthesis.md"
+    - "meta_analysis_plan.md"
+    - "effect_size_table.md"
+    - "meta_analysis_results.md"
+    - "study_design.md"
+    - "design/rival_hypotheses.md"
+    - "analysis_plan.md"
+    - "design/variable_spec.md"
+    - "design/robustness_plan.md"
+    - "design/method-diagnostic-report.md"
+    - "design/validity-threat-matrix.md"
+    - "design/dataset_plan.md"
+    - "data_management_plan.md"
+    - "data/cleaning_plan.md"
+    - "data/merge_plan.md"
+    - "ethics_irb.md"
+    - "compliance/deidentification_plan.md"
+    - "proposal/research_proposal.md"
+    - "manuscript/results_interpretation.md"
+    - "manuscript/effect_interpretation.md"
+    - "manuscript/tables/"
+    - "manuscript/figures/"
+    - "reporting_checklist.md"
+    - "submission/cover_letter.md"
+    - "submission/submission_checklist.md"
+    - "submission/title_page.md"
+    - "submission/highlights.md"
+    - "submission/suggested_reviewers.md"
+    - "submission/author_contributions_credit.md"
+    - "submission/funding_statement.md"
+    - "submission/coi_statement.md"
+    - "submission/data_availability.md"
+    - "submission/ai_disclosure.md"
+    - "submission/supplementary_inventory.md"
+    - "submission/journal_fit_recommendation.md"
+    - "submission/journal_fit_recommendation.json"
+    - "revision/response_matrix.md"
+    - "revision/response_letter.md"
+    - "proofread/ai_detection_report.md"
+    - "proofread/humanized_manuscript.md"
+    - "proofread/similarity_report.md"
+    - "proofread/citation-risk-report.md"
+    - "proofread/proofread_checklist.md"
+    - "assignment/brief.md"
+    - "assignment/rubric_map.md"
+    - "assignment/learning_outcomes.md"
+    - "assignment/academic_integrity_notes.md"
+    - "assignment/submission_checklist.md"
+    - "coursework/outline.md"
+    - "coursework/claim_evidence_plan.md"
+    - "coursework/citation_plan.md"
+    - "coursework/draft.md"
+    - "coursework/revision_plan.md"
+    - "coursework/final_response.md"
+    - "dissertation/dissertation_plan.md"
+    - "dissertation/chapter_map.md"
+    - "dissertation/chapter_status.md"
+    - "dissertation/milestone_plan.md"
+    - "dissertation/supervisor_feedback_log.md"
+    - "dissertation/revision_plan.md"
+    - "dissertation/final_readiness.md"
+    - "dissertation/defense_prep.md"
+    - "dissertation/chapters/"
+
+paper_types:
+  - id: "empirical"
+    focus: "design, data, methods, results, validity"
+  - id: "qualitative"
+    focus: "qualitative design, sampling, coding, interpretation, trustworthiness"
+  - id: "systematic-review"
+    focus: "PRISMA search-screen-extract-synthesize-report"
+  - id: "methods"
+    focus: "new method + validation + comparative evidence"
+  - id: "theory"
+    focus: "constructs, propositions, conceptual contribution"
+
+academic_project_types:
+  - "journal_manuscript"
+  - "research_paper"
+  - "coursework"
+  - "capstone"
+  - "dissertation"
+  - "thesis"
+  - "presentation"
+
+literature_evidence_bundle:
+  shared_artifacts:
+    - "search_strategy.md"
+    - "search_log.md"
+    - "search_results.csv"
+    - "dedup_log.csv"
+    - "snowball_log.md"
+    - "bibliography.bib"
+    - "screening/full_text.md"
+    - "retrieval_manifest.csv"
+  provider_roles:
+    scholarly-search:
+      owns:
+        - "search_strategy.md"
+        - "search_log.md"
+        - "search_results.csv"
+      appends:
+        - "dedup_log.csv"
+      responsibilities:
+        - "query planning and provider-specific query translation"
+        - "raw provider hit capture before screening"
+        - "initial dedup candidate generation"
+    citation-graph:
+      owns:
+        - "snowball_log.md"
+      appends:
+        - "search_results.csv"
+        - "dedup_log.csv"
+      responsibilities:
+        - "forward/backward seed expansion"
+        - "traceable corpus growth beyond direct query hits"
+    metadata-registry:
+      owns:
+        - "bibliography.bib"
+      appends:
+        - "dedup_log.csv"
+      responsibilities:
+        - "identifier normalization and merge decisions"
+        - "author/venue/year/DOI normalization"
+        - "citekey stabilization for downstream notes and exports"
+        - "normalize reference state from bibliography.bib, references.json, references.ris, search_results.csv, or notes/"
+    fulltext-retrieval:
+      owns:
+        - "screening/full_text.md"
+        - "retrieval_manifest.csv"
+      responsibilities:
+        - "full-text access resolution"
+        - "version and provenance tracking"
+        - "retrieval status needed for PRISMA-style reporting"
+
+academic_context_continuity:
+  artifacts:
+    - "context/research_state.md"
+    - "context/decision_log.md"
+    - "context/boundary_review.md"
+  refresh_points:
+    A: "Lock the working research question, scope boundaries, construct definitions, contribution thesis, and venue-positioning assumptions."
+    B: "Summarize the literature topology, inclusion/exclusion logic, evidence gaps, and contested concepts that must survive into design and writing."
+    C: "Record design commitments, identification logic, measurement choices, dataset constraints, and preregistration-facing decision rules."
+    D: "Update ethics constraints, privacy limits, deidentification commitments, and any design changes forced by participant-risk or governance concerns."
+    E: "Distinguish stable findings from tentative signals, document heterogeneity/nulls/conflicts, and preserve the current evidence position before manuscript drafting."
+    F: "Carry forward the manuscript thesis, claims-evidence alignment status, interpretation boundaries, and remaining narrative or analytical fragilities."
+    H: "Summarize reviewer-sensitive weaknesses, locked revision strategy, unresolved fatal risks, and submission-readiness blockers."
+    L: "Preserve assignment brief, rubric criteria, learning outcomes, AI-policy status, word count, user-supplied evidence, and unresolved submission risks."
+    M: "Preserve degree level, dissertation type, chapter status, supervisor feedback, milestone constraints, ethics dependencies, and unresolved evidence gaps."
+  research_state_required_sections:
+    - "Paper identity and current stage status"
+    - "Current research question, thesis, or contribution claim"
+    - "Scope boundaries and contested definitions"
+    - "Locked decisions with rationale and confidence"
+    - "Stable findings or current evidence position"
+    - "Active contradictions, nulls, or unresolved disputes"
+    - "Current risk register and fragility points"
+    - "Next-stage priorities"
+    - "Source artifact anchors"
+  decision_log_required_fields:
+    - "decision_id"
+    - "stage"
+    - "decision"
+    - "status"
+    - "rationale"
+    - "alternatives_rejected"
+    - "evidence_basis"
+    - "revisit_trigger"
+    - "downstream_impact"
+  boundary_review_required_sections:
+    - "academic boundary map"
+    - "claim strength and evidence threshold"
+    - "claim_strength_boundary"
+    - "evidence_threshold_boundary"
+    - "method_validity_boundary"
+    - "rival explanations and validity risks"
+    - "generalizability and venue limits"
+    - "generalizability_boundary"
+    - "research code, submission, or presentation commitments when relevant"
+    - "research_code_boundary"
+    - "submission_revision_boundary"
+    - "locked decisions and revisit triggers"
+    - "revisit_trigger"
+  boundary_refresh_points:
+    A: "Refresh phenomenon, construct, contribution, claim strength, and evidence threshold boundaries."
+    B: "Refresh literature corpus, inclusion/exclusion, and rival-literature boundaries."
+    C: "Refresh method-validity, operationalization, and claim-strength boundaries."
+    D: "Refresh consent, privacy, governance, and disclosure boundaries."
+    E: "Refresh synthesis, pooling, heterogeneity, and certainty boundaries."
+    F: "Refresh claim-evidence, interpretation, implication, and limitation boundaries."
+    G: "Refresh reporting, checklist, and compliance boundaries."
+    H: "Refresh submission, rebuttal, reviewer-promise, and fatal-flaw boundaries."
+    I: "Refresh code/data lineage, reproducibility, and analysis-validity boundaries."
+    J: "Refresh final wording and meaning-preservation boundaries."
+    K: "Refresh presentation claim, audience, and disclosure boundaries."
+    L: "Refresh rubric, learning-outcome, permitted-assistance, source-use, and personal-evidence boundaries."
+    M: "Refresh chapter, supervisor-feedback, ethics, milestone, claim-evidence, and defense-readiness boundaries."
+
+stages:
+  - id: "A"
+    name: "framing-positioning"
+    sequence_index: 1
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "context/stage_handoff.md"
+      - "framing/research_question.md"
+      - "framing/hypothesis.md"
+      - "framing/contribution_statement.md"
+      - "theoretical_framework.md"
+      - "gap_analysis.md"
+      - "framing/venue_analysis.md"
+  - id: "B"
+    name: "literature-related-work"
+    sequence_index: 2
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "context/stage_handoff.md"
+      - "protocol.md"
+      - "search_strategy.md"
+      - "literature/concept_extraction.md"
+      - "search_results.csv"
+      - "dedup_log.csv"
+      - "notes/"
+      - "bibliography.bib"
+      - "search_log.md"
+      - "snowball_log.md"
+      - "retrieval_manifest.csv"
+      - "screening/"
+      - "extraction_table.md"
+      - "quality_table.md"
+      - "synthesis_matrix.md"
+      - "literature/literature_map.md"
+  - id: "C"
+    name: "study-design-analysis-plan"
+    sequence_index: 3
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "context/stage_handoff.md"
+      - "study_design.md"
+      - "design/rival_hypotheses.md"
+      - "instruments/"
+      - "analysis_plan.md"
+      - "design/variable_spec.md"
+      - "design/robustness_plan.md"
+      - "design/method-diagnostic-report.md"
+      - "design/validity-threat-matrix.md"
+      - "design/dataset_plan.md"
+      - "data_management_plan.md"
+      - "preregistration.md"
+  - id: "D"
+    name: "ethics-irb"
+    sequence_index: 4
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "context/stage_handoff.md"
+      - "ethics_irb.md"
+      - "compliance/deidentification_plan.md"
+  - id: "E"
+    name: "evidence-synthesis"
+    sequence_index: 5
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "context/stage_handoff.md"
+      - "meta_analysis_plan.md"
+      - "effect_size_table.md"
+      - "meta_analysis_results.md"
+      - "grade_sof.md"
+      - "synthesis_matrix.md"
+      - "synthesis.md"
+      - "synthesis/publication_bias.md"
+      - "synthesis/qualitative_data_dictionary.md"
+      - "synthesis/thematic_codebook.md"
+  - id: "I"
+    name: "research-code-support"
+    sequence_index: 6
+    phase_type: "support-lane"
+    outputs:
+      - "analysis/"
+      - "data/cleaning_plan.md"
+      - "data/merge_plan.md"
+      - "code/reproducibility_audit.md"
+      - "code/code_specification.md"
+      - "code/plan.md"
+      - "code/performance_profile.md"
+      - "code/code_review.md"
+      - "code/container_config/"
+      - "code/documentation/"
+  - id: "K"
+    name: "academic-presentation"
+    sequence_index: 11
+    phase_type: "core"
+    outputs:
+      - "presentation/presentation_plan.md"
+      - "presentation/slide_deck_spec.md"
+      - "presentation/slidev/"
+      - "presentation/beamer/"
+      - "presentation/slides.bib"
+  - id: "L"
+    name: "coursework-learning-assessment"
+    sequence_index: 12
+    phase_type: "project-mode"
+    outputs:
+      - "assignment/brief.md"
+      - "assignment/rubric_map.md"
+      - "assignment/learning_outcomes.md"
+      - "assignment/academic_integrity_notes.md"
+      - "assignment/submission_checklist.md"
+      - "coursework/outline.md"
+      - "coursework/claim_evidence_plan.md"
+      - "coursework/citation_plan.md"
+      - "coursework/draft.md"
+      - "coursework/revision_plan.md"
+      - "coursework/final_response.md"
+  - id: "M"
+    name: "dissertation-major-project"
+    sequence_index: 13
+    phase_type: "project-mode"
+    outputs:
+      - "assignment/brief.md"
+      - "assignment/rubric_map.md"
+      - "assignment/learning_outcomes.md"
+      - "assignment/academic_integrity_notes.md"
+      - "dissertation/dissertation_plan.md"
+      - "dissertation/chapter_map.md"
+      - "dissertation/chapter_status.md"
+      - "dissertation/milestone_plan.md"
+      - "dissertation/supervisor_feedback_log.md"
+      - "dissertation/revision_plan.md"
+      - "dissertation/final_readiness.md"
+      - "dissertation/defense_prep.md"
+      - "dissertation/chapters/"
+  - id: "F"
+    name: "manuscript-writing"
+    sequence_index: 7
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "proposal/research_proposal.md"
+      - "manuscript/outline.md"
+      - "manuscript/manuscript.md"
+      - "manuscript/discussion.md"
+      - "manuscript/discussion_story_spine.md"
+      - "manuscript/claims_evidence_map.md"
+      - "evidence/claim-evidence-ledger.csv"
+      - "manuscript/figures_tables_plan.md"
+      - "manuscript/results_interpretation.md"
+      - "manuscript/effect_interpretation.md"
+      - "manuscript/tables/"
+      - "manuscript/figures/"
+      - "manuscript/meta_optimization.md"
+  - id: "G"
+    name: "polish-compliance"
+    sequence_index: 8
+    phase_type: "core"
+    outputs:
+      - "reporting_checklist.md"
+      - "prisma_checklist.md"
+      - "manuscript/claims_evidence_map.md"
+      - "compliance/tone_normalization.md"
+  - id: "J"
+    name: "proofread-de-ai"
+    sequence_index: 9
+    phase_type: "core"
+    outputs:
+      - "proofread/ai_detection_report.md"
+      - "proofread/humanized_manuscript.md"
+      - "proofread/similarity_report.md"
+      - "proofread/citation-risk-report.md"
+      - "proofread/proofread_checklist.md"
+  - id: "H"
+    name: "submission-revision"
+    sequence_index: 10
+    phase_type: "core"
+    outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+      - "context/stage_handoff.md"
+      - "submission/cover_letter.md"
+      - "submission/submission_checklist.md"
+      - "submission/title_page.md"
+      - "submission/highlights.md"
+      - "submission/suggested_reviewers.md"
+      - "submission/author_contributions_credit.md"
+      - "submission/funding_statement.md"
+      - "submission/coi_statement.md"
+      - "submission/data_availability.md"
+      - "submission/ai_disclosure.md"
+      - "submission/supplementary_inventory.md"
+      - "submission/journal_fit_recommendation.md"
+      - "submission/journal_fit_recommendation.json"
+      - "revision/response_matrix.md"
+      - "revision/reviewer_empathy_check.md"
+      - "revision/response_letter.md"
+      - "revision/peer_review_simulation.md"
+      - "revision/fatal_flaw_analysis.md"
+      - "revision/limitations_audit.md"
+      - "revision/limitation_mitigations.md"
+
+task_catalog:
+  A1:
+    stage: "A"
+    title: "research-question"
+    outputs:
+      - "framing/research_question.md"
+  A1_5:
+    stage: "A"
+    title: "hypothesis-generation"
+    outputs:
+      - "framing/hypothesis.md"
+  A2:
+    stage: "A"
+    title: "contribution-novelty"
+    outputs:
+      - "framing/contribution_statement.md"
+  A3:
+    stage: "A"
+    title: "theoretical-framing"
+    outputs:
+      - "theoretical_framework.md"
+  A4:
+    stage: "A"
+    title: "gap-analysis"
+    outputs:
+      - "gap_analysis.md"
+  A5:
+    stage: "A"
+    title: "venue-analysis"
+    outputs:
+      - "framing/venue_analysis.md"
+  B1:
+    stage: "B"
+    title: "systematic-review"
+    outputs:
+      - "protocol.md"
+      - "search_strategy.md"
+      - "search_log.md"
+      - "search_results.csv"
+      - "dedup_log.csv"
+      - "snowball_log.md"
+      - "screening/"
+      - "notes/"
+      - "bibliography.bib"
+      - "retrieval_manifest.csv"
+      - "extraction_table.md"
+      - "quality_table.md"
+      - "synthesis_matrix.md"
+      - "synthesis.md"
+  B1_5:
+    stage: "B"
+    title: "concept-extraction"
+    outputs:
+      - "literature/concept_extraction.md"
+  B2:
+    stage: "B"
+    title: "targeted-paper-reading"
+    outputs:
+      - "notes/"
+      - "bibliography.bib"
+      - "retrieval_manifest.csv"
+      - "literature/paper_reading_summary.md"
+      - "literature/paper_reading_matrix.md"
+  B3:
+    stage: "B"
+    title: "citation-snowballing"
+    outputs:
+      - "snowball_log.md"
+      - "search_results.csv"
+      - "dedup_log.csv"
+  B4:
+    stage: "B"
+    title: "related-work-writing"
+    outputs:
+      - "manuscript/manuscript.md"
+  B5:
+    stage: "B"
+    title: "citation-management"
+    outputs:
+      - "bibliography.bib"
+      - "references.ris"
+      - "references.json"
+  B6:
+    stage: "B"
+    title: "literature-mapping"
+    outputs:
+      - "literature/literature_map.md"
+  C1:
+    stage: "C"
+    title: "study-design"
+    outputs:
+      - "study_design.md"
+      - "design/method-diagnostic-report.md"
+      - "design/validity-threat-matrix.md"
+  C1_5:
+    stage: "C"
+    title: "rival-hypothesis-design"
+    outputs:
+      - "design/rival_hypotheses.md"
+  C2:
+    stage: "C"
+    title: "instruments"
+    outputs:
+      - "instruments/"
+  C3:
+    stage: "C"
+    title: "analysis-plan"
+    outputs:
+      - "analysis_plan.md"
+      - "design/variable_spec.md"
+  C3_5:
+    stage: "C"
+    title: "robustness-plan"
+    outputs:
+      - "design/robustness_plan.md"
+      - "design/method-diagnostic-report.md"
+      - "design/validity-threat-matrix.md"
+  C4:
+    stage: "C"
+    title: "data-management-plan"
+    outputs:
+      - "data_management_plan.md"
+      - "design/dataset_plan.md"
+  C5:
+    stage: "C"
+    title: "preregistration"
+    outputs:
+      - "preregistration.md"
+  D1:
+    stage: "D"
+    title: "ethics-pack"
+    outputs:
+      - "ethics_irb.md"
+  D2:
+    stage: "D"
+    title: "ethics-statements"
+    outputs:
+      - "manuscript/manuscript.md"
+  D3:
+    stage: "D"
+    title: "deidentification-plan"
+    outputs:
+      - "compliance/deidentification_plan.md"
+  E1:
+    stage: "E"
+    title: "synthesis-strategy"
+    outputs:
+      - "meta_analysis_plan.md"
+  E2:
+    stage: "E"
+    title: "effect-size-table"
+    outputs:
+      - "effect_size_table.md"
+  E3:
+    stage: "E"
+    title: "meta-analysis"
+    outputs:
+      - "meta_analysis_results.md"
+  E3_5:
+    stage: "E"
+    title: "publication-bias-check"
+    outputs:
+      - "synthesis/publication_bias.md"
+  E4:
+    stage: "E"
+    title: "certainty-grading"
+    outputs:
+      - "grade_sof.md"
+  E5:
+    stage: "E"
+    title: "integrated-synthesis"
+    outputs:
+      - "synthesis.md"
+      - "synthesis/qualitative_data_dictionary.md"
+      - "synthesis/thematic_codebook.md"
+  F1:
+    stage: "F"
+    title: "manuscript-outline"
+    outputs:
+      - "manuscript/outline.md"
+  F2:
+    stage: "F"
+    title: "single-section-writing"
+    outputs:
+      - "manuscript/manuscript.md"
+  F3:
+    stage: "F"
+    title: "full-manuscript-draft"
+    outputs:
+      - "manuscript/manuscript.md"
+      - "manuscript/discussion.md"
+      - "manuscript/discussion_story_spine.md"
+      - "manuscript/results_interpretation.md"
+      - "manuscript/effect_interpretation.md"
+  F4:
+    stage: "F"
+    title: "claim-evidence-map"
+    outputs:
+      - "manuscript/claims_evidence_map.md"
+      - "evidence/claim-evidence-ledger.csv"
+  F5:
+    stage: "F"
+    title: "figures-tables-plan"
+    outputs:
+      - "manuscript/figures_tables_plan.md"
+      - "manuscript/tables/"
+      - "manuscript/figures/"
+  F6:
+    stage: "F"
+    title: "meta-optimization"
+    outputs:
+      - "manuscript/meta_optimization.md"
+  G1:
+    stage: "G"
+    title: "reporting-check"
+    outputs:
+      - "reporting_checklist.md"
+  G2:
+    stage: "G"
+    title: "prisma-check"
+    outputs:
+      - "prisma_checklist.md"
+  G3:
+    stage: "G"
+    title: "cross-section-integrity"
+    outputs:
+      - "manuscript/claims_evidence_map.md"
+  G4:
+    stage: "G"
+    title: "tone-normalization"
+    outputs:
+      - "compliance/tone_normalization.md"
+  H1:
+    stage: "H"
+    title: "submission-package"
+    outputs:
+      - "submission/cover_letter.md"
+      - "submission/submission_checklist.md"
+      - "submission/title_page.md"
+      - "submission/highlights.md"
+      - "submission/suggested_reviewers.md"
+      - "submission/author_contributions_credit.md"
+      - "submission/funding_statement.md"
+      - "submission/coi_statement.md"
+      - "submission/data_availability.md"
+      - "submission/ai_disclosure.md"
+      - "submission/supplementary_inventory.md"
+  H2:
+    stage: "H"
+    title: "rebuttal-package"
+    outputs:
+      - "revision/"
+  H2_5:
+    stage: "H"
+    title: "reviewer-empathy-check"
+    outputs:
+      - "revision/reviewer_empathy_check.md"
+  I1:
+    stage: "I"
+    title: "method-implementation"
+    outputs:
+      - "analysis/"
+  I2:
+    stage: "I"
+    title: "reproduction"
+    outputs:
+      - "analysis/"
+  I3:
+    stage: "I"
+    title: "data-pipeline"
+    outputs:
+      - "analysis/"
+      - "data/cleaning_plan.md"
+      - "data/merge_plan.md"
+  I4:
+    stage: "I"
+    title: "reproducibility-audit"
+    outputs:
+      - "code/reproducibility_audit.md"
+  H3:
+    stage: "H"
+    title: "peer-review-simulation"
+    outputs:
+      - "revision/peer_review_simulation.md"
+  H4:
+    stage: "H"
+    title: "fatal-flaw-analysis"
+    outputs:
+      - "revision/fatal_flaw_analysis.md"
+      - "revision/limitations_audit.md"
+      - "revision/limitation_mitigations.md"
+  H5:
+    stage: "H"
+    title: "reverse-journal-fit-recommendation"
+    purpose: "Reverse journal-fit recommendation"
+    outputs:
+      - "submission/journal_fit_recommendation.md"
+      - "submission/journal_fit_recommendation.json"
+  I5:
+    stage: "I"
+    title: "code-specification"
+    outputs:
+      - "code/code_specification.md"
+  I6:
+    stage: "I"
+    title: "code-planning"
+    outputs:
+      - "code/plan.md"
+  I7:
+    stage: "I"
+    title: "code-execution"
+    outputs:
+      - "code/performance_profile.md"
+      - "code/container_config/"
+      - "code/documentation/"
+      - "analysis/"
+  I8:
+    stage: "I"
+    title: "code-review"
+    outputs:
+      - "code/code_review.md"
+  J1:
+    stage: "J"
+    title: "ai-fingerprint-scan"
+    outputs:
+      - "proofread/ai_detection_report.md"
+  J2:
+    stage: "J"
+    title: "human-voice-rewrite"
+    outputs:
+      - "proofread/humanized_manuscript.md"
+  J3:
+    stage: "J"
+    title: "similarity-originality-check"
+    outputs:
+      - "proofread/similarity_report.md"
+      - "proofread/citation-risk-report.md"
+  J4:
+    stage: "J"
+    title: "final-proofread"
+    outputs:
+      - "proofread/proofread_checklist.md"
+  I9:
+    stage: "I"
+    title: "release-packaging"
+    outputs:
+      - "release/"
+  K1:
+    stage: "K"
+    title: "presentation-planning"
+    outputs:
+      - "presentation/presentation_plan.md"
+  K2:
+    stage: "K"
+    title: "slide-architecture"
+    outputs:
+      - "presentation/slide_deck_spec.md"
+  K3:
+    stage: "K"
+    title: "slidev-build"
+    outputs:
+      - "presentation/slidev/"
+      - "presentation/slides.bib"
+  K4:
+    stage: "K"
+    title: "beamer-build"
+    outputs:
+      - "presentation/beamer/"
+      - "presentation/slides.bib"
+  L1:
+    stage: "L"
+    title: "assignment-brief-intake"
+    purpose: "Assignment brief intake"
+    outputs:
+      - "assignment/brief.md"
+  L2:
+    stage: "L"
+    title: "rubric-learning-outcome-map"
+    purpose: "Rubric and learning-outcome mapping"
+    outputs:
+      - "assignment/rubric_map.md"
+      - "assignment/learning_outcomes.md"
+  L3:
+    stage: "L"
+    title: "coursework-outline"
+    purpose: "Coursework outline and structure plan"
+    outputs:
+      - "coursework/outline.md"
+  L4:
+    stage: "L"
+    title: "coursework-claim-evidence-plan"
+    purpose: "Coursework claim-evidence and citation plan"
+    outputs:
+      - "coursework/claim_evidence_plan.md"
+      - "coursework/citation_plan.md"
+  L5:
+    stage: "L"
+    title: "coursework-draft"
+    purpose: "Coursework draft or section draft"
+    outputs:
+      - "coursework/draft.md"
+  L6:
+    stage: "L"
+    title: "coursework-revision"
+    purpose: "Coursework revision against rubric"
+    outputs:
+      - "coursework/revision_plan.md"
+  L7:
+    stage: "L"
+    title: "coursework-final-readiness"
+    purpose: "Coursework final readiness check"
+    outputs:
+      - "assignment/submission_checklist.md"
+  M1:
+    stage: "M"
+    title: "dissertation-planning"
+    purpose: "Dissertation project planning"
+    outputs:
+      - "dissertation/dissertation_plan.md"
+  M2:
+    stage: "M"
+    title: "dissertation-chapter-architecture"
+    purpose: "Dissertation chapter architecture"
+    outputs:
+      - "dissertation/chapter_map.md"
+  M3:
+    stage: "M"
+    title: "dissertation-chapter-drafting"
+    purpose: "Dissertation chapter drafting"
+    outputs:
+      - "dissertation/chapters/"
+  M4:
+    stage: "M"
+    title: "supervisor-feedback-integration"
+    purpose: "Supervisor feedback integration"
+    outputs:
+      - "dissertation/supervisor_feedback_log.md"
+      - "dissertation/revision_plan.md"
+  M5:
+    stage: "M"
+    title: "dissertation-milestone-risk-plan"
+    purpose: "Dissertation milestone and risk planning"
+    outputs:
+      - "dissertation/milestone_plan.md"
+  M6:
+    stage: "M"
+    title: "dissertation-final-readiness"
+    purpose: "Dissertation final readiness check"
+    outputs:
+      - "dissertation/final_readiness.md"
+  M7:
+    stage: "M"
+    title: "viva-defense-preparation"
+    purpose: "Viva or defense preparation"
+    outputs:
+      - "dissertation/defense_prep.md"
+
+dependency_catalog:
+  A1:
+    recommended_next:
+      - "A1_5"
+      - "A2"
+      - "A3"
+      - "A4"
+      - "A5"
+      - "B1_5"
+      - "B2"
+  A1_5:
+    prerequisites_all:
+      - "A1"
+    recommended_next:
+      - "C1"
+      - "C3"
+      - "C1_5"
+      - "F1"
+  A2:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "A4"
+    recommended_next:
+      - "A5"
+      - "F1"
+      - "B2"
+      - "B6"
+  A3:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "B2"
+    recommended_next:
+      - "A1_5"
+      - "A4"
+      - "C1"
+      - "F1"
+  A4:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "B2"
+    recommended_next:
+      - "A2"
+      - "A5"
+  A5:
+    prerequisites_all:
+      - "A1"
+      - "A2"
+    recommended_prerequisites:
+      - "A4"
+    recommended_next:
+      - "F1"
+      - "B2"
+
+  B1:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "B1_5"
+    recommended_next:
+      - "G2"
+      - "F3"
+      - "H1"
+  B1_5:
+    prerequisites_all:
+      - "A1"
+    recommended_next:
+      - "B1"
+      - "B2"
+  B2:
+    prerequisites_all:
+      - "A1"
+    recommended_next:
+      - "B6"
+      - "A4"
+      - "B3"
+      - "B4"
+      - "B5"
+  B3:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_next:
+      - "B6"
+      - "B1"
+  B4:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_prerequisites:
+      - "B6"
+      - "A2"
+    recommended_next:
+      - "F1"
+      - "F2"
+      - "F3"
+  B5:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_next:
+      - "H1"
+  B6:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_prerequisites:
+      - "B3"
+    recommended_next:
+      - "B4"
+      - "A4"
+      - "F1"
+
+  C1:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "A1_5"
+      - "A3"
+      - "A5"
+    recommended_next:
+      - "C2"
+      - "C3"
+      - "C4"
+      - "D1"
+  C1_5:
+    prerequisites_all:
+      - "C1"
+    recommended_prerequisites:
+      - "A1_5"
+    recommended_next:
+      - "C3_5"
+      - "C3"
+  C2:
+    prerequisites_all:
+      - "C1"
+    recommended_next:
+      - "D1"
+      - "C3"
+  C3:
+    prerequisites_all:
+      - "C1"
+    recommended_prerequisites:
+      - "A1_5"
+    recommended_next:
+      - "C3_5"
+      - "C4"
+      - "I3"
+      - "I5"
+      - "F3"
+  C3_5:
+    prerequisites_all:
+      - "C3"
+    recommended_next:
+      - "F3"
+      - "G1"
+  C4:
+    prerequisites_all:
+      - "C1"
+    recommended_next:
+      - "D1"
+      - "D3"
+      - "I3"
+      - "H1"
+  C5:
+    prerequisites_all:
+      - "C1"
+      - "C3"
+    recommended_prerequisites:
+      - "C3_5"
+    recommended_next:
+      - "D1"
+
+  D1:
+    prerequisites_all:
+      - "C1"
+      - "C4"
+    recommended_prerequisites:
+      - "C2"
+    recommended_next:
+      - "D3"
+      - "D2"
+      - "H1"
+  D2:
+    prerequisites_any:
+      - "D1"
+      - "C1"
+    recommended_next:
+      - "H1"
+      - "F3"
+  D3:
+    prerequisites_all:
+      - "C4"
+    recommended_prerequisites:
+      - "D1"
+    recommended_next:
+      - "D1"
+      - "H1"
+
+  E1:
+    prerequisites_any:
+      - "B1"
+      - "B2"
+    recommended_next:
+      - "E2"
+      - "E3"
+      - "E5"
+  E2:
+    prerequisites_all:
+      - "E1"
+    recommended_next:
+      - "E3"
+  E3:
+    prerequisites_all:
+      - "E2"
+    recommended_next:
+      - "E3_5"
+      - "E5"
+      - "F3"
+  E3_5:
+    prerequisites_all:
+      - "E3"
+    recommended_next:
+      - "E5"
+  E4:
+    prerequisites_any:
+      - "E3"
+      - "E5"
+    recommended_next:
+      - "E5"
+      - "F3"
+  E5:
+    prerequisites_any:
+      - "B1"
+      - "E3"
+    recommended_next:
+      - "F3"
+      - "G2"
+
+  F1:
+    prerequisites_all:
+      - "A1"
+      - "A2"
+    recommended_prerequisites:
+      - "A5"
+      - "B4"
+    recommended_next:
+      - "F2"
+      - "F3"
+      - "F5"
+  F2:
+    prerequisites_all:
+      - "F1"
+    recommended_next:
+      - "F3"
+      - "F4"
+  F3:
+    prerequisites_all:
+      - "F1"
+    recommended_prerequisites:
+      - "B4"
+      - "C1"
+      - "C3"
+      - "I3"
+    recommended_next:
+      - "F4"
+      - "F5"
+      - "F6"
+      - "G1"
+      - "G3"
+      - "G4"
+      - "H3"
+      - "H4"
+  F4:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_next:
+      - "G3"
+  F5:
+    prerequisites_any:
+      - "F1"
+      - "F3"
+    recommended_next:
+      - "F3"
+      - "G3"
+  F6:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_prerequisites:
+      - "F4"
+    recommended_next:
+      - "H1"
+
+  G1:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_next:
+      - "H1"
+  G2:
+    prerequisites_all:
+      - "B1"
+    recommended_prerequisites:
+      - "F3"
+    recommended_next:
+      - "H1"
+  G3:
+    prerequisites_all:
+      - "F4"
+    recommended_prerequisites:
+      - "G1"
+    recommended_next:
+      - "H1"
+      - "H3"
+      - "H4"
+  G4:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_next:
+      - "H1"
+
+  J1:
+    prerequisites_any:
+      - "F2"
+      - "F3"
+    recommended_prerequisites:
+      - "G4"
+    recommended_next:
+      - "J2"
+  J2:
+    prerequisites_all:
+      - "J1"
+    recommended_next:
+      - "J3"
+  J3:
+    prerequisites_all:
+      - "J2"
+    recommended_next:
+      - "J4"
+  J4:
+    prerequisites_all:
+      - "J3"
+    recommended_next:
+      - "H1"
+
+  H1:
+    prerequisites_all:
+      - "F3"
+    recommended_prerequisites:
+      - "G1"
+      - "G3"
+      - "G4"
+    recommended_next:
+      - "H2"
+      - "H3"
+      - "H4"
+  H2:
+    prerequisites_all:
+      - "H1"
+    recommended_next:
+      - "H2_5"
+  H2_5:
+    prerequisites_all:
+      - "H2"
+    recommended_next:
+      - "H2"
+  H3:
+    prerequisites_all:
+      - "F3"
+    recommended_prerequisites:
+      - "G1"
+      - "G3"
+    recommended_next:
+      - "F3"
+      - "H1"
+  H4:
+    prerequisites_any:
+      - "F1"
+      - "F3"
+    recommended_next:
+      - "F3"
+      - "H5"
+      - "H1"
+  H5:
+    prerequisites_all:
+      - "F3"
+      - "F4"
+    recommended_prerequisites:
+      - "A2"
+      - "A5"
+      - "C1"
+      - "C3"
+      - "H4"
+    recommended_next:
+      - "H1"
+
+  I1:
+    prerequisites_any:
+      - "I5"
+      - "C3"
+    recommended_prerequisites:
+      - "I6"
+    recommended_next:
+      - "I4"
+  I2:
+    prerequisites_any:
+      - "I5"
+      - "C3"
+    recommended_prerequisites:
+      - "I6"
+    recommended_next:
+      - "I4"
+  I3:
+    prerequisites_any:
+      - "I5"
+      - "C4"
+    recommended_prerequisites:
+      - "C3"
+      - "I6"
+    recommended_next:
+      - "I1"
+      - "I2"
+      - "I4"
+  I4:
+    prerequisites_any:
+      - "I1"
+      - "I2"
+      - "I3"
+      - "I7"
+    recommended_next:
+      - "H1"
+  I5:
+    prerequisites_all:
+      - "A1"
+    recommended_prerequisites:
+      - "C3"
+    recommended_next:
+      - "I6"
+  I6:
+    prerequisites_all:
+      - "I5"
+    recommended_next:
+      - "I7"
+  I7:
+    prerequisites_all:
+      - "I6"
+    recommended_next:
+      - "I8"
+      - "I4"
+  I8:
+    prerequisites_all:
+      - "I7"
+    recommended_next:
+      - "I4"
+  I9:
+    prerequisites_any:
+      - "I4"
+      - "I7"
+    recommended_next:
+      - "H1"
+
+  K1:
+    prerequisites_any:
+      - "F3"
+      - "F2"
+    recommended_prerequisites:
+      - "A5"
+    recommended_next:
+      - "K2"
+  K2:
+    prerequisites_all:
+      - "K1"
+    recommended_next:
+      - "K3"
+      - "K4"
+  K3:
+    prerequisites_all:
+      - "K2"
+  K4:
+    prerequisites_all:
+      - "K2"
+
+  L1:
+    recommended_next:
+      - "L2"
+  L2:
+    prerequisites_all:
+      - "L1"
+    recommended_next:
+      - "L3"
+      - "L4"
+  L3:
+    prerequisites_all:
+      - "L2"
+    recommended_next:
+      - "L4"
+      - "L5"
+  L4:
+    prerequisites_all:
+      - "L2"
+    recommended_prerequisites:
+      - "L3"
+    recommended_next:
+      - "L5"
+      - "L6"
+  L5:
+    prerequisites_any:
+      - "L3"
+      - "L4"
+    recommended_next:
+      - "L6"
+  L6:
+    prerequisites_any:
+      - "L4"
+      - "L5"
+    recommended_next:
+      - "L7"
+  L7:
+    prerequisites_any:
+      - "L2"
+      - "L6"
+
+  M1:
+    recommended_next:
+      - "M2"
+      - "A1"
+      - "C1"
+  M2:
+    prerequisites_all:
+      - "M1"
+    recommended_next:
+      - "M3"
+      - "M5"
+  M3:
+    prerequisites_all:
+      - "M2"
+    recommended_next:
+      - "M4"
+      - "M6"
+  M4:
+    prerequisites_all:
+      - "M2"
+    recommended_next:
+      - "M3"
+      - "M6"
+  M5:
+    prerequisites_all:
+      - "M1"
+    recommended_next:
+      - "M6"
+  M6:
+    prerequisites_all:
+      - "M2"
+    recommended_prerequisites:
+      - "M4"
+    recommended_next:
+      - "M7"
+  M7:
+    prerequisites_all:
+      - "M6"
+
+platform_mapping:
+  claude_code:
+    A1: "/paper [topic]"
+    A1_5: "/paper [topic] --focus hypothesis"
+    A2: "/paper [topic] --focus contribution_statement"
+    A3: "/build-framework"
+    A4: "/find-gap"
+    A5: "/paper [topic] --focus venue_analysis"
+    B1: "/lit-review"
+    B1_5: "/lit-review [topic] --focus concept-extraction"
+    B2: "/paper-read"
+    B3: "/lit-review [topic] --focus citation-snowballing"
+    B4: "/academic-write related-work [topic]"
+    B5: "Use Claude to format citations into bibliography.bib"
+    B6: "Use Claude to generate literature/literature_map.md"
+    C1: "/study-design"
+    C1_5: "/study-design [topic] --focus rival_hypotheses"
+    C2: "/study-design [topic] --focus instruments"
+    C3: "/study-design [topic] --focus analysis_plan"
+    C3_5: "/study-design [topic] --focus robustness_plan"
+    C4: "Use Claude to draft data_management_plan.md"
+    C5: "/study-design [topic] --focus preregistration"
+    D1: "/ethics-check"
+    D2: "/academic-write ethics [topic]"
+    D3: "/ethics-check [topic] --focus deidentification"
+    E1: "/synthesize [topic] --focus meta_analysis_plan"
+    E2: "/synthesize [topic] --focus effect_size_table"
+    E3: "/synthesize [topic] --focus meta_analysis_results"
+    E3_5: "/synthesize [topic] --focus publication_bias"
+    E4: "/synthesize [topic] --focus certainty_grading"
+    E5: "/synthesize"
+    F1: "/paper-write [topic] --focus outline"
+    F2: "/academic-write [section] [topic]"
+    F3: "/paper-write"
+    F4: "Use Claude to generate manuscript/claims_evidence_map.md"
+    F5: "/paper-write [topic] --focus figures_tables"
+    F6: "/paper-write [topic] --focus meta_optimization"
+    G1: "/submission-prep [topic] --focus reporting_checklist"
+    G2: "/lit-review [topic] --focus prisma_checklist"
+    G3: "Use Claude to verify manuscript/claims_evidence_map.md"
+    G4: "Use Claude to perform tone_normalization.md"
+    H1: "/submission-prep"
+    H2: "/rebuttal"
+    H2_5: "/rebuttal [topic] --focus reviewer_empathy"
+    H3: "/rebuttal [topic] --focus peer_review_simulation"
+    H4: "/rebuttal [topic] --focus fatal_flaw_analysis"
+    H5: "Use Claude to generate submission/journal_fit_recommendation.md from manuscript fit evidence"
+    I1: "/code-build"
+    I2: "/code-build [topic] --focus reproduction"
+    I3: "/code-build [topic] --focus data_pipeline"
+    I4: "/code-build [topic] --focus reproducibility_audit"
+    I5: "/code-build [topic] --focus code_specification"
+    I6: "/code-build [topic] --focus code_planning"
+    I7: "/code-build [topic] --focus execution_performance"
+    I8: "/code-build [topic] --focus code_review"
+    J1: "/proofread [topic] --focus ai_detection"
+    J2: "/proofread [topic] --focus humanize"
+    J3: "/proofread [topic] --focus similarity"
+    J4: "/proofread [topic] --focus final_proofread"
+    L1: "/coursework [topic] --focus assignment_brief"
+    L2: "/coursework [topic] --focus rubric_map"
+    L3: "/coursework [topic] --focus outline"
+    L4: "/coursework [topic] --focus claim_evidence"
+    L5: "/coursework [topic] --focus draft"
+    L6: "/coursework [topic] --focus revision"
+    L7: "/coursework [topic] --focus final_readiness"
+    M1: "/dissertation [topic] --focus plan"
+    M2: "/dissertation [topic] --focus chapter_map"
+    M3: "/dissertation [topic] --focus chapter_draft"
+    M4: "/dissertation [topic] --focus supervisor_feedback"
+    M5: "/dissertation [topic] --focus milestones"
+    M6: "/dissertation [topic] --focus final_readiness"
+    M7: "/dissertation [topic] --focus defense_prep"
+  codex:
+    entry: "$qiongli"
+    task_selector: "Use Task ID from task_catalog (for example F3 or G1)"
+
+quality_gates:
+  - id: "Q1"
+    name: "question-to-method alignment"
+    contract_ref: "standards/quality-gate-contract.yaml#gates.Q1"
+    rule: "RQs in framing match methods and outcomes in manuscript"
+  - id: "Q2"
+    name: "claim-evidence traceability"
+    contract_ref: "standards/quality-gate-contract.yaml#gates.Q2"
+    rule: "All major claims mapped to evidence and citations"
+  - id: "Q3"
+    name: "reporting completeness"
+    contract_ref: "standards/quality-gate-contract.yaml#gates.Q3"
+    rule: "Use reporting-checker or prisma-checker before submission"
+  - id: "Q4"
+    name: "reproducibility baseline"
+    contract_ref: "standards/quality-gate-contract.yaml#gates.Q4"
+    rule: "Analysis decisions and artifact paths are documented"
+
+# ── Shard Directory Convention (team-run) ───────────────────────────
+# Used by team-run mode to isolate parallel worker outputs.
+shard_directory_convention:
+  pattern: "RESEARCH/[topic]/runs/[run_id]/shards/[unit_id]/"
+  rules:
+    - "Workers MUST write only to their own shard directory"
+    - "Only merge/finalize stage may write to canonical output paths"
+    - "Each shard directory receives run_id and unit_id from orchestrator"
+    - "Shard directories are ephemeral; canonical outputs are the deliverable"
+  merge_output_requirements:
+    - "conflict_summary: must document inter-shard disagreements"
+    - "consensus_summary: must document converging findings"
+    - "gap_summary: must identify areas no shard covered"
+
+worker_failure_semantics:
+  degrade:
+    description: "Continue with remaining shards if min_success_ratio is met"
+    merge_behavior: "Merge available shards; note missing units in gap_summary"
+  block:
+    description: "Halt entire team-run if any worker fails"
+    merge_behavior: "No merge attempted; return error"
+  retry:
+    description: "Re-dispatch failed work_unit up to max_retries times"
+    max_retries: 2
+    merge_behavior: "Merge after retries; block if still failing"

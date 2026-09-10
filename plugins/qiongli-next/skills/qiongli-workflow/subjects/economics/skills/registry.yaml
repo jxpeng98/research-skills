@@ -1,0 +1,37 @@
+skills:
+  - id: econ-identification-auditor
+    stage: C_design
+    version: "0.11.1"
+    file: skills/C_design/econ-identification-auditor.md
+    canonical: true
+    summary: "Audit economics identification strategies, threats, and robustness requirements."
+    display_name: "Economics Identification Auditor"
+    when_to_use: "Use when an economics paper needs identification-threat and robustness auditing."
+    summary_zh: "审计经济学识别策略、威胁和稳健性要求。"
+    display_name_zh: "经济学识别审计"
+    when_to_use_zh: "当经济学论文需要检查识别策略、威胁和稳健性时使用。"
+    inputs: [DesignSpec, AnalysisPlan]
+    outputs: [IdentificationAudit]
+    tags: [economics, identification, causal-inference, robustness]
+    depends_on: [study-designer, robustness-planner]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true
+  - id: econ-replication-package-auditor
+    stage: I_code
+    version: "0.11.1"
+    file: skills/I_code/econ-replication-package-auditor.md
+    canonical: true
+    summary: "Audit economics replication packages, reproducibility materials, data access, and disclosure risks."
+    display_name: "Economics Replication Package Auditor"
+    when_to_use: "Use before submitting an economics paper with empirical results, code, and replication materials."
+    summary_zh: "审计经济学复现包、可复现性材料、数据访问和披露风险。"
+    display_name_zh: "经济学复现包审计"
+    when_to_use_zh: "当经济学论文提交前需要检查实证结果、代码和复现材料时使用。"
+    inputs: [Manuscript, AnalysisCode, DataDictionary]
+    outputs: [ReplicationAudit]
+    tags: [economics, reproducibility, replication, data-code, disclosure]
+    depends_on: [code-review, reproducibility-auditor, release-packager]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true

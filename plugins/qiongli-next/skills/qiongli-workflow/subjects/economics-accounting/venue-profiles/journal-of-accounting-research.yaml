@@ -1,0 +1,8 @@
+venue: journal-of-accounting-research
+display_name: "Journal of Accounting Research"
+subject: economics-accounting
+expectations:
+  sections: [Introduction, Institutional_Setting, Data, Research_Design, Results, Additional_Analyses, Conclusion]
+  data_code: "Replicable archival construction and defensible sample restrictions expected."
+  identification: "Economic identification and accounting measurement must be jointly defended."
+  style: "Economics-style empirical argument with deep accounting setting and construct precision."

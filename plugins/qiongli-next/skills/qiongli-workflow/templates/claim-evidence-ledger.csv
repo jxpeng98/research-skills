@@ -1,0 +1,2 @@
+claim_id,claim_text,claim_type,evidence_type,source_id,source_location,artifact_path,confidence,limitations,status
+C1,Replace with a central claim,finding,gap_note,,,context/gap_notes.md,low,Support not yet attached,needs_evidence

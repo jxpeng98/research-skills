@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_lifecycle_plan.full.output.v2.json",
+  "title": "qiongli_lifecycle_plan full structured output",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "topic",
+    "paper_type",
+    "lifecycle_status",
+    "stage_gates",
+    "recommended_next_tasks",
+    "blocking_reasons",
+    "drift_checks",
+    "journal_fit"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "mode": {
+      "const": "preview"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "paper_type": {
+      "type": "string"
+    },
+    "lifecycle_status": {
+      "type": "string"
+    },
+    "stage_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "recommended_next_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "drift_checks": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "journal_fit": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

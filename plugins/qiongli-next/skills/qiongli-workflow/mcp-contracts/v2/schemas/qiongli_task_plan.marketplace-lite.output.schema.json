@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_task_plan.marketplace-lite.output.v2.json",
+  "title": "qiongli_task_plan marketplace-lite structured output",
+  "type": "object",
+  "required": [
+    "mode",
+    "preview_only",
+    "runtime_profile",
+    "run_agents_allowed",
+    "shell_execution_allowed",
+    "project_writes_allowed",
+    "recommended_runtime",
+    "upgrade",
+    "task_id",
+    "paper_type",
+    "topic"
+  ],
+  "properties": {
+    "mode": {
+      "const": "preview"
+    },
+    "preview_only": {
+      "const": true
+    },
+    "runtime_profile": {
+      "const": "marketplace_lite"
+    },
+    "run_agents_allowed": {
+      "const": false
+    },
+    "shell_execution_allowed": {
+      "const": false
+    },
+    "project_writes_allowed": {
+      "const": false
+    },
+    "recommended_runtime": {
+      "type": "string"
+    },
+    "upgrade": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "paper_type": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_experience_show.full.output.v2.json",
+  "title": "qiongli_experience_show full structured output",
+  "type": "object",
+  "required": [
+    "project_dir",
+    "run_id",
+    "record_path",
+    "record"
+  ],
+  "properties": {
+    "project_dir": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "record_path": {
+      "type": "string"
+    },
+    "malformed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

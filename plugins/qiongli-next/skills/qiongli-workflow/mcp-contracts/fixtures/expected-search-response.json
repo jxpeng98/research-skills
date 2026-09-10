@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "semantic_projection": {
+    "status": "warning",
+    "search_plan": {
+      "query": "platform governance",
+      "search_mode": "topic",
+      "search_execution_mode": "provider_connected",
+      "provider_capability_mode": "provider_connected"
+    },
+    "diagnostics": {
+      "status": "partial",
+      "providers": {
+        "openalex": { "status": "ok", "count": 1 },
+        "semantic_scholar": {
+          "status": "error",
+          "count": 0,
+          "error_kind": "timeout"
+        }
+      },
+      "warnings": ["semantic_scholar: timeout"]
+    },
+    "results": [
+      {
+        "title": "A Test Paper",
+        "doi": "10.1234/example",
+        "year": 2025,
+        "venue": "Journal of Tests",
+        "provider": "openalex",
+        "providers": ["openalex", "semantic_scholar"]
+      }
+    ]
+  }
+}

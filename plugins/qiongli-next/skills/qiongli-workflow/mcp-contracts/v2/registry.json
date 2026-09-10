@@ -1,0 +1,1477 @@
+{
+  "$schema": "./registry.schema.json",
+  "schema_version": "2.0",
+  "contract_version": "2.0.0-preview.5",
+  "status": "preview",
+  "coverage": {
+    "mode": "complete",
+    "canonical_tool_count": 25,
+    "target_canonical_tool_count": 25,
+    "public_name_count": 26,
+    "target_public_name_count": 26
+  },
+  "profiles": [
+    "skill-only",
+    "marketplace-lite",
+    "full"
+  ],
+  "profile_aliases": {
+    "marketplace-lite": [
+      "lite",
+      "marketplace_lite",
+      "marketplace-lite-binary"
+    ],
+    "full": [
+      "full_cli"
+    ]
+  },
+  "side_effect_classes": [
+    "read",
+    "local-config-write",
+    "local-reference-write",
+    "project-write",
+    "network",
+    "loopback-listener",
+    "process-launch",
+    "agent-launch"
+  ],
+  "error_taxonomy": {
+    "invalid_arguments": {
+      "retryable": false,
+      "redaction_required": true,
+      "description": "The caller supplied missing, unknown, or type-invalid arguments."
+    },
+    "tool_error": {
+      "retryable": false,
+      "redaction_required": true,
+      "description": "The tool could not complete a bounded local operation."
+    },
+    "timeout": {
+      "retryable": true,
+      "redaction_required": true,
+      "description": "A bounded network or local operation exceeded its deadline."
+    }
+  },
+  "tools": [
+    {
+      "name": "qiongli_literature_status",
+      "description": "Report configured literature providers and capability mode without exposing secrets.",
+      "aliases": [],
+      "maturity": "stable",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_literature_status.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_literature_status.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_literature_status.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_literature_status.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Only provider readiness, active-provider identity, implemented capabilities, activation-field names, and redacted configuration state may be returned.",
+          "Provider capability records share one schema, but each runtime profile must report only behavior it actually implements; Lite capability lists may be strict subsets of Full.",
+          "Provider credentials, environment values, malformed configuration content, and local configuration paths must not appear in results or errors.",
+          "Configured status is local readiness metadata, not a live provider health guarantee."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_literature_status.contract",
+        "full.qiongli_literature_status.contract"
+      ]
+    },
+    {
+      "name": "qiongli_search_plan",
+      "description": "Plan provider and platform-native literature search routing without executing search.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_search_plan.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_search_plan.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_search_plan.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_search_plan.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/query",
+          "/provider_queries",
+          "/native_search_queries",
+          "/native_fulltext_queries"
+        ],
+        "notes": [
+          "The tool plans routes only and must not execute provider, platform-native, process, or agent operations.",
+          "Research queries and generated routes may be returned to the caller but must not be copied into shared logs automatically.",
+          "During the v2 compatibility window, year filters emit canonical from_year/to_year together with deprecated fromYear/toYear aliases.",
+          "Provider credentials, environment values, malformed configuration content, and local configuration paths must not appear in plans or errors."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_search_plan.contract",
+        "full.qiongli_search_plan.contract"
+      ]
+    },
+    {
+      "name": "qiongli_literature_search",
+      "description": "Search academic literature using the providers available in the active Qiongli runtime profile.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_literature_search.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_literature_search.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_literature_search.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_literature_search.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error",
+        "timeout"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "network",
+          "mode": "conditional",
+          "trigger": "A schema-valid query is executed against one or more active literature providers."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "profile_sensitive_output_paths": {
+          "marketplace-lite": [
+            "/search_plan",
+            "/results",
+            "/diagnostics"
+          ],
+          "full": [
+            "/data",
+            "/provenance"
+          ]
+        },
+        "notes": [
+          "Provider credentials and raw provider configuration values must not appear in results or errors.",
+          "Full and Marketplace Lite intentionally retain profile-specific input and output schemas; the registry does not claim argument or result parity between them.",
+          "Network access is bounded by active provider configuration and per-provider request limits."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_literature_search.contract",
+        "full.qiongli_literature_search.contract"
+      ]
+    },
+    {
+      "name": "qiongli_literature_export_evidence",
+      "description": "Export an auditable provider capability, search plan, diagnostics, and result snapshot.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_literature_export_evidence.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_literature_export_evidence.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_literature_export_evidence.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_literature_export_evidence.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Evidence export is side-effect free and must not add provider credentials to the snapshot."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_literature_export_evidence.contract",
+        "full.qiongli_literature_export_evidence.contract"
+      ]
+    },
+    {
+      "name": "qiongli_config_status",
+      "description": "Return redacted Qiongli provider configuration status.",
+      "aliases": [],
+      "maturity": "stable",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_config_status.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_config_status.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_config_status.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_config_status.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/config_path"
+        ],
+        "notes": [
+          "Only provider state and an allowlisted search configuration summary may be returned; provider values remain redacted.",
+          "QIONGLI_CONFIG_HOME must be a fully qualified absolute path or use the portable ~ or ~/... home notation; rooted or drive-prefixed home suffixes and other relative values fail closed, and an unset value resolves from the platform user home without falling back to the process working directory.",
+          "config_path is an intentional local identifier that can reveal the user's home-directory layout and must not be copied into shared artifacts or logs."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_config_status.contract",
+        "full.qiongli_config_status.contract"
+      ]
+    },
+    {
+      "name": "qiongli_save_provider_config",
+      "description": "Save explicit Qiongli provider config values from chat or scripts. Prefer qiongli_configure_provider for API keys.",
+      "aliases": [],
+      "maturity": "stable",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_save_provider_config.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_save_provider_config.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_save_provider_config.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_save_provider_config.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "local-config-write",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": true,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/config_path"
+        ],
+        "notes": [
+          "The value argument can contain a provider credential and must never appear in content, structuredContent, errors, logs, or diagnostics.",
+          "Configuration updates fail closed when the existing global file is malformed. Writes use POSIX mode 0600 on Unix. Rust Lite applies a protected current-user-only DACL before atomic replacement on Windows; the legacy Node MCPB remains read-only there because it cannot enforce that DACL.",
+          "QIONGLI_CONFIG_HOME must be a fully qualified absolute path or use the portable ~ or ~/... home notation; rooted or drive-prefixed home suffixes and other relative values fail closed, and an unset value resolves from the platform user home without falling back to the process working directory.",
+          "config_path is an intentional local identifier that can reveal the user's home-directory layout and must not be copied into shared artifacts or logs."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_save_provider_config.contract",
+        "full.qiongli_save_provider_config.contract"
+      ]
+    },
+    {
+      "name": "qiongli_configure_provider",
+      "description": "Start a tokenized loopback setup page and return its URL for provider configuration. Prefer this for API keys so secrets do not enter chat history.",
+      "aliases": [
+        {
+          "name": "qiongli_open_config_wizard",
+          "kind": "compatibility",
+          "introduced_in": "legacy",
+          "deprecated_in": null,
+          "remove_after": null
+        }
+      ],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_configure_provider.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_configure_provider.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_configure_provider.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_configure_provider.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "loopback-listener",
+          "mode": "always"
+        },
+        {
+          "class": "local-config-write",
+          "mode": "deferred",
+          "trigger": "An authorized user submits a supported non-empty provider field."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/url",
+          "/config_path"
+        ],
+        "notes": [
+          "Provider credentials are accepted only by the tokenized loopback page, never by MCP arguments.",
+          "The returned URL contains an ephemeral bearer token and must be treated as sensitive control data.",
+          "QIONGLI_CONFIG_HOME must be a fully qualified absolute path or use the portable ~ or ~/... home notation; rooted or drive-prefixed home suffixes and other relative values fail closed, and an unset value resolves from the platform user home without falling back to the process working directory.",
+          "config_path is an intentional local identifier that can reveal the user's home-directory layout.",
+          "The listener binds only to loopback and does not launch a browser or external process."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_configure_provider.contract",
+        "lite.qiongli_open_config_wizard.contract",
+        "full.qiongli_configure_provider.contract",
+        "full.qiongli_open_config_wizard.contract"
+      ]
+    },
+    {
+      "name": "qiongli_collect_evidence",
+      "description": "Collect evidence from filesystem, built-in workflow adapters, or external command adapters configured outside Qiongli. Do not use this to judge built-in literature provider config; use qiongli_literature_status or qiongli_literature_search for OpenAlex, Semantic Scholar, Crossref, PubMed, and arXiv provider status/search.",
+      "aliases": [],
+      "maturity": "stable",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_collect_evidence.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_collect_evidence.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error",
+        "timeout"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "network",
+          "mode": "conditional",
+          "trigger": "The selected external adapter performs a network operation."
+        },
+        {
+          "class": "process-launch",
+          "mode": "conditional",
+          "trigger": "The selected provider resolves to an explicitly configured external command adapter."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/evidence"
+        ],
+        "notes": [
+          "Filesystem evidence can include local paths; external adapters may return sensitive provider material and require redaction before sharing.",
+          "External command adapters execute only when they were explicitly configured outside the tool call."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_collect_evidence.contract"
+      ]
+    },
+    {
+      "name": "qiongli_list_provider_env",
+      "description": "List supported provider environment variable aliases without values.",
+      "aliases": [],
+      "maturity": "stable",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_list_provider_env.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_list_provider_env.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Only supported environment-variable names are returned; environment values are never read into the result."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_list_provider_env.contract"
+      ]
+    },
+    {
+      "name": "qiongli_test_provider",
+      "description": "Check whether a provider is configured without making network calls.",
+      "aliases": [],
+      "maturity": "stable",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_test_provider.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_test_provider.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Configuration readiness is computed locally and provider credentials are never returned or tested over the network."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_test_provider.contract"
+      ]
+    },
+    {
+      "name": "qiongli_subject_status",
+      "description": "Inspect adaptive subject state, project manifest, evidence memory, and managed subject guidance for a project.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_subject_status.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_subject_status.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/project_root"
+        ],
+        "notes": [
+          "Project paths and adaptive subject state are local metadata and must not be copied into shared artifacts without review."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_subject_status.contract"
+      ]
+    },
+    {
+      "name": "qiongli_subject_update",
+      "description": "Confirm, dismiss, reset, lock, or unlock adaptive subject guidance and managed project subject guidance.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_subject_update.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_subject_update.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "project-write",
+          "mode": "conditional",
+          "trigger": "read_only is false or omitted and the requested lifecycle action is applied."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/project_root"
+        ],
+        "notes": [
+          "read_only=true produces a proposal; other calls may update managed .qiongli project state after input validation."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_subject_update.contract"
+      ]
+    },
+    {
+      "name": "qiongli_orchestrator_route",
+      "description": "Decide whether the active client should use skill-only routing or Full Qiongli orchestration.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_orchestrator_route.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_orchestrator_route.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_orchestrator_route.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_orchestrator_route.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "profile_sensitive_output_paths": {
+          "marketplace-lite": [
+            "/request",
+            "/upgrade"
+          ],
+          "full": [
+            "/sequence",
+            "/why"
+          ]
+        },
+        "notes": [
+          "Routing is advisory and does not launch processes or agents.",
+          "Full and Marketplace Lite intentionally return profile-specific route projections and accept different optional planning context."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_orchestrator_route.contract",
+        "full.qiongli_orchestrator_route.contract"
+      ]
+    },
+    {
+      "name": "qiongli_orchestrator_doctor",
+      "description": "Run Qiongli orchestrator preflight checks for a project directory.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_orchestrator_doctor.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_orchestrator_doctor.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Doctor reads local project and runtime readiness state but does not launch agents."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_orchestrator_doctor.contract"
+      ]
+    },
+    {
+      "name": "qiongli_lifecycle_plan",
+      "description": "Build a preview full-cycle paper lifecycle gate report without launching agents.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_lifecycle_plan.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_lifecycle_plan.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "The lifecycle report is preview-only and reads existing project artifacts without writing them."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_lifecycle_plan.contract"
+      ]
+    },
+    {
+      "name": "qiongli_journal_fit_recommend",
+      "description": "Recommend journals from an existing manuscript using local venue profiles.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_journal_fit_recommend.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_journal_fit_recommend.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/ranked_venues"
+        ],
+        "notes": [
+          "Venue recommendations are local heuristics, not submission guarantees; ranked venue source fields may identify local profile files."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_journal_fit_recommend.contract"
+      ]
+    },
+    {
+      "name": "qiongli_experience_query",
+      "description": "Query project-local Qiongli experience records without writing files.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_experience_query.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_experience_query.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/project_dir",
+          "/records"
+        ],
+        "notes": [
+          "Project-local experience records may contain research context; credential-bearing keys are removed recursively before MCP output."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_experience_query.contract"
+      ]
+    },
+    {
+      "name": "qiongli_experience_show",
+      "description": "Show one project-local Qiongli experience record by run_id.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_experience_show.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_experience_show.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/project_dir",
+          "/record_path",
+          "/record"
+        ],
+        "notes": [
+          "The selected experience record and its local path may contain sensitive project context; credential-bearing keys are removed recursively before MCP output."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_experience_show.contract"
+      ]
+    },
+    {
+      "name": "qiongli_experience_lessons",
+      "description": "Summarize reusable lessons from project-local Qiongli experience records.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_experience_lessons.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_experience_lessons.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/project_dir",
+          "/records"
+        ],
+        "notes": [
+          "Derived lessons may retain project context and must be reviewed before external reuse; credential-bearing keys are removed recursively before MCP output."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_experience_lessons.contract"
+      ]
+    },
+    {
+      "name": "qiongli_task_plan",
+      "description": "Render a Qiongli task execution plan without launching runtime agents.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_task_plan.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_task_plan.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_task_plan.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_task_plan.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "profile_sensitive_output_paths": {
+          "marketplace-lite": [
+            "/topic",
+            "/upgrade"
+          ],
+          "full": [
+            "/data",
+            "/merged_analysis",
+            "/recommendations"
+          ]
+        },
+        "notes": [
+          "Planning does not launch runtime agents or write project artifacts.",
+          "Full and Marketplace Lite intentionally retain profile-specific planning inputs and outputs."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_task_plan.contract",
+        "full.qiongli_task_plan.contract"
+      ]
+    },
+    {
+      "name": "qiongli_task_run",
+      "description": "Preview or run a Qiongli task through the local orchestrator. Defaults to preview; set run_agents=true to launch local runtime agents.",
+      "aliases": [],
+      "maturity": "experimental",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "unavailable",
+          "error_transport": "not-applicable"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_task_run.full.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_task_run.full.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "project-write",
+          "mode": "conditional",
+          "trigger": "run_agents is true and the orchestrated task materializes project artifacts."
+        },
+        {
+          "class": "process-launch",
+          "mode": "conditional",
+          "trigger": "run_agents is true and the selected runtime starts local worker processes."
+        },
+        {
+          "class": "agent-launch",
+          "mode": "conditional",
+          "trigger": "run_agents is true and orchestrator preflight permits runtime agent execution."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/data"
+        ],
+        "notes": [
+          "The default and contract smoke path is preview-only; setting run_agents=true authorizes conditional local process, agent, and project-write side effects."
+        ]
+      },
+      "smoke_call_ids": [
+        "full.qiongli_task_run.contract"
+      ]
+    },
+    {
+      "name": "qiongli_zotero_status",
+      "description": "Report local Zotero Desktop connector, Qiongli companion, and import-file fallback availability.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_status.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_status.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_status.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_status.marketplace-lite.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error",
+        "timeout"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "network",
+          "mode": "conditional",
+          "trigger": "Local Zotero probing is enabled and the tool probes the configured loopback connector."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Only loopback connector endpoints may be probed; no Zotero library content or credentials are returned."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_zotero_status.contract",
+        "full.qiongli_zotero_status.contract"
+      ]
+    },
+    {
+      "name": "qiongli_zotero_search",
+      "description": "Search the user's local Zotero library through the bounded loopback Qiongli Companion.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "2.0.0-alpha.3",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_search.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_search.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_search.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_search.marketplace-lite.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error",
+        "timeout"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "network",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/results"
+        ],
+        "notes": [
+          "Only a validated loopback endpoint-contract-2 Companion may be queried; results are bounded to 200 compact local-library records."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_zotero_search.contract",
+        "full.qiongli_zotero_search.contract"
+      ]
+    },
+    {
+      "name": "qiongli_zotero_upsert_references",
+      "description": "Preview or explicitly apply a receipt-bound reference upsert through the local Qiongli Zotero Companion.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "2.0.0-alpha.3",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_upsert_references.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_upsert_references.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_upsert_references.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_upsert_references.marketplace-lite.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error",
+        "timeout"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        },
+        {
+          "class": "network",
+          "mode": "always"
+        },
+        {
+          "class": "local-reference-write",
+          "mode": "conditional",
+          "trigger": "dry_run is false and the unchanged request includes explicit write intent plus the Companion-issued one-shot receipt."
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [
+          "/results"
+        ],
+        "notes": [
+          "Dry-run is the default. Apply requires write_intent=apply and the immediately preceding receipt for the unchanged plan; the Companion consumes the receipt once."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_zotero_upsert_references.contract",
+        "full.qiongli_zotero_upsert_references.contract"
+      ]
+    },
+    {
+      "name": "qiongli_zotero_export_import_files",
+      "description": "Generate Zotero-compatible CSL-JSON, RIS, BibTeX, and import-report files from Qiongli references.",
+      "aliases": [],
+      "maturity": "preview",
+      "lifecycle": {
+        "introduced_in": "legacy",
+        "deprecated_in": null,
+        "remove_after": null
+      },
+      "profiles": {
+        "skill-only": {
+          "exposure": "metadata-only",
+          "error_transport": "not-applicable"
+        },
+        "marketplace-lite": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_export_import_files.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_export_import_files.marketplace-lite.output.schema.json",
+          "error_transport": "json-rpc-and-tool-result"
+        },
+        "full": {
+          "exposure": "tool",
+          "input_schema_ref": "schemas/qiongli_zotero_export_import_files.marketplace-lite.input.schema.json",
+          "output_schema_ref": "schemas/qiongli_zotero_export_import_files.marketplace-lite.output.schema.json",
+          "error_transport": "tool-result"
+        }
+      },
+      "errors": [
+        "invalid_arguments",
+        "tool_error"
+      ],
+      "side_effects": [
+        {
+          "class": "read",
+          "mode": "always"
+        }
+      ],
+      "security": {
+        "accepts_secret_input": false,
+        "raw_secret_output": "forbidden",
+        "redaction_required": true,
+        "sensitive_output_paths": [],
+        "notes": [
+          "Generated import-file contents are returned in memory; the tool does not write files to disk."
+        ]
+      },
+      "smoke_call_ids": [
+        "lite.qiongli_zotero_export_import_files.contract",
+        "full.qiongli_zotero_export_import_files.contract"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+skills:
+  - id: geoeconomic-statecraft-auditor
+    stage: H_submission
+    version: "0.13.0"
+    file: skills/H_submission/geoeconomic-statecraft-auditor.md
+    canonical: true
+    summary: "Audit geoeconomics drafts for economic statecraft logic, sanctions or supply chain evidence, and strategic competition claim calibration."
+    display_name: "Geoeconomic Statecraft Auditor"
+    when_to_use: "Use when a geoeconomics project needs a reviewer-grade check of economic instrument, sender, target, market response, and strategic claim evidence."
+    summary_zh: "审计地缘经济学稿件中的经济治国术逻辑、制裁或供应链证据，以及战略竞争主张校准。"
+    display_name_zh: "地缘经济治国术审计"
+    when_to_use_zh: "当地缘经济学项目需要检查经济工具、发送方、目标方、市场响应和战略主张证据时使用。"
+    inputs: [DesignSpec, LiteratureMap, Manuscript]
+    outputs: [GeoeconomicStatecraftAudit]
+    tags: [geoeconomics, statecraft, sanctions, supply-chain, strategic-competition]
+    depends_on: [study-designer, venue-analyzer, contribution-crafter, manuscript-architect]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true

@@ -2,6 +2,7 @@
 # All studies, drafts, project states and prior results below are synthetic.
 # This does not test real Host activation, tool availability or execution.
 # Expected lists enumerate acceptable labels, not a sequence of required routes.
+# Route selects the current remaining work, not the artifact's original stage.
 
 - id: supplied-abstract-explanation
   category: activation
@@ -466,7 +467,7 @@
       preview/apply 工具可用。请安全继续，不覆盖中间发生的编辑，也不把旧批准当成对
       尚未见过的替代方案的批准。
   expected:
-    route: [workflows/academic-write.md]
+    route: [references/platform-routing.md]
     scope: [formal]
     next_action: [revalidate_state]
 

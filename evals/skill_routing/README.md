@@ -13,6 +13,11 @@ reasoning items are allowed; tool items, unknown events, failed/incomplete turns
 nonzero exits, stale bindings and missing responses fail closed. Do not interpret
 zero tool calls in this tool-disabled setup as evidence of efficient live execution.
 
+The primary route belongs to the work still needed. Drafting a corrected passage
+uses academic writing; applying an already-drafted change after its approved
+revision became stale uses the existing project-operation reference. This does
+not turn native runtime routing into an academic semantic classifier.
+
 Use Python 3.11+ with the repository's existing PyYAML environment and an
 authenticated Codex CLI. The initial capture is verified with CLI 0.153.4. CLI
 authentication is reused; credentials are never copied into the run. The default
@@ -37,7 +42,9 @@ always gives both selected and full-corpus counts. A run directory contains the
 CLI version, configured model/effort, invocation settings, source hashes, per-case
 prompt/trace hashes, raw events, stderr and exit/timing records. Treat those local
 logs as private; do not publish credentials, local configuration or raw reasoning.
-Timeouts remain failures, with no automatic retry. Existing output directories
+Host failures, invalid traces and timeouts stop capture; remaining selected cases
+stay missing rather than disappearing from the denominator. There is no automatic
+retry. Existing output directories
 are refused so a later run cannot overwrite earlier evidence.
 
 Scoring generates temporary Evaluation Truth V1 cases and delegates every

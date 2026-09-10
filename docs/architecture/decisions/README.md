@@ -36,6 +36,7 @@ decision must be recorded as a new superseding ADR.
 | `CLI-410` | [ADR 0220](0220-three-platform-cli-registry-distribution.md) | Accepted | Three-platform native CLI installation with npm next and PEP 440 PyPI versions; Cargo deferred |
 | `CLI-410` | [ADR 0221](0221-cargo-cli-publication.md) | Accepted | Cargo source publication and three-platform install checks; supersedes Cargo deferral |
 | `CLI-403` / `CLI-405` | [ADR 0222](0222-user-approved-local-plugin-sources.md) | Accepted | User-approved local Plugin source lifecycle; signed product and Host authority remain separate |
+| `CLI-410` | [ADR 0223](0223-bundled-marketplace-native-mcp.md) | Accepted | Platform-specific Marketplace Plugins bundle the native executable; no Node/npm startup dependency |
 
 ## Decision lifecycle
 

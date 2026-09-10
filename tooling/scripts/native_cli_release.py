@@ -18,9 +18,11 @@ import tomllib
 
 try:
     from .native_registry_install_check import check_cli
+    from .native_marketplace_plugins import archive_name, check_plugins
     from .native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version, package_readme
 except ImportError:
     from native_registry_install_check import check_cli
+    from native_marketplace_plugins import archive_name, check_plugins
     from native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version, package_readme
 
 
@@ -130,17 +132,16 @@ def main() -> None:
     (package_work / 'registry-packages.json').write_text(json.dumps(package_receipt))
     run([sys.executable, str(ROOT / 'scripts/native_registry_install_check.py'),
          '--packages', str(package_work), '--out-dir', str(out / 'install')], cwd=ROOT)
-    # One native build exports the same verified pack used by its npm executable.
-    # Local macOS qualification also exercises the projector before remote builds.
-    if not ci or platform.system() == 'Linux':
-        run(['cargo', 'run', '-p', 'qiongli', '--example', 'export_marketplace_content',
-             '--release', '--target', target, *cargo_args, '--', str(out / 'plugin-content')])
-        run([sys.executable, str(ROOT / 'tooling/scripts/native_marketplace_plugins.py'),
-             '--content-dir', str(out / 'plugin-content'), '--out-dir', str(out / 'plugins'),
-             '--version', version, '--commit', commit], cwd=ROOT)
-        for host in ('codex', 'claude'):
-            path = out / 'plugins' / f'qiongli-next-{host}-plugin-v{version}.tar.gz'
-            shutil.copyfile(path, assets / path.name)
+    # Each target ships the exact native executable already qualified above.
+    run(['cargo', 'run', '-p', 'qiongli', '--example', 'export_marketplace_content',
+         '--release', '--target', target, *cargo_args, '--', str(out / 'plugin-content')])
+    run([sys.executable, str(ROOT / 'tooling/scripts/native_marketplace_plugins.py'),
+         '--content-dir', str(out / 'plugin-content'), '--out-dir', str(out / 'plugins'),
+         '--version', version, '--commit', commit, '--binary', str(binary), '--target', target], cwd=ROOT)
+    plugin_checks = check_plugins(out / 'plugins', version, commit, target)
+    for host in ('codex', 'claude'):
+        path = out / 'plugins' / archive_name(host, version, target)
+        shutil.copyfile(path, assets / path.name)
     if git('rev-parse', 'HEAD') != commit or git('status', '--porcelain', '--untracked-files=normal'):
         raise ValueError('source changed during qualification')
     receipt = {'version': version, 'source_commit': commit, 'target': target,
@@ -148,7 +149,7 @@ def main() -> None:
                'managed_product_authority': False,
                'rustc': subprocess.check_output(['rustc', '--version'], cwd=NATIVE, text=True).strip(),
                'checks': {'cli_clippy': 'passed' if lint else 'covered-by-linux-job', 'cli_mcp_tests': 'passed', 'archive_smoke': smoke,
-                          'npm_wheel_local_install': 'passed'},
+                          'npm_wheel_local_install': 'passed', 'marketplace_plugins': plugin_checks},
                'artifacts': [{'file': p.name, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest(),
                               'bytes': p.stat().st_size} for p in sorted(assets.iterdir())]}
     (assets / 'release-manifest.json').write_text(json.dumps(receipt, indent=2) + '\n')

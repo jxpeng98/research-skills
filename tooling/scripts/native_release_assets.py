@@ -14,10 +14,10 @@ import zipfile
 
 try:
     from .native_registry_packages import TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
-    from .native_marketplace_plugins import verify_archive
+    from .native_marketplace_plugins import PLATFORMS, archive_name, plugin_name, verify_archive, check_plugins
 except ImportError:
     from native_registry_packages import TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
-    from native_marketplace_plugins import verify_archive
+    from native_marketplace_plugins import PLATFORMS, archive_name, plugin_name, verify_archive, check_plugins
 
 
 def checked_assets(root, manifest):
@@ -39,6 +39,21 @@ def check_identity(manifest, version, commit):
         raise ValueError('mixed version or source commit')
 
 
+def cli_binary(archive, target):
+    name = TARGETS[target][2]
+    if target.endswith('msvc'):
+        with zipfile.ZipFile(archive) as packet:
+            data = packet.read(name)
+    else:
+        with tarfile.open(archive) as packet:
+            member = packet.getmember(name)
+            if not member.isfile():
+                raise ValueError('archive executable is not regular')
+            data = packet.extractfile(member).read()
+    validate_binary(data, target)
+    return data
+
+
 def assemble(root, out, version, commit):
     out.mkdir(parents=True, exist_ok=False)
     binaries, receipts = {}, []
@@ -55,19 +70,10 @@ def assemble(root, out, version, commit):
             raise ValueError('missing Linux Clippy gate')
         files = checked_assets(source, receipt)
         extension = 'zip' if target.endswith('msvc') else 'tar.gz'
-        archive_name = f'qiongli-{version}-{target}.{extension}'
-        archive = files[archive_name]
+        cli_name = f'qiongli-{version}-{target}.{extension}'
+        archive = files[cli_name]
         binary_name = TARGETS[target][2]
-        if extension == 'zip':
-            with zipfile.ZipFile(archive) as packet:
-                data = packet.read(binary_name)
-        else:
-            with tarfile.open(archive) as packet:
-                member = packet.getmember(binary_name)
-                if not member.isfile():
-                    raise ValueError('archive executable is not regular')
-                data = packet.extractfile(member).read()
-        validate_binary(data, target)
+        data = cli_binary(archive, target)
         binary = out.parent / 'npm-binaries' / target / binary_name
         binary.parent.mkdir(parents=True, exist_ok=True)
         binary.write_bytes(data)
@@ -78,13 +84,22 @@ def assemble(root, out, version, commit):
             raise ValueError('expected one wheel per target')
         for path in [archive, *wheels]:
             shutil.copyfile(path, out / path.name)
+        plugins = [files.get(archive_name(host, version, target)) for host in PLATFORMS]
+        if any(plugins):
+            if not all(plugins):
+                raise ValueError('both marketplace Plugin archives are required for each target')
+            for path in plugins:
+                provenance = verify_archive(path, version, commit)
+                if provenance['binary_sha256'] != hashlib.sha256(data).hexdigest():
+                    raise ValueError('marketplace executable differs from CLI executable')
+                shutil.copyfile(path, out / path.name)
+        # Historical alpha.8 packets retain their immutable npm-bridge pair.
         if target.endswith('linux-gnu'):
-            plugins = [files.get(f'qiongli-next-{host}-plugin-v{version}.tar.gz')
-                       for host in ('codex', 'claude')]
-            if any(plugins):
-                if not all(plugins):
+            legacy = [files.get(archive_name(host, version)) for host in PLATFORMS]
+            if any(legacy):
+                if not all(legacy):
                     raise ValueError('both marketplace Plugin archives are required')
-                for path in plugins:
+                for path in legacy:
                     verify_archive(path, version, commit)
                     shutil.copyfile(path, out / path.name)
         receipts.append(receipt)
@@ -92,6 +107,12 @@ def assemble(root, out, version, commit):
     npm_work.mkdir(exist_ok=False)
     packed = npm_package(npm_work, binaries, version)
     shutil.copyfile(packed, out / packed.name)
+    native_plugins = [out / archive_name(host, version, target) for target in TARGETS for host in PLATFORMS]
+    if any(p.exists() for p in native_plugins):
+        if not all(p.exists() for p in native_plugins):
+            raise ValueError('all six target-specific marketplace archives are required')
+        index = marketplace_index(version, commit, [verify_archive(p, version, commit) for p in native_plugins])
+        (out / 'marketplace-plugins.json').write_text(json.dumps(index, indent=2) + '\n')
     manifest = {'version': version, 'source_commit': commit, 'targets': list(TARGETS),
                 'status': 'three-platform-packaged', 'target_evidence': receipts,
                 'artifacts': [{'file': p.name, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest(),
@@ -99,6 +120,15 @@ def assemble(root, out, version, commit):
     (out / 'release-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     (out / 'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n'
                                          for p in sorted(out.iterdir())))
+
+
+def marketplace_index(version, commit, plugins):
+    return {'schema_version': 1, 'version': version, 'source_commit': commit,
+            'plugins': [{'name': plugin_name(p['target']), 'host': p['platform'],
+                         'target': p['target'], 'artifact': archive_name(p['platform'], version, p['target']),
+                         'sha256': p['sha256'], 'binary_sha256': p['binary_sha256'],
+                         'distribution_ref': f"{p['platform']}/{p['target']}/v{version}",
+                         'plugin_path': 'plugins/' + plugin_name(p['target'])} for p in plugins]}
 
 
 def verify(root, version, commit):
@@ -117,6 +147,7 @@ def verify(root, version, commit):
     files = checked_assets(root, manifest)
     identity = parse_release_version(version)
     npm = files[f'qiongli-{identity.npm_version}.tgz']
+    binary_hashes = {}
     with tarfile.open(npm) as packet:
         metadata = json.load(packet.extractfile('package/package.json'))
         if metadata['version'] != identity.npm_version or metadata['publishConfig']['tag'] != identity.npm_dist_tag:
@@ -124,7 +155,12 @@ def verify(root, version, commit):
         if metadata['name'] != 'qiongli' or metadata.get('scripts'):
             raise ValueError('unexpected npm package or install scripts')
         for target, (_, _, binary) in TARGETS.items():
-            validate_binary(packet.extractfile(f'package/native/{target}/{binary}').read(), target)
+            data = packet.extractfile(f'package/native/{target}/{binary}').read()
+            validate_binary(data, target)
+            binary_hashes[target] = hashlib.sha256(data).hexdigest()
+            extension = 'zip' if target.endswith('msvc') else 'tar.gz'
+            if cli_binary(files[f'qiongli-{version}-{target}.{extension}'], target) != data:
+                raise ValueError('CLI executable differs from npm executable')
     expected = {'aarch64-apple-darwin': 'macosx_', 'x86_64-unknown-linux-gnu': 'manylinux_2_35_',
                 'x86_64-pc-windows-msvc': 'win_amd64'}
     wheels = {}
@@ -137,21 +173,42 @@ def verify(root, version, commit):
             if f'\nVersion: {identity.package_version}\n' not in metadata:
                 raise ValueError('wheel metadata version mismatch')
         wheels[target] = matches[0]
-    plugin_names = {f'qiongli-next-{host}-plugin-v{version}.tar.gz' for host in ('codex', 'claude')}
-    plugins = plugin_names.intersection(files)
-    if plugins:
-        if plugins != plugin_names:
-            raise ValueError('both marketplace Plugin archives are required')
+    legacy_names = {archive_name(host, version) for host in PLATFORMS}
+    native_names = [archive_name(host, version, target) for target in TARGETS for host in PLATFORMS]
+    legacy, native = legacy_names.intersection(files), set(native_names).intersection(files)
+    if legacy and native:
+        raise ValueError('mixed legacy and target-specific marketplace packages')
+    if legacy and legacy != legacy_names:
+        raise ValueError('both marketplace Plugin archives are required')
+    required_native = any('marketplace_plugins' in r['checks'] for r in manifest['target_evidence'])
+    if (native or required_native) and native != set(native_names):
+        raise ValueError('all six target-specific marketplace archives are required')
+    if legacy or native:
         pack_hashes = {receipt['checks']['archive_smoke'].get('content_pack_sha256')
                        for receipt in manifest['target_evidence']}
         if len(pack_hashes) != 1 or None in pack_hashes:
             raise ValueError('all three CLI content packs must match the marketplace Plugins')
-        for name in sorted(plugins):
+        verified = []
+        for name in (native_names if native else sorted(legacy)):
             provenance = verify_archive(files[name], version, commit)
             if provenance['pack_sha256'] not in pack_hashes:
                 raise ValueError('marketplace Plugin content differs from CLI content')
-    if len(files) != 7 + len(plugins):
-        raise ValueError('expected three CLI archives, three wheels, one npm package and optional Plugin pair')
+            if native:
+                target, host = provenance['target'], provenance['platform']
+                if provenance['binary_sha256'] != binary_hashes[target]:
+                    raise ValueError('marketplace executable differs from CLI executable')
+                receipt = next(r for r in manifest['target_evidence'] if r['target'] == target)
+                observed = receipt['checks'].get('marketplace_plugins', {}).get(host, {})
+                if (observed.get('status') != 'passed' or observed.get('runtime_path') != 'empty'
+                        or observed.get('mcp_tools') != 14 or observed.get('sha256') != provenance['sha256']
+                        or observed.get('binary_sha256') != provenance['binary_sha256']):
+                    raise ValueError('missing target-native marketplace smoke evidence')
+            verified.append(provenance)
+        if native and ('marketplace-plugins.json' not in files or
+                       json.loads(regular_bytes(files['marketplace-plugins.json'])) != marketplace_index(version, commit, verified)):
+            raise ValueError('marketplace platform index mismatch')
+    if len(files) != 7 + len(legacy) + len(native) + bool(native):
+        raise ValueError('unexpected CLI/registry/marketplace artifact set')
     return manifest, npm, wheels
 
 
@@ -185,6 +242,9 @@ def main():
         target = {('Darwin', 'arm64'): 'aarch64-apple-darwin', ('Linux', 'x86_64'): 'x86_64-unknown-linux-gnu',
                   ('Windows', 'AMD64'): 'x86_64-pc-windows-msvc'}[(platform.system(), platform.machine())]
         selected = {npm.name, wheels[target].name}
+        if any(a['file'] == 'marketplace-plugins.json' for a in manifest['artifacts']):
+            checks = check_plugins(args.root, identity.version, args.commit, target)
+            (args.root / 'marketplace-install-check.json').write_text(json.dumps(checks, indent=2) + '\n')
         (args.root / 'registry-packages.json').write_text(json.dumps({
             'version': identity.version, 'artifacts': [a for a in manifest['artifacts'] if a['file'] in selected]}))
     print(f'Verified three-platform packet {identity.version} at {args.commit}')

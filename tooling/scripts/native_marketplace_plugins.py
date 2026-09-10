@@ -7,16 +7,20 @@ import gzip
 import hashlib
 import io
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
+import tempfile
 import struct
 import tarfile
 
 try:
-    from .native_registry_packages import regular_bytes
+    from .native_registry_packages import TARGETS, regular_bytes, validate_binary
+    from .native_registry_install_check import check_cli, run
     from .release_version import parse_release_version
 except ImportError:
-    from native_registry_packages import regular_bytes
+    from native_registry_packages import TARGETS, regular_bytes, validate_binary
+    from native_registry_install_check import check_cli, run
     from release_version import parse_release_version
 
 EXPORT = '.qiongli-marketplace-export.json'
@@ -24,6 +28,24 @@ RECEIPT = '.qiongli-marketplace.json'
 SKILL_ROOT = 'skills/qiongli-workflow/'
 BRIDGE = 'mcp/qiongli-native.mjs'
 PLATFORMS = ('codex', 'claude')
+TARGET_NAMES = {
+    'aarch64-apple-darwin': 'macos-arm64',
+    'x86_64-unknown-linux-gnu': 'linux-x64',
+    'x86_64-pc-windows-msvc': 'windows-x64',
+}
+MCP_ARGS = ['mcp', 'serve', '--profile', 'lite', '--transport', 'stdio']
+
+
+def plugin_name(target: str) -> str:
+    return 'qiongli-next-' + TARGET_NAMES[target]
+
+
+def binary_path(target: str) -> str:
+    return 'bin/' + TARGETS[target][2]
+
+
+def file_mode(name: str, target: str | None) -> int:
+    return 0o755 if target and name == binary_path(target) else 0o644
 
 
 def digest(data: bytes) -> str:
@@ -131,6 +153,7 @@ def read_content(source: Path, version: str, commit: str) -> tuple[dict, dict[st
 
 
 def bridge(version: str) -> bytes:
+    # Retained only to verify immutable schema-1 npm-bridge archives.
     # Windows .cmd dispatch needs a shell. Every token is fixed here; user argv
     # is deliberately ignored, and the version has passed canonical parsing.
     return f'''#!/usr/bin/env node
@@ -148,7 +171,15 @@ child.on('close', (code, signal) => {{
 '''.encode()
 
 
-def mcp_manifest(platform: str) -> dict:
+def mcp_manifest(platform: str, target: str | None = None) -> dict:
+    if target is not None:
+        root = '${CLAUDE_PLUGIN_ROOT}' if platform == 'claude' else '.'
+        server = {'command': root + '/' + binary_path(target), 'args': MCP_ARGS,
+                  'cwd': root, 'startup_timeout_sec': 20, 'tool_timeout_sec': 60}
+        if platform == 'claude':
+            server.pop('startup_timeout_sec')
+            server.pop('tool_timeout_sec')
+        return {'mcpServers': {'qiongli-next': server}}
     if platform == 'claude':
         server = {'command': 'node', 'args': ['${CLAUDE_PLUGIN_ROOT}/' + BRIDGE]}
     else:
@@ -157,16 +188,24 @@ def mcp_manifest(platform: str) -> dict:
     return {'mcpServers': {'qiongli-next': server}}
 
 
-def project(content: dict[str, bytes], platform: str, version: str) -> dict[str, bytes]:
+def project(content: dict[str, bytes], platform: str, version: str,
+            target: str | None = None, binary: bytes | None = None) -> dict[str, bytes]:
     manifest_path = f'.{platform}-plugin/plugin.json'
     manifest = json.loads(content[manifest_path])
     if manifest.get('name') != 'qiongli' or manifest.get('version') != version:
         raise ValueError('canonical plugin manifest identity mismatch')
-    manifest.update(name='qiongli-next', version=version, skills='./skills/', mcpServers='./.mcp.json')
+    manifest.update(name=plugin_name(target) if target else 'qiongli-next',
+                    version=version, skills='./skills/', mcpServers='./.mcp.json')
     manifest['description'] = f'Native academic research workflows for {platform.title()} via the pinned npm CLI.'
     if isinstance(manifest.get('interface'), dict):
         manifest['interface']['displayName'] = 'Qiongli Next'
-    files = {manifest_path: json_bytes(manifest), '.mcp.json': json_bytes(mcp_manifest(platform)), BRIDGE: bridge(version)}
+    if target:
+        validate_binary(binary, target)
+        manifest['description'] = f'Academic research workflows with bundled native Lite MCP for {TARGET_NAMES[target]}.'
+        if isinstance(manifest.get('interface'), dict):
+            manifest['interface']['displayName'] += ' (' + TARGET_NAMES[target] + ')'
+    files = {manifest_path: json_bytes(manifest), '.mcp.json': json_bytes(mcp_manifest(platform, target))}
+    files.update({binary_path(target): binary} if target else {BRIDGE: bridge(version)})
     for name, data in content.items():
         if name in ('.codex-plugin/plugin.json', '.claude-plugin/plugin.json'):
             continue
@@ -177,17 +216,21 @@ def project(content: dict[str, bytes], platform: str, version: str) -> dict[str,
     return files
 
 
-def archive_name(platform: str, version: str) -> str:
-    return f'qiongli-next-{platform}-plugin-v{version}.tar.gz'
+def archive_name(platform: str, version: str, target: str | None = None) -> str:
+    suffix = '-' + target if target else ''
+    return f'qiongli-next-{platform}-plugin-v{version}{suffix}.tar.gz'
 
 
 def verify_archive(path: Path, version: str, commit: str) -> dict:
     """Verify projected bytes/identity; this is not a signed product grant."""
     identity(version, commit)
-    platform = next((p for p in PLATFORMS if path.name == archive_name(p, version)), None)
-    if platform is None:
+    selection = next(((p, t) for p in PLATFORMS for t in [None, *TARGETS]
+                      if path.name == archive_name(p, version, t)), None)
+    if selection is None:
         raise ValueError('unexpected marketplace archive name')
-    prefix = path.name.removesuffix('.tar.gz') + '/plugins/qiongli-next/'
+    platform, target = selection
+    slug = plugin_name(target) if target else 'qiongli-next'
+    prefix = path.name.removesuffix('.tar.gz') + '/plugins/' + slug + '/'
     files = {}
     with tarfile.open(fileobj=io.BytesIO(regular_bytes(path)), mode='r:gz') as archive:
         for member in archive:
@@ -197,9 +240,12 @@ def verify_archive(path: Path, version: str, commit: str) -> dict:
             name = safe_path(member.name[len(prefix):])
             if name in files:
                 raise ValueError('duplicate archive entry')
+            if target and member.mode != file_mode(name, target):
+                raise ValueError('marketplace archive permissions mismatch')
             files[name] = archive.extractfile(member).read()
     receipt = json.loads(files.pop(RECEIPT))
-    if receipt.get('platform') != platform or receipt.get('schema_version') != 1:
+    if (receipt.get('platform') != platform or receipt.get('schema_version') != (2 if target else 1)
+            or receipt.get('target') != target):
         raise ValueError('marketplace receipt identity mismatch')
     metadata = receipt['source']
     expected = validate_export(metadata, version, commit)
@@ -216,43 +262,92 @@ def verify_archive(path: Path, version: str, commit: str) -> dict:
             content[name] = files[SKILL_ROOT + name.removeprefix('workflow/')]
         check_bytes(content[name], expected[name])
     verify_pack(metadata, content)
-    if project(content, platform, version) != files:
+    binary = files.get(binary_path(target)) if target else None
+    if project(content, platform, version, target, binary) != files:
         raise ValueError('marketplace wrapper differs from the native projection')
     return {'version': version, 'source_commit': commit, 'platform': platform,
+            'target': target, 'binary_sha256': digest(binary) if target else None,
             'pack_sha256': metadata['pack_sha256'], 'content_root_sha256': metadata['content_root_sha256'],
             'sha256': digest(regular_bytes(path)), 'bytes': path.stat().st_size}
 
 
-def build_plugins(content_dir: Path, out_dir: Path, version: str, commit: str) -> list[Path]:
+def build_plugins(content_dir: Path, out_dir: Path, version: str, commit: str,
+                  binary: Path, target: str) -> list[Path]:
     metadata, content = read_content(content_dir, version, commit)
+    data = regular_bytes(binary)
+    validate_binary(data, target)
     if out_dir.is_symlink() or out_dir.exists():
         raise ValueError('output directory must be new')
     out_dir.mkdir(parents=True)
     archives = []
     for platform in PLATFORMS:
-        files = project(content, platform, version)
+        files = project(content, platform, version, target, data)
         source_names = ('.codex-plugin/plugin.json', '.claude-plugin/plugin.json')
         files[RECEIPT] = json_bytes({
-            'schema_version': 1, 'platform': platform, 'source': metadata,
+            'schema_version': 2, 'platform': platform, 'target': target, 'source': metadata,
             'source_manifest_bytes': {name: content[name].decode() for name in source_names},
             'files': {name: {'size_bytes': len(data), 'sha256': digest(data)} for name, data in sorted(files.items())},
         })
-        plugin = out_dir / platform / 'plugins/qiongli-next'
-        for name, data in files.items():
-            target = plugin / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(data)
-        archive = out_dir / archive_name(platform, version)
-        prefix = archive.name.removesuffix('.tar.gz') + '/plugins/qiongli-next/'
+        plugin = out_dir / platform / 'plugins' / plugin_name(target)
+        for name, payload in files.items():
+            destination = plugin / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(payload)
+            destination.chmod(file_mode(name, target))
+        archive = out_dir / archive_name(platform, version, target)
+        prefix = archive.name.removesuffix('.tar.gz') + '/plugins/' + plugin_name(target) + '/'
         with archive.open('xb') as raw, gzip.GzipFile(filename='', fileobj=raw, mode='wb', mtime=0) as zipped:
             with tarfile.open(fileobj=zipped, mode='w') as tar:
-                for name, data in sorted(files.items()):
+                for name, payload in sorted(files.items()):
                     info = tarfile.TarInfo(prefix + name)
-                    info.size, info.mode, info.mtime = len(data), 0o644, 0
-                    tar.addfile(info, io.BytesIO(data))
+                    info.size, info.mode, info.mtime = len(payload), file_mode(name, target), 0
+                    tar.addfile(info, io.BytesIO(payload))
         verify_archive(archive, version, commit)
         archives.append(archive)
     return archives
+
+
+def check_plugins(root: Path, version: str, commit: str, target: str) -> dict:
+    """Exercise extracted manifests with no language runtime on PATH."""
+    checks = {}
+    for host in PLATFORMS:
+        archive = root / archive_name(host, version, target)
+        provenance = verify_archive(archive, version, commit)
+        with tempfile.TemporaryDirectory(prefix='qiongli-marketplace-check-') as temporary:
+            work = Path(temporary).resolve()
+            with tarfile.open(archive) as packet:
+                packet.extractall(work, filter='data')
+            plugin = work / archive.name.removesuffix('.tar.gz') / 'plugins' / plugin_name(target)
+            home = work / 'home'
+            home.mkdir(mode=0o700)
+            env = {key: value for key, value in os.environ.items()
+                   if key.upper() in ('SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'TMPDIR')}
+            env.update(PATH='', HOME=str(home), USERPROFILE=str(home),
+                       XDG_CONFIG_HOME=str(home / 'config'), QIONGLI_CONFIG_HOME=str(home / 'config'),
+                       APPDATA=str(home / 'AppData/Roaming'), LOCALAPPDATA=str(home / 'AppData/Local'))
+            observed = check_cli(plugin / binary_path(target), version=version, root=work, env=env)
+            if observed['content_pack_sha256'] != provenance['pack_sha256']:
+                raise ValueError('Plugin content differs from bundled executable')
+            server = json.loads((plugin / '.mcp.json').read_text())['mcpServers']['qiongli-next']
+            cwd = server['cwd'].replace('${CLAUDE_PLUGIN_ROOT}', str(plugin))
+            cwd = plugin / cwd
+            command = server['command'].replace('${CLAUDE_PLUGIN_ROOT}', str(plugin))
+            requests = [
+                {'jsonrpc': '2.0', 'id': 1, 'method': 'initialize', 'params': {}},
+                {'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list', 'params': {}},
+                {'jsonrpc': '2.0', 'id': 3, 'method': 'tools/call', 'params': {
+                    'name': 'qiongli_config_status', 'arguments': {}}},
+            ]
+            output = run([str(cwd / command), *server['args']], root=cwd, env=env,
+                         input=''.join(json.dumps(r) + '\n' for r in requests))
+            messages = {m['id']: m for m in map(json.loads, output.stdout.splitlines())}
+            if (output.stderr or set(messages) != {1, 2, 3}
+                    or messages[1]['result']['serverInfo']['version'] != version
+                    or len(messages[2]['result']['tools']) != 14
+                    or 'error' in messages[3] or messages[3]['result'].get('isError', False)):
+                raise ValueError('bundled Plugin MCP smoke failed')
+            checks[host] = dict(provenance, status='passed', runtime_path='empty', mcp_tools=14)
+    return checks
 
 
 def main() -> int:
@@ -261,9 +356,11 @@ def main() -> int:
     parser.add_argument('--out-dir', required=True, type=Path)
     parser.add_argument('--version', required=True)
     parser.add_argument('--commit', required=True)
+    parser.add_argument('--binary', required=True, type=Path)
+    parser.add_argument('--target', required=True, choices=TARGETS)
     args = parser.parse_args()
     try:
-        archives = build_plugins(args.content_dir, args.out_dir, args.version, args.commit)
+        archives = build_plugins(args.content_dir, args.out_dir, args.version, args.commit, args.binary, args.target)
         print(json.dumps([dict(path=str(p), **verify_archive(p, args.version, args.commit)) for p in archives], indent=2))
     except (ValueError, KeyError, TypeError, OSError, tarfile.TarError) as error:
         parser.exit(1, f'marketplace projection failed: {error}\n')

@@ -3,6 +3,58 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Completed locally: bundled Marketplace MCP — September 10
+
+The maintainer approved platform-specific Plugins carrying the existing native
+executable. Branch `codex/marketplace-bundled-native` starts from `29161947`.
+[ADR 0223](../../architecture/decisions/0223-bundled-marketplace-native-mcp.md)
+records the delivery choice. Source, checks and local integration are authorized;
+publication and normal Host registration are outside this increment.
+
+The existing projector now emits schema-2 Codex/Claude Plugins for macOS ARM64,
+Windows x64 and Linux x64. Each directly launches its bundled executable in Lite
+mode; no Node/npm bridge, postinstall download or extra runtime is needed. The
+three target identities use `qiongli-next-{macos-arm64,windows-x64,linux-x64}`.
+Shared research bytes and Lite/Full tool sets remain unchanged. Schema-1 alpha.8
+archives retain historical verification without becoming new-build output.
+
+The current native release owner builds and tests each target's two archives.
+Assembly requires all six and produces `marketplace-plugins.json` with exact
+Host/target, archive, digest, path and `<host>/<target>/v<version>` ref mappings.
+Verification binds Plugin executables to corresponding CLI/npm bytes and all
+resource packs, retains executable permissions and checks native empty-PATH
+receipts. The existing final three-platform install matrix now also executes
+extracted Plugin manifests and uploads the results. No new runtime or pipeline.
+
+Validation: **23 focused tests passed** (Marketplace projection, release assembly,
+CLI archive, registry package and version contract); Capability Contract v2 and
+workflow YAML parsing passed. Log:
+`/private/tmp/qiongli-bundled-marketplace-focused.log`. Negative checks cover wrong
+binary architecture, missing/changed bytes, modes, profiles, source/resource
+bindings, target smoke evidence, incomplete package sets and platform-index
+substitution. The old npm-bridge packet remains readable. Final diff review and
+the frozen-source guard are part of the local integration boundary.
+
+Actual macOS diagnostic repacking reused the frozen alpha.8 executable/source
+`3d64767c52682464079a25cb59ef72683b229d8a`, binary SHA-256
+`faf7b69bbb0ba42f1bf5248648026732254a5e1bfcc72f3f32430e7805e57759`, and pack
+`6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9`.
+Both Host manifests passed initialization, 14-tool discovery and a non-network
+configuration call with empty PATH and isolated configuration. The reused CLI
+checker also preserved the 32-tool Full observation. Each archive is about
+7.1 MB. Receipt: `/private/tmp/qiongli-bundled-marketplace-macos-checks.json`.
+The first diagnostic used macOS's symlinked temporary-directory alias and was
+refused by config safety; the checker now resolves its own temporary root.
+No native security boundary was relaxed.
+
+These are local tooling and macOS executable observations, not a newly qualified
+release or live Host installation. Windows/Linux native Plugin execution remains
+for the next named candidate. Next distribution step: adapt external Skillsplace
+catalog synchronization to the generated target mapping, qualify a fresh version,
+publish six immutable target refs and then switch catalog entries. Existing
+alpha.8 packages/refs/catalogs remain unchanged. CLI-410 stays active; Cargo and
+semantic research observation gaps retain their independent scope.
+
 ## Completed: alpha.8 publication and marketplace parity — September 10
 
 The maintainer requested a new release and a comparison of the Skillsplace Codex

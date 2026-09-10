@@ -74,6 +74,15 @@ records qualified source, public bytes and marketplace parity. Continue with the
 bounded semantic research observation below. Cargo's Windows staged-TOML failure
 and missing registry credentials remain separate release gaps.
 
+September 10 subsequent maintainer decision: deliver Marketplace Plugins with
+bundled native executables and an explicit platform choice. ADR 0223 and the
+current plan record local source implementation, 23 focused tests and macOS
+empty-PATH checks. The six Codex/Claude target archives and generated platform
+index reuse existing CLI release owners. External catalog adaptation, fresh
+Windows/Linux Plugin observations and publication remain the next distribution
+increment; published alpha.8 continues using its historical npm bridge. Research
+quality work and Cargo qualification remain independently scoped.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

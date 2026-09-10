@@ -56,18 +56,32 @@ grant digest; signed bundle APIs reject them. Source updates/removal require the
 expected receipt inside the existing bundle transaction. Host registration,
 cache refresh and live readiness remain separately observed actions.
 
-Public `qiongli-next` marketplace archives use `native_marketplace_plugins.py`
-and the CLI's `export_marketplace_content` example. The existing resource-pack
-loader/projector exports `marketplace-lite`; shared Skill resources retain their
-exact bytes. Only platform manifests and a Node bridge are added. The bridge
-pins the same npm SemVer and serves native Lite MCP (14 tools); Full MCP remains
-available through explicit CLI/local Plugin configuration. No signed grant,
-managed activation or Host registration is implied by a public archive.
+Public Marketplace Plugins (ADR 0223) use `native_marketplace_plugins.py` and
+the CLI's `export_marketplace_content` example. Shared research resources retain
+the exact `marketplace-lite` pack bytes. Each Codex/Claude archive bundles its
+qualified target's CLI and directly starts Lite MCP (14 tools) without Node,
+npm, Python, a shell bridge or executable downloads. Full MCP remains available
+through explicit CLI/local Plugin configuration; packaging does not expand tools.
 
-The CLI release packet may carry the Codex/Claude archive pair. Verification
-requires their version, release source, resource hashes and pack hash to agree
-with all three native CLI observations. Publish immutable `codex/v<version>` and
-`claude/v<version>` distribution refs before advancing marketplace catalogs;
-catalogs reference `plugins/qiongli-next`. The archive names preserve the existing
-Skillsplace release-sync contract. Node 18+ and access to npm on first MCP start
-are explicit dependencies; user caches and model configuration are not edited.
+The three targets use explicit `qiongli-next-macos-arm64`,
+`qiongli-next-windows-x64` and `qiongli-next-linux-x64` identities. There is no
+automatic OS selection in a generic Host manifest. `marketplace-plugins.json`
+maps all six archives to Host, target, digest, plugin path and immutable
+`<host>/<target>/v<version>` distribution ref. External marketplace catalogs must
+consume that mapping and present the platform choices before public rollout.
+Do not point an unqualified generic entry at one platform's binary.
+
+Schema-2 archive receipts bind the target, executable and resource bytes. The
+release owner verifies the executable against the corresponding CLI/npm bytes,
+requires the same embedded pack across targets and binds target-native empty-PATH
+CLI/MCP checks to each archive. The final combined-package matrix exercises the
+extracted MCP manifest on each system. Preserve executable mode 0755 in tarballs
+and Git distribution trees; research resources use 0644. Unknown platforms,
+wrong executable formats, missing/changed bytes, altered profiles or permissions,
+and incomplete/index-mismatched packets fail qualification.
+
+Schema-1 alpha.8 npm-bridge archives remain verifiable with their historical
+names and contents. New builds emit only schema 2. Public changes require a new
+version and six qualified immutable distributions; existing alpha.8 refs and
+assets remain unchanged. No signed grant, managed activation, Host registration,
+private research access or model configuration change is implied by an archive.

@@ -71,7 +71,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/targets
-      - name: Assemble one npm package and all wheels
+      - name: Check native distribution tooling
+        run: python -m unittest tests.test_native_marketplace_plugins tests.test_native_release_assets tests.test_native_cli_release -q
+      - name: Assemble registry packages and platform Plugins
         shell: bash
         run: |
           version=$(python -c "import tomllib; print(tomllib.load(open('packages/qiongli-native/Cargo.toml','rb'))['workspace']['package']['version'])")
@@ -105,7 +107,7 @@ jobs:
         with:
           name: cli-release-assets
           path: ${{ runner.temp }}/assets
-      - name: Install combined npm package and platform wheel
+      - name: Check bundled Plugins and install registry packages
         shell: bash
         run: |
           version=$(python -c "import tomllib; print(tomllib.load(open('packages/qiongli-native/Cargo.toml','rb'))['workspace']['package']['version'])")
@@ -122,4 +124,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: install-${{ matrix.os }}
-          path: ${{ runner.temp }}/install-check/install-check.json
+          path: |
+            ${{ runner.temp }}/install-check/install-check.json
+            ${{ runner.temp }}/assets/marketplace-install-check.json

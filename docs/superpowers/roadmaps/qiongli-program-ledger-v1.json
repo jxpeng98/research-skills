@@ -384,12 +384,13 @@
         "tooling/release/acceptance/v2.0.0-alpha.7-distribution.json",
         "docs/architecture/decisions/0221-cargo-cli-publication.md",
         "tooling/release/v2.0.0-alpha.8.md",
-        "tooling/release/acceptance/v2.0.0-alpha.8-distribution.json"
+        "tooling/release/acceptance/v2.0.0-alpha.8-distribution.json",
+        "docs/architecture/decisions/0223-bundled-marketplace-native-mcp.md"
       ],
       "commit": "3d64767c52682464079a25cb59ef72683b229d8a",
       "run": "34490579219",
       "updated_at": "2026-09-10",
-      "blocker": "Alpha.8 is published on GitHub, npm next and PyPI with successful native build and combined-package installation on all three systems. Public bytes match CI. Skillsplace next now references verified same-version Codex/Claude distributions, and the public npm bridge passed on macOS. Cargo publication is still blocked by Windows source qualification and missing registry credentials; live Host registration and complete research baseline acceptance remain open."
+      "blocker": "Alpha.8 is published on GitHub, npm next and PyPI with successful native build and combined-package installation on all three systems. Public bytes match CI. Skillsplace next now references verified same-version Codex/Claude distributions, and the public npm bridge passed on macOS. Cargo publication is still blocked by Windows source qualification and missing registry credentials; live Host registration and complete research baseline acceptance remain open. Subsequent user-approved platform-specific bundled Marketplace packaging is implemented locally with 23 focused tests and isolated macOS empty-PATH executable checks. Windows/Linux native Plugin checks, new-version publication, target distribution refs and external catalog adaptation remain pending; historical alpha.8 publication evidence is unchanged."
     },
     {
       "id": "CLI-411",

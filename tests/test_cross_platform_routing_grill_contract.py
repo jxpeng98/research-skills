@@ -166,6 +166,8 @@ class CrossPlatformRoutingGrillContractTests(unittest.TestCase):
 
             plugin_skill = out / "plugins" / "qiongli" / "skills" / "qiongli-workflow"
             skill_text = read(plugin_skill / "SKILL.md")
+            self.assertIn("references/platform-routing.md", skill_text)
+            routing_text = read(plugin_skill / "references" / "platform-routing.md")
             boundary_text = read(plugin_skill / "skills" / "Z_cross_cutting" / "boundary-interviewer.md")
             paper_write_text = read(plugin_skill / "workflows" / "paper-write.md")
             manuscript_text = read(plugin_skill / "skills" / "F_writing" / "manuscript-architect.md")
@@ -188,6 +190,7 @@ class CrossPlatformRoutingGrillContractTests(unittest.TestCase):
                     "\n".join(
                         [
                             skill_text,
+                            routing_text,
                             boundary_text,
                             paper_write_text,
                             manuscript_text,

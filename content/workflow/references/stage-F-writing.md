@@ -40,6 +40,11 @@ During drafting:
 - review each chunk for mainline drift, logic jumps, missing support, contradiction with locked decisions, and generic or vague claims
 - do not draft the whole artifact in one uninterrupted pass
 
+The confirm checkpoint is a continue/revise/ask decision after reviewing support,
+not a mandatory user turn. Continue within the agreed scope when the evidence
+settles the decision; pause for an unresolved boundary, scope change or required
+artifact write approval.
+
 Convergence requires every chunk to have concrete claim-support notes, resolved or carried-forward review issues, and a continue/revise/ask decision.
 
 ---

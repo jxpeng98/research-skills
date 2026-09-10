@@ -15,30 +15,24 @@ $ARGUMENTS
 
 ## Workflow
 
-### Step 0: Project Context Selection
+### Step 0: Reuse Context and Choose Output Scope
 
-**Required**: Determine which research project this paper belongs to.
+Use the supplied paper and selected project. For an explanation or summary,
+answer in chat at the requested depth without requiring a project folder or
+writing the full B2 artifact set. Mark the actual evidence read (full text,
+abstract, metadata or supplied excerpt). Do not claim a completed B2 task.
 
-Ask the user:
-> "Which research project folder should this paper be saved to?"
-> - Existing projects: [List folders under `RESEARCH/`]
-> - Create new: `RESEARCH/[new-topic]/`
-> - Standalone: `RESEARCH/standalone/`
-
-Set `[topic]` variable based on user selection.
-
-Ensure the target directory structure exists:
-```
-RESEARCH/[topic]/
-├── literature/
-├── notes/
-├── retrieval_manifest.csv
-└── bibliography.bib
-```
+For a saved B2 note, reuse the known destination; ask only if it is ambiguous.
+Preserve existing paths and notes. The outputs below apply to a formal B2 run;
+registered project persistence goes through preview/approval/CAS.
 
 ### Step 1: Paper Retrieval
 
-Create or update `qiongli_search_plan` before retrieval execution:
+If the supplied excerpt already supports the requested answer, read it directly
+and skip external retrieval and the search plan. For a formal B2 run or external
+lookup, create or update `qiongli_search_plan` before retrieval execution. If the
+plan tool is unavailable, record the plan in the response or proposed artifact
+without claiming the MCP call ran:
 1. Call `qiongli_literature_status` when the tool is visible and record
    `provider_capability_mode` separately as `provider_connected` or
    `strategy_only`.

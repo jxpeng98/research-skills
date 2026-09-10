@@ -58,7 +58,7 @@ class AcademicContextContinuityTests(unittest.TestCase):
                 "Decision ID",
                 "Cluster ID",
                 "Claim ID",
-                "App or CLI project refresh",
+                "project refresh",
                 "qiongli_project_graph_snapshot",
             ):
                 self.assertIn(token, content)

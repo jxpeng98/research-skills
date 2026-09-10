@@ -1,6 +1,6 @@
 # Skills Summary
 
-Quick-reference index of all canonical skills (~3KB). For detailed specifications, load `skills/[stage]/[skill-name].md`. For full process descriptions, use `skills-core.md`.
+Quick-reference index of canonical skills. Load the selected `skills/[stage]/[skill-name].md` card; use only a matching section of `skills-core.md` when needed.
 
 ## A — Research Framing
 
@@ -84,6 +84,7 @@ Quick-reference index of all canonical skills (~3KB). For detailed specification
 
 | Skill | Purpose |
 |-------|---------|
+| journal-fit-recommender | Rank journal fit from an existing manuscript and verified venue evidence |
 | submission-packager | Submission-ready packaging (cover letter + statements) |
 | rebuttal-assistant | Reviewer response workflow (response matrix + letter) |
 | peer-review-simulation | Simulate Reviewer 2 critique before submission |
@@ -104,9 +105,10 @@ Quick-reference index of all canonical skills (~3KB). For detailed specification
 | code-execution | Execute and iterate on research code |
 | code-review | Domain-aware independent code review |
 | reproducibility-auditor | Audit code for reproducibility compliance |
+| release-packager | Assemble analysis code, data documentation and environment for reproducibility |
 | stats-engine | Statistical modeling with domain-specific method selection |
 
-## J — Proofreading & AI De-trace
+## J — Proofreading & Scholarly Voice
 
 | Skill | Purpose |
 |-------|---------|
@@ -123,6 +125,24 @@ Quick-reference index of all canonical skills (~3KB). For detailed specification
 | slide-architect | Design backend-agnostic slide content specs |
 | slidev-scholarly-builder | Generate Slidev deck with scholarly theme |
 | beamer-builder | Generate LaTeX Beamer presentation |
+
+## L — Coursework
+
+| Skill | Purpose |
+|-------|---------|
+| assignment-brief-analyzer | Parse coursework, capstone, and dissertation assignment briefs into constraints, task type, missing information, and integrity boundaries. |
+| rubric-mapper | Map marking rubrics and learning outcomes to required content, evidence, sections, and coursework risks. |
+| coursework-architect | Design coursework structure, claim-evidence plans, and citation plans from assignment briefs and rubrics. |
+| coursework-reviser | Revise coursework drafts against rubrics, learning outcomes, evidence plans, word count, and integrity constraints. |
+
+## M — Dissertation
+
+| Skill | Purpose |
+|-------|---------|
+| dissertation-planner | Plan dissertations, theses, capstones, and major projects by degree level, method type, dependencies, milestones, and risks. |
+| chapter-architect | Design dissertation chapter maps, chapter status, dependencies, evidence thresholds, and word-count allocations. |
+| supervisor-feedback-integrator | Map supervisor feedback to dissertation chapters, claims, required actions, evidence needs, priorities, and revision status. |
+| dissertation-readiness-checker | Check dissertation final readiness and defense preparation against chapter completeness, evidence alignment, formatting, integrity, and unresolved risks. |
 
 ## Z — Cross-Cutting
 

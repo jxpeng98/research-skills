@@ -1,15 +1,15 @@
 ---
-description: AI 去痕 / 降重 / 终审校对（多 AI 协作）— Scan for AI fingerprints, rewrite flagged passages with human voice, check similarity, and final proofread
+description: 学术语言与终稿校对 — Improve clarity, scholarly voice, attribution and consistency while preserving claims and evidence
 ---
 
-# Proofread & De-AI Workflow
+# Scholarly Proofreading Workflow
 
 Use this workflow after manuscript drafting (Stage F) and compliance checks (Stage G), **before** submission (Stage H).
 
 ## When to use
 
 - Your manuscript was substantially drafted or revised with AI assistance
-- You want to reduce AI-detection scores before submission
+- You want clearer prose with accurate attribution and the author's intended voice
 - You need a final language-level proofread pass
 
 ## Task IDs
@@ -20,6 +20,14 @@ Use this workflow after manuscript drafting (Stage F) and compliance checks (Sta
 | `J2` | Human-voice rewrite — rewrite flagged passages |
 | `J3` | Similarity & originality check — reduce text overlap |
 | `J4` | Final proofread — grammar, consistency, flow |
+
+These are stable task/artifact names, not evidence of authorship detection.
+J1 flags repetitive, vague or unsupported language; it cannot establish who wrote
+the text. J2 improves expression while preserving meaning, citations and required
+AI disclosure. J3 compares only the available sources; do not invent detector or
+similarity scores, claim a complete plagiarism search, or optimize for evasion.
+For a small passage, perform the requested edit directly; the full stage output
+set below applies to a formal J-stage run.
 
 ## Academic Boundary Review
 
@@ -34,15 +42,19 @@ Execute Task J1 on RESEARCH/[topic] to scan the manuscript for AI-generated patt
 Then run J2 to rewrite high-severity passages using human writing voice.
 ```
 
-## Multi-AI Collaboration (Recommended)
+## Independent Review When Needed
 
-For best results, call `qiongli_orchestrator_route`, select the registered
+Use one agent for ordinary proofreading. When independent review is requested
+or required by the task, read `skills/Z_cross_cutting/model-collaborator.md`.
+If Full MCP is visible, call `qiongli_orchestrator_route`, select the registered
 project revision, pass `qiongli_orchestration_doctor`, and start host-driven
 Full MCP orchestration with `executionMode: "triad"`. The active Codex or
 Claude host executes each bounded handoff and returns it through
 `qiongli_orchestration_submit`.
 
-This runs three agents in a loop:
+Triad describes three roles, not proof of three independent models. Only an
+actually available, authorized separate reviewer can provide independent review;
+sequential roles in the active conversation remain self-review:
 1. **Drafter** rewrites flagged passages
 2. **Reviewer** re-scans for residual AI patterns
 3. **Auditor** verifies scientific accuracy is preserved

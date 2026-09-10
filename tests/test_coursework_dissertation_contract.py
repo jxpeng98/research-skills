@@ -109,8 +109,8 @@ def test_platform_routing_mentions_coursework_and_dissertation() -> None:
     assert "/dissertation" in routing
     assert "assignment brief" in routing
     assert "supervisor feedback" in routing
-    assert "/coursework [assignment brief, task, or topic]" in skill
-    assert "/dissertation [topic, program, or level]" in skill
+    assert "workflows/coursework.md" in skill
+    assert "workflows/dissertation.md" in skill
 
 
 def test_skill_schema_and_registry_include_coursework_and_dissertation_stages() -> None:

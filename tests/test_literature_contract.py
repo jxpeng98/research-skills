@@ -160,7 +160,7 @@ class LiteratureContractTests(unittest.TestCase):
 
     def test_literature_workflows_define_search_plan_execution_modes_and_provenance(self) -> None:
         workflow_paths = (
-            LAYOUT.workflow / "SKILL.md",
+            LAYOUT.workflow / "references" / "literature-provider-routing.md",
             LAYOUT.workflow / "workflows" / "lit-review.md",
             LAYOUT.workflow / "workflows" / "paper-read.md",
         )
@@ -213,7 +213,7 @@ class LiteratureContractTests(unittest.TestCase):
             self.assertIn(token, content)
 
     def test_workflow_search_modes_do_not_downgrade_native_search_to_strategy_only(self) -> None:
-        content = (LAYOUT.workflow / "SKILL.md").read_text(encoding="utf-8")
+        content = (LAYOUT.workflow / "references" / "literature-provider-routing.md").read_text(encoding="utf-8")
 
         self.assertIn(
             "`strategy_only` only when neither provider MCP nor platform-native search is available",
@@ -287,14 +287,17 @@ class LiteratureContractTests(unittest.TestCase):
         )
 
     def test_workflow_guidance_rejects_collect_evidence_as_provider_status_source(self) -> None:
-        content = (REPO_ROOT / "content" / "workflow" / "SKILL.md").read_text(encoding="utf-8")
+        content = (LAYOUT.workflow / "references" / "literature-provider-routing.md").read_text(encoding="utf-8")
 
-        self.assertIn(COLLECT_EVIDENCE_BOUNDARY_BULLET, content)
+        self.assertIn(COLLECT_EVIDENCE_BOUNDARY_BULLET.replace(
+            "Use `qiongli_literature_status`, `qiongli_config_status`, `qiongli_test_provider`, "
+            "and `qiongli_literature_search`", "Use visible `qiongli_literature_status`, "
+            "`qiongli_config_status`, and `qiongli_literature_search` tools"), content)
         self.assertIn("`qiongli_literature_status`", content)
         self.assertIn("`qiongli_literature_search`", content)
 
     def test_workflow_guidance_uses_exact_desktop_mcpb_provider_bullet(self) -> None:
-        content = (REPO_ROOT / "content" / "workflow" / "SKILL.md").read_text(encoding="utf-8")
+        content = (LAYOUT.workflow / "references" / "literature-provider-routing.md").read_text(encoding="utf-8")
 
         self.assertIn(DESKTOP_MCPB_PROVIDER_BULLET, content)
 

@@ -12,9 +12,9 @@ graph digests and persistence remain unverified. Ask the user to enable the
 installed Qiongli Plugin/MCP connection and reconnect or restart the Host.
 Do not print XML `<tool_calls>`/`<invoke>`, JSON tool-call imitations, or an
 imagined successful result. Tool-shaped text is not an executed call.
-You may summarize supplied text only if clearly labelled as supplied and
-unverified against the live project. Do not treat that summary as continuity,
-readiness, approval, or a saved academic artifact.
+Continue independent reading, drafting or review possible from authorized supplied
+materials, clearly labelled as unverified against the live project. Do not treat
+that work as live continuity, readiness, approval, or a saved academic artifact.
 
 If a visible tool is denied, report the denial and stop that operation. Do not
 retry through another tool, shell, provider, credential, or weaker permission

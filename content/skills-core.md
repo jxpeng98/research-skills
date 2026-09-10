@@ -1,6 +1,6 @@
 # Skills Core Reference
 
-Consolidated skill reference for token-efficient workflow execution. Use this file by default; only load full skill files (`skills/*/*.md`) for detailed output formats or error recovery.
+Optional consolidated digest. Prefer the relevant `skills/*/*.md` card for execution; read only the matching section here when a compact overview helps. Cards and canonical contracts own current inputs and outputs.
 
 ---
 
@@ -10,7 +10,7 @@ Consolidated skill reference for token-efficient workflow execution. Use this fi
 
 **Source of truth:** `standards/research-workflow-contract.yaml`
 
-**Rule:** Always map user intent to a canonical Task ID (`A1`...`K4`) and write outputs to the contract path under `RESEARCH/[topic]/`.
+**Rule:** Infer the applicable Task ID (`A1`...`M7`) without asking for known context. Formal tasks write contract outputs under `RESEARCH/[topic]/`; a direct answer may stay in chat without claiming formal task completion. Follow the entrypoint scope, tool-availability and approval rules.
 
 **Cross-cutting quality substrate:**
 - Central claims go in `RESEARCH/[topic]/evidence/claim-evidence-ledger.csv` using `references/evidence-ledger-contract.md`.
@@ -512,24 +512,13 @@ required fields, and write export-ready `bibliography.bib`
 
 ## model-collaborator
 
-**Purpose:** Multi-model collaboration for research code tasks
+**Purpose:** Evidence-based independent review across research tasks.
 
-**Modes:**
-1. **parallel**: Both models analyze, merge high-confidence conclusions
-2. **chain**: One generates, other verifies (Codex -> Claude or reverse)
-3. **role**: Task division (Codex: code gen, Claude: review/synthesis)
-4. **single**: Single model execution
-
-**Invocation:**
-```bash
-python -m bridges.orchestrator [mode] --prompt "..." --cwd "/path"
-```
-
-**Model Strengths:**
-- Codex: 算法实现, Bug 修复, 代码生成
-- Claude: 结构化审阅, 长文本综合, 文档生成
-
-**Output:** Standardized JSON with confidence score
+Read `skills/Z_cross_cutting/model-collaborator.md`. Use the configured model and
+visible Host capabilities; Full MCP supplies bounded handoffs, not model processes.
+Sequential roles in one conversation are self-review. Record sources, participants,
+disagreements and unresolved gates in `logs/model_collab_trace.md`; agreement or
+confidence never substitutes for evidence or artifact approval.
 
 ---
 
@@ -551,11 +540,9 @@ subjects. Borrowed lenses load the narrow audited method pack without changing
 1. **Standard (Tier 1):** Use domain-profile recommended library + method checklist
 2. **Advanced (Tier 2):** Methodological Decomposition (JAX/PyTorch/Custom MLE)
 
-**Invocation:**
-```bash
-python -m bridges.orchestrator code-build \
-  --method "GARCH" --domain finance --tier standard --lang python
-```
+**Invocation:** Read `workflows/code-build.md` and execute the selected Stage I
+task in the active Host. Use visible Full MCP for a registered project handoff;
+legacy Python controller commands are not native 2.x dependencies.
 
 **Output:** `AnalysisCode`, `StatsReport`
 

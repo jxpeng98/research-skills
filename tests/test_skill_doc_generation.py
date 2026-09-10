@@ -75,16 +75,16 @@ class SkillDocGenerationTests(unittest.TestCase):
         self.assertIn(f"Qiongli version: {version}", content)
         self.assertIn(f"Installed Qiongli workflow version: `{version}`", content)
 
-        for token in (
-            "J_proofread/",
-            "academic-context-maintainer",
-            "context/",
-            "statement-generator",
-            "effect-size-calculator",
-            "qualitative-coding",
-            "discussion-writer",
-            "limitation-auditor",
-            "proofread/",
-            "tasks I1–I9",
-        ):
-            self.assertIn(token, content)
+        # Discovery must cover the actual registry, rather than a duplicated
+        # hand-picked list or a stale stage count in the entrypoint.
+        self.assertIn("skills-summary.md", content)
+        summary = (REPO_ROOT / "content" / "skills-summary.md").read_text(encoding="utf-8")
+        registry = yaml.safe_load((REPO_ROOT / "content" / "skills" / "registry.yaml").read_text())
+        discovered = [
+            line.split("|")[1].strip()
+            for line in summary.splitlines()
+            if line.startswith("| ") and not line.startswith("| Skill |")
+        ]
+        self.assertCountEqual([item["id"] for item in registry["skills"]], discovered)
+        for item in registry["skills"]:
+            self.assertTrue((REPO_ROOT / "content" / item["file"]).is_file(), item["id"])

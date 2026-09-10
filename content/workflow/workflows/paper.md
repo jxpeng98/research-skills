@@ -4,8 +4,9 @@ description: 研究论文写作工作流入口（选择论文类型 + 当前阶�
 
 # Research Paper Workflow (Menu / Router)
 
-Provide a systematic “choose-your-path” workflow for writing research papers. The user selects:
-1) paper type, and 2) what they want to do right now (stage/section).
+Route the requested research work using its known project, paper type and task.
+The menus below are lookup aids; show relevant choices only when the user asks
+for a menu or the intent remains unresolved. A clear request proceeds directly.
 
 Use the canonical standard contract from the globally installed `qiongli-workflow` skill.
 Task IDs (`A1` ... `M7`) and output paths in `references/workflow-contract.md` are authoritative.
@@ -19,29 +20,19 @@ paper router.
 
 $ARGUMENTS
 
-## Step 0: Select Project Folder
+## Step 0: Reuse Project Context
 
-Ask the user:
-> "Which `RESEARCH/[topic]/` folder should we work in?"
-> - Existing projects: [List folders under `RESEARCH/`]
-> - Create new: `RESEARCH/[new-topic]/`
+Use the selected project and existing artifact paths. Do not rename an existing
+folder to normalize its topic. For a new saved artifact with no clear destination,
+ask once; a supplied-material question can be answered in chat without a folder.
+Registered project writes still require preview/approval/CAS.
 
-Normalize `[topic]` (lowercase, hyphens).
+## Step 1: Infer Paper Type and Task
 
-## Step 1: Choose Paper Type (Pick One)
-
-Ask the user to select:
-1. **Empirical (实证)** — data/experiments/interviews; emphasis on Methods + Results
-2. **Systematic Review (系统综述)** — PRISMA workflow; synthesis/meta-analysis
-3. **Methods (方法)** — propose a new method + validation
-4. **Theory/Conceptual (理论)** — build framework/propositions; emphasis on argument + positioning
-
-Store selection as `[paper_type]`.
-
-## Step 1.5: Choose Task ID (Canonical)
-
-Ask the user to choose a Task ID from the contract (for example `F3`, `G1`, `B1`).
-If the user describes intent in natural language, map it to the closest Task ID and confirm once.
+Infer `paper_type` (`empirical`, `qualitative`, `systematic-review`, `methods`, or
+`theory`) and Task ID from the request and existing artifacts. Do not ask the user
+to select or confirm an ID already implied by their request. Ask only if an
+unresolved choice materially changes methods, outputs or claim boundaries.
 
 ## Step 1.5a: Academic Idea Funnel / Academic Grill Loop For Idea-Discovery
 
@@ -69,7 +60,8 @@ The boundary pass must inspect project artifacts first. If artifacts do not sett
 
 ## Step 2: Choose What You Want to Do Now
 
-Ask the user to pick a **stage** first. Then show only the relevant **sub-options** and ask them to pick one.
+Use the requested stage directly. If the user wants help choosing, show only
+the relevant sub-options; do not repeat the paper-type or Task ID selection.
 
 When possible, always include the matching Task ID in the option label (for example: `F3 Full draft`).
 

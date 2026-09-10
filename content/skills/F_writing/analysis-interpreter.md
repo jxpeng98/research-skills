@@ -67,6 +67,12 @@ Translate quantitative, qualitative, or synthesized findings into analytical nar
 
 ## Process
 
+For a bounded explanation or sentence correction, use the supplied results and
+answer in chat. Formal saved interpretations use the output and ledger contracts
+below through the project's write owner. Inspect only inputs needed for the
+requested interpretation; missing diagnostics limit the claim, not the ability
+to explain the observed result.
+
 ### Step 1: Read the Result Pattern
 
 Before interpreting, fully inventory what the analysis produced:
@@ -119,7 +125,7 @@ Level 5 — IMPLICATION:     Why does it matter? For theory, practice, or method
                            "This finding suggests that [theory] needs revision in [specific way]"
 ```
 
-> **Rule**: Every results paragraph must reach at least Level 2. If you cannot get past Level 1, the paragraph is a methods-section orphan, not a result.
+> **Rule**: Stop at the depth the evidence supports. A descriptive association with an explicit causal caveat is a valid result. Add mechanisms only as supported explanations or clearly labelled hypotheses; never invent one to satisfy this ladder.
 
 > **Anti-pattern**: Jumping directly from Level 1 to Level 5 (description → implication) without mechanism or boundary. This produces shallow "interesting finding → companies should…" writing that reviewers reject.
 
@@ -255,8 +261,8 @@ For each key finding:
 
 The results interpretation is **ready** when:
 
-- [ ] Every finding reaches at least Level 2 on the interpretive depth ladder
-- [ ] Confirmed hypotheses have: estimate + CI + effect size + mechanism + rival caveat
+- [ ] Every finding uses the strongest supported interpretation and states its limits
+- [ ] Hypothesis assessments report available estimates, precision and effect size; mechanisms and rivals are evidence-backed or explicitly hypothetical
 - [ ] Null results are reported as precision statements, not as "no effect"
 - [ ] Qualitative themes are analytically interpreted, not just illustrated with quotes
 - [ ] Deviant/negative cases are reported and interpreted

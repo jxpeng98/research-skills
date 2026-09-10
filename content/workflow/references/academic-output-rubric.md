@@ -18,7 +18,7 @@ Use this rubric whenever a workflow or skill produces scholarly prose, evidence 
 
 ## Scholar-Like Writing
 
-- State the mechanism or theoretical reason that connects evidence to the claim.
+- State a mechanism or theoretical explanation when evidence permits; otherwise report the supported pattern and its inferential limits. Label untested mechanisms as hypotheses.
 - Name boundary conditions: population, setting, measurement choice, model assumption, time period, or scope limit.
 - Include counterevidence or alternative explanations when they materially affect the claim.
 - Keep prose direct and discipline-native; avoid generic AI phrases and repeated paragraph templates.

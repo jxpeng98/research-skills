@@ -113,7 +113,10 @@ Writing a strong conclusion that:
 
 ### Step 1: Understand the Writing Task
 
-Clarify:
+Reuse answers in the request, artifacts and prior conversation. Treat the list
+below as a lookup; ask only for a missing answer that changes this writing task.
+Do not require a full manuscript for a supported paragraph revision.
+
 1. Which section is being written?
 2. What is the research topic?
 3. What content/materials are available?
@@ -129,7 +132,8 @@ The boundary pass must identify the strongest defensible wording for the central
 
 ### Step 2: Gather Required Input
 
-For each section type, request:
+For the selected section, inspect supplied inputs first and request only missing
+evidence necessary for its claims:
 
 **Abstract:**
 - Complete draft of other sections (or key points)

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_upsert_references.output.v2.json",
+  "title": "qiongli_zotero_upsert_references structured output",
+  "type": "object",
+  "required": ["status", "dry_run", "results"],
+  "properties": {
+    "status": { "type": "string" },
+    "error_code": { "type": "string" },
+    "dry_run": { "type": "boolean" },
+    "results": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "type": "object" }
+    },
+    "write_approval": {
+      "type": "object",
+      "properties": {
+        "receipt": { "type": "string", "pattern": "^zwr1_[0-9a-f]{64}$" },
+        "expires_in_seconds": { "type": "integer", "minimum": 1, "maximum": 300 },
+        "required_write_intent": { "type": "string", "const": "apply" },
+        "consumed": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

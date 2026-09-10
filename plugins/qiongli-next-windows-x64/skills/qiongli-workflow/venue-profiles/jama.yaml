@@ -1,0 +1,29 @@
+venue_id: jama
+community: Clinical medicine and public health
+article_types:
+  - original investigation
+  - systematic review
+  - research letter
+contribution_expectations:
+  - clinical or policy relevance
+  - clear patient or population impact
+methods_expectations:
+  - prespecified outcomes
+  - appropriate reporting guideline compliance
+evidence_standards:
+  - transparent cohort, trial, or review methods
+  - effect sizes with uncertainty
+writing_style:
+  - structured, cautious clinical prose
+  - direct interpretation of patient relevance
+common_reviewer_objections:
+  - confounding or selection bias
+  - overstated clinical implications
+formatting_constraints:
+  - structured abstract
+  - strict word and table limits
+required_reporting_standards:
+  - CONSORT
+  - STROBE
+  - PRISMA
+  - conflict of interest disclosure

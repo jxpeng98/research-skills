@@ -1,0 +1,8 @@
+venue: accounting-review
+display_name: "The Accounting Review"
+subject: economics-accounting
+expectations:
+  sections: [Introduction, Theory, Data, Research_Design, Results, Robustness, Conclusion]
+  data_code: "Archival variable construction, sample filters, and code transparency expected where permissions allow."
+  identification: "Construct validity, reporting setting, and endogeneity threats must be explicit."
+  style: "Theory-driven accounting contribution with transparent archival measurement and careful causal language."

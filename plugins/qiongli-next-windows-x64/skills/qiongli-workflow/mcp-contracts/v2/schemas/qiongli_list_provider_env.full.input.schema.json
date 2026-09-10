@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_list_provider_env.full.input.v2.json",
+  "title": "qiongli_list_provider_env full input",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}

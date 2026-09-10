@@ -1,0 +1,151 @@
+schema_version: 1.0
+subject: political-economy
+display_name: Political Economy
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/political-economy.yaml
+overlay: ""
+subject_skill: content/subjects/political-economy/skills/political-economy-mechanism-auditor.md
+signal_groups:
+  method:
+    - id: political-economy.method.process-tracing
+      value: process-tracing
+      weight: 0.30
+      activation: method_only
+      patterns:
+        - "\\bprocess tracing\\b"
+        - "\\bmechanism evidence\\b"
+        - "\\bactor[- ]institution[- ]outcome\\b"
+      method_lenses:
+        - political-mechanism-audit
+      examples:
+        - "Use process tracing to test the actor-institution-outcome mechanism."
+      near_misses:
+        - "Trace a project approval process for an internal policy memo."
+    - id: political-economy.method.comparative-case
+      value: comparative-case
+      weight: 0.25
+      activation: method_only
+      patterns:
+        - "\\bcomparative political economy case\\b"
+        - "\\bcomparative institutional case\\b"
+        - "\\bstructured focused comparison\\b"
+      method_lenses:
+        - comparative-institutional-design
+      examples:
+        - "Design a comparative institutional case study of party systems."
+      near_misses:
+        - "Compare two campaign landing pages for conversion."
+  data_or_outcome:
+    - id: political-economy.data.policy-outcome
+      value: policy-outcome
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bpolicy outcome\\b"
+        - "\\bpolicy adoption\\b"
+        - "\\bpolicy implementation\\b"
+        - "\\beconomic outcome\\b"
+      examples:
+        - "Link institutional incentives to a policy outcome."
+      near_misses:
+        - "Write a policy checklist for a nonprofit operations team."
+    - id: political-economy.data.distributional-outcome
+      value: distributional-outcome
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bdistributional conflict\\b"
+        - "\\bdistributional stakes\\b"
+        - "\\bwinners and losers\\b"
+        - "\\bredistributive politics\\b"
+      examples:
+        - "Explain distributional conflict among winners and losers."
+      near_misses:
+        - "Distribute tasks across a project team."
+  venue:
+    - id: political-economy.venue.apsr
+      value: apsr
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bAmerican Political Science Review\\b"
+        - "\\bAPSR\\b"
+      method_lenses:
+        - political-economy-positioning
+      examples:
+        - "Frame the manuscript for APSR."
+      near_misses:
+        - "Review a political science course syllabus."
+    - id: political-economy.venue.ajps
+      value: ajps
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bAmerican Journal of Political Science\\b"
+        - "\\bAJPS\\b"
+      method_lenses:
+        - political-economy-positioning
+      examples:
+        - "Position the mechanism contribution for AJPS."
+      near_misses:
+        - "Create an American journal club agenda."
+    - id: political-economy.venue.world-politics
+      value: world-politics
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bWorld Politics\\b"
+      method_lenses:
+        - political-economy-positioning
+      examples:
+        - "Target World Politics with a comparative institutions paper."
+      near_misses:
+        - "Summarize world politics headlines."
+  theory_or_construct:
+    - id: political-economy.construct.actor-institution-mechanism
+      value: actor-institution-mechanism
+      weight: 0.30
+      activation: subject
+      patterns:
+        - "\\bactor[- ]institution[- ]outcome\\b"
+        - "\\bactor incentives\\b"
+        - "\\binstitutional constraints\\b"
+        - "\\bpolitical mechanism\\b"
+      examples:
+        - "Name the actors, incentives, institution, and political mechanism."
+      near_misses:
+        - "Describe actors in a stakeholder communication plan."
+    - id: political-economy.construct.coalition-politics
+      value: coalition-politics
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bcoalition politics\\b"
+        - "\\belite coalition\\b"
+        - "\\binterest group politics\\b"
+        - "\\bstate capacity\\b"
+      examples:
+        - "Explain how coalition politics and state capacity shape reform."
+      near_misses:
+        - "Plan a team coalition for a workplace initiative."
+method_lenses:
+  political-mechanism-audit:
+    resource: content/subjects/political-economy/skills/political-economy-mechanism-auditor.md
+    activation: method_only
+  comparative-institutional-design:
+    resource: content/subjects/political-economy/overlays/skills/study-designer.md
+    activation: method_only
+  political-economy-positioning:
+    resource: content/subjects/political-economy/overlays/skills/manuscript-architect.md
+    activation: method_only
+evaluation_pack: tests/fixtures/subject_router_eval/political-economy
+near_miss_policy:
+  forbidden_subjects:
+    - finance
+    - economics
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.95
+    suggest_subject_precision: 0.95
+    near_miss_false_positives: 0

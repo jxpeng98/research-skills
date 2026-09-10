@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_search.marketplace-lite.input.v2.json",
+  "title": "qiongli_literature_search marketplace-lite input",
+  "type": "object",
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string"
+    },
+    "search_mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "topic",
+        "review",
+        "systematic_review"
+      ]
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "openalex",
+          "semantic_scholar",
+          "crossref",
+          "pubmed",
+          "arxiv"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+    },
+    "per_provider_limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+    },
+    "total_limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  },
+  "additionalProperties": false
+}

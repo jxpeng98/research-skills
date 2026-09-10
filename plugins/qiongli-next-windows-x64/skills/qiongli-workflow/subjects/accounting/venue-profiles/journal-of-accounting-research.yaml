@@ -1,0 +1,11 @@
+id: journal-of-accounting-research
+display_name: "Journal of Accounting Research"
+discipline: accounting
+quality_bar:
+  - "Empirical design must pair rigorous identification logic with precise accounting construct measurement."
+  - "Institutional setting, data construction, and sample restrictions must be defensible and transparent."
+  - "Inferences must account for reporting incentives, fiscal timing, and alternative accounting channels."
+fit_notes:
+  - "Best fit for economics-style empirical accounting papers with deep setting knowledge."
+  - "Use clear construct maps for accrual, disclosure, audit, or market-reaction measures."
+  - "Report diagnostics for variable construction, event windows, clustering, and influential observations."

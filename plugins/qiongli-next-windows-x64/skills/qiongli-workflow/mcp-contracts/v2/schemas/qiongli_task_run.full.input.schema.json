@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_task_run.full.input.v2.json",
+  "title": "qiongli_task_run full input",
+  "type": "object",
+  "required": [
+    "task_id",
+    "paper_type",
+    "topic"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "paper_type": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "cwd": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "venue": {
+      "type": "string"
+    },
+    "context": {
+      "type": "string"
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": [
+        "solo",
+        "duo",
+        "triad"
+      ]
+    },
+    "triad": {
+      "type": "boolean"
+    },
+    "controller": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "primary": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "reviewer": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "verifier": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "solo_role_gates": {
+      "type": "string",
+      "enum": [
+        "strict",
+        "standard",
+        "off"
+      ]
+    },
+    "profile": {
+      "type": "string"
+    },
+    "mcp_strict": {
+      "type": "boolean"
+    },
+    "skills_strict": {
+      "type": "boolean"
+    },
+    "guidance_mode": {
+      "type": "string",
+      "enum": [
+        "off",
+        "read",
+        "propose",
+        "apply"
+      ],
+      "default": "propose"
+    },
+    "run_agents": {
+      "type": "boolean",
+      "default": false
+    },
+    "max_revision_rounds": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "output_budget": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "skip_validation": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

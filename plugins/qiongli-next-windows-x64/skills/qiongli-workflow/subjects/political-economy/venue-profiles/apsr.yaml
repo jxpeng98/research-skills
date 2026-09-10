@@ -1,0 +1,11 @@
+id: apsr
+display_name: "American Political Science Review"
+discipline: political-economy
+quality_bar:
+  - "Contribution must speak to a general political science or political economy debate."
+  - "Political mechanism, institution, and evidence must be explicit."
+  - "Causal or interpretive claims must be calibrated to design strength."
+fit_notes:
+  - "Best fit for broad theoretical contribution with strong empirical design or mechanism evidence."
+  - "Avoid narrow policy evaluation unless it changes a general political economy debate."
+  - "Replication materials are expected for quantitative evidence."

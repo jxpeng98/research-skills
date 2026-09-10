@@ -1,0 +1,9 @@
+id: econometrica
+display_name: Econometrica
+discipline: economics
+quality_bar:
+  - rigorous identification or formal econometric/theoretical contribution
+  - precise estimand and assumptions
+  - transparent robustness and reproducibility materials
+fit_notes:
+  - strongest fit for econometric methods, economic theory, and highly rigorous empirical designs

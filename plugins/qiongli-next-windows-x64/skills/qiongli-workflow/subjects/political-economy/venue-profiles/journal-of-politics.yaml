@@ -1,0 +1,11 @@
+id: journal-of-politics
+display_name: "Journal of Politics"
+discipline: political-economy
+quality_bar:
+  - "Argument must connect political behavior or institutions to economic or policy outcomes."
+  - "Mechanism and measurement must be specific enough for replication or close review."
+  - "Contribution should be framed for a broad political science audience."
+fit_notes:
+  - "Good fit for focused empirical or theoretical political economy papers."
+  - "Keep institutional context concise and link it directly to the mechanism."
+  - "Avoid overclaiming beyond the design or data."

@@ -1,0 +1,109 @@
+contract_version: "1.0.0"
+name: "quality-gate-contract"
+status_values:
+  - PASS
+  - WARN
+  - FAIL
+  - BLOCKED
+severity_values:
+  - info
+  - minor
+  - major
+  - critical
+evidence_ref_schema:
+  required_fields:
+    - artifact
+    - anchor
+    - supports
+  optional_fields:
+    - claim_id
+    - diagnostic_id
+    - section
+    - line
+    - notes
+  artifact_rules:
+    - "artifact is a repository- or project-relative path such as RESEARCH/[topic]/study_design.md."
+    - "anchor names the section, table, row, claim id, diagnostic id, or line span used as evidence."
+    - "supports states exactly what the referenced artifact proves for the semantic check."
+status_rollup_rules:
+  - "A gate cannot be PASS unless every semantic check is PASS and blocking_issues is empty."
+  - "A gate cannot be WARN when any semantic check is FAIL or BLOCKED."
+  - "A gate cannot be FAIL when any semantic check is BLOCKED."
+  - "A gate with non-empty blocking_issues must be FAIL or BLOCKED."
+gates:
+  Q1:
+    name: "question-to-method alignment"
+    required_evidence:
+      - "Research question, method choice, outcomes, and analysis plan are cross-referenced."
+    pass_criteria:
+      - "Methods and outcomes directly answer the stated research question without unsupported scope drift."
+    fail_conditions:
+      - "Research question, design, method, or outcome claims are inconsistent or untraceable."
+    report_fields:
+      - status
+      - evidence
+      - semantic_checks
+      - blocking_issues
+    semantic_checks:
+      - check_id: "q1_rq_method_alignment"
+        description: "Every central research question or hypothesis maps to data, measurement, method, outcome, and analysis strategy."
+        blocking_when:
+          - "A research question has no method, data source, outcome, or analysis strategy."
+          - "The method can only support a weaker claim than the stated research question requires."
+  Q2:
+    name: "claim-evidence traceability"
+    required_evidence:
+      - "Major manuscript claims are mapped to source evidence, analysis output, or citation anchors."
+    pass_criteria:
+      - "Every central claim has an auditable evidence path and no unsupported high-impact claim remains."
+    fail_conditions:
+      - "A central claim lacks evidence, citation support, or artifact traceability."
+    report_fields:
+      - status
+      - evidence
+      - semantic_checks
+      - blocking_issues
+    semantic_checks:
+      - check_id: "q2_claim_evidence_traceability"
+        description: "Every central claim maps to source evidence, analysis output, citation anchor, or an explicit gap note."
+        blocking_when:
+          - "A central claim has no evidence anchor."
+          - "A strong causal, predictive, or normative claim is supported only by descriptive evidence."
+  Q3:
+    name: "reporting completeness"
+    required_evidence:
+      - "Required reporting checklist items and manuscript sections are reviewed for the paper type."
+    pass_criteria:
+      - "Required sections, checklists, disclosures, and submission-facing artifacts are complete or explicitly waived."
+    fail_conditions:
+      - "Required reporting items are missing, incomplete, or contradictory."
+    report_fields:
+      - status
+      - evidence
+      - semantic_checks
+      - blocking_issues
+    semantic_checks:
+      - check_id: "q3_reporting_completeness"
+        description: "Required sections, checklists, disclosures, and waivers are present for the paper type and venue."
+        blocking_when:
+          - "A required reporting item is missing without an explicit waiver."
+          - "Submission-facing statements contradict methods, data, ethics, or availability artifacts."
+  Q4:
+    name: "reproducibility baseline"
+    required_evidence:
+      - "Data, code, analysis decisions, environment notes, and artifact paths are documented."
+    pass_criteria:
+      - "A reviewer can locate the inputs, outputs, decisions, and reproduction limits for the work."
+    fail_conditions:
+      - "Core data, code, analysis decisions, or artifact paths are missing or unrecoverable."
+    report_fields:
+      - status
+      - evidence
+      - semantic_checks
+      - blocking_issues
+    semantic_checks:
+      - check_id: "q4_reproducibility_baseline"
+        description: "Inputs, code, environment, analysis decisions, and rerun limits are documented with artifact anchors."
+        blocking_when:
+          - "Core data, code, environment, or rerun instructions are missing."
+          - "A reported result cannot be traced to an input, script, command, or output artifact."

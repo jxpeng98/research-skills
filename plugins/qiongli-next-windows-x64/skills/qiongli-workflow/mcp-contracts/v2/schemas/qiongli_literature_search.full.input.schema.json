@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_search.full.input.v2.json",
+  "title": "qiongli_literature_search full input",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string"
+    },
+    "limit": {
+      "type": "number"
+    },
+    "per_query_limit": {
+      "type": "number"
+    },
+    "per_provider_limit": {
+      "type": "number"
+    },
+    "search_limit": {
+      "type": "number"
+    },
+    "total_limit": {
+      "type": "number"
+    },
+    "search_depth": {
+      "type": "string"
+    },
+    "searchDepth": {
+      "type": "string"
+    },
+    "search_mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "topic",
+        "title",
+        "doi",
+        "review",
+        "systematic_review"
+      ]
+    },
+    "exact_title": {
+      "type": "boolean"
+    },
+    "fromYear": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "toYear": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "venue_filter": {
+      "type": "string"
+    },
+    "document_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "query_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

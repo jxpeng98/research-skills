@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_task_run.full.output.v2.json",
+  "title": "qiongli_task_run full structured output",
+  "type": "object",
+  "required": [
+    "mode",
+    "confidence",
+    "merged_analysis",
+    "recommendations",
+    "run_agents"
+  ],
+  "properties": {
+    "mode": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "merged_analysis": {
+      "type": "string"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "task_description": {
+      "type": "string"
+    },
+    "run_agents": {
+      "type": "boolean"
+    },
+    "safety_note": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

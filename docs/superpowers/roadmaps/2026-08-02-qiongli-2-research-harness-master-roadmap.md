@@ -126,6 +126,12 @@ installation passed both commands and Lite/Full MCP. Three-platform public Cargo
 run `34532954182` passed on macOS, Windows and Linux. No managed/App or live-Host acceptance is
 promoted by this publication.
 
+September 11: beta.2 adds cross-channel installation review and an explicit
+Actions publication path. Local macOS packaging and terminal checks passed at
+`91f7f555`; the current plan records the authorized submission. Three-platform
+qualification and publication remain inside Actions. The maintainer requested
+no Agent tracking after submission; no beta.2 remote success is claimed.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

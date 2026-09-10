@@ -3,6 +3,66 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Beta.2 installation review and release submission — September 11
+
+The maintainer requested interactive detection of other CLI installations,
+user-operated archive/removal choices, and publication through Actions. They
+explicitly asked the Agent to stop after submission without tracking the run.
+Base `07247913`; branch `codex/cli-distribution-beta2`; runtime and release changes
+are integrated through `91f7f5554fe6409bec9afa145c3f54773548c472`.
+
+The existing inventory/doctor commands now include bounded cross-channel CLI
+observations. A native terminal review groups aliases, distinguishes the running
+version from package metadata, and offers a preferred-installation choice and
+per-entry keep/archive/uninstall guidance. Unknown executables are not launched.
+No files, PATH entries, Host settings or research data are changed. npm's fixed
+terminal-only postinstall script opens the same review; pip/Cargo users run the
+installed CLI afterward. Headless invocations and MCP never prompt. Windows npm
+backslash shims have a regression case. README, English/Chinese guides and the
+embedded package README describe the same behavior.
+
+Native Release Automation now accepts an explicit post dispatch at the matching
+immutable prerelease tag. It waits for that tag's three-platform distribution
+run, verifies the packet, creates the GitHub Release and verifies public downloads,
+then explicitly dispatches the existing npm/PyPI/Cargo workflows. Registry jobs
+retain their environments and exact-source gates; Cargo uses the existing token.
+A failed build or packet verification prevents publication. Existing releases
+are refused, and no public bytes are overwritten. External Marketplace catalog
+updates and live Host acceptance remain separate.
+
+Validation: two inventory/selection regressions, sixteen command checks, twelve
+packaging/publication checks and four existing workflow compatibility checks
+passed. Version alignment, native change-boundary checks, app/all-target Clippy
+seven roadmap checks and the documentation build passed. The docs build retained its existing bundle
+size warning. The first sandboxed package run passed all 36 CLI checks and six of
+seven MCP checks; its loopback mock listener was denied. The authorized loopback
+rerun passed all 36 CLI and seven MCP checks.
+
+The existing release-ready owner qualified a clean macOS ARM64 packet at
+`91f7f555`: extracted CLI and Lite14/Full32 worked with empty PATH, local npm/wheel
+installs passed, and both bundled platform Plugins passed their empty-PATH checks.
+Actual pseudoterminal checks exercised the extracted binary's empty-argument
+review and npm foreground postinstall. Enter retained the setup, and neither
+review created Qiongli state. Final continuation changes only this progress
+record and its ledger/index; the runtime and package inputs are unchanged.
+
+Receipts: `/private/tmp/qiongli-beta2-release-final/assets/release-manifest.json`,
+`/private/tmp/qiongli-beta2-release-final.log`,
+`/private/tmp/qiongli-beta2-terminal-check.json`,
+`/private/tmp/qiongli-beta2-inventory-tests.log`,
+`/private/tmp/qiongli-beta2-command-tests.log`,
+`/private/tmp/qiongli-beta2-packaging-tests.log`,
+`/private/tmp/qiongli-beta2-workflow-compatibility.log` and
+`/private/tmp/qiongli-beta2-docs-build.log`.
+
+The authorized next step is to push the candidate and `v2.0.0-beta.2`, then
+submit Release Automation at that tag. The action must rebuild and qualify the
+final source on all three platforms before publishing. No beta.2 remote result,
+registry availability, Marketplace catalog update or program acceptance is
+claimed here. At the maintainer's request, do not follow this submission with
+Agent polling or automatic receipt collection. The separate Skills source-fidelity
+increment remains available for subsequent requested work.
+
 ## Cargo publication through GitHub Actions — September 10
 
 The maintainer configured the repository secret `CARGO_REGISTRY_TOKEN` and

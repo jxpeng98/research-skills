@@ -1,0 +1,11 @@
+id: world-politics
+display_name: "World Politics"
+discipline: geoeconomics
+quality_bar:
+  - "Geoeconomic argument must connect strategic state behavior with economic instruments and outcomes."
+  - "Comparative or historical evidence must support the statecraft mechanism."
+  - "Scope conditions must identify period, region, sector, and instrument type."
+fit_notes:
+  - "Good fit for comparative or historical geoeconomics with strong mechanism evidence."
+  - "Avoid broad geopolitical narrative without economic instrument evidence."
+  - "Use cases to support strategic competition or economic security claims."

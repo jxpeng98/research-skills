@@ -1,0 +1,1010 @@
+{
+  "schema_version": "2.0",
+  "contract_version": "2.0.0-preview.5",
+  "canary_value": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+  "notes": [
+    "Every exposed (profile, public name) pair has exactly one referenced safe call.",
+    "Thirty cases execute non-error outputs and validate their profile output schemas.",
+    "Ten approved input-error cases avoid four loopback configuration-wizard listeners and six Zotero loopback calls; they must be rejected before handler side effects."
+  ],
+  "calls": [
+    {
+      "id": "lite.qiongli_literature_status.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_literature_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_literature_status.contract",
+      "profile": "full",
+      "name": "qiongli_literature_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_search_plan.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_search_plan",
+      "arguments": {
+        "query": "contract literature planning query",
+        "platform": "codex",
+        "native_search_available": false
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_search_plan.contract",
+      "profile": "full",
+      "name": "qiongli_search_plan",
+      "arguments": {
+        "query": "contract literature planning query",
+        "platform": "codex",
+        "native_search_available": false
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_literature_search.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_literature_search",
+      "arguments": {
+        "query": "contract literature search"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read",
+        "network"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_literature_search.contract",
+      "profile": "full",
+      "name": "qiongli_literature_search",
+      "arguments": {
+        "query": "contract literature search"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read",
+        "network"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_literature_export_evidence.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_literature_export_evidence",
+      "arguments": {
+        "query": "contract fixture query",
+        "results": [],
+        "diagnostics": {}
+      },
+      "expected_response_class": "success",
+      "declared_side_effects": [],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_literature_export_evidence.contract",
+      "profile": "full",
+      "name": "qiongli_literature_export_evidence",
+      "arguments": {
+        "query": "contract fixture query",
+        "results": [],
+        "diagnostics": {}
+      },
+      "expected_response_class": "success",
+      "declared_side_effects": [],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_config_status.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_config_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_config_status.contract",
+      "profile": "full",
+      "name": "qiongli_config_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_save_provider_config.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_save_provider_config",
+      "arguments": {
+        "provider": "semantic_scholar",
+        "field": "api_key",
+        "value": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      },
+      "expected_response_class": "success",
+      "declared_side_effects": [
+        "local-config-write"
+      ],
+      "side_effects": {
+        "config": true,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_save_provider_config.contract",
+      "profile": "full",
+      "name": "qiongli_save_provider_config",
+      "arguments": {
+        "provider": "semantic_scholar",
+        "field": "api_key",
+        "value": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      },
+      "expected_response_class": "success",
+      "declared_side_effects": [
+        "local-config-write"
+      ],
+      "side_effects": {
+        "config": true,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_configure_provider.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_configure_provider",
+      "arguments": {
+        "host": "example.invalid",
+        "port": 0
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "loopback-listener",
+        "local-config-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_open_config_wizard.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_open_config_wizard",
+      "arguments": {
+        "host": "example.invalid",
+        "port": 0
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "loopback-listener",
+        "local-config-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_configure_provider.contract",
+      "profile": "full",
+      "name": "qiongli_configure_provider",
+      "arguments": {
+        "host": "example.invalid",
+        "port": 0
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "loopback-listener",
+        "local-config-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_open_config_wizard.contract",
+      "profile": "full",
+      "name": "qiongli_open_config_wizard",
+      "arguments": {
+        "host": "example.invalid",
+        "port": 0
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "loopback-listener",
+        "local-config-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_collect_evidence.contract",
+      "profile": "full",
+      "name": "qiongli_collect_evidence",
+      "arguments": {
+        "provider": "filesystem",
+        "task_packet": {
+          "topic": "contract-smoke",
+          "artifact_root": "RESEARCH/[topic]/",
+          "required_outputs": []
+        }
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read",
+        "network",
+        "process-launch"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_list_provider_env.contract",
+      "profile": "full",
+      "name": "qiongli_list_provider_env",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_test_provider.contract",
+      "profile": "full",
+      "name": "qiongli_test_provider",
+      "arguments": {
+        "provider": "openalex"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_subject_status.contract",
+      "profile": "full",
+      "name": "qiongli_subject_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_subject_update.contract",
+      "profile": "full",
+      "name": "qiongli_subject_update",
+      "arguments": {
+        "action": "reset",
+        "read_only": true
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read",
+        "project-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_orchestrator_route.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_orchestrator_route",
+      "arguments": {
+        "request": "Preview a literature-review workflow.",
+        "platform": "codex"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_orchestrator_route.contract",
+      "profile": "full",
+      "name": "qiongli_orchestrator_route",
+      "arguments": {
+        "request": "Preview a literature-review workflow.",
+        "platform": "codex"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_orchestrator_doctor.contract",
+      "profile": "full",
+      "name": "qiongli_orchestrator_doctor",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_lifecycle_plan.contract",
+      "profile": "full",
+      "name": "qiongli_lifecycle_plan",
+      "arguments": {
+        "topic": "Contract smoke",
+        "paper_type": "empirical",
+        "mode": "preview"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_journal_fit_recommend.contract",
+      "profile": "full",
+      "name": "qiongli_journal_fit_recommend",
+      "arguments": {
+        "venue_roots": [],
+        "limit": 0
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_experience_query.contract",
+      "profile": "full",
+      "name": "qiongli_experience_query",
+      "arguments": {
+        "limit": 1
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_experience_show.contract",
+      "profile": "full",
+      "name": "qiongli_experience_show",
+      "arguments": {
+        "run_id": "contract-smoke"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_experience_lessons.contract",
+      "profile": "full",
+      "name": "qiongli_experience_lessons",
+      "arguments": {
+        "limit": 1
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_task_plan.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_task_plan",
+      "arguments": {
+        "task_id": "B1",
+        "paper_type": "empirical",
+        "topic": "Contract smoke"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_task_plan.contract",
+      "profile": "full",
+      "name": "qiongli_task_plan",
+      "arguments": {
+        "task_id": "B1",
+        "paper_type": "empirical",
+        "topic": "Contract smoke"
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_task_run.contract",
+      "profile": "full",
+      "name": "qiongli_task_run",
+      "arguments": {
+        "task_id": "B1",
+        "paper_type": "empirical",
+        "topic": "Contract smoke",
+        "run_agents": false
+      },
+      "expected_response_class": "bounded_local_result",
+      "declared_side_effects": [
+        "read",
+        "project-write",
+        "process-launch",
+        "agent-launch"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_zotero_status.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_zotero_status",
+      "arguments": {
+        "contract_probe": true
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "read",
+        "network"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_zotero_status.contract",
+      "profile": "full",
+      "name": "qiongli_zotero_status",
+      "arguments": {
+        "contract_probe": true
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "read",
+        "network"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_zotero_search.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_zotero_search",
+      "arguments": {
+        "contract_probe": true
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "read",
+        "network"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_zotero_search.contract",
+      "profile": "full",
+      "name": "qiongli_zotero_search",
+      "arguments": {
+        "contract_probe": true
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "read",
+        "network"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_zotero_upsert_references.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_zotero_upsert_references",
+      "arguments": {
+        "contract_probe": true
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "read",
+        "network",
+        "local-reference-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_zotero_upsert_references.contract",
+      "profile": "full",
+      "name": "qiongli_zotero_upsert_references",
+      "arguments": {
+        "contract_probe": true
+      },
+      "expected_response_class": "input_error",
+      "declared_side_effects": [
+        "read",
+        "network",
+        "local-reference-write"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "lite.qiongli_zotero_export_import_files.contract",
+      "profile": "marketplace-lite",
+      "name": "qiongli_zotero_export_import_files",
+      "arguments": {
+        "records": [],
+        "formats": []
+      },
+      "expected_response_class": "success",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    },
+    {
+      "id": "full.qiongli_zotero_export_import_files.contract",
+      "profile": "full",
+      "name": "qiongli_zotero_export_import_files",
+      "arguments": {
+        "records": [],
+        "formats": []
+      },
+      "expected_response_class": "success",
+      "declared_side_effects": [
+        "read"
+      ],
+      "side_effects": {
+        "config": false,
+        "project_write": false,
+        "network": false,
+        "loopback_listener": false,
+        "process_launch": false,
+        "agent_launch": false
+      },
+      "forbidden_canary": "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3",
+      "forbidden_output": [
+        "QIONGLI_CANARY_DO_NOT_ECHO_CTR202_4d81f3"
+      ]
+    }
+  ]
+}

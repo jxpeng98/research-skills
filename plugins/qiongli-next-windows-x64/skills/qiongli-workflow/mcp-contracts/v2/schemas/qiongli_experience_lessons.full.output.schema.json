@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_experience_lessons.full.output.v2.json",
+  "title": "qiongli_experience_lessons full structured output",
+  "type": "object",
+  "required": [
+    "project_dir",
+    "filters",
+    "run_count",
+    "malformed_count",
+    "records"
+  ],
+  "properties": {
+    "project_dir": {
+      "type": "string"
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "run_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "malformed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

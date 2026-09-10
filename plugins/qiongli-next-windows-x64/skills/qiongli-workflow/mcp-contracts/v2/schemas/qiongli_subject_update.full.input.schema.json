@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_subject_update.full.input.v2.json",
+  "title": "qiongli_subject_update full input",
+  "type": "object",
+  "required": [
+    "action"
+  ],
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Project directory to update."
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "confirm",
+        "dismiss",
+        "reset",
+        "lock",
+        "unlock"
+      ]
+    },
+    "subject": {
+      "type": "string",
+      "enum": [
+        "economics",
+        "accounting",
+        "business",
+        "finance",
+        "political-economy",
+        "geoeconomics",
+        "economics-accounting"
+      ]
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "read_only": {
+      "type": "boolean",
+      "description": "Return an exportable proposed action without writing .qiongli files."
+    }
+  },
+  "additionalProperties": false
+}

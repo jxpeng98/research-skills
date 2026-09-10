@@ -1,0 +1,979 @@
+subjects:
+  core:
+    display_name: Qiongli Core
+    package_goal: "General-purpose Qiongli academic workflow across paper types and methods."
+    domain_profiles:
+      - accounting
+      - economics
+      - finance
+      - psychology
+      - biomedical
+      - education
+      - cs-ai
+      - business-management
+      - political-economy
+      - geoeconomics
+      - epidemiology
+      - political-science
+      - ecology-environmental
+      - custom-template
+    venue_profiles:
+      - acl
+      - aom
+      - chi
+      - jama
+      - nature
+      - neurips
+    skill_groups:
+      - order: 1
+        heading: "Research Framing"
+        subheading: "Question, contribution, theory, and venue fit"
+        stages: ["A"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - hypothesis-generator
+          - theory-mapper
+          - gap-analyzer
+          - venue-analyzer
+      - order: 2
+        heading: "Literature Grounding"
+        subheading: "Search, screening, extraction, citation, and mapping"
+        stages: ["B"]
+        skill_refs:
+          - academic-searcher
+          - paper-screener
+          - paper-extractor
+          - citation-snowballer
+          - fulltext-fetcher
+          - citation-formatter
+          - concept-extractor
+          - literature-mapper
+          - reference-manager-bridge
+      - order: 3
+        heading: "Study Design"
+        subheading: "Design, variables, data, preregistration, and robustness"
+        stages: ["C"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - data-management-plan
+          - prereg-writer
+          - variable-operationalizer
+      - order: 4
+        heading: "Ethics and Disclosure"
+        subheading: "IRB, participant protection, and disclosure statements"
+        stages: ["D"]
+        skill_refs:
+          - ethics-irb-helper
+          - statement-generator
+          - deidentification-planner
+      - order: 5
+        heading: "Evidence Synthesis"
+        subheading: "Effect sizes, synthesis, quality, and publication-bias checks"
+        stages: ["E"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - quality-assessor
+          - publication-bias-checker
+          - qualitative-coding
+      - order: 6
+        heading: "Manuscript Writing"
+        subheading: "Architecture, interpretation, tables, figures, and discussion"
+        stages: ["F"]
+        skill_refs:
+          - manuscript-architect
+          - proposal-writer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+          - meta-optimizer
+          - discussion-writer
+      - order: 7
+        heading: "Reporting Compliance"
+        subheading: "PRISMA, reporting, and academic tone checks"
+        stages: ["G"]
+        skill_refs:
+          - prisma-checker
+          - reporting-checker
+          - tone-normalizer
+      - order: 8
+        heading: "Submission and Review"
+        subheading: "Packaging, rebuttal, reviewer simulation, and limitations"
+        stages: ["H"]
+        skill_refs:
+          - submission-packager
+          - rebuttal-assistant
+          - peer-review-simulation
+          - fatal-flaw-detector
+          - reviewer-empathy-checker
+          - credit-taxonomy-helper
+          - limitation-auditor
+      - order: 9
+        heading: "Research Code and Statistics"
+        subheading: "Code planning, execution, review, reproducibility, and stats"
+        stages: ["I"]
+        skill_refs:
+          - code-builder
+          - data-cleaning-planner
+          - data-merge-planner
+          - code-specification
+          - code-planning
+          - code-execution
+          - code-review
+          - reproducibility-auditor
+          - release-packager
+          - stats-engine
+      - order: 10
+        heading: "Proofreading and Similarity"
+        subheading: "Human voice, similarity, final proofread, and AI trace checks"
+        stages: ["J"]
+        skill_refs:
+          - ai-fingerprint-scanner
+          - human-voice-rewriter
+          - similarity-checker
+          - final-proofreader
+      - order: 11
+        heading: "Presentation"
+        subheading: "Scholarly slide, Slidev, and Beamer workflows"
+        stages: ["K"]
+        skill_refs:
+          - presentation-planner
+          - slide-architect
+          - slidev-scholarly-builder
+          - beamer-builder
+      - order: 12
+        heading: "Cross-Cutting Governance"
+        subheading: "Context, metadata, collaboration, boundaries, and self-critique"
+        stages: ["Z"]
+        skill_refs:
+          - metadata-enricher
+          - academic-context-maintainer
+          - boundary-interviewer
+          - model-collaborator
+          - self-critique
+
+  economics:
+    display_name: Qiongli Economics
+    extends: core
+    package_goal: "Economics-focused empirical, theory, and reproducibility workflow."
+    domain_profiles:
+      - economics
+    venue_profiles:
+      - aer
+      - econometrica
+      - jpe
+      - qje
+      - restud
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+      - code/economics/causal_did.py
+      - code/statistics/meta_analysis_random_effects.py
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: study-designer
+        overlay: overlays/skills/study-designer.md
+        mode: append
+      - skill: robustness-planner
+        overlay: overlays/skills/robustness-planner.md
+        mode: append
+      - skill: analysis-interpreter
+        overlay: overlays/skills/analysis-interpreter.md
+        mode: append
+      - skill: stats-engine
+        overlay: overlays/skills/stats-engine.md
+        mode: replace_sections
+        sections:
+          - Quality Bar
+          - Common Pitfalls
+    subject_specific_skill_refs:
+      - econ-identification-auditor
+      - econ-replication-package-auditor
+    skill_groups:
+      - order: 1
+        heading: "Research Framing"
+        subheading: "Question, contribution, theory, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Economics Literature Positioning"
+        subheading: "Search, mapping, extraction, and citation grounding"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Identification and Study Design"
+        subheading: "Causal design, estimands, variables, and robustness"
+        stages: ["C", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - prereg-writer
+          - stats-engine
+          - econ-identification-auditor
+      - order: 4
+        heading: "Economics Evidence and Results"
+        subheading: "Effect interpretation, tables, figures, and result diagnostics"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+      - order: 5
+        heading: "Manuscript and Reproducibility"
+        subheading: "Paper architecture, reproducibility, compliance, and submission readiness"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F5", "F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - manuscript-architect
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - econ-replication-package-auditor
+          - final-proofreader
+
+  accounting:
+    display_name: Qiongli Accounting
+    extends: core
+    package_goal: "Accounting-focused archival, disclosure, audit, and measurement workflow."
+    domain_profiles:
+      - accounting
+    venue_profiles:
+      - accounting-review
+      - journal-of-accounting-research
+      - review-of-accounting-studies
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: stats-engine
+        overlay: overlays/skills/stats-engine.md
+        mode: replace_sections
+        sections:
+          - Quality Bar
+          - Common Pitfalls
+      - skill: variable-constructor
+        overlay: overlays/skills/variable-constructor.md
+        mode: append
+    subject_specific_skill_refs:
+      - accounting-measurement-auditor
+    skill_groups:
+      - order: 1
+        heading: "Accounting Research Framing"
+        subheading: "Question, contribution, institutional setting, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Accounting Literature Positioning"
+        subheading: "Search, mapping, extraction, citation grounding, and construct positioning"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Measurement and Research Design"
+        subheading: "Accounting constructs, archival variables, sample construction, and robustness"
+        stages: ["C", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - prereg-writer
+          - stats-engine
+          - accounting-measurement-auditor
+      - order: 4
+        heading: "Results and Interpretation"
+        subheading: "Measurement diagnostics, evidence synthesis, tables, figures, and inference"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+      - order: 5
+        heading: "Manuscript and Submission"
+        subheading: "Paper architecture, reporting transparency, compliance, and submission readiness"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F5", "F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - manuscript-architect
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - final-proofreader
+
+  business:
+    display_name: Qiongli Business
+    extends: core
+    package_goal: "Business-focused management, strategy, organization, marketing, and operations workflow for undergraduate-and-above researchers, with doctoral-level journal manuscripts as the quality target."
+    domain_profiles:
+      - business-management
+    venue_profiles:
+      - academy-of-management-journal
+      - organization-science
+      - strategic-management-journal
+      - journal-of-management
+      - journal-of-marketing
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: study-designer
+        overlay: overlays/skills/study-designer.md
+        mode: append
+      - skill: stats-engine
+        overlay: overlays/skills/stats-engine.md
+        mode: replace_sections
+        sections:
+          - Quality Bar
+          - Common Pitfalls
+    subject_specific_skill_refs:
+      - business-journal-positioning-auditor
+    skill_groups:
+      - order: 1
+        heading: "Business Research Framing"
+        subheading: "Theory contribution, phenomenon, mechanism, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Business Literature Positioning"
+        subheading: "Management theory, construct positioning, review stream, and citation grounding"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Business Design and Evidence"
+        subheading: "Field setting, construct validity, qualitative or quantitative design, and robustness"
+        stages: ["C", "E", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "E4", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - qualitative-coding
+          - stats-engine
+          - business-journal-positioning-auditor
+      - order: 4
+        heading: "Business Results and Manuscript"
+        subheading: "Evidence-to-theory logic, tables, figures, interpretation, and paper architecture"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4", "F5"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+          - manuscript-architect
+      - order: 5
+        heading: "Business Submission Readiness"
+        subheading: "Theory discussion, transparency, reporting, review risk, and reproducible appendices"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - final-proofreader
+
+  finance:
+    display_name: Qiongli Finance
+    extends: core
+    package_goal: "Finance-focused corporate finance, asset pricing, market microstructure, and risk workflow for undergraduate-and-above researchers, with doctoral-level journal manuscripts as the quality target."
+    domain_profiles:
+      - finance
+    venue_profiles:
+      - journal-of-finance
+      - review-of-financial-studies
+      - journal-of-financial-economics
+      - journal-of-corporate-finance
+      - financial-management
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+      - code/statistics/meta_analysis_random_effects.py
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: study-designer
+        overlay: overlays/skills/study-designer.md
+        mode: append
+      - skill: stats-engine
+        overlay: overlays/skills/stats-engine.md
+        mode: replace_sections
+        sections:
+          - Quality Bar
+          - Common Pitfalls
+    subject_specific_skill_refs:
+      - finance-identification-risk-auditor
+    skill_groups:
+      - order: 1
+        heading: "Finance Research Framing"
+        subheading: "Finance question, economic mechanism, contribution, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Finance Literature Positioning"
+        subheading: "Asset pricing, corporate finance, market microstructure, and risk literature grounding"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Finance Design and Risk Diagnostics"
+        subheading: "Return construction, identification, risk adjustment, event windows, and robustness"
+        stages: ["C", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - prereg-writer
+          - stats-engine
+          - finance-identification-risk-auditor
+      - order: 4
+        heading: "Finance Evidence and Results"
+        subheading: "Risk-adjusted interpretation, factor diagnostics, event-study evidence, tables, and figures"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+      - order: 5
+        heading: "Finance Manuscript and Reproducibility"
+        subheading: "Paper architecture, data-code transparency, reporting checks, and review readiness"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F5", "F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - manuscript-architect
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - final-proofreader
+
+  political-economy:
+    display_name: Qiongli Political Economy
+    extends: core
+    package_goal: "Political economy workflow focused on political institutions, actors, incentives, distributional conflict, policy processes, and economic outcomes."
+    domain_profiles:
+      - political-economy
+    venue_profiles:
+      - apsr
+      - ajps
+      - journal-of-politics
+      - world-politics
+      - comparative-political-studies
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: study-designer
+        overlay: overlays/skills/study-designer.md
+        mode: append
+      - skill: literature-mapper
+        overlay: overlays/skills/literature-mapper.md
+        mode: append
+      - skill: stats-engine
+        overlay: overlays/skills/stats-engine.md
+        mode: append
+    subject_specific_skill_refs:
+      - political-economy-mechanism-auditor
+    skill_groups:
+      - order: 1
+        heading: "Political Economy Framing"
+        subheading: "Actors, institutions, incentives, contribution, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Political Economy Literature"
+        subheading: "Mechanism, institution, actor, and outcome positioning"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Mechanism and Study Design"
+        subheading: "Actor-institution-outcome design, political mechanism, and robustness"
+        stages: ["C", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - prereg-writer
+          - stats-engine
+          - political-economy-mechanism-auditor
+      - order: 4
+        heading: "Evidence and Manuscript"
+        subheading: "Political mechanism evidence, tables, figures, interpretation, and paper architecture"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4", "F5"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+          - manuscript-architect
+      - order: 5
+        heading: "Political Economy Review Readiness"
+        subheading: "Discussion, reporting, compliance, review risk, and reproducibility"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - final-proofreader
+
+  geoeconomics:
+    display_name: Qiongli Geoeconomics
+    extends: core
+    package_goal: "Geoeconomics workflow focused on economic statecraft, sanctions, supply chains, financial tools, strategic competition, and security-economic outcomes."
+    domain_profiles:
+      - geoeconomics
+    venue_profiles:
+      - international-security
+      - international-organization
+      - review-of-international-political-economy
+      - world-politics
+      - global-policy
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: study-designer
+        overlay: overlays/skills/study-designer.md
+        mode: append
+      - skill: literature-mapper
+        overlay: overlays/skills/literature-mapper.md
+        mode: append
+      - skill: venue-analyzer
+        overlay: overlays/skills/venue-analyzer.md
+        mode: append
+    subject_specific_skill_refs:
+      - geoeconomic-statecraft-auditor
+    skill_groups:
+      - order: 1
+        heading: "Geoeconomics Framing"
+        subheading: "Economic statecraft, strategic objective, contribution, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Geoeconomics Literature"
+        subheading: "Instrument, target response, supply chain, sanctions, and IPE positioning"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Statecraft Design and Exposure"
+        subheading: "Sender-target-instrument-response logic, timing, exposure, and robustness"
+        stages: ["C", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - prereg-writer
+          - stats-engine
+          - geoeconomic-statecraft-auditor
+      - order: 4
+        heading: "Geoeconomic Evidence and Manuscript"
+        subheading: "Strategic response evidence, tables, figures, interpretation, and paper architecture"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4", "F5"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+          - manuscript-architect
+      - order: 5
+        heading: "Geoeconomics Review Readiness"
+        subheading: "Discussion, policy claims, reporting, review risk, and reproducibility"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - final-proofreader
+
+  economics-accounting:
+    display_name: Qiongli Economics + Accounting
+    extends: core
+    composes:
+      - economics
+      - accounting
+    package_goal: "Cross-disciplinary economics and accounting workflow for archival, causal, and reporting-setting research."
+    domain_profiles:
+      - economics
+      - accounting
+    venue_profiles:
+      - aer
+      - qje
+      - restud
+      - accounting-review
+      - journal-of-accounting-research
+      - review-of-accounting-studies
+    template_refs:
+      - analysis-plan.md
+      - paper-note.md
+      - paper-reading-summary.md
+      - paper-reading-matrix.md
+      - claim-evidence-ledger.csv
+      - data-availability.md
+      - data-management-plan.md
+      - figures-tables-plan.md
+      - manuscript-outline.md
+      - method-diagnostic-report.md
+      - quality-gate-report.md
+      - research-state.md
+      - search-log.md
+      - stage-handoff.md
+      - study-design.md
+      - validity-threat-matrix.md
+      - writing-claim-map.md
+      - code/economics/causal_did.py
+    skill_overrides:
+      - skill: manuscript-architect
+        overlay: overlays/skills/manuscript-architect.md
+        mode: append
+      - skill: stats-engine
+        overlay: overlays/skills/stats-engine.md
+        mode: replace_sections
+        sections:
+          - Quality Bar
+          - Common Pitfalls
+    subject_specific_skill_refs:
+      - econ-identification-auditor
+      - accounting-measurement-auditor
+    skill_groups:
+      - order: 1
+        heading: "Research Framing"
+        subheading: "Question, contribution, theory, institutional setting, and venue fit"
+        stages: ["A"]
+        task_ids: ["A1", "A2", "A3", "A4", "A5"]
+        skill_refs:
+          - question-refiner
+          - contribution-crafter
+          - gap-analyzer
+          - theory-mapper
+          - hypothesis-generator
+          - venue-analyzer
+      - order: 2
+        heading: "Economics and Accounting Literature"
+        subheading: "Search, mapping, extraction, citation grounding, and construct positioning"
+        stages: ["B"]
+        task_ids: ["B1", "B2", "B3", "B4", "B5", "B6"]
+        skill_refs:
+          - academic-searcher
+          - citation-snowballer
+          - literature-mapper
+          - paper-extractor
+          - paper-screener
+          - reference-manager-bridge
+      - order: 3
+        heading: "Identification, Measurement, and Design"
+        subheading: "Causal design, disclosure setting, accounting constructs, variables, and robustness"
+        stages: ["C", "I"]
+        task_ids: ["C1", "C2", "C3", "C4", "C5", "I9"]
+        skill_refs:
+          - study-designer
+          - rival-hypothesis-designer
+          - robustness-planner
+          - dataset-finder
+          - variable-constructor
+          - data-dictionary-builder
+          - prereg-writer
+          - stats-engine
+          - econ-identification-auditor
+          - accounting-measurement-auditor
+      - order: 4
+        heading: "Evidence and Results"
+        subheading: "Economic interpretation, accounting measurement diagnostics, tables, and figures"
+        stages: ["E", "F"]
+        task_ids: ["E1", "E2", "E3", "F1", "F2", "F3", "F4"]
+        skill_refs:
+          - effect-size-calculator
+          - evidence-synthesizer
+          - analysis-interpreter
+          - effect-size-interpreter
+          - table-generator
+          - figure-specifier
+      - order: 5
+        heading: "Manuscript and Reproducibility"
+        subheading: "Paper architecture, reporting transparency, reproducibility, and submission readiness"
+        stages: ["F", "G", "H", "I", "J"]
+        task_ids: ["F5", "F6", "G1", "G2", "G3", "H1", "H2", "I1", "I2", "I7", "I8", "J4"]
+        skill_refs:
+          - manuscript-architect
+          - discussion-writer
+          - meta-optimizer
+          - reporting-checker
+          - tone-normalizer
+          - submission-packager
+          - fatal-flaw-detector
+          - code-builder
+          - code-review
+          - reproducibility-auditor
+          - final-proofreader

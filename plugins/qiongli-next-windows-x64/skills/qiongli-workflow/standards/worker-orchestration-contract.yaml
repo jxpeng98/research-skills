@@ -1,0 +1,76 @@
+contract_version: "1.0.0"
+orchestration_modes:
+  - none
+  - delegated_workers
+  - review_swarm
+platform_adapters:
+  - generic_prompt
+  - codex_subagent
+  - claude_cowork
+worker_statuses:
+  - planned
+  - running
+  - passed
+  - failed
+  - blocked
+  - skipped
+merge_policies:
+  - synthesize_with_conflict_matrix
+  - consensus_then_gaps
+  - controller_adjudication
+required_worker_plan_fields:
+  - orchestration_mode
+  - controller_runtime
+  - platform_adapter
+  - task_id
+  - paper_type
+  - topic
+  - workers
+  - merge
+  - final_review
+required_worker_fields:
+  - id
+  - goal
+  - functional_role
+  - required_skills
+  - allowed_artifacts
+  - forbidden_artifacts
+  - review_required
+  - stop_conditions
+required_merge_fields:
+  - agent
+  - policy
+  - output_artifacts
+required_final_review_fields:
+  - reviewer
+  - gate
+required_worker_run_packet_fields:
+  - run_id
+  - worker_id
+  - controller_runtime
+  - platform_adapter
+  - task_id
+  - paper_type
+  - topic
+  - goal
+  - functional_role
+  - required_skills
+  - required_mcp
+  - allowed_artifacts
+  - forbidden_artifacts
+  - artifacts_read
+  - artifacts_written
+  - warnings
+  - blocking_issues
+  - status
+  - confidence
+required_worker_review_fields:
+  - reviewer
+  - worker_id
+  - run_id
+  - review_status
+  - findings
+  - blocking_issues
+  - required_revisions
+  - verification_evidence
+  - verdict

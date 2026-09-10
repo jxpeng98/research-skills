@@ -1,0 +1,11 @@
+id: comparative-political-studies
+display_name: "Comparative Political Studies"
+discipline: political-economy
+quality_bar:
+  - "Comparative design must justify cases, scope, and institutional variation."
+  - "Political mechanism and distributional conflict must be visible."
+  - "Evidence must support cross-case or within-case inference."
+fit_notes:
+  - "Best fit for comparative political economy, development, state capacity, and institutional change."
+  - "Clarify whether contribution is theoretical, empirical, or methodological."
+  - "Avoid single-case description without explicit comparative leverage."

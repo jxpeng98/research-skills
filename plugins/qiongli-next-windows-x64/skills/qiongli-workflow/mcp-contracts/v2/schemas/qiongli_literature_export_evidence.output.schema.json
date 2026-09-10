@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_export_evidence.output.v2.json",
+  "title": "qiongli_literature_export_evidence structured output",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "query",
+    "provider_status",
+    "search_plan",
+    "diagnostics",
+    "result_count",
+    "results"
+  ],
+  "properties": {
+    "status": { "type": "string" },
+    "exported_at": { "type": "string", "format": "date-time" },
+    "artifact_type": { "const": "qiongli_literature_evidence_snapshot" },
+    "query": { "type": "string" },
+    "provider_status": { "type": "object" },
+    "search_plan": { "type": "object" },
+    "diagnostics": { "type": "object" },
+    "result_count": { "type": "integer", "minimum": 0 },
+    "results": {
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  },
+  "additionalProperties": false
+}

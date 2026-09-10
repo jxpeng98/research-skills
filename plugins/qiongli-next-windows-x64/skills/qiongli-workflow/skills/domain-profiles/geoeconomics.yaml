@@ -1,0 +1,117 @@
+domain: geoeconomics
+display_name: "Geoeconomics"
+
+libraries:
+  python:
+    - pandas
+    - statsmodels
+    - linearmodels
+    - networkx
+    - geopandas
+    - yfinance
+  r:
+    - fixest
+    - did
+    - synthdid
+    - igraph
+    - tidytrade
+    - quanteda
+  stata:
+    - reghdfe
+    - eventstudyinteract
+    - csdid
+    - synth
+
+method_templates:
+  - name: "Economic Statecraft Instrument Audit"
+    tier: standard
+    library: structured policy analysis
+    checklist:
+      - "Identify the sender, target, instrument, intermediaries, and affected markets."
+      - "Separate policy rhetoric from evidence of statecraft mechanism."
+      - "State the strategic objective: coercion, deterrence, resilience, signaling, or industrial policy."
+      - "Map target response and possible evasion, substitution, or countermeasure channels."
+      - "Calibrate strategic competition claims to observed economic and policy evidence."
+
+  - name: "Sanctions or Export-Control Event Study"
+    tier: standard
+    library: fixest / linearmodels
+    checklist:
+      - "Define announcement, implementation, and enforcement dates separately."
+      - "Test anticipation, leakage, and confounding geopolitical events."
+      - "Construct exposure before the policy shock using pre-period data."
+      - "Report heterogeneous effects by target exposure, substitute suppliers, or strategic sector."
+      - "Assess evasion, rerouting, and market substitution after treatment."
+
+  - name: "Supply Chain Exposure Design"
+    tier: standard
+    library: networkx / trade data pipeline
+    checklist:
+      - "Define upstream and downstream exposure to critical sectors or jurisdictions."
+      - "Document data coverage, reporting lag, and firm or product matching rules."
+      - "Check concentration, chokepoints, and alternative supplier availability."
+      - "Separate resilience claims from observed relocation or substitution evidence."
+
+stats_diagnostics:
+  - "Instrument-sender-target-response alignment"
+  - "Announcement, implementation, and enforcement timing windows"
+  - "Pre-period exposure construction"
+  - "Geopolitical confounding and policy bundling checks"
+  - "Evasion, substitution, and countermeasure sensitivity"
+
+reporting_guidelines:
+  primary: "Geoeconomic statecraft reporting"
+  checklists:
+    - "Economic instrument taxonomy"
+    - "Sender-target-intermediary map"
+    - "Strategic objective and response channel"
+    - "Timing and exposure diagnostics"
+    - "Security claim and economic evidence separation"
+
+common_pitfalls:
+  - "Treating national-security rhetoric as proof of statecraft mechanism."
+  - "Ignoring anticipation and leakage around sanctions or export controls."
+  - "Using post-treatment exposure measures that absorb the effect being studied."
+  - "Collapsing coercion, resilience, signaling, and industrial policy into one vague strategic competition claim."
+  - "Missing supply chain rerouting, evasion, or substitute-market responses."
+
+visualization_templates:
+  - "Sender-target-instrument-response map"
+  - "Sanctions or export-control event-study plot"
+  - "Supply chain exposure network"
+  - "Strategic sector concentration table"
+  - "Policy timeline with announcement, implementation, and enforcement dates"
+
+reporting_standards:
+  primary: "International security and IPE transparency norms"
+  checklists: [policy-timing, exposure-construction, strategic-claim-calibration]
+  required_tables:
+    - "Economic instrument taxonomy"
+    - "Exposure construction table"
+    - "Countermeasure and substitution risk table"
+
+default_databases:
+  primary: [Web of Science, Scopus, JSTOR, ProQuest, EconLit]
+  secondary: [Google Scholar, SSRN, NBER, WTO, UN Comtrade, World Bank]
+  preprints: [SSRN, NBER]
+  query_syntax_notes: "Combine instrument terms such as sanctions, export controls, supply chain, investment screening, or industrial policy with target response and strategic competition terms."
+
+methodology_priors:
+  identification: "Strategic claims require clear timing, pre-treatment exposure, and plausible target-response mechanisms."
+  robustness: "Check geopolitical confounding, policy bundling, evasion, substitution, and alternative timing windows."
+  standard_hierarchy: [Event_Study, DID, Synthetic_Control, Network_Exposure, Process_Tracing, Comparative_Case]
+  estimation_norms: "Cluster or aggregate inference at the policy, country, sector, firm, or product level that matches treatment assignment."
+
+venue_norms:
+  international-security:
+    sections: [Introduction, Argument, Policy_Background, Evidence, Implications]
+    word_limit: 14000
+    code_release: "Replication materials expected when quantitative evidence is used."
+  international-organization:
+    sections: [Introduction, Theory, Research_Design, Results, Conclusion]
+    word_limit: 12000
+    code_release: "Data and code transparency expected."
+  review-of-international-political-economy:
+    sections: [Introduction, Literature, Research_Design, Evidence, Conclusion]
+    word_limit: 12000
+    code_release: "Data transparency expected for empirical claims."

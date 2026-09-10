@@ -1,0 +1,139 @@
+schema_version: 1.0
+subject: accounting
+display_name: Accounting
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/accounting.yaml
+overlay: ""
+subject_skill: content/subjects/accounting/skills/accounting-measurement-auditor.md
+signal_groups:
+  method:
+    - id: accounting.method.accrual-quality
+      value: accrual-quality
+      weight: 0.35
+      activation: method_only
+      patterns:
+        - "\\baccrual quality\\b"
+        - "\\bdiscretionary accruals?\\b"
+        - "\\bearnings management\\b"
+        - "\\bmodified Jones\\b"
+      examples:
+        - "Measure discretionary accruals with a modified Jones model."
+      near_misses:
+        - "Accrual accounting entry for a small business ledger."
+    - id: accounting.method.construct-proxy-audit
+      value: construct-proxy-audit
+      weight: 0.30
+      activation: method_only
+      patterns:
+        - "\\bconstruct[- ]proxy\\b"
+        - "\\bmeasurement validity\\b"
+        - "\\barchival accounting\\b"
+        - "\\bfiscal timing\\b"
+      examples:
+        - "Audit the construct-proxy mapping for archival accounting variables."
+      near_misses:
+        - "Account for missing covariates in a regression."
+  data_or_outcome:
+    - id: accounting.data.audit-analytics
+      value: audit-analytics
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bAudit Analytics\\b"
+        - "\\brestatements?\\b"
+        - "\\binternal[- ]control weaknesses?\\b"
+        - "\\bSOX 404\\b"
+      examples:
+        - "Use Audit Analytics restatement and internal-control weakness data."
+      near_misses:
+        - "Audit a software analytics dashboard."
+    - id: accounting.data.financial-reporting-quality
+      value: financial-reporting-quality
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bfinancial reporting quality\\b"
+        - "\\breporting quality\\b"
+        - "\\bearnings quality\\b"
+        - "\\bmanagement forecasts?\\b"
+      examples:
+        - "Study earnings quality and management forecast accuracy."
+      near_misses:
+        - "Improve the quality of a report document."
+  venue:
+    - id: accounting.venue.accounting-review
+      value: accounting-review
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bThe Accounting Review\\b"
+        - "\\bAccounting Review\\b"
+      examples:
+        - "Target The Accounting Review."
+      near_misses:
+        - "Review the accounting section of a budget."
+    - id: accounting.venue.journal-of-accounting-research
+      value: journal-of-accounting-research
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bJournal of Accounting Research\\b"
+      examples:
+        - "Position the study for Journal of Accounting Research."
+      near_misses:
+        - "Jar file accounting logs."
+    - id: accounting.venue.review-of-accounting-studies
+      value: review-of-accounting-studies
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bReview of Accounting Studies\\b"
+      examples:
+        - "Frame the paper for Review of Accounting Studies."
+      near_misses:
+        - "Review accounting studies in a course syllabus."
+  theory_or_construct:
+    - id: accounting.construct.reporting-mechanism
+      value: reporting-mechanism
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bfinancial reporting\\b"
+        - "\\bdisclosure quality\\b"
+        - "\\breporting incentives?\\b"
+        - "\\breporting mechanism\\b"
+      examples:
+        - "Explain the financial reporting mechanism behind disclosure quality."
+      near_misses:
+        - "Report project status to the sponsor."
+    - id: accounting.construct.audit-setting
+      value: audit-setting
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\baudit fees?\\b"
+        - "\\bauditing setting\\b"
+        - "\\baudit committees?\\b"
+        - "\\bgoing concern\\b"
+      examples:
+        - "Use audit fees and going-concern opinions as accounting outcomes."
+      near_misses:
+        - "Audit a data pipeline."
+method_lenses:
+  accrual-quality:
+    resource: content/subjects/accounting/skills/accounting-measurement-auditor.md
+    activation: method_only
+  construct-proxy-audit:
+    resource: content/subjects/accounting/overlays/skills/variable-constructor.md
+    activation: method_only
+evaluation_pack: tests/fixtures/subject_router_eval/accounting
+near_miss_policy:
+  forbidden_subjects:
+    - finance
+    - economics
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.95
+    suggest_subject_precision: 0.95
+    near_miss_false_positives: 0

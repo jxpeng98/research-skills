@@ -1,0 +1,26 @@
+venue_id: acl
+community: Computational linguistics and NLP
+article_types:
+  - long paper
+  - short paper
+contribution_expectations:
+  - precise task, model, data, or analysis contribution
+  - clear comparison to strong baselines
+methods_expectations:
+  - reproducible experimental setup
+  - dataset provenance and evaluation metrics
+evidence_standards:
+  - ablations or error analysis
+  - significance or uncertainty where relevant
+writing_style:
+  - concise technical prose
+  - explicit limitations
+common_reviewer_objections:
+  - weak baseline
+  - insufficient error analysis
+formatting_constraints:
+  - ACL style files
+  - page limits by track
+required_reporting_standards:
+  - limitations
+  - ethics statement

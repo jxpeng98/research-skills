@@ -1,0 +1,153 @@
+contract_version: "1.0.0"
+name: "subject-refinement-contract"
+purpose: "runtime subject inference, subject persistence, and method-lens borrowing"
+
+decision_classes:
+  no_subject:
+    mode: "auto"
+    description: "No subject-specific signal is strong enough to load subject resources."
+  borrow_lens:
+    mode: "auto"
+    description: "Use a neighboring subject method pack without changing the project subject."
+  suggest_subject:
+    mode: "suggested"
+    description: "Propose a primary subject when method, data or outcome, and venue signals align."
+  confirm_subject:
+    mode: "confirmed"
+    description: "Honor a user-confirmed project subject even when the current task is weakly specified."
+  lock_subject:
+    mode: "locked"
+    description: "Prevent automatic subject replacement while still allowing temporary borrowed lenses."
+
+persistence_statuses:
+  none:
+    description: "No subject state should be persisted."
+  temporary:
+    description: "Use resources for this response only; do not update the project manifest."
+  proposed:
+    description: "Surface a manifest suggestion for user confirmation."
+  applied:
+    description: "Use the existing confirmed or otherwise applied manifest subject."
+  locked:
+    description: "Use the existing locked manifest subject without allowing automatic subject replacement."
+
+loading_levels:
+  core_only:
+    description: "Load only core Qiongli guidance."
+  method_pack_only:
+    description: "Load a method lens from a neighboring subject without subject overlay activation."
+  subject_overlay:
+    description: "Load subject-level reviewer expectations, terminology, and standards."
+  subject_skill:
+    description: "Load the subject-specific skill entrypoint."
+  method_pack:
+    description: "Load a method pack as part of a suggested or applied subject."
+
+signal_dimensions:
+  method:
+    description: "Method or identification lens cue from the task text."
+  data_or_outcome:
+    description: "Dataset, observable, or outcome cue that narrows the subject."
+  venue:
+    description: "Journal or venue cue that narrows the subject."
+
+signal_weights:
+  finance:
+    method: 0.35
+    data_or_outcome: 0.30
+    venue: 0.20
+  economics:
+    method: 0.40
+    venue: 0.20
+
+subject_evidence_memory:
+  path: ".qiongli/trace/subject_evidence.json"
+  minimum_repeated_suggestions: 2
+  minimum_confidence: 0.75
+  write_manifest_automatically: false
+  recommendation_subject_mode: "suggested"
+
+overlays:
+  economics: "overlays/economics.yaml"
+  finance: "overlays/finance.yaml"
+
+subject_skills:
+  economics: "skills/economics/SKILL.md"
+  finance: "skills/finance/SKILL.md"
+
+venue_patterns:
+  economics:
+    - id: "american-economic-review"
+      regex: "\\b(American Economic Review|AER)\\b"
+    - id: "quarterly-journal-of-economics"
+      regex: "\\b(Quarterly Journal of Economics|QJE)\\b"
+    - id: "journal-of-political-economy"
+      regex: "\\b(Journal of Political Economy|JPE)\\b"
+  finance:
+    - id: "journal-of-finance"
+      regex: "\\b(Journal of Finance|JF)\\b"
+    - id: "journal-of-financial-economics"
+      regex: "\\b(Journal of Financial Economics|JFE)\\b"
+    - id: "review-of-financial-studies"
+      regex: "\\b(Review of Financial Studies|RFS)\\b"
+
+method_lenses:
+  economics:
+    did:
+      resource: "method-packs/economics/did.yaml"
+      signals:
+        - "\\bDID\\b"
+        - "\\bdifference[- ]in[- ]differences\\b"
+        - "\\bparallel trends?\\b"
+        - "\\bpre[- ]trends?\\b"
+    causal-identification:
+      resource: "method-packs/economics/causal-identification.yaml"
+      signals:
+        - "\\bcausal identification\\b"
+        - "\\binstrumental variables?\\b"
+        - "\\bregression discontinuity\\b"
+  finance:
+    event-study:
+      resource: "method-packs/finance/event-study.yaml"
+      signals:
+        - "\\bevent[- ]study\\b"
+        - "\\bevent windows?\\b"
+        - "\\bannouncement windows?\\b"
+    asset-pricing:
+      resource: "method-packs/finance/asset-pricing.yaml"
+      signals:
+        - "\\basset pricing\\b"
+        - "\\bfactor models?\\b"
+        - "\\bfactor exposures?\\b"
+
+subject_signal_rules:
+  economics:
+    suggest_when_any:
+      - "economics method lens signal"
+      - "economics venue signal plus causal-identification language"
+    method_only_policy: "subject_suggestion"
+  finance:
+    borrow_lens_when:
+      - "event-study or asset-pricing method signal appears without finance data/outcome and venue support"
+    suggest_subject_when_all:
+      - "finance method lens signal"
+      - "finance data or outcome signal such as CRSP, abnormal returns, stock returns, or factor returns"
+      - "finance venue signal such as Journal of Finance, Journal of Financial Economics, or Review of Financial Studies"
+    data_outcome_signals:
+      - "\\bCRSP\\b"
+      - "\\bCompustat\\b"
+      - "\\babnormal returns?\\b"
+      - "\\bstock returns?\\b"
+      - "\\bmarket returns?\\b"
+      - "\\bportfolio returns?\\b"
+      - "\\bfactor returns?\\b"
+
+method_borrowing:
+  allowed_when_subject_mode:
+    - "auto"
+    - "locked"
+  neighboring_subjects:
+    economics:
+      - "finance"
+    finance:
+      - "economics"

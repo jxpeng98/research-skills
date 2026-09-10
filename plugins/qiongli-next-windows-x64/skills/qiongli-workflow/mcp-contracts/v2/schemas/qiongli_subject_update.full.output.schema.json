@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_subject_update.full.output.v2.json",
+  "title": "qiongli_subject_update full structured output",
+  "type": "object",
+  "required": [
+    "project_root",
+    "manifest_exists",
+    "manifest",
+    "state",
+    "subject_guidance",
+    "write_mode"
+  ],
+  "properties": {
+    "project_root": {
+      "type": "string"
+    },
+    "manifest_exists": {
+      "type": "boolean"
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "subject_guidance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "write_mode": {
+      "enum": [
+        "proposed",
+        "applied"
+      ]
+    },
+    "proposed_action": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

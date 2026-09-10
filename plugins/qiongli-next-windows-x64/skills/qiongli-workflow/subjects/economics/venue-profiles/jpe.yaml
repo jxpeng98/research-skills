@@ -1,0 +1,9 @@
+id: jpe
+display_name: Journal of Political Economy
+discipline: economics
+quality_bar:
+  - economically important question
+  - credible identification or theory
+  - clear contribution to economic mechanisms
+fit_notes:
+  - strongest fit when the paper changes interpretation of an important economic phenomenon

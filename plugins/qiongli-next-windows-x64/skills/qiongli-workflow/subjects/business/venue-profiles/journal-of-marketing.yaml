@@ -1,0 +1,11 @@
+id: journal-of-marketing
+display_name: "Journal of Marketing"
+discipline: business
+quality_bar:
+  - "Marketing theory, substantive relevance, and managerial implication must be integrated."
+  - "Customer, firm, platform, or market-level evidence must match the claim."
+  - "Empirical design must address targeting, selection, measurement, and robustness."
+fit_notes:
+  - "Best fit for marketing strategy, consumer, platform, and marketplace research with broad implications."
+  - "Connect analytics or experiments to marketing theory."
+  - "Report practical implications only after validating the mechanism."

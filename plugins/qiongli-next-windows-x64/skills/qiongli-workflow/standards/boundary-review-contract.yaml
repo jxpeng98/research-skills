@@ -1,0 +1,268 @@
+contract_version: "1.0.0"
+name: "boundary-review-contract"
+purpose: "academic-boundary-clarification"
+artifact: "context/boundary_review.md"
+
+principles:
+  inspect_artifacts_before_asking: true
+  one_question_at_a_time: true
+  recommended_answer_required: true
+  preserve_academic_uncertainty: true
+  never_invent_evidence_or_citations: true
+  sync_downstream_decisions: true
+
+academic_grill_loop:
+  name: "academic-grill-loop"
+  purpose: "academic-idea-discovery-and-boundary-critique"
+  source_credit:
+    inspired_by: "Matt Pocock's grill-me skill"
+    url: "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md"
+    adaptation_note: "Qiongli adapts the interaction pattern for academic judgment; it is not a generic requirements interview or copied workflow."
+  adapted_principles:
+    - "inspect_artifacts_before_asking"
+    - "one_scholarly_question_at_a_time"
+    - "recommended_answer_required"
+    - "paper_type_aware"
+    - "claim_evidence_aware"
+    - "rival_explanation_aware"
+    - "venue_reviewer_aware"
+  trigger_conditions:
+    - "The user starts from a vague topic, broad domain, or unranked set of ideas."
+    - "The next stage could create an RQ, gap, contribution, design, manuscript claim, submission promise, or presentation claim."
+    - "Existing artifacts do not already settle the scholarly boundary."
+  stage_prompts:
+    A:
+      - "From this vague topic, which defensible research idea could become one paper rather than a field overview?"
+      - "What evidence would make the candidate idea answerable in one paper?"
+      - "Which construct, population, setting, time period, or corpus should be excluded so the idea stays publishable?"
+      - "What would make this idea interesting to a venue reviewer rather than merely underexplored?"
+    B:
+      - "Which literature stream would change whether this is a real gap or only a search artifact?"
+      - "Which contrary vocabulary, null-result term, or adjacent discipline must be searched before trusting the idea?"
+    C:
+      - "Which rival explanation would make the proposed design unable to support the idea?"
+      - "What evidence threshold separates a descriptive idea from an associative, causal, interpretive, or methodological claim?"
+    F:
+      - "Which manuscript claim would overstate the idea beyond the available evidence?"
+      - "Which finding, interpretation, or implication must be separated before the idea becomes writable?"
+    H:
+      - "Which submission or rebuttal promise would overclaim the idea?"
+      - "What narrower alternative would a skeptical reviewer find defensible?"
+    I:
+      - "Which code, data, or reproducibility decision would change the scientific interpretation of the idea?"
+  output_expectation: "Record the asked question, recommended answer, user or artifact answer, locked decision, evidence threshold, rival risks, and revisit trigger in context/boundary_review.md."
+
+levels:
+  L0:
+    name: "silent-artifact-check"
+    behavior: "Inspect existing research artifacts and record the boundary if already settled."
+  L1:
+    name: "single-blocking-academic-question"
+    behavior: "Ask one boundary question when a scholarly decision blocks safe progress."
+  L2:
+    name: "short-academic-boundary-loop"
+    behavior: "Ask up to five ordered questions across the most relevant academic dimensions."
+  L3:
+    name: "publication-critical-decision-tree"
+    behavior: "Walk a decision tree for irreversible, ethics-sensitive, or submission-critical choices."
+
+mvp_trigger_stages:
+  - "A"
+  - "C"
+  - "F"
+  - "H"
+  - "I"
+
+future_trigger_stages:
+  - "B"
+  - "D"
+  - "E"
+  - "G"
+  - "J"
+  - "K"
+
+academic_boundary_dimensions:
+  - "phenomenon_boundary"
+  - "construct_boundary"
+  - "contribution_boundary"
+  - "claim_strength_boundary"
+  - "evidence_threshold_boundary"
+  - "method_validity_boundary"
+  - "rival_explanation_boundary"
+  - "generalizability_boundary"
+  - "ethics_governance_boundary"
+  - "venue_reviewer_boundary"
+  - "research_code_boundary"
+  - "submission_revision_boundary"
+
+required_fields:
+  - "task_id"
+  - "stage"
+  - "trigger_level"
+  - "trigger_reason"
+  - "research_question_or_claim"
+  - "boundary_dimension"
+  - "question"
+  - "recommended_answer"
+  - "user_answer_or_artifact_answer"
+  - "claim_strength"
+  - "evidence_threshold"
+  - "rival_explanations"
+  - "validity_or_trustworthiness_risk"
+  - "generalizability_limit"
+  - "venue_or_reviewer_risk"
+  - "locked_decision"
+  - "open_question"
+  - "evidence_basis"
+  - "decision_log_update"
+  - "stage_handoff_update"
+  - "revisit_trigger"
+
+stable_identity:
+  locked_decision_field: "decision_id"
+  locked_decision_format: "BD-###"
+  question_field: "question_id"
+  question_format: "BQ-###"
+  rules:
+    - "Every locked decision and boundary question has a unique stable ID."
+    - "Recorded IDs are never renumbered or reused."
+
+stage_question_sets:
+  A:
+    - "What evidence would make this research question answerable in one paper?"
+    - "Which population, context, time period, or corpus is explicitly out of scope?"
+    - "Which key construct has the most contested definition, and which definition will this project use?"
+    - "What contribution type is primary, and which contribution types are not being claimed?"
+    - "Who would cite this work if it succeeds, and why would they care?"
+  B:
+    - "Which literature stream must be included to avoid confirmation bias?"
+    - "Which search boundary would a systematic-review reader challenge first?"
+    - "What counterevidence or null-result vocabulary should be searched explicitly?"
+  C:
+    - "What rival explanation would make the preferred design insufficient?"
+    - "Is the strongest defensible claim causal, associative, descriptive, interpretive, or exploratory?"
+    - "Which validity threat would most likely invalidate the study?"
+    - "What measurement or operationalization choice could flip the interpretation?"
+    - "What evidence would force the design to narrow its claim?"
+  D:
+    - "What consent, privacy, or governance boundary limits what can be collected or shared?"
+    - "Could linkage, reidentification, or secondary-use risk change the design?"
+  E:
+    - "What heterogeneity condition would make pooling inappropriate?"
+    - "Which evidence source most threatens the certainty rating?"
+  F:
+    - "Which central claim would a reviewer say exceeds the available evidence?"
+    - "Where must the manuscript distinguish finding, interpretation, and implication?"
+    - "Which boundary condition belongs in the discussion rather than being hidden in limitations?"
+    - "What alternative explanation must be acknowledged before the claim is credible?"
+  G:
+    - "Which cross-section inconsistency would damage reviewer trust most?"
+    - "Which reporting item is missing enough to block submission?"
+  H:
+    - "What promise in the cover letter or rebuttal cannot be truthfully supported?"
+    - "Which submission claim is most likely to trigger desk rejection or reviewer objection?"
+    - "What reviewer request is impossible, and what narrower alternative can be offered?"
+  I:
+    - "Which code or data decision would change the scientific interpretation of the results?"
+    - "Which analysis-plan assumption must the implementation preserve exactly?"
+    - "Which data lineage, seed, dependency, or preprocessing choice affects reproducibility?"
+  J:
+    - "Which citation, similarity, or tone risk could still undermine final acceptance?"
+  K:
+    - "Which spoken claim needs a stronger caveat for this audience?"
+
+stage_boundary_policy:
+  A:
+    default_level: "L2"
+    checkpoint_tasks: ["A1", "A2", "A5"]
+    dimensions: ["phenomenon_boundary", "construct_boundary", "contribution_boundary", "claim_strength_boundary", "evidence_threshold_boundary", "venue_reviewer_boundary"]
+    questions:
+      - "What evidence would make this research question answerable in one paper?"
+      - "Which population, context, time period, or corpus is explicitly out of scope?"
+      - "Which contribution type is being claimed, and which adjacent contribution is excluded?"
+  B:
+    default_level: "L2"
+    checkpoint_tasks: ["B1", "B4", "B6"]
+    dimensions: ["phenomenon_boundary", "evidence_threshold_boundary", "rival_explanation_boundary", "generalizability_boundary", "venue_reviewer_boundary"]
+    questions:
+      - "Which search boundary would a systematic-review reader challenge first?"
+      - "Which contrary literature must be included before the gap can be trusted?"
+      - "What inclusion or exclusion rule would change the direction of the synthesis?"
+  C:
+    default_level: "L3"
+    checkpoint_tasks: ["C1", "C3", "C5"]
+    dimensions: ["construct_boundary", "claim_strength_boundary", "evidence_threshold_boundary", "method_validity_boundary", "rival_explanation_boundary", "ethics_governance_boundary"]
+    questions:
+      - "What rival explanation would make the preferred design insufficient?"
+      - "Which claim type can this design support without overstating causality or generality?"
+      - "What evidence would force the design to narrow the research question?"
+  D:
+    default_level: "L3"
+    checkpoint_tasks: ["D1", "D2", "D3"]
+    dimensions: ["ethics_governance_boundary", "generalizability_boundary", "method_validity_boundary", "submission_revision_boundary"]
+    questions:
+      - "What consent, privacy, or governance boundary limits what can be collected or shared?"
+      - "Which participant or data-subject risk remains even if identifiers are removed?"
+      - "What disclosure must appear in ethics, data management, or submission materials?"
+  E:
+    default_level: "L3"
+    checkpoint_tasks: ["E1", "E4", "E5"]
+    dimensions: ["evidence_threshold_boundary", "method_validity_boundary", "rival_explanation_boundary", "generalizability_boundary", "claim_strength_boundary"]
+    questions:
+      - "What heterogeneity boundary makes pooling or synthesis scientifically invalid?"
+      - "Which publication-bias or certainty-grading result would force a weaker conclusion?"
+      - "What population, intervention, context, or outcome boundary limits the synthesis?"
+  F:
+    default_level: "L2"
+    checkpoint_tasks: ["F1", "F3", "F4", "F6"]
+    dimensions: ["claim_strength_boundary", "evidence_threshold_boundary", "rival_explanation_boundary", "generalizability_boundary", "venue_reviewer_boundary"]
+    questions:
+      - "Which central claim would a reviewer say exceeds the available evidence?"
+      - "Which boundary condition belongs in the discussion rather than being hidden in limitations?"
+      - "What finding, interpretation, or implication must be separated to avoid overclaiming?"
+  G:
+    default_level: "L2"
+    checkpoint_tasks: ["G1", "G2", "G3"]
+    dimensions: ["evidence_threshold_boundary", "venue_reviewer_boundary", "submission_revision_boundary", "ethics_governance_boundary"]
+    questions:
+      - "Which reporting requirement changes the evidence or disclosure boundary?"
+      - "Which claim-evidence mismatch would block compliance sign-off?"
+      - "What checklist item reveals a boundary that the manuscript has not stated?"
+  H:
+    default_level: "L3"
+    checkpoint_tasks: ["H1", "H2", "H4"]
+    dimensions: ["submission_revision_boundary", "venue_reviewer_boundary", "claim_strength_boundary", "evidence_threshold_boundary", "ethics_governance_boundary"]
+    questions:
+      - "What promise in the cover letter or rebuttal cannot be truthfully supported?"
+      - "Which reviewer concern requires narrowing a claim instead of adding rhetoric?"
+      - "What fatal flaw should be disclosed, corrected, or explicitly bounded?"
+  I:
+    default_level: "L3"
+    checkpoint_tasks: ["I1", "I3", "I5", "I8"]
+    dimensions: ["research_code_boundary", "method_validity_boundary", "evidence_threshold_boundary", "ethics_governance_boundary", "generalizability_boundary"]
+    questions:
+      - "Which code or data decision would change the scientific interpretation of the results?"
+      - "What data lineage, split, seed, exclusion, or transformation must be locked before implementation?"
+      - "Which reproducibility failure would force a weaker methods or results claim?"
+  J:
+    default_level: "L1"
+    checkpoint_tasks: ["J1", "J3", "J4"]
+    dimensions: ["claim_strength_boundary", "submission_revision_boundary", "venue_reviewer_boundary"]
+    questions:
+      - "Which wording change would alter the scientific meaning rather than merely improve style?"
+      - "Which final-proofread change risks broadening a claim beyond the locked boundary?"
+  K:
+    default_level: "L1"
+    checkpoint_tasks: ["K1", "K2", "K4"]
+    dimensions: ["claim_strength_boundary", "evidence_threshold_boundary", "venue_reviewer_boundary", "submission_revision_boundary"]
+    questions:
+      - "What oral or slide claim must be narrower than the manuscript claim?"
+      - "Which evidence limitation must be visible to the presentation audience?"
+
+sync_targets:
+  - "context/research_state.md"
+  - "context/decision_log.md"
+  - "context/stage_handoff.md"
+  - "manuscript/claims_evidence_map.md"
+  - "design/validity-threat-matrix.md"
+  - "code/code_specification.md"

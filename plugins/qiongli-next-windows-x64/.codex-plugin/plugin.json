@@ -1,0 +1,38 @@
+{
+  "name": "qiongli-next-windows-x64",
+  "version": "2.0.0-beta.1",
+  "description": "Academic research workflows with bundled native Lite MCP for windows-x64.",
+  "author": {
+    "name": "Jiaxin Peng",
+    "url": "https://github.com/jxpeng98"
+  },
+  "homepage": "https://github.com/jxpeng98/qiongli",
+  "repository": "https://github.com/jxpeng98/qiongli",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "academic-writing",
+    "literature-review",
+    "reproducibility"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Qiongli Next (windows-x64)",
+    "shortDescription": "Native academic research workflows for Codex.",
+    "longDescription": "Plan, review, write, and audit academic research with the dependency-free Qiongli 2 native workflow.",
+    "developerName": "Jiaxin Peng",
+    "category": "Education",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/jxpeng98/qiongli",
+    "defaultPrompt": [
+      "Use $qiongli to plan an academic paper.",
+      "Use $qiongli to review a manuscript with claim-evidence checks.",
+      "Use $qiongli to audit analysis code for reproducibility."
+    ],
+    "brandColor": "#2563EB"
+  },
+  "mcpServers": "./.mcp.json"
+}

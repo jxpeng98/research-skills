@@ -1,0 +1,13 @@
+{
+  "result": {
+    "uids": ["1"],
+    "1": {
+      "title": "A Test Paper",
+      "pubdate": "2025 Jan",
+      "fulljournalname": "Journal of Tests",
+      "articleids": [
+        { "idtype": "doi", "value": "10.1234/example" }
+      ]
+    }
+  }
+}

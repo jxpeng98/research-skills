@@ -1,0 +1,11 @@
+id: international-organization
+display_name: "International Organization"
+discipline: geoeconomics
+quality_bar:
+  - "Theory must connect international institutions, statecraft, and economic outcomes."
+  - "Empirical strategy must address timing, exposure, and alternative explanations."
+  - "Contribution should speak to IPE, security, or international cooperation debates."
+fit_notes:
+  - "Good fit for rigorous IPE or institutional studies of economic statecraft."
+  - "Clarify whether sanctions, supply chain policy, or financial statecraft changes behavior."
+  - "Report data and code transparency for quantitative claims."

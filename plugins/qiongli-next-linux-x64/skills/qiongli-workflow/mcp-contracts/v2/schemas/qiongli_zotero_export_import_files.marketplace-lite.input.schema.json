@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_export_import_files.input.v2.json",
+  "title": "qiongli_zotero_export_import_files input",
+  "type": "object",
+  "properties": {
+    "records": {
+      "type": "array"
+    },
+    "formats": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "references.json",
+          "references.ris",
+          "bibliography.bib",
+          "zotero-import-report.md"
+        ]
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

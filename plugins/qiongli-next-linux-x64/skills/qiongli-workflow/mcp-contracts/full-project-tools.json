@@ -1,0 +1,551 @@
+{
+  "schema_version": "1.0",
+  "tools": [
+    {
+      "name": "qiongli_project_list",
+      "description": "List the redacted native Research Library snapshot without exposing registered project paths.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_read",
+      "description": "Read one registered article-project summary by stable project identity without returning its filesystem path.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["project_id"],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{32}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_graph_snapshot",
+      "description": "Rebuild and read the deterministic source-anchored Academic Graph projection for one registered project without writing index state.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["project_id"],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{32}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_graph_portfolio",
+      "description": "Rebuild and read the deterministic path-free Academic Graph Portfolio across ready registered projects without writing index state.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_graph_query",
+      "description": "Run a bounded revision-bound Academic Graph query with stable identity, type, relation, layer, text, and directional focus-depth filters.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["project_id", "expected_projection_id"],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{32}$"
+          },
+          "expected_projection_id": {
+            "type": "string",
+            "pattern": "^grp_[0-9a-f]{64}$"
+          },
+          "focus_node_id": {
+            "type": "string",
+            "pattern": "^nod_[0-9a-f]{64}$"
+          },
+          "direction": {
+            "enum": ["incoming", "outgoing", "both"]
+          },
+          "max_depth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "node_types": {
+            "type": "array",
+            "maxItems": 15,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["project", "research-question", "idea", "contribution", "concept", "literature-cluster", "paper", "claim", "evidence", "decision", "gap", "method", "manuscript-section", "artifact", "task"]
+            }
+          },
+          "relations": {
+            "type": "array",
+            "maxItems": 25,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["contains", "cites", "cited-by", "supports", "weakens", "contradicts", "extends", "defines", "operationalizes", "uses-method", "belongs-to-cluster", "complements", "competes-with", "combines-with", "motivates", "informs", "addresses-gap", "appears-in-section", "derived-from", "supersedes", "bounded-by", "shares-source", "shares-concept", "forked-from", "extends-project"]
+            }
+          },
+          "layers": {
+            "type": "array",
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["portfolio", "literature", "idea-decision", "argument", "manuscript", "combined"]
+            }
+          },
+          "canonical_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "max_nodes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "max_edges": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 512
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_artifact_changes",
+      "description": "Read the revision-bound registered academic artifact inventory and truthful current or unattributed change state without exposing project paths or guessing client and session provenance.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["project_id"],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{32}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_capture_coverage",
+      "description": "Read truthful normalized capture delivery and coverage states for one registered article project without exposing paths or inferring unobserved client work.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["project_id"],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{32}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_project_capture_preview",
+      "description": "Validate and preview one connected normalized research capture against its bound article project without writing project state.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["capture"],
+        "properties": {
+          "capture": {
+            "$ref": "#/$defs/capture"
+          }
+        },
+        "additionalProperties": false,
+        "$defs": {
+          "binding": {
+            "type": "object",
+            "required": [
+              "schema_version",
+              "document_kind",
+              "project_id",
+              "base_revision",
+              "stage",
+              "task",
+              "capture_policy"
+            ],
+            "properties": {
+              "schema_version": { "const": 1 },
+              "document_kind": { "const": "qiongli-project-binding" },
+              "project_id": {
+                "type": "string",
+                "pattern": "^prj_[0-9a-f]{32}$"
+              },
+              "base_revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "stage": {
+                "enum": [
+                  "idea",
+                  "framing",
+                  "literature",
+                  "design",
+                  "analysis",
+                  "writing",
+                  "review",
+                  "submission"
+                ]
+              },
+              "task": { "type": "string", "minLength": 1, "maxLength": 300 },
+              "capture_policy": {
+                "enum": ["review-required", "history-only"]
+              }
+            },
+            "additionalProperties": false
+          },
+          "change": {
+            "type": "object",
+            "required": ["area", "summary"],
+            "properties": {
+              "area": {
+                "enum": [
+                  "research-question",
+                  "thesis",
+                  "literature",
+                  "method",
+                  "evidence",
+                  "analysis",
+                  "manuscript",
+                  "scope"
+                ]
+              },
+              "summary": { "type": "string", "minLength": 1, "maxLength": 1000 }
+            },
+            "additionalProperties": false
+          },
+          "decision": {
+            "type": "object",
+            "required": ["relation", "statement", "rationale", "target"],
+            "properties": {
+              "relation": {
+                "enum": ["candidate", "refinement", "challenge", "supersession"]
+              },
+              "statement": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "rationale": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "target": {
+                "type": ["string", "null"],
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          },
+          "evidence": {
+            "type": "object",
+            "required": ["locator_kind", "locator", "relevance", "limitation"],
+            "properties": {
+              "locator_kind": {
+                "enum": ["doi", "citation-key", "https-url", "artifact-anchor"]
+              },
+              "locator": { "type": "string", "minLength": 1, "maxLength": 500 },
+              "relevance": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "limitation": {
+                "type": ["string", "null"],
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          },
+          "contradiction": {
+            "type": "object",
+            "required": ["statement", "conflicts_with", "consequence"],
+            "properties": {
+              "statement": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "conflicts_with": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "consequence": { "type": "string", "minLength": 1, "maxLength": 1000 }
+            },
+            "additionalProperties": false
+          },
+          "capture": {
+            "type": "object",
+            "required": [
+              "schema_version",
+              "document_kind",
+              "capture_id",
+              "binding",
+              "source",
+              "delivery",
+              "captured_at_unix",
+              "summary",
+              "changes",
+              "decisions",
+              "evidence",
+              "contradictions",
+              "next_actions"
+            ],
+            "properties": {
+              "schema_version": { "const": 1 },
+              "document_kind": { "const": "qiongli-research-capture" },
+              "capture_id": {
+                "type": "string",
+                "pattern": "^cap_[0-9a-f]{64}$"
+              },
+              "binding": { "$ref": "#/$defs/binding" },
+              "source": {
+                "enum": [
+                  "codex",
+                  "claude-code",
+                  "chat-gpt",
+                  "cli",
+                  "manual",
+                  "repository",
+                  "portable-file"
+                ]
+              },
+              "delivery": { "const": "connected" },
+              "captured_at_unix": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "summary": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "changes": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/change" }
+              },
+              "decisions": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/decision" }
+              },
+              "evidence": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/evidence" }
+              },
+              "contradictions": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/contradiction" }
+              },
+              "next_actions": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "name": "qiongli_project_capture_apply",
+      "description": "Apply the exact previewed connected research capture to pending project history after explicit filesystem-write approval.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["capture", "plan_digest", "approve_filesystem_write"],
+        "properties": {
+          "capture": {
+            "$ref": "#/$defs/capture"
+          },
+          "plan_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "approve_filesystem_write": {
+            "const": true
+          }
+        },
+        "additionalProperties": false,
+        "$defs": {
+          "binding": {
+            "type": "object",
+            "required": [
+              "schema_version",
+              "document_kind",
+              "project_id",
+              "base_revision",
+              "stage",
+              "task",
+              "capture_policy"
+            ],
+            "properties": {
+              "schema_version": { "const": 1 },
+              "document_kind": { "const": "qiongli-project-binding" },
+              "project_id": {
+                "type": "string",
+                "pattern": "^prj_[0-9a-f]{32}$"
+              },
+              "base_revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "stage": {
+                "enum": [
+                  "idea",
+                  "framing",
+                  "literature",
+                  "design",
+                  "analysis",
+                  "writing",
+                  "review",
+                  "submission"
+                ]
+              },
+              "task": { "type": "string", "minLength": 1, "maxLength": 300 },
+              "capture_policy": {
+                "enum": ["review-required", "history-only"]
+              }
+            },
+            "additionalProperties": false
+          },
+          "change": {
+            "type": "object",
+            "required": ["area", "summary"],
+            "properties": {
+              "area": {
+                "enum": [
+                  "research-question",
+                  "thesis",
+                  "literature",
+                  "method",
+                  "evidence",
+                  "analysis",
+                  "manuscript",
+                  "scope"
+                ]
+              },
+              "summary": { "type": "string", "minLength": 1, "maxLength": 1000 }
+            },
+            "additionalProperties": false
+          },
+          "decision": {
+            "type": "object",
+            "required": ["relation", "statement", "rationale", "target"],
+            "properties": {
+              "relation": {
+                "enum": ["candidate", "refinement", "challenge", "supersession"]
+              },
+              "statement": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "rationale": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "target": {
+                "type": ["string", "null"],
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          },
+          "evidence": {
+            "type": "object",
+            "required": ["locator_kind", "locator", "relevance", "limitation"],
+            "properties": {
+              "locator_kind": {
+                "enum": ["doi", "citation-key", "https-url", "artifact-anchor"]
+              },
+              "locator": { "type": "string", "minLength": 1, "maxLength": 500 },
+              "relevance": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "limitation": {
+                "type": ["string", "null"],
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          },
+          "contradiction": {
+            "type": "object",
+            "required": ["statement", "conflicts_with", "consequence"],
+            "properties": {
+              "statement": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "conflicts_with": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "consequence": { "type": "string", "minLength": 1, "maxLength": 1000 }
+            },
+            "additionalProperties": false
+          },
+          "capture": {
+            "type": "object",
+            "required": [
+              "schema_version",
+              "document_kind",
+              "capture_id",
+              "binding",
+              "source",
+              "delivery",
+              "captured_at_unix",
+              "summary",
+              "changes",
+              "decisions",
+              "evidence",
+              "contradictions",
+              "next_actions"
+            ],
+            "properties": {
+              "schema_version": { "const": 1 },
+              "document_kind": { "const": "qiongli-research-capture" },
+              "capture_id": {
+                "type": "string",
+                "pattern": "^cap_[0-9a-f]{64}$"
+              },
+              "binding": { "$ref": "#/$defs/binding" },
+              "source": {
+                "enum": [
+                  "codex",
+                  "claude-code",
+                  "chat-gpt",
+                  "cli",
+                  "manual",
+                  "repository",
+                  "portable-file"
+                ]
+              },
+              "delivery": { "const": "connected" },
+              "captured_at_unix": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "summary": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "changes": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/change" }
+              },
+              "decisions": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/decision" }
+              },
+              "evidence": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/evidence" }
+              },
+              "contradictions": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "$ref": "#/$defs/contradiction" }
+              },
+              "next_actions": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_export_evidence.input.v2.json",
+  "title": "qiongli_literature_export_evidence input",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Compatibility context path used by the Full runtime and ignored by Lite."
+    },
+    "query": { "type": "string" },
+    "provider_status": { "type": "object" },
+    "search_plan": { "type": "object" },
+    "results": { "type": "array", "items": { "type": "object" } },
+    "diagnostics": { "type": "object" },
+    "query_plan": {
+      "type": "object",
+      "deprecated": true,
+      "description": "Compatibility alias for search_plan."
+    },
+    "search_results": {
+      "type": "array",
+      "items": { "type": "object" },
+      "deprecated": true,
+      "description": "Compatibility alias for results."
+    },
+    "search_diagnostics": {
+      "type": "object",
+      "deprecated": true,
+      "description": "Compatibility alias for diagnostics."
+    }
+  },
+  "additionalProperties": false
+}

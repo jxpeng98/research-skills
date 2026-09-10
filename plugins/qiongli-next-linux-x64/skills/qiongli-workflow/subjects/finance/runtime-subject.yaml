@@ -1,0 +1,28 @@
+schema_version: 1.0
+subject: finance
+display_name: Finance
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/finance.yaml
+overlay: overlays/finance.yaml
+subject_skill: skills/finance/SKILL.md
+signal_groups:
+  method: []
+  data_or_outcome: []
+  venue: []
+method_lenses:
+  event-study:
+    resource: method-packs/finance/event-study.yaml
+    activation: method_only
+  asset-pricing:
+    resource: method-packs/finance/asset-pricing.yaml
+    activation: method_only
+evaluation_pack: tests/fixtures/subject_router_eval
+near_miss_policy:
+  forbidden_subjects:
+    - economics
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.90
+    suggest_subject_precision: 0.85
+    near_miss_false_positives: 0

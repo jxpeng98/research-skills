@@ -1,0 +1,11 @@
+id: global-policy
+display_name: "Global Policy"
+discipline: geoeconomics
+quality_bar:
+  - "Policy analysis must define instrument, objective, tradeoffs, and evidence."
+  - "Strategic competition and economic security claims must be practically grounded."
+  - "Recommendations must follow from documented effects or risks."
+fit_notes:
+  - "Good fit for policy-facing geoeconomics, resilience, sanctions, and supply chain work."
+  - "Prioritize implementation clarity, tradeoffs, and decision relevance."
+  - "Avoid academic overclaiming when evidence is mainly policy descriptive."

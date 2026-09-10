@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "type": "object",
+  "required": [
+    "query",
+    "search_mode",
+    "search_execution_mode",
+    "provider_capability_mode",
+    "native_search_queries"
+  ],
+  "properties": {
+    "query": { "type": "string" },
+    "search_mode": { "type": "string" },
+    "search_execution_mode": { "type": "string" },
+    "provider_capability_mode": { "type": "string" },
+    "native_search_queries": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

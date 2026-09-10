@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_subject_status.full.input.v2.json",
+  "title": "qiongli_subject_status full input",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Project directory to inspect."
+    }
+  },
+  "additionalProperties": false
+}

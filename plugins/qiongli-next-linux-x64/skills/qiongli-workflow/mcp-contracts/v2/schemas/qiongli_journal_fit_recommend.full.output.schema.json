@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_journal_fit_recommend.full.output.v2.json",
+  "title": "qiongli_journal_fit_recommend full structured output",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "status",
+    "blocking_reasons",
+    "ranked_venues"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ranked_venues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

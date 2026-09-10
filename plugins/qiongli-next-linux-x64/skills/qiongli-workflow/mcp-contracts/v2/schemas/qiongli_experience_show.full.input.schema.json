@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_experience_show.full.input.v2.json",
+  "title": "qiongli_experience_show full input",
+  "type": "object",
+  "required": [
+    "run_id"
+  ],
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Project directory to inspect."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    }
+  },
+  "additionalProperties": false
+}

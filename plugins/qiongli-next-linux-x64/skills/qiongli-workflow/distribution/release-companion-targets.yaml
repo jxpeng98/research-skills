@@ -1,0 +1,37 @@
+schema_version: "1.0"
+targets:
+  claude_desktop_literature_mcpb:
+    target_id: claude-desktop-literature-mcpb
+    subject: literature
+    artifact_kind: mcpb
+    expected_install_method: download_mcpb
+
+  zotero_desktop_companion:
+    target_id: zotero-desktop-companion-xpi
+    subject: zotero
+    artifact_kind: xpi
+    expected_install_method: download_xpi
+
+  zotero_desktop_companion_updates:
+    target_id: zotero-desktop-companion-update-manifest
+    subject: zotero
+    artifact_kind: release-metadata
+    expected_install_method: automatic_update_manifest
+
+  download_guide:
+    target_id: release-download-guide
+    subject: not-applicable
+    artifact_kind: release-metadata
+    expected_install_method: download_markdown
+
+  download_index:
+    target_id: release-download-index
+    subject: not-applicable
+    artifact_kind: release-metadata
+    expected_install_method: download_json
+
+  artifact_manifest:
+    target_id: release-artifact-manifest
+    subject: not-applicable
+    artifact_kind: release-metadata
+    expected_install_method: download_json

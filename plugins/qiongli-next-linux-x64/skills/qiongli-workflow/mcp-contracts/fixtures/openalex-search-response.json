@@ -1,0 +1,13 @@
+{
+  "results": [
+    {
+      "id": "https://openalex.org/W1",
+      "display_name": "A Test Paper",
+      "publication_year": 2025,
+      "doi": "https://doi.org/10.1234/example",
+      "primary_location": {
+        "source": { "display_name": "Journal of Tests" }
+      }
+    }
+  ]
+}

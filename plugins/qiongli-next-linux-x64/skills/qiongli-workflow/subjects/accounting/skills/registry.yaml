@@ -1,0 +1,19 @@
+skills:
+  - id: accounting-measurement-auditor
+    stage: C_design
+    version: "0.11.1"
+    file: skills/C_design/accounting-measurement-auditor.md
+    canonical: true
+    summary: "Audit accounting constructs, reporting settings, sample filters, and construct-validity threats."
+    display_name: "Accounting Measurement Auditor"
+    when_to_use: "Use when an accounting paper depends on accounting proxies, archival datasets, or reporting-setting mechanisms."
+    summary_zh: "审计会计构念、报告场景、样本筛选和构念效度威胁。"
+    display_name_zh: "会计测量审计"
+    when_to_use_zh: "当会计论文依赖会计代理变量、档案数据库或报告场景机制时使用。"
+    inputs: [DesignSpec, DataDictionary, AnalysisPlan]
+    outputs: [AccountingMeasurementAudit]
+    tags: [accounting, measurement, archival, reporting, construct-validity]
+    depends_on: [study-designer, variable-constructor, data-dictionary-builder]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true

@@ -1,0 +1,11 @@
+id: review-of-international-political-economy
+display_name: "Review of International Political Economy"
+discipline: geoeconomics
+quality_bar:
+  - "Argument must connect global political economy structures to economic instruments and responses."
+  - "Sanctions, finance, trade, or supply chain mechanisms must be theoretically grounded."
+  - "Evidence must distinguish policy rhetoric from observed market or institutional effects."
+fit_notes:
+  - "Strong fit for geoeconomics papers centered on IPE, trade, finance, or production networks."
+  - "Use literature positioning across security, IPE, and economic policy."
+  - "State whether contribution is theoretical, empirical, or policy analytical."

@@ -1,0 +1,11 @@
+id: journal-of-finance
+display_name: "Journal of Finance"
+discipline: finance
+quality_bar:
+  - "Contribution must speak to a central finance literature and not only report a trading pattern."
+  - "Risk adjustment, identification, data timing, and inference must withstand doctoral-level journal review."
+  - "Economic magnitude and mechanism must be explicit."
+fit_notes:
+  - "Best fit for high-contribution asset pricing, corporate finance, market microstructure, and theory papers."
+  - "Report robustness across benchmark models, subsamples, and inference choices."
+  - "Distinguish alpha, risk, mispricing, liquidity, and corporate policy channels."

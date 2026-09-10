@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_status.output.v2.json",
+  "title": "qiongli_literature_status structured output",
+  "type": "object",
+  "required": [
+    "status",
+    "capability_mode",
+    "providers",
+    "active_providers",
+    "missing",
+    "provider_capabilities",
+    "redacted_config"
+  ],
+  "properties": {
+    "status": { "const": "ok" },
+    "capability_mode": { "enum": ["provider_connected", "strategy_only"] },
+    "providers": { "$ref": "#/$defs/providerSummary" },
+    "active_providers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/providerName" },
+      "uniqueItems": true
+    },
+    "missing": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "openalex.api_key",
+          "semantic_scholar.api_key",
+          "crossref.email",
+          "pubmed.api_key"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "provider_capabilities": {
+      "$ref": "#/$defs/providerCapabilities",
+      "description": "Profile-truthful implemented capabilities. Lite capability lists may be strict subsets of Full."
+    },
+    "capabilities": {
+      "$ref": "#/$defs/providerCapabilities",
+      "deprecated": true,
+      "description": "Compatibility alias retained for existing Full clients."
+    },
+    "redacted_config": {
+      "type": "object",
+      "required": ["providers"],
+      "properties": {
+        "providers": { "$ref": "#/$defs/redactedProviders" },
+        "search": {
+          "type": "object",
+          "properties": {
+            "minimum_productive_providers": { "type": "integer", "minimum": 1 },
+            "allow_platform_search_supplement": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "next_action": {
+      "type": "object",
+      "required": ["tool", "args", "message"],
+      "properties": {
+        "tool": { "const": "qiongli_configure_provider" },
+        "args": {
+          "type": "object",
+          "required": ["provider"],
+          "properties": {
+            "provider": {
+              "enum": ["openalex", "semantic_scholar", "crossref", "pubmed"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "message": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "providerName": {
+      "enum": ["openalex", "semantic_scholar", "crossref", "pubmed", "arxiv"]
+    },
+    "providerSummary": {
+      "type": "object",
+      "required": ["openalex", "semantic_scholar", "crossref", "pubmed", "arxiv"],
+      "properties": {
+        "openalex": { "enum": ["configured", "missing"] },
+        "semantic_scholar": { "enum": ["configured", "missing"] },
+        "crossref": { "enum": ["configured", "missing"] },
+        "pubmed": { "enum": ["configured", "missing"] },
+        "arxiv": { "enum": ["configured", "missing"] }
+      },
+      "additionalProperties": false
+    },
+    "providerCapability": {
+      "type": "object",
+      "required": ["status", "capabilities"],
+      "properties": {
+        "status": { "const": "implemented" },
+        "max_per_provider_limit": { "type": "integer", "minimum": 1, "maximum": 200 },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "providerCapabilities": {
+      "type": "object",
+      "required": ["openalex", "semantic_scholar", "crossref", "pubmed", "arxiv"],
+      "properties": {
+        "openalex": { "$ref": "#/$defs/providerCapability" },
+        "semantic_scholar": { "$ref": "#/$defs/providerCapability" },
+        "crossref": { "$ref": "#/$defs/providerCapability" },
+        "pubmed": { "$ref": "#/$defs/providerCapability" },
+        "arxiv": { "$ref": "#/$defs/providerCapability" }
+      },
+      "additionalProperties": false
+    },
+    "fieldState": { "enum": ["configured", "missing"] },
+    "redactedProvider": {
+      "type": "object",
+      "required": ["enabled", "configured", "fields"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "configured": { "type": "boolean" },
+        "fields": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/fieldState" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "redactedProviders": {
+      "type": "object",
+      "required": ["openalex", "semantic_scholar", "crossref", "pubmed", "arxiv"],
+      "properties": {
+        "openalex": { "$ref": "#/$defs/redactedProvider" },
+        "semantic_scholar": { "$ref": "#/$defs/redactedProvider" },
+        "crossref": { "$ref": "#/$defs/redactedProvider" },
+        "pubmed": { "$ref": "#/$defs/redactedProvider" },
+        "arxiv": { "$ref": "#/$defs/redactedProvider" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

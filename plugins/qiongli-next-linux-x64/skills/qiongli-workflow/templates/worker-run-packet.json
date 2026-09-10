@@ -1,0 +1,21 @@
+{
+  "run_id": "",
+  "worker_id": "",
+  "controller_runtime": "",
+  "platform_adapter": "generic_prompt",
+  "task_id": "",
+  "paper_type": "",
+  "topic": "",
+  "goal": "",
+  "functional_role": "",
+  "required_skills": [],
+  "required_mcp": [],
+  "allowed_artifacts": [],
+  "forbidden_artifacts": [],
+  "artifacts_read": [],
+  "artifacts_written": [],
+  "warnings": [],
+  "blocking_issues": [],
+  "status": "planned",
+  "confidence": 0.0
+}

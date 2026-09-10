@@ -1,0 +1,156 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://qiongli.dev/schemas/skill.schema.json",
+    "title": "Skill Registry Entry",
+    "description": "Schema for entries in skills/registry.yaml. This is the internal skill-spec registry truth; portable skill packages and hand-written skill.yaml files are out of scope.",
+    "type": "object",
+    "required": [
+        "id",
+        "stage",
+        "version",
+        "file",
+        "canonical",
+        "summary",
+        "display_name",
+        "when_to_use",
+        "summary_zh",
+        "display_name_zh",
+        "when_to_use_zh",
+        "inputs",
+        "outputs"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$",
+            "description": "Unique kebab-case skill identifier"
+        },
+        "stage": {
+            "type": "string",
+            "enum": [
+                "A_framing",
+                "B_literature",
+                "C_design",
+                "D_ethics",
+                "E_synthesis",
+                "F_writing",
+                "G_compliance",
+                "H_submission",
+                "I_code",
+                "J_proofread",
+                "K_presentation",
+                "L_coursework",
+                "M_dissertation",
+                "Z_cross_cutting"
+            ],
+            "description": "Research lifecycle stage"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+            "description": "Semantic version or semantic prerelease version"
+        },
+        "file": {
+            "type": "string",
+            "pattern": "^skills/",
+            "description": "Relative path to an internal skill markdown file under skills/ (not a portable skill package)"
+        },
+        "canonical": {
+            "type": "boolean",
+            "description": "True when this entry is a canonical routed skill rather than an alias placeholder"
+        },
+        "alias_of": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$",
+            "description": "Optional canonical skill ID when this entry is an alias"
+        },
+        "deprecated": {
+            "type": "boolean",
+            "description": "Whether this registry entry is retained only for backward compatibility"
+        },
+        "summary": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line summary of skill purpose"
+        },
+        "display_name": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Short English display name for user-facing skill cards and docs"
+        },
+        "when_to_use": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line English usage guidance for user-facing skill cards and docs"
+        },
+        "summary_zh": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line Simplified Chinese summary used by localized user-facing surfaces"
+        },
+        "display_name_zh": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Short Simplified Chinese display name for localized skill cards"
+        },
+        "when_to_use_zh": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One-line Simplified Chinese usage guidance for localized skill cards"
+        },
+        "inputs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of typed artifact names consumed"
+        },
+        "outputs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "description": "List of typed artifact names produced"
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9-]+$"
+            },
+            "description": "Searchable keywords"
+        },
+        "depends_on": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Upstream skill IDs that typically run before this skill"
+        },
+        "compatible_models": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "codex",
+                    "claude",
+                    "gpt"
+                ]
+            },
+            "description": "AI model runtimes that can execute this skill"
+        },
+        "tooling_requirements": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Required MCP providers or tool capabilities"
+        },
+        "domain_aware": {
+            "type": "boolean",
+            "description": "Whether skill behavior changes based on domain profile"
+        }
+    },
+    "additionalProperties": false
+}

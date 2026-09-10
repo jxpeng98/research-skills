@@ -743,7 +743,7 @@ class ReleaseAutomationTests(unittest.TestCase):
             self.assertEqual(rejected.returncode, 2)
             self.assertIn("reject legacy", rejected.stderr)
 
-    def test_release_workflow_is_diagnostic_wrapper_not_publish_entrypoint(self) -> None:
+    def test_release_workflow_separates_diagnostics_from_authorized_native_publication(self) -> None:
         content = RELEASE_WORKFLOW.read_text(encoding="utf-8")
 
         self.assertIn("workflow_dispatch:", content)
@@ -773,7 +773,12 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('--print-field package_version', content)
         self.assertIn("native-release-dry-run:", content)
         self.assertIn("legacy-release-automation:", content)
-        native_job, legacy_job = content.split("  legacy-release-automation:\n", 1)
+        native_jobs, legacy_job = content.split("  legacy-release-automation:\n", 1)
+        native_job, publication_job = native_jobs.split("  native-publish:\n", 1)
+        self.assertIn("inputs.mode == 'post' && inputs.create_release", publication_job)
+        self.assertIn("contents: write", publication_job)
+        self.assertIn("actions: write", publication_job)
+        self.assertIn('native_release_publish.py --tag "$RELEASE_TAG"', publication_job)
         self.assertIn("contents: read", native_job)
         self.assertIn("persist-credentials: false", native_job)
         self.assertIn("dtolnay/rust-toolchain@1.97.0", native_job)
@@ -804,12 +809,14 @@ class ReleaseAutomationTests(unittest.TestCase):
         self.assertIn('packages-dir: ${{ runner.temp }}/qiongli-dist/dist', content)
         self.assertNotIn('bash scripts/verify_release_tag_version.sh --tag "${GITHUB_REF_NAME}"', content)
 
-    def test_tag_publish_workflows_do_not_expose_manual_publish_dispatch(self) -> None:
+    def test_tag_publish_workflows_limit_manual_publication_to_native_tags(self) -> None:
         for workflow in (PUBLISH_PYPI_WORKFLOW, PUBLISH_NPM_WORKFLOW):
             with self.subTest(workflow=workflow.name):
                 content = workflow.read_text(encoding="utf-8")
 
-                self.assertNotIn("workflow_dispatch:", content)
+                self.assertIn("workflow_dispatch:", content)
+                self.assertIn("inputs.publish_release && github.ref_type == 'tag'", content)
+                self.assertIn("startsWith(github.ref_name, 'v2.')", content)
                 self.assertNotIn("inputs.tag", content)
                 self.assertIn("push:", content)
                 self.assertIn('tags:\n      - "v*"', content)

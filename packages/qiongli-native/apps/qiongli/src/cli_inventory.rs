@@ -105,7 +105,8 @@ fn classify(path: &Path) -> CliInstallation {
     if let Some(parent) = path.parent() {
         let launcher = parent.join("node_modules/qiongli/bin/qiongli.mjs");
         if read_small(path).is_some_and(|text| {
-            text.contains("node_modules") && text.contains("qiongli/bin/qiongli.mjs")
+            text.replace('\\', "/")
+                .contains("node_modules/qiongli/bin/qiongli.mjs")
         }) && launcher.is_file()
         {
             let mut npm = classify(&launcher);
@@ -555,6 +556,19 @@ mod tests {
             // Check the same npm metadata owner directly on Windows.
             assert_eq!(classify(&npm).channel, "npm");
         }
+        let windows_shim = write(
+            "windows-npm/qiongli.cmd",
+            r#"@node "%dp0%\node_modules\qiongli\bin\qiongli.mjs" %*"#,
+        );
+        write(
+            "windows-npm/node_modules/qiongli/bin/qiongli.mjs",
+            "launcher",
+        );
+        write(
+            "windows-npm/node_modules/qiongli/package.json",
+            r#"{"name":"qiongli","version":"2.0.0-beta.2"}"#,
+        );
+        assert_eq!(classify(&windows_shim).channel, "npm");
         write(".npmrc", "prefix=\"~/npm wrong prefix\"\n");
         let search = std::env::join_paths([
             unknown.parent().unwrap(),

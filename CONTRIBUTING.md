@@ -10,6 +10,12 @@ project knowledge without requiring Trellis skills or a task lifecycle.
 
 ## Development and integration
 
+Codex is the reference Host for new behavior, Skill interaction and primary
+verification. Claude Code and other Agents adapt the shared contracts and retain
+focused compatibility checks. An adapter limitation does not redefine the Codex
+workflow or block independent Codex development. Host priority does not select
+or replace the user's model, and does not change package platform coverage.
+
 Default loop: create a local branch from `2.x` → edit → affected **Focused**
 checks → review and commit → merge locally into `2.x` → next increment.
 No PR, remote CI wait, post-merge suite, package acceptance or phase sign-off

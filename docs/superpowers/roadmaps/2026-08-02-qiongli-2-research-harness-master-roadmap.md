@@ -59,6 +59,13 @@ supersedes the App-owned ACP default. The September 5 local CLI notes are mapped
 into this roadmap and the existing ledger; their static validation is not
 product acceptance. CLI First is the product direction; CI remains verification.
 
+September 10 maintainer decision: **Codex is the primary development and
+verification Host**. Design new research interactions and measure quality in
+Codex first; Claude Code and other Agents adapt the same CLI/Skill/MCP contracts
+with focused compatibility checks. Preserve configured models, shared research
+state, approval/CAS and macOS/Windows/Linux delivery. This prioritizes execution;
+it does not supersede the External Host architecture or claim adapter acceptance.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

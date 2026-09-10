@@ -3,7 +3,31 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: Skill routing consistency — September 10
+## Current increment: Codex-first routing evidence — September 10
+
+User outcome: prioritize Codex interaction quality and catch overly broad or
+incorrect route choices with repeatable bilingual evidence. Other Agents remain
+adapters of the shared contracts, with compatibility checks when affected.
+
+Start from clean `e0943c3b` on `codex/codex-first-routing-evals`. Build 24 paired
+Chinese/English cases (48 requests) and a bounded Codex CLI capture using its
+configured model. Reuse Evaluation Truth V1 for scoring. Expected answers stay
+outside model prompts; bind results to exact entry, corpus and capture code.
+Missing, malformed, interrupted or tool-contaminated evidence cannot pass.
+
+This first slice measures **supplied-entry routing intent**, not installed Skill
+activation, resource loading, live project operations or overall research quality.
+Keep actual JSONL events and final answers for review. Run a real Codex sample;
+do not count synthetic grader checks as model results. Publication, Host
+registration and program acceptance remain separately scoped.
+
+Next: use the corpus for controlled no-Skill / preceding / candidate comparisons
+and registered-Codex resource/tool traces when that lane is authorized, then
+implement one revision-bound literature → reading → claim → manuscript journey.
+Adapter verification follows shared-contract changes, without a parallel product
+roadmap or automatic replacement of the configured Claude Code/DeepSeek model.
+
+## Completed: Skill routing consistency — September 10
 
 User outcome: route a small academic request to its actual deliverable, retain
 formal research requirements, and stop without lower-level guidance restarting

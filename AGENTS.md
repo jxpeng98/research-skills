@@ -2,6 +2,9 @@
 
 ## Keep the project aligned
 
+- Codex is the primary product-development and verification Host. Other Agents
+  adapt the same CLI/Skill/MCP contracts; they do not define parallel product
+  workflows. Preserve their compatibility and the user's configured models.
 - The [master roadmap](docs/superpowers/roadmaps/2026-08-02-qiongli-2-research-harness-master-roadmap.md)
   owns direction, dependencies and the current execution horizon.
 - The [program ledger](docs/superpowers/roadmaps/qiongli-program-ledger-v1.json)

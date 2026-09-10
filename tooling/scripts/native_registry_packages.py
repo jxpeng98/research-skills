@@ -59,19 +59,19 @@ def stage_cargo(out: Path, version: str) -> Path:
     """Cargo owns archive normalization and dependency ordering after staging."""
     workspace = out / 'cargo-source'
     workspace.mkdir()
-    manifest = regular_bytes(NATIVE / 'Cargo.toml').decode()
-    (workspace / 'Cargo.toml').write_text(manifest.replace('publish = false', 'publish = ["crates-io"]'))
+    manifest = regular_bytes(NATIVE / 'Cargo.toml').decode().replace('\r\n', '\n')
+    (workspace / 'Cargo.toml').write_text(manifest.replace('publish = false', 'publish = ["crates-io"]'), newline='\n')
     shutil.copyfile(NATIVE / 'Cargo.lock', workspace / 'Cargo.lock')
     members = tomllib.loads(manifest)['workspace']['members']
     for member in members:
         source, dest = NATIVE / member, workspace / member
         dest.mkdir(parents=True)
-        text = regular_bytes(source / 'Cargo.toml').decode()
+        text = regular_bytes(source / 'Cargo.toml').decode().replace('\r\n', '\n')
         text = re.sub(r'(\{ path = "[^"]+")', rf'\1, version = "={version}"', text)
         # Only the CLI is a registry product. Repository-only tests/examples stay
         # in the checkout; their fixtures are not dependencies of cargo install.
         text = text.replace('[package]\n', '[package]\nautoexamples = false\nautotests = false\nautobenches = false\ninclude = ["Cargo.toml", "src/**", "build.rs", "resources/**", "schemas/**", "icons/**", "package-assets/**", "LICENSE", "README.md"]\n', 1)
-        (dest / 'Cargo.toml').write_text(text)
+        (dest / 'Cargo.toml').write_text(text, newline='\n')
         for directory in ('src', 'resources', 'schemas', 'icons'):
             if (source / directory).is_dir():
                 copy_tree(source / directory, dest / directory)

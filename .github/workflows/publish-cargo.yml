@@ -4,6 +4,11 @@ on:
   push:
     branches: ['2.x']
   workflow_dispatch:
+    inputs:
+      verify_public:
+        description: Verify this ref's version after a local Cargo publication
+        type: boolean
+        default: false
   release:
     types: [published]
 
@@ -12,7 +17,7 @@ permissions:
 
 jobs:
   qualify:
-    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v2.')
+    if: inputs.verify_public != true && (github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v2.'))
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +52,8 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 45
     environment: crates-io
+    outputs:
+      published: ${{ steps.upload.outcome == 'success' }}
     permissions:
       contents: read
       actions: read
@@ -60,11 +67,14 @@ jobs:
           python-version: '3.12'
       - uses: dtolnay/rust-toolchain@1.97.0
       - name: Check initial crates.io credentials
+        id: credentials
         shell: bash
         run: |
           if [[ -z "$CARGO_REGISTRY_TOKEN" ]]; then
-            echo 'Configure CARGO_REGISTRY_TOKEN in the crates-io environment before the first publication.' >&2
-            exit 1
+            echo 'No CI token configured; use authorized local Cargo publication, then dispatch verify_public.'
+            echo 'configured=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'configured=true' >> "$GITHUB_OUTPUT"
           fi
       - name: Verify the published release and exact-source native CI
         env:
@@ -73,6 +83,8 @@ jobs:
           gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/assets"
           python tooling/scripts/native_release_assets.py verify --root "$RUNNER_TEMP/assets" --version "$RELEASE_TAG" --commit "$GITHUB_SHA" --require-ci
       - name: Publish the staged workspace with Cargo verification
+        id: upload
+        if: steps.credentials.outputs.configured == 'true'
         shell: bash
         run: |
           python scripts/native_registry_packages.py --out-dir "$RUNNER_TEMP/cargo-packet"
@@ -80,6 +92,7 @@ jobs:
 
   public-install:
     needs: publish
+    if: always() && (needs.publish.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && inputs.verify_public))
     strategy:
       fail-fast: false
       matrix:
@@ -97,7 +110,8 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          version=$(python scripts/release_version.py "$RELEASE_TAG" --print-field version)
+          version=$(python -c "import tomllib; print(tomllib.load(open('packages/qiongli-native/Cargo.toml','rb'))['workspace']['package']['version'])")
+          bash scripts/verify_release_tag_version.sh --tag "v$version"
           cargo install qiongli --version "$version" --locked --root "$RUNNER_TEMP/cargo-public" --bin qiongli --bin ql
           suffix=""
           if [[ "$RUNNER_OS" == Windows ]]; then suffix=.exe; fi

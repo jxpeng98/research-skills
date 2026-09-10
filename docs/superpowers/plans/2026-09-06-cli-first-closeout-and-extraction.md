@@ -3,6 +3,33 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## In progress: beta.1 publication with local Cargo — September 10
+
+The maintainer requested a beta release and explicitly authorized local Cargo
+publication using the existing login. Candidate `2.0.0-beta.1` / PyPI `2.0.0b1`
+starts from `5b386649` on `codex/cli-distribution-beta1`. Scope covers the current
+standalone CLI, npm/PyPI, bundled Marketplace artifacts and first Cargo upload;
+the configured models, research data and 1.x stable channel remain unchanged.
+
+The earlier Windows Cargo run `34492174168` failed because CRLF input was written
+with Windows newline translation, producing invalid carriage returns. The shared
+staging owner now normalizes manifest input and writes LF explicitly. Its
+regression checks both valid TOML and the CLI package resource/target settings.
+The existing Cargo workflow supports public-install checks after a local upload;
+missing CI credentials skip upload without claiming publication. No local token
+is copied into GitHub secrets. Normal Cargo verification, exact-source native
+distribution gates and immutable versions remain required.
+
+Release notes and bilingual installation guidance use beta.1 and distinguish
+immediate binary use from Cargo source compilation. Qualification, publication
+and public-download evidence will be recorded here after actual observations.
+Preparation passed 42 focused version/packaging/documentation tests, Capability
+Contract v2, tag/version alignment, 7 roadmap checks and the VitePress build.
+Logs: `/private/tmp/qiongli-beta1-focused.log`,
+`/private/tmp/qiongli-beta1-docs-build.log`, `/private/tmp/qiongli-beta1-pack.log`.
+The regenerated pack contains 432 resources, SHA-256
+`373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18`.
+
 ## Completed locally: portable runtime and final language pass — September 10
 
 Base `f19877db`; branch `codex/portable-runtime-and-humanize`. The maintainer

@@ -9,7 +9,7 @@ native executable for a given version and target. No Qiongli App is required.
 Rust or package-manager setup is needed.** You can run from the extracted folder;
 adding it to PATH is optional.
 
-Download a platform archive from [Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8).
+Download a platform archive from [Release v2.0.0-beta.1](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.1).
 It contains `qiongli` (Windows: `qiongli.exe`), `README.md` and `LICENSE`.
 The executable embeds the research Skills, templates and Lite/Full MCP resources;
 you do not need a separate resource directory or a checkout of this repository.
@@ -17,14 +17,12 @@ Configure models, Host applications and online literature services separately.
 
 | Your platform | Complete CLI archive |
 |---|---|
-| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
-| Windows x64 | [qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
-| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip) |
+| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz) |
 
-**Windows alpha.8 exception:** the published executable imports `VCRUNTIME140.dll`
-and needs the Visual C++ runtime. A Windows release without that requirement is
-still pending; these links point to the existing alpha.8 build. Linux uses its
-system libraries, including glibc 2.35+.
+Windows Beta.1 statically links its C runtime, so you do not need to install the
+Visual C++ runtime separately. Linux uses system libraries, including glibc 2.35+.
 
 Choose these files under **Assets**. GitHub's **Source code** archives require a
 build; the `.tgz` npm package, `.whl` Python packages and `qiongli-next-…-plugin-…`
@@ -33,21 +31,21 @@ Windows ARM builds are not part of this release.
 
 ### 1. Verify the download
 
-Download [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/SHA256SUMS)
+Download [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/SHA256SUMS)
 from the same release. In the directory containing your download, run the command
 for your platform and compare its hash with the line for that exact filename in
 `SHA256SUMS`. Continue only if they match.
 
 ```sh
 # macOS
-shasum -a 256 qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz
+shasum -a 256 qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz
 # Linux
-sha256sum qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz
+sha256sum qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```powershell
 # Windows
-Get-FileHash .\qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip -Algorithm SHA256
+Get-FileHash .\qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip -Algorithm SHA256
 ```
 
 ### 2. Extract and run
@@ -56,9 +54,9 @@ Extract into a new directory, keeping existing installations and research files
 intact. On macOS:
 
 ```sh
-mkdir qiongli-2.0.0-alpha.8-macos-arm64
-tar -xzf qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-alpha.8-macos-arm64
-cd qiongli-2.0.0-alpha.8-macos-arm64
+mkdir qiongli-2.0.0-beta.1-macos-arm64
+tar -xzf qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-beta.1-macos-arm64
+cd qiongli-2.0.0-beta.1-macos-arm64
 ./qiongli --version
 ./qiongli --help
 ./qiongli content list
@@ -67,9 +65,9 @@ cd qiongli-2.0.0-alpha.8-macos-arm64
 On Linux:
 
 ```sh
-mkdir qiongli-2.0.0-alpha.8-linux-x64
-tar -xzf qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-alpha.8-linux-x64
-cd qiongli-2.0.0-alpha.8-linux-x64
+mkdir qiongli-2.0.0-beta.1-linux-x64
+tar -xzf qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-beta.1-linux-x64
+cd qiongli-2.0.0-beta.1-linux-x64
 ./qiongli --version
 ./qiongli --help
 ./qiongli content list
@@ -78,14 +76,14 @@ cd qiongli-2.0.0-alpha.8-linux-x64
 On Windows, open PowerShell in your download directory:
 
 ```powershell
-Expand-Archive -Path .\qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-alpha.8-windows-x64
-Set-Location .\qiongli-2.0.0-alpha.8-windows-x64
+Expand-Archive -Path .\qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-beta.1-windows-x64
+Set-Location .\qiongli-2.0.0-beta.1-windows-x64
 .\qiongli.exe --version
 .\qiongli.exe --help
 .\qiongli.exe content list
 ```
 
-The version output should be `qiongli 2.0.0-alpha.8`. The archive supplies the
+The version output should be `qiongli 2.0.0-beta.1`. The archive supplies the
 `qiongli` executable; npm/PyPI additionally provide the `ql` command alias.
 
 ### 3. Optional PATH and Host setup
@@ -115,19 +113,22 @@ npm install --global qiongli@next
 Or install in a Python virtual environment:
 
 ```sh
-python -m pip install --pre qiongli==2.0.0a8
+python -m pip install --pre qiongli==2.0.0b1
 ```
 
 Both expose `qiongli` and `ql`. Check both with `--version` before comparing
-behavior. Alpha.8 targets macOS ARM64, Windows x64, and Linux x64/glibc 2.35+.
+behavior. Beta.1 targets macOS ARM64, Windows x64, and Linux x64/glibc 2.35+.
 npm needs Node 18+; PyPI needs Python 3.9+.
 
-Cargo support is being added for the next qualified release. It builds the
-same CLI from source, requires Rust 1.97+ and the target's native linker, and
-will expose both command names. Cargo uses the exact SemVer prerelease version,
-such as `2.0.0-alpha.8`, with `cargo install qiongli --version VERSION --locked`.
-There is no Cargo `next` channel. Alpha.8 has not been published to crates.io;
-do not use its GitHub/npm availability as proof of Cargo availability.
+Cargo builds the CLI from source and requires Rust 1.97+ and the target's native
+linker. It provides both `qiongli` and `ql`:
+
+```sh
+cargo install qiongli --version 2.0.0-beta.1 --locked
+```
+
+Use the exact SemVer prerelease version; Cargo has no `next` channel. Choose the
+standalone archive if you want to run immediately without a compiler.
 
 If npm reports a successful install but the command is missing, inspect
 `npm prefix -g`. On Unix the command directory is `<prefix>/bin`; on Windows

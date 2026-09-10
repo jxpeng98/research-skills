@@ -9,12 +9,30 @@ import tempfile
 import tarfile
 import tomllib
 import unittest
+from unittest.mock import patch
 import zipfile
 
 from tooling.scripts import native_registry_packages as packages
 
 
 class NativeRegistryPackagesTests(unittest.TestCase):
+    def test_cargo_staging_normalizes_windows_manifests(self):
+        version = tomllib.loads((packages.NATIVE / 'Cargo.toml').read_text())['workspace']['package']['version']
+        read = packages.regular_bytes
+        def windows_bytes(path):
+            data = read(path)
+            return data.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n') if path.name == 'Cargo.toml' else data
+        with tempfile.TemporaryDirectory() as temporary, patch.object(packages, 'regular_bytes', side_effect=windows_bytes):
+            source = packages.stage_cargo(Path(temporary), version)
+            for path in source.rglob('Cargo.toml'):
+                data = path.read_bytes()
+                self.assertNotIn(b'\r', data)
+                manifest = tomllib.loads(data.decode())
+                if 'package' in manifest:
+                    self.assertFalse(manifest['package']['autoexamples'])
+                    self.assertFalse(manifest['package']['autotests'])
+                    self.assertIn('package-assets/**', manifest['package']['include'])
+
     def test_three_platform_npm_and_windows_wheel(self):
         binary_data = {
             'aarch64-apple-darwin': bytes.fromhex('cffaedfe0c000001') + bytes(100),

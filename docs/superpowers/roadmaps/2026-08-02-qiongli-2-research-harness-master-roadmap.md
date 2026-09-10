@@ -107,6 +107,15 @@ README for future archives, reusing the existing release owner. Independent
 public-byte verification and an empty-PATH macOS CLI/MCP observation passed;
 published artifacts and the remaining release qualification gates are unchanged.
 
+September 10 portable-runtime follow-up: the release owner now statically links
+the Windows CRT and inspects final DLL imports; extracted CLI/MCP checks use
+empty PATH. Public Windows alpha.8 still requires `VCRUNTIME140.dll`, disclosed
+beside the download links. A changed-worktree ZIP passed Windows 11 Arm x64
+emulation checks; pinned-toolchain native-x64 qualification and new publication
+remain pending. Stage consolidation now applies the existing Humanizer before
+preview/save, preserving evidence, structured history and user-only retention
+decisions. The current plan records local packaging and language-pass evidence.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

@@ -49,16 +49,22 @@ No App is required. The stable installation instructions below describe 1.x.
 
 ## Qiongli 2.x Standalone Downloads
 
-Download the complete native CLI from [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8),
-extract it, and run `./qiongli --help` (PowerShell: `.\qiongli.exe --help`).
-Research Skills, templates and Lite/Full MCP resources are embedded in the executable.
-No App, Rust, Python, Node.js, npm or pip installation is needed to run it.
+**Download, extract, and run. You do not need Python, Node.js, Rust or a package manager.**
+
+Choose the complete CLI from [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8).
+After extraction, run `./qiongli --help` (PowerShell: `.\qiongli.exe --help`).
+The program already includes the research Skills, templates and Lite/Full MCP
+resources. You can use it from that folder; installing an App or changing PATH is optional.
 
 | Platform | Binary archive |
 |---|---|
 | macOS Apple Silicon (ARM64) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
 | Windows x64 | [Download `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
 | Linux x64 (glibc 2.35+) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+
+**Windows alpha.8 exception:** this published build needs the Visual C++ runtime
+(`VCRUNTIME140.dll`). A Windows release without that requirement is still pending.
+Linux uses system libraries with glibc 2.35+.
 
 Verify with the release's [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/SHA256SUMS)
 before running. See [extraction, PATH and MCP setup](docs/guide/cli-2x.md#standalone-binary-download)

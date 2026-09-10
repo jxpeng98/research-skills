@@ -6,10 +6,10 @@ hero:
   text: "Use AI agents for academic research without losing the evidence trail."
   tagline: "Turn a topic into a paper route, task IDs, quality gates, literature and citation evidence, writing and code outputs, and review handoffs."
   actions:
-    - theme: alt
+    - theme: brand
       text: Download 2.x CLI
       link: /guide/cli-2x#standalone-binary-download
-    - theme: brand
+    - theme: alt
       text: Quickstart
       link: /quickstart
     - theme: alt

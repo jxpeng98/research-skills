@@ -5,6 +5,9 @@ Qiongli 2 以原生 CLI 为入口，不需要打开或安装 Qiongli App。
 
 ## 独立二进制下载 {#standalone-binary-download}
 
+**推荐直接下载：解压后就能运行，不用先安装 Python、Node.js、Rust 或包管理器。**
+你可以直接在解压目录使用，PATH 配置是可选项。
+
 从 [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8)
 选择与你的操作系统和 CPU 对应的压缩包：
 
@@ -14,9 +17,13 @@ Qiongli 2 以原生 CLI 为入口，不需要打开或安装 Qiongli App。
 | Windows x64 | [qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
 | Linux x64 / glibc 2.35+ | [qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
 
+**Windows alpha.8 的已知例外：**公开包仍引用 `VCRUNTIME140.dll`，需要 Visual C++ 运行库。
+免额外运行库的 Windows 版本尚未发布，本页链接仍指向旧包。
+Linux 仍使用系统自带库，要求 glibc 2.35+。
+
 压缩包内有 `qiongli`（Windows 为 `qiongli.exe`）、`README.md` 和 `LICENSE`。
 研究 Skills、模板及 Lite/Full MCP 资源已经嵌入可执行文件，无需额外下载资源目录或克隆仓库。
-运行时不需要 Rust、Cargo、Python、Node.js、npm 或 pip；模型 Host 和在线文献服务仍需单独配置。
+模型 Host 和在线文献服务仍需单独配置。
 
 请在 Release 的 **Assets** 中选择上述平台包。页面自动生成的 **Source code** 是需要编译的源码，
 `.tgz` 是 npm 包，`.whl` 是 Python 包，`qiongli-next-…-plugin-…` 是 Host 插件包。

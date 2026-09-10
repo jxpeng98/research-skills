@@ -41,6 +41,16 @@ the platform asset, checksum verification, extraction, executable name and PATH
 option without requiring a package manager or confusing GitHub source archives
 with runnable binaries. Published archives remain immutable.
 
+Standalone binaries require no separately installed language runtime or package
+manager. The Windows release owner sets `target-feature=+crt-static` only for
+the explicit target and checks the final PE imports with the build machine's
+LLVM tools, rejecting non-system DLLs. Extracted CLI/Lite/Full MCP smoke checks
+run with empty PATH on every target. New native release packets require that
+evidence and the Windows import list. LLVM is a build check, not a user runtime
+dependency; supported OS libraries remain required (Linux x64: glibc 2.35+).
+Public Windows alpha.8 still imports `VCRUNTIME140.dll`; download instructions
+must disclose that exception until a newly qualified version replaces the link.
+
 `release_version.py` owns SemVer/Git/npm and PEP 440 version projections;
 prerelease npm publication uses `next`. `native_registry_packages.py` owns fixed
 OS/CPU dispatch, executable bytes and platform wheels. The three-platform

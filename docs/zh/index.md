@@ -6,10 +6,10 @@ hero:
   text: "用 AI agent 做学术研究，同时保留可复查证据链。"
   tagline: "把一个研究主题拆成论文路线、Task ID、质量门、文献和引用证据、写作与代码产物，以及可追踪的审阅交接。"
   actions:
-    - theme: alt
+    - theme: brand
       text: 下载 2.x CLI
       link: /zh/guide/cli-2x#standalone-binary-download
-    - theme: brand
+    - theme: alt
       text: 快速开始
       link: /zh/quickstart
     - theme: alt

@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import sys
 import zipfile
@@ -26,6 +27,24 @@ except ImportError:
     from native_registry_packages import NATIVE, ROOT, TARGETS, binary_packages, regular_bytes, parse_release_version
 
 
+def check_windows_imports(binary: Path) -> list[str]:
+    """Use LLVM's PE reader; fail if a standalone CLI needs a non-system DLL."""
+    inspector = shutil.which('llvm-objdump')
+    if not inspector and sys.platform == 'darwin':
+        inspector = subprocess.check_output(['xcrun', '--find', 'llvm-objdump'], text=True).strip()
+    if not inspector:
+        inspector = str(Path(os.environ.get('ProgramFiles', 'C:/Program Files')) / 'LLVM/bin/llvm-objdump.exe')
+    output = subprocess.check_output([inspector, '--private-headers', str(binary)], text=True)
+    imports = sorted(set(re.findall(r'DLL Name:\s*(\S+)', output, re.IGNORECASE)))
+    system = {'advapi32.dll', 'bcrypt.dll', 'bcryptprimitives.dll', 'crypt32.dll',
+              'kernel32.dll', 'ntdll.dll', 'secur32.dll', 'userenv.dll', 'ws2_32.dll'}
+    unexpected = [name for name in imports if name.lower() not in system
+                  and not name.lower().startswith(('api-ms-win-', 'ext-ms-win-'))]
+    if not imports or unexpected:
+        raise ValueError(f'standalone Windows CLI requires only system DLLs; unexpected imports: {unexpected or "unreadable import table"}')
+    return imports
+
+
 def archive_readme(version: str, target: str, commit: str) -> bytes:
     executable = TARGETS[target][2]
     command = f'.\\{executable}' if target.endswith('msvc') else f'./{executable}'
@@ -34,9 +53,12 @@ def archive_readme(version: str, target: str, commit: str) -> bytes:
 Target: {target}
 Source commit: {commit}
 
-This archive contains `{executable}`, this README and LICENSE. The executable
-embeds the research Skills, templates and Lite/Full MCP resources. It needs no
-Qiongli App, Rust, Cargo, Python, Node.js, npm or pip. Linux x64 requires glibc 2.35+.
+**Download, extract, and run. No extra runtime installation is needed.**
+
+You do not need Python, Node.js, Rust, a package manager or the Qiongli App.
+The executable includes the research Skills, templates and Lite/Full MCP resources.
+This archive contains `{executable}`, this README and LICENSE. It uses the
+supported operating system's libraries; Linux x64 requires glibc 2.35+.
 Models, Host applications and online literature services are configured separately.
 
 Verify the archive against SHA256SUMS from the same GitHub Release, then extract
@@ -115,6 +137,9 @@ def main() -> None:
     assets.mkdir()
     env = os.environ.copy()
     env['QIONGLI_PYTHON'] = sys.executable
+    if target.endswith('msvc'):
+        # Explicit --target keeps this flag off host proc macros and build scripts.
+        env['CARGO_ENCODED_RUSTFLAGS'] = '-C\x1ftarget-feature=+crt-static'
     # This lane carries no managed-product authority, even on a signing machine.
     for key in ('QIONGLI_NATIVE_RELEASE_AUTHORITY_FILE', 'QIONGLI_MACOS_EXPECTED_TEAM_ID',
                 'QIONGLI_NATIVE_SOURCE_COMMIT'):
@@ -134,7 +159,7 @@ def main() -> None:
     lint = not ci or platform.system() == 'Linux'
     if lint:
         run(['cargo', 'fmt', '--all', '--check'])
-        run(['cargo', 'clippy', '--workspace', '--exclude', 'qiongli-ui', '--all-targets', *cargo_args, '--', '-D', 'warnings'])
+        run(['cargo', 'clippy', '--workspace', '--exclude', 'qiongli-ui', '--all-targets', '--target', target, *cargo_args, '--', '-D', 'warnings'])
     run(['cargo', 'test', '-p', 'qiongli', '--release', '--target', target,
          '--test', 'cli', '--test', 'mcp_stdio', *cargo_args])
     env['QIONGLI_NATIVE_SOURCE_COMMIT'] = commit
@@ -143,6 +168,7 @@ def main() -> None:
     metadata = json.loads(subprocess.check_output(
         ['cargo', 'metadata', '--no-deps', '--format-version', '1', '--offline'], cwd=NATIVE, env=env))
     binary = Path(metadata['target_directory']) / target / 'release' / TARGETS[target][2]
+    windows_imports = check_windows_imports(binary) if target.endswith('msvc') else None
     package_work = out / 'packages'
     package_work.mkdir()
     package_paths = binary_packages(package_work, binary, version, target)
@@ -163,9 +189,12 @@ def main() -> None:
         raise ValueError('archive changed the candidate executable')
     home = out / 'home'
     home.mkdir(mode=0o700)
-    smoke_env = env | {'HOME': str(home), 'USERPROFILE': str(home),
+    smoke_env = env | {'PATH': '', 'HOME': str(home), 'USERPROFILE': str(home),
                        'QIONGLI_CONFIG_HOME': str(home / 'config')}
     smoke = check_cli(extracted / TARGETS[target][2], version=version, root=extracted, env=smoke_env)
+    smoke['runtime_path'] = 'empty'
+    if windows_imports is not None:
+        smoke['windows_system_dlls'] = windows_imports
     package_receipt = {'version': version, 'artifacts': [
         {'file': p.name, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
         for p in package_paths]}

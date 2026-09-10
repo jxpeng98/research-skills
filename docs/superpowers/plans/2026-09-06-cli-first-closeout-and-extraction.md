@@ -3,6 +3,85 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Completed locally: portable runtime and final language pass — September 10
+
+Base `f19877db`; branch `codex/portable-runtime-and-humanize`. The maintainer
+requested download/extract/run without extra runtime installation, prominent
+instructions, and Humanizer polishing after consolidation. English/Chinese
+READMEs and CLI guides now lead with the direct route; the documentation home
+uses it as the primary action. PATH setup remains optional. Existing OS libraries
+and separately configured Hosts/models are described without requiring Python,
+Node.js, Rust or a package manager to run the CLI.
+
+Inspecting the actual public archives found a Windows alpha.8 dependency on
+`VCRUNTIME140.dll`; an empty PATH alone cannot reveal a runtime already installed
+in system directories. The release owner now sets `target-feature=+crt-static`
+for the explicit Windows target and rejects non-system PE imports using the
+build machine's LLVM inspector. All extracted CLI/Lite/Full checks use empty PATH;
+new native release packets require those observations and the Windows import
+list. Historical packets remain verifiable. Public links explicitly disclose
+the old Windows dependency until a new qualified release is published.
+
+The current Windows diagnostic ZIP contains only the executable, README and
+LICENSE. Its PE imports contain only Windows system DLLs/API sets, with no
+VC runtime DLL. The same ZIP passed version/help, embedded content, invalid
+command refusal and actual Lite/Full MCP calls (**14/32 tools**) from a local
+Windows directory with empty PATH and isolated configuration. Environment:
+Windows 11 Enterprise ARM, build 26200, x64 emulation in Parallels. The previously
+suspended VM was restored to that state. No runtime or SDK was installed.
+
+The project-pinned Rust 1.97 cross-build could not start because its Windows
+target is absent locally. The diagnostic reused installed Rust **1.98.1**,
+cargo-xwin and the cached SDK, building offline; this is changed-worktree
+compatibility evidence, not pinned-toolchain/native-x64 release qualification.
+Linking succeeded with missing Microsoft CRT PDB debug-information warnings.
+Build log: `/private/tmp/qiongli-portable-windows-build-1.98.log`.
+ZIP SHA-256: `bf9534ab53f97f32e029060df5e3986f25554e095619c72868bca9109843c9b8`.
+Executable SHA-256: `bcec665e8a45f51db7e8f8625053bbf08eaaa685b9f117759f5985c677c503d7`.
+Host/guest receipts and the runnable smoke script are under the ignored build
+directory `packages/qiongli-native/target/portable-runtime-check/`.
+
+Stage consolidation now runs existing J2 direct polish on narrative prose before
+preview/save. It preserves substantive findings, quotations, numbers, citation
+keys, fixed structures, source coverage, history and user file-selection states.
+Source comparison precedes preview of the final bytes; later saved changes need
+a new revision. It adds no separate manuscript, model runtime or deletion path.
+The current bilingual download prose also received this language pass.
+
+A main-agent preview trial polished two paragraphs of the earlier synthetic
+stage record, retaining already clear prose. Protected headings, tables, lists,
+quotations, paths, IDs, numbers and links were unchanged; manual comparison kept
+association/null-finding limits and selection-versus-removal status intact.
+All **14** original project files kept identical bytes. This was an unsaved
+language trial, not installed-Host or real-research acceptance. Receipt:
+`/var/folders/2d/mn0mj39d5fj5j3qj2b1g0mnc0000gn/T/qiongli-stage-humanize-4w_u9vpp/receipt.json`.
+
+Validation: **15 release/packaging tests**, **23 content/documentation tests**
+and **2 native complete-bundle tests** passed. The final affected documentation
+and archive tests passed again (**12**, overlapping those counts). Capability
+Contract v2 passed. The regenerated Marketplace export matched all **432**
+canonical resources. Pack SHA-256:
+`51c1a171f019b23fcc56548238a9d1b981a1d9642489c5f8398d624f9b7ce26d`.
+Source-base metadata is `f19877db`; digests bind the changed worktree. Logs under
+`/private/tmp/`: `qiongli-portable-runtime-tests.log`,
+`qiongli-portable-humanize-content.log`, `qiongli-portable-final-docs-tests.log`,
+`qiongli-portable-humanize-bundles.log`, `qiongli-portable-humanize-export.log`;
+resource receipt: `qiongli-portable-humanize-content-receipt.json`.
+
+VitePress production build passed with existing syntax-highlighter/chunk-size
+warnings. Built English/Chinese pages contain the primary download action,
+runtime guidance and Windows alpha.8 exception. Log:
+`/private/tmp/qiongli-portable-humanize-docs-build.log`. Roadmap checks passed
+**7** and the generated index is current; log:
+`/private/tmp/qiongli-portable-humanize-roadmap.log`.
+
+CLI-405/CLI-410 remain active. Next: qualify the new Windows link settings on
+native Windows x64 with the pinned toolchain and the full three-platform packet,
+then publish a new version and update the reviewed download links/site under
+separate release authority. Public alpha.8, configured models, Host registration
+and accepted evidence remain unchanged. Existing Cargo/Host qualification gaps
+remain separate.
+
 ## Completed locally: standalone GitHub download guidance — September 10
 
 Base `19d081ba`; branch `codex/github-binary-downloads`. The maintainer requested

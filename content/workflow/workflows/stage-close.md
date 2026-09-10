@@ -14,7 +14,8 @@ versioned document. Reuse the selected project, stage and supplied scope; ask
 only when the destination or permitted source material is unclear.
 
 Keep the detailed research content, source anchors and changes since the prior
-summary. Show exact proposed document/index writes before applying through the
+summary. Humanize the consolidated narrative through the final language pass in
+`references/stage-consolidation.md`, then show exact proposed document/index writes before applying through the
 existing authorized write path. Preserve source files and earlier summaries.
 For an unsaved overview, return it in chat without creating a project.
 

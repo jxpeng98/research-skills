@@ -268,7 +268,8 @@ class NativeMarketplacePluginsTests(unittest.TestCase):
             receipt = {'version': VERSION, 'source_commit': COMMIT, 'target': target,
                        'checks': {'cli_mcp_tests': 'passed', 'cli_clippy': 'passed',
                                   'npm_wheel_local_install': 'passed',
-                                  'archive_smoke': {'version': VERSION, 'content_pack_sha256': self.metadata['pack_sha256']},
+                                  'archive_smoke': {'version': VERSION, 'content_pack_sha256': self.metadata['pack_sha256'],
+                                                    'runtime_path': 'empty', 'windows_system_dlls': ['KERNEL32.dll']},
                                   'marketplace_plugins': checks},
                        'artifacts': [{'file': p.name, 'sha256': plugins.digest(p.read_bytes()),
                                       'bytes': p.stat().st_size} for p in folder.iterdir()]}
@@ -292,6 +293,8 @@ class NativeMarketplacePluginsTests(unittest.TestCase):
             verify(assets, VERSION, COMMIT)
         cli_archive.write_bytes(original)
         for change, error in [
+            (lambda p: p['target_evidence'][0]['checks']['archive_smoke'].update(runtime_path='inherited'), 'empty-PATH CLI'),
+            (lambda p: next(r for r in p['target_evidence'] if r['target'].endswith('msvc'))['checks']['archive_smoke'].pop('windows_system_dlls'), 'system-DLL'),
             (lambda p: p['target_evidence'][0]['checks']['marketplace_plugins']['codex'].update(runtime_path='inherited'), 'smoke evidence'),
             (lambda p: p['artifacts'].remove(next(a for a in p['artifacts'] if '-codex-plugin-' in a['file'])), 'all six'),
             (lambda p: p.update(artifacts=[a for a in p['artifacts'] if '-plugin-' not in a['file']]), 'all six'),

@@ -49,15 +49,22 @@ Alpha.8 已通过 GitHub、npm `next` 和 PyPI 发布，Cargo 正在接入；不
 
 ## Qiongli 2.x 独立二进制下载
 
-从 [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8)
-下载完整原生 CLI，解压后即可运行 `./qiongli --help`（Windows PowerShell 使用 `.\qiongli.exe --help`）。
-研究 Skills、模板以及 Lite/Full MCP 资源已嵌入可执行文件，运行时无需安装 App、Rust、Python、Node.js、npm 或 pip。
+**下载、解压、运行。不用先安装 Python、Node.js、Rust 或包管理器。**
+
+在 [GitHub Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8)
+中选择对应平台的完整 CLI，解压后运行 `./qiongli --help`（Windows PowerShell 使用 `.\qiongli.exe --help`）。
+研究 Skills、模板和 Lite/Full MCP 资源都在程序里，不需要额外安装。
+你可以直接在解压目录使用，安装 App 或配置 PATH 都不是前提。
 
 | 平台 | 二进制压缩包 |
 |---|---|
 | macOS Apple Silicon（ARM64） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
 | Windows x64 | [下载 `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
 | Linux x64（glibc 2.35+） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+
+**Windows alpha.8 的已知例外：**公开下载的旧包仍需要 Visual C++ 运行库（`VCRUNTIME140.dll`）。
+免额外运行库的 Windows 版本尚未发布，本页链接仍指向旧包。
+Linux 使用系统自带库，要求 glibc 2.35+。
 
 运行前使用同一 Release 的 [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/SHA256SUMS)
 核对文件；[完整指南](docs/zh/guide/cli-2x.md)说明解压、PATH 和 MCP 接入步骤。

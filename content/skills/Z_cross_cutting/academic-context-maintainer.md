@@ -258,6 +258,9 @@ For a saved stage close, or a requested summary/retention review, load
 Create a new versioned stage document, preserve detailed substantive content and
 source coverage, and append its link to the existing research-state history.
 Keep earlier summaries; record changes, corrections and unresolved material.
+Before preview/save, use the existing Humanizer direct-polish path described in
+the consolidation reference. Improve prose while preserving evidence, structured
+records and the user's file selections; do not create a separate J2 artifact.
 Ordinary context updates do not require a new stage document.
 
 The summary does not replace source evidence or authorize cleanup. An optional

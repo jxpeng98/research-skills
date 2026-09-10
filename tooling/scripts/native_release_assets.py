@@ -183,6 +183,13 @@ def verify(root, version, commit):
     required_native = any('marketplace_plugins' in r['checks'] for r in manifest['target_evidence'])
     if (native or required_native) and native != set(native_names):
         raise ValueError('all six target-specific marketplace archives are required')
+    if native:
+        for receipt in manifest['target_evidence']:
+            smoke = receipt['checks']['archive_smoke']
+            if smoke.get('runtime_path') != 'empty':
+                raise ValueError('missing target-native empty-PATH CLI smoke evidence')
+            if receipt['target'].endswith('msvc') and not smoke.get('windows_system_dlls'):
+                raise ValueError('missing Windows system-DLL inspection evidence')
     if legacy or native:
         pack_hashes = {receipt['checks']['archive_smoke'].get('content_pack_sha256')
                        for receipt in manifest['target_evidence']}

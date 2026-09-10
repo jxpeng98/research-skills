@@ -5,18 +5,26 @@ native executable for a given version and target. No Qiongli App is required.
 
 ## Standalone binary download
 
+**Recommended for direct use: download, extract, and run. No Python, Node.js,
+Rust or package-manager setup is needed.** You can run from the extracted folder;
+adding it to PATH is optional.
+
 Download a platform archive from [Release v2.0.0-alpha.8](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8).
 It contains `qiongli` (Windows: `qiongli.exe`), `README.md` and `LICENSE`.
 The executable embeds the research Skills, templates and Lite/Full MCP resources;
 you do not need a separate resource directory or a checkout of this repository.
-Running it requires no Rust, Cargo, Python, Node.js, npm or pip. Models, Host
-applications and online literature services remain separately configured.
+Configure models, Host applications and online literature services separately.
 
 | Your platform | Complete CLI archive |
 |---|---|
 | macOS Apple Silicon / ARM64 | [qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz) |
 | Windows x64 | [qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip) |
 | Linux x64 / glibc 2.35+ | [qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-alpha.8/qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz) |
+
+**Windows alpha.8 exception:** the published executable imports `VCRUNTIME140.dll`
+and needs the Visual C++ runtime. A Windows release without that requirement is
+still pending; these links point to the existing alpha.8 build. Linux uses its
+system libraries, including glibc 2.35+.
 
 Choose these files under **Assets**. GitHub's **Source code** archives require a
 build; the `.tgz` npm package, `.whl` Python packages and `qiongli-next-…-plugin-…`

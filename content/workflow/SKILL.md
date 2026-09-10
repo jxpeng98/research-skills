@@ -174,7 +174,9 @@ append safely or propose a diff, and verify the actual write result.
   `context/boundary_review.md`. Ask the next consequential scholarly question;
   reuse answers already present. Do not restart the interview on continuation.
 - Separate findings, interpretation and implication. Never invent citations,
-  statistics, reviewer comments or completed experiments. Apply
+  statistics, reviewer comments or completed experiments. Do not infer measurement,
+  recruitment or data-collection details from a study label; unreported details
+  remain unknown. Apply
   `references/academic-output-rubric.md`; central claims use
   `references/evidence-ledger-contract.md` and `references/citation-risk-policy.md`.
   Missing evidence is a gap, not a reason to manufacture a completed artifact.

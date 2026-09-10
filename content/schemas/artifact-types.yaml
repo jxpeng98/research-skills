@@ -548,6 +548,12 @@ artifact_types:
     produced_by: [academic-context-maintainer]
     consumed_by: [study-designer, ethics-irb-helper, evidence-synthesizer, manuscript-architect, submission-packager, model-collaborator]
 
+  - name: StageSummary
+    description: "Versioned stage document retaining substantive research, source coverage, changes and handoff priorities, with an optional user-operated file retention review"
+    format: markdown
+    produced_by: [academic-context-maintainer]
+    consumed_by: [academic-context-maintainer, manuscript-architect, evidence-synthesizer]
+
   - name: LiteratureCorpus
     description: "Working literature corpus assembled from search and screening steps"
     format: markdown

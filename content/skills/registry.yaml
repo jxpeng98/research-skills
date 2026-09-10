@@ -1534,14 +1534,14 @@ skills:
     version: "2.0.0-alpha.8"
     file: skills/Z_cross_cutting/academic-context-maintainer.md
     canonical: true
-    summary: "Maintain project-level academic continuity by updating research state, locked decisions, disputes, and next-stage priorities across major workflow transitions."
+    summary: "Maintain research continuity and preserve completed stages in detailed, traceable documents with user-operated file retention review."
     display_name: "Academic Context Maintainer"
-    when_to_use: "Use when you need a stage-aware academic state summary that preserves research question scope, locked methodological choices, stable findings, unresolved disputes, and decision rationale across long-running paper workflows."
-    summary_zh: "通过阶段性更新研究状态、关键决策、争议点和下一步优先级，维护项目级学术上下文连续性。"
+    when_to_use: "Use for research-state continuity, detailed stage consolidation, progress tracking, or a file-by-file review for the user's own manual cleanup."
+    summary_zh: "维护研究状态，将已完成阶段整理为保留实质内容、来源和变更的文档；文件选择与删除仅由用户操作。"
     display_name_zh: "学术上下文维护"
-    when_to_use_zh: "当你需要在长周期论文流程中持续保留研究问题边界、已锁定方法决策、稳定结论和未解决争议时使用。"
+    when_to_use_zh: "需要阶段总结、内容汇总、进展追踪或逐文件评估手动清理时使用；助手不执行删除。"
     inputs: [TaskPacket, AnyArtifact]
-    outputs: [ResearchStateSnapshot, ResearchDecisionLog]
+    outputs: [ResearchStateSnapshot, ResearchDecisionLog, StageSummary]
     tags: [cross-cutting, context, continuity, state-tracking, decision-log, handoff]
     depends_on: []
     compatible_models: [codex, claude, gpt]

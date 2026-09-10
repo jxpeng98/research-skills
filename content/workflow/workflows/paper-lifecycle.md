@@ -37,6 +37,11 @@ Do not launch local agents unless the caller explicitly sets `run_agents: true`.
 7. Feedback loop: response matrix, revision plan, reviewer empathy check, and
    stage reopen decisions.
 
+At a completed checkpoint, use `workflows/stage-close.md` when the user wants a
+saved consolidation. Add the detailed stage document and append its history link;
+the next stage can read it first and follow sources as needed. Keep earlier work.
+An optional retention review never executes deletion or selects files for the user.
+
 ## Output
 
 Produce a lifecycle plan that lists:

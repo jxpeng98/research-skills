@@ -34,10 +34,13 @@ class SkillDocGenerationTests(unittest.TestCase):
             en_doc,
         )
         self.assertIn("| `academic-context-maintainer` | Academic Context Maintainer |", en_doc)
-        self.assertIn(
-            "stage-aware academic state summary that preserves research question scope, locked methodological choices, stable findings, unresolved disputes, and decision rationale",
-            en_doc,
+        registry = yaml.safe_load(
+            (RepoLayout(REPO_ROOT).skills / "registry.yaml").read_text(encoding="utf-8")
         )
+        continuity = next(
+            skill for skill in registry["skills"] if skill["id"] == "academic-context-maintainer"
+        )
+        self.assertIn(continuity["when_to_use"], en_doc)
 
     def test_generated_skill_docs_include_localized_registry_metadata(self) -> None:
         generated = generate_skill_reference_docs(REPO_ROOT)

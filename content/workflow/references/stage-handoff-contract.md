@@ -28,3 +28,8 @@ Stage handoffs preserve what a downstream stage inherits and what remains uncert
 - Evidence dependencies should point to the evidence ledger, bibliography, analysis output, or gap note.
 - `Revisit Triggers` must state what new evidence, user decision, reviewer comment, diagnostic failure, or analysis result would reopen a resolved decision.
 - Do not treat a stage as ready for downstream work when inherited assumptions are hidden.
+- When a saved stage consolidation is requested, follow
+  `references/stage-consolidation.md` and link its versioned document from the
+  handoff. Preserve completed work, earlier summaries and source dependencies;
+  stage handoff never authorizes deletion. File selection and removal belong to
+  the user alone.

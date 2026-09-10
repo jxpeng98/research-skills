@@ -1,7 +1,7 @@
 ---
 id: academic-context-maintainer
 stage: Z_cross_cutting
-description: "Maintain project-level academic continuity by updating research state, locked decisions, disputes, and next-stage priorities across major workflow transitions."
+description: "Maintain research continuity and consolidate completed stages into detailed, traceable documents with user-operated file retention review."
 inputs:
   - type: TaskPacket
     description: "Current stage/task packet plus latest stage artifacts"
@@ -12,10 +12,13 @@ outputs:
     artifact: "context/research_state.md"
   - type: ResearchDecisionLog
     artifact: "context/decision_log.md"
+  - type: StageSummary
+    artifact: "context/stage_summaries/[summary_id].md"
 constraints:
   - "Must distinguish stable findings from tentative leads or open questions"
   - "Must anchor every locked decision to concrete upstream artifacts or task IDs"
   - "Must summarize unresolved disputes instead of silently collapsing disagreement"
+  - "Stage consolidation preserves source files and previous summaries; only the user selects and deletes files"
 failure_modes:
   - "Generic summaries that restate workflow steps without preserving academic meaning"
   - "Decision log entries that omit rationale, rejected alternatives, or revisit triggers"
@@ -41,7 +44,7 @@ Keep the project from losing its academic thread by updating two canonical conti
 The goal is to preserve:
 - the current research question, thesis, or focal puzzle
 - scope boundaries and contested definitions
-- locked methodological or interpretive decisions
+- locked decisions about methods and interpretation
 - stable findings versus tentative leads
 - unresolved disputes, nulls, contradictions, and fragility points
 - next-stage priorities and what must not be forgotten
@@ -49,6 +52,8 @@ The goal is to preserve:
 ## When to Use
 
 - after a major stage has materially changed the project's academic state
+- when the user wants a detailed stage document, accumulated progress history,
+  or a review of individual old files for the user's own manual cleanup
 - when the conversation has become long enough that the research logic risks drifting
 - when different models or collaborators need the same project-level academic frame
 - before moving from discovery to design, design to execution, synthesis to writing, or writing to submission
@@ -118,7 +123,7 @@ Before writing anything, determine:
 - which stage transition is being updated
 - which artifacts are now authoritative
 - which prior state entries are still valid
-- which prior state entries must be overwritten or marked stale
+- which current state entries have changed and need a documented supersession
 
 Never summarize from memory alone. Read the stage outputs that actually changed the project state.
 
@@ -246,9 +251,25 @@ A new researcher should be able to open the two continuity files and understand:
 - the most dangerous assumptions still in play
 - what the next stage must preserve or challenge
 
+### 7. Consolidate a completed stage when requested
+
+For a saved stage close, or a requested summary/retention review, load
+`references/stage-consolidation.md` and `templates/stage-summary.md`.
+Create a new versioned stage document, preserve detailed substantive content and
+source coverage, and append its link to the existing research-state history.
+Keep earlier summaries; record changes, corrections and unresolved material.
+Ordinary context updates do not require a new stage document.
+
+The summary does not replace source evidence or authorize cleanup. An optional
+retention table names exact individual files with fingerprints, coverage and
+dependency risks. The user alone chooses files and performs deletion. Do not
+delete, trash, move, truncate or replace originals, execute cleanup through
+another agent, or produce executable deletion instructions. A user's selection
+is a review record, not permission for assistant-operated removal.
+
 ## Output Discipline
 
-Good continuity updates are:
+For the compact current state and decision log, good updates are:
 
 - selective rather than exhaustive
 - anchored to artifacts and task IDs
@@ -259,7 +280,7 @@ Good continuity updates are:
 Bad continuity updates:
 
 - retell the full workflow chronologically
-- copy entire manuscript paragraphs
+- copy entire manuscript paragraphs into the compact current-state file
 - hide uncertainty behind vague confidence language
 - blur stable findings with speculative ideas
 - record execution trivia that belongs in logs, not research state
@@ -269,12 +290,16 @@ Bad continuity updates:
 - `templates/research-state.md`
 - `templates/decision-log.md`
 - `templates/stage-handoff.md`
+- `templates/stage-summary.md` for a requested stage consolidation
 
 ## Output Contract
 
 - `ResearchStateSnapshot`: write `RESEARCH/[topic]/context/research_state.md`.
 - `ResearchDecisionLog`: write `RESEARCH/[topic]/context/decision_log.md`.
 - `StageHandoff`: write `RESEARCH/[topic]/context/stage_handoff.md` when crossing high-risk stage boundaries.
+- `StageSummary`: for a requested saved close, create
+  `RESEARCH/[topic]/context/stage_summaries/[summary_id].md`; never replace a prior
+  summary or erase source files. A chat-only overview needs no new artifact.
 - Separate finding, interpretation, and implication in the final artifact.
 - Do not invent citations, data, sample sizes, statistical results, or reviewer comments.
 - Apply `references/academic-output-rubric.md` before finalizing scholarly prose or review artifacts.

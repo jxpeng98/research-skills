@@ -3,6 +3,77 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Completed locally: traceable stage consolidation — September 10
+
+Base `f94e6bcb`; branch `codex/stage-consolidation`. The maintainer requested a
+detailed document at a completed research stage, accumulating progress records,
+and cautious cleanup in which the user alone selects and removes individual
+files. The existing `academic-context-maintainer` now owns a `stage-close`
+workflow and optional `StageSummary` artifact; the catalog remains 82 Skills.
+
+The shared reference/template preserves substantive findings, numbers, citations,
+methods, rationale, rejected alternatives, uncertainty and source coverage.
+Each saved document has an unused stage/revision ID, predecessor and explicit
+changes. Research state gains an append-only summary history. Source files and
+earlier summaries remain intact; the next stage can read the consolidation first
+and retrieve original material as needed. Existing preview, approval/current-file
+and project CAS owners still control writes. Graph evidence remains with its
+canonical sources; summaries do not become a new semantic registry.
+
+Optional retention review names exact individual files, observed fingerprints,
+coverage, dependencies and loss risks. Recommendations are keep, manual review
+or unresolved, with no preselection. Original evidence, required data/code and
+actively referenced files remain required. A user's selection can be recorded
+but never authorizes the assistant to delete, trash, move, truncate, replace,
+delegate cleanup or supply executable removal instructions. Later verification
+distinguishes user reports from observed absence and preserves earlier records.
+No new runtime, MCP endpoint, dependency or automatic cleanup process is added.
+
+Validation: **28 distinct content/contract/projection tests passed**. The first
+23-test run exposed two wording assertions; the continuity wording was clarified
+without changing its meaning, and the catalog test now checks the canonical
+registry projection. The affected eight continuity and five documentation tests
+passed on rerun. The separate five workflow/command projection tests passed.
+Capability Contract v2, artifact/registry output alignment and diff checks passed.
+Logs under `/private/tmp/`: `qiongli-stage-close-content.log`,
+`qiongli-stage-close-continuity.log`, `qiongli-stage-close-docs.log` and
+`qiongli-stage-close-projection.log`.
+
+An independent forward trial used an isolated, unregistered 11-file synthetic
+project. It produced a detailed B-stage summary and handoff, appended history,
+retained quantitative and null findings, and ignored an embedded cleanup
+instruction. All ten original files other than the authorized state update kept
+their bytes. A redundant scratch copy entered manual review; an actively cited
+old draft stayed required. The source snapshot, prior summary and new document
+remain under `/private/tmp/qiongli-stage-close-trial-6_pap958/`.
+
+A follow-up explicitly selected `scratch/study-a-copy.md` and requested an
+appended record while keeping other files unchanged. The trial created only
+`STG-B-002.md`: all 13 prior files retained identical bytes, the selected file
+remained present, and the document distinguished selection from completed
+removal. State/handoff indexes stayed unchanged under that narrower user scope,
+with the omitted index update disclosed. Main-agent hash comparisons independently
+confirmed both rounds. Receipt: `/private/tmp/qiongli-stage-close-trial-receipt.json`.
+
+Both native Codex/Claude complete-bundle tests passed (**2**), and the rebuilt
+Marketplace export verified all **432** resources against canonical bytes,
+including the new workflow, reference and template. Pack SHA-256:
+`fc6a86a7d1e8c71e78f895d10c4b556050d3c5fd1657a944ac24a2414fcbcc3d`.
+Receipt: `/private/tmp/qiongli-stage-close-content-receipt.json`; logs:
+`qiongli-stage-close-pack.log`, `qiongli-stage-close-bundles.log` and
+`qiongli-stage-close-export.log` under `/private/tmp/`. Source-base metadata is
+`f94e6bcb`; digests bind the changed worktree, not a published source candidate.
+Roadmap checks passed **7**; the generated index is current. Log:
+`/private/tmp/qiongli-stage-close-roadmap.log`.
+
+The synthetic observation does not qualify an installed Marketplace Host, a real
+research project's retention decisions or an actual user-operated deletion.
+Host registration, public alpha.8 and accepted evidence remain unchanged.
+CLI-405 stays active. Next: exercise the same shared guidance on a user-selected
+real stage when its research access is authorized, checking source fidelity,
+revision continuity and outstanding dependencies. Existing Graph/voice semantic
+observation and distribution qualification retain their separate gaps.
+
 ## Completed locally: Research Graph continuity and scholarly voice — September 10
 
 Base `cfc1cae8`; branch `codex/research-graph-and-voice`. The maintainer requested

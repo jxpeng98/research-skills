@@ -92,6 +92,14 @@ J2 reuses its existing Skill and adds English/Chinese voice guidance derived fro
 is added. Actual Codex semantic observation remains the next quality check;
 source/pack checks do not establish universal extraction or live Host readiness.
 
+September 10 stage-continuity increment: completed research can now be retained
+in versioned, detailed stage documents with source coverage and an accumulating
+history through the existing context-maintenance Skill. Optional retention
+review is advisory and file-specific; selection and removal belong to the user,
+and confirmation never enables assistant-operated cleanup. Local content/Plugin
+checks and an isolated synthetic forward trial are recorded in the current plan.
+They do not establish installed-Host acceptance or authorize real-project cleanup.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

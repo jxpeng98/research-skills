@@ -62,3 +62,11 @@ Use this file as the current academic state snapshot for the whole project. Upda
 - task_ids:
 - authoritative_artifacts:
 - state_changes_since_last_update:
+
+## Stage Summary History
+
+| Summary ID | Stage | Date | Document | Previous summary | Status |
+|---|---|---|---|---|---|
+
+Append a row for each saved stage summary; retain earlier rows and documents.
+An ordinary state update does not require a stage summary.

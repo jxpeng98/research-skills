@@ -75,6 +75,7 @@ use `workflows/paper.md` and the canonical contract; IDs and paths stay stable.
 |---|---|
 | Topic, question, gap, theory or journal fit | `workflows/paper.md`, `workflows/find-gap.md` or `workflows/build-framework.md` |
 | Whole paper lifecycle | `workflows/paper-lifecycle.md` |
+| Consolidate a completed stage, track progress, or review files for manual cleanup | `workflows/stage-close.md`; only the user selects and deletes files |
 | Read a paper, PDF or DOI | `workflows/paper-read.md` (B2) |
 | Find a bounded set of references | `skills/B_literature/academic-searcher.md` (targeted discovery) |
 | Systematically search, screen or review literature | `workflows/lit-review.md` (formal B1) |
@@ -193,6 +194,9 @@ append safely or propose a diff, and verify the actual write result.
   `main_question_or_thesis`, `contribution_claim`, template headings and stable
   columns (Decision ID, Idea ID, Cluster ID, Citekey, Gap ID, Claim ID). Use
   `references/stage-handoff-contract.md` for high-risk transitions.
+  For a requested saved consolidation, use `workflows/stage-close.md` to add a
+  detailed versioned document and history link. Keep originals; the assistant
+  may advise on individual files but must not perform the user's cleanup.
 - When project reading, synthesis, analysis or writing changes academic records,
   reconcile affected content through `references/academic-graph-continuity.md`:
   source-bound candidates -> reviewed canonical records -> rebuilt graph. Reuse

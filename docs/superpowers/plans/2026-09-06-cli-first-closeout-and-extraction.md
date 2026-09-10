@@ -3,7 +3,64 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: declared reads and evidence-chain audit — September 10
+## Current increment: flexible evidence journeys — September 10
+
+Base `052688cf`; branch `codex/flexible-evidence-journey`. The maintainer requested
+flexible execution with enforceable constraints. The new bounded cases use two
+predeclared scopes: reading observations followed by manuscript passages, or
+direct source-to-paragraph work with no new reading artifact. Both reuse the same
+synthetic abstract and canonical Evaluation Truth V1 owner. No production Skill,
+CLI, MCP interface or new workflow engine is introduced.
+
+Requiredness follows the requested deliverable. Outputs can be reordered,
+annotated or safely paraphrased; existing evidence can be reused. Both requests
+still require association Claim C1 and causal limitation C2. Unused C3 remains
+`needs_evidence` without blocking bounded writing. A failed reading task cannot
+silently become a completed paragraph-only task by dropping its required output.
+
+The existing cross-artifact assertion now accepts equally sized field lists and
+compares whole row tuples, preserving claim/source/locator/scope/status pairings
+and duplicate counts. In a multi-column subset only, incomplete unused right-hand
+rows cannot support a complete active row. Legacy scalar and equality checks
+retain blank-value rejection. CSV schema assertions reuse the strict CSV parser
+to require nonempty passages and reading text. Source, registry, bibliography and
+requested-claim bytes are pinned; narrative wording is not frozen.
+
+Validation: **35 focused unittest checks passed** across research-journey,
+Evaluation Truth, academic-quality and routing-probe checks. The canonical
+academic-quality suite remains **12/12**. Logs:
+`/private/tmp/qiongli-evidence-journey-final-checks.log` and
+`/private/tmp/qiongli-evidence-journey-canonical.log`. Regressions cover source
+absence/change, invalid source IDs, untracked or missing requested claims,
+swapped pairings, duplicates, missing active locators, invented full-text scope,
+pending status, malformed CSV/columns, empty prose and invalid tuple contracts.
+Positive checks preserve direct scope, rewording, row order freedom and unused
+pending claims. The dedicated Evaluation Truth workflow now runs these checks;
+no remote run or cross-platform result is claimed.
+
+Canonical receipts and input hashes are retained at
+`/private/tmp/qiongli-flexible-journey-ebn029py/`. Reading-to-manuscript executes
+**16** assertions; source-to-paragraph executes **13**, both passing with zero
+missing, failed or blocked assertions. Receipt SHA-256 values:
+
+- reading: `f41df6c60d7c7d0375df58c5c7355dc9e25a00a43ed5d18de449f64a90435d04`;
+- direct: `536d1b63212a9218db6c1d8e8727e2e3df5a6919a82d2b44980caf1c9de3e6e2`.
+
+These CSVs are explicit test observations, not replacements for canonical B2 or
+manuscript Markdown, automatic parsing of arbitrary prose, or evidence of full
+research-task completion. Structural linkage and requested ID coverage do not
+prove that prose faithfully expresses the source. The historical status-only
+harness is not promoted to an evidence gate. No model calls, private research
+access, Host registration or project writes ran; acceptance remains separate.
+
+Next: bind actual Codex answers and their structured observations to a fixed
+synthetic source packet for these two scopes, with a small semantic rubric for
+source fidelity, causal limits, missing evidence and unnecessary work. Reuse the
+existing capture/receipt owners and configured model; keep expected rules out of
+prompts. Review the actual prose as well as declared links, without requiring a
+fixed writing order or another checklist for ordinary bounded answers.
+
+## Completed: declared reads and evidence-chain audit — September 10
 
 Base `2daac4c4`; branch `codex/current-read-requirements`. Each of the existing
 48 routing cases now declares its current read requirements separately from

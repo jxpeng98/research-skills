@@ -27,6 +27,14 @@ Evidence: `/private/tmp/qiongli-alpha8-release-focused.log`,
 audit at `/private/tmp/qiongli-marketplace-parity-n02swzef/`. These local checks
 do not replace the named three-platform release run or public download checks.
 
+The first distribution run (`34489526461`, source `d0e8d00f`) passed macOS but
+exposed the same Plugin-source fixture failure on Linux and Windows. A local
+controlled reproduction gives `codex-plugin-bundle-binary-invalid` for a binary
+with two hard links and succeeds for an independent copy. The lifecycle test
+now copies the Cargo executable as installed packages do; production ownership,
+link-count, permission and receipt checks are unchanged. The failed candidate is
+not publishable; qualify the corrected source before creating immutable refs.
+
 The native release owner now exports the verified embedded `marketplace-lite`
 profile and packages Codex/Claude archives. Canonical research resources remain
 byte-identical; host manifests and a fixed-version npm bridge are distribution

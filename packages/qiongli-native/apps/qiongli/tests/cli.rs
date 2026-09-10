@@ -4733,6 +4733,12 @@ fn native_activation_public_entry_refuses_source_authority_without_writes() {
 fn local_plugin_source_cli_lifecycle_requires_approval_and_preserves_drift() {
     for host in ["codex", "claude"] {
         let fixture = Fixture::new(&format!("plugin-source-{host}"));
+        // Cargo may hard-link its build outputs. Exercise an installed copy,
+        // while the source-bundle owner keeps rejecting hard-linked binaries.
+        let executable = fixture
+            .root
+            .join(format!("qiongli{}", std::env::consts::EXE_SUFFIX));
+        fs::copy(env!("CARGO_BIN_EXE_qiongli"), &executable).unwrap();
         #[cfg(windows)]
         let destination_parent = {
             let parent = fixture.root.join("export");
@@ -4742,7 +4748,7 @@ fn local_plugin_source_cli_lifecycle_requires_approval_and_preserves_drift() {
         #[cfg(not(windows))]
         let destination_parent = fixture.root.clone();
         let run = |args: &[&str]| {
-            fixture_command(Path::new(env!("CARGO_BIN_EXE_qiongli")), &fixture)
+            fixture_command(&executable, &fixture)
                 .env("PATH", "")
                 .env_remove("CODEX_HOME")
                 .env_remove("CLAUDE_CONFIG_DIR")

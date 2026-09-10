@@ -106,7 +106,7 @@ request and any requested resource contents to the configured model service.
   --case continuation-academic-graph-denied-read-en --case generic-mean-function-en
 ```
 
-This lane uses a distinct capture kind, `codex-resource-reading-v1`, plus reader
+New captures use `codex-resource-reading-v2`, plus reader
 source and resource snapshots. The producer uses the same configured model and
 per-invocation isolation; only the test reader is enabled. No Host registration or
 production MCP interface is added. Historical-entry/no-Skill arms are unavailable
@@ -116,8 +116,24 @@ Scoring requires matched successful MCP start/completion events, exact path and
 returned content matching the snapshot, and a final answer after reads. Failed,
 malformed, unexpected or incomplete calls fail closed. Tool-shaped answer text
 cannot count as a read. Existing intent-only captures continue rejecting tools.
-The existing V1 suite checks actual primary/prerequisite reads independently of
-self-reported labels. Generic non-Qiongli requests require zero resource reads.
+The corpus declares `required_reads` separately from intent labels. Each named
+dimension (`route` or `resource_route`) requires at least one of its allowed paths
+to be read **in this turn**; `[]` requires zero reads. Requirements are held out of
+the prompt, validated before any model call, and bound by the corpus snapshot.
+They never depend on the model's chosen action. A missing declaration, unknown
+dimension, `none` alternative or absent required resource blocks collection.
+
+The current corpus requires primary guidance for academic tasks and zero reads for
+generic tasks. Project-access dependencies describe what resuming would need:
+this test reader offers no project operations, so reporting the existing block
+does not require entering platform guidance. A case that does require that
+guidance now must declare `resource_route`; saying `report_blocked` cannot waive it.
+The existing V1 suite checks these current-read requirements independently of
+self-reported labels. Historical `codex-resource-reading-v1` captures keep their
+original implicit primary/prerequisite checks, including the recorded **4/6**.
+Neither scoring nor regrading upgrades their read policy. Changed read requirements
+need a new capture. V2 regrading freezes both `required_reads` and the candidate
+path sets it references; other label changes preserve original expectations.
 Reports retain paths and total/unique read counts; duplicates are visible, without
 inventing an efficiency threshold. Both capture-time reader source and the current
 read scorer's hash are recorded separately.

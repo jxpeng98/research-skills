@@ -84,14 +84,17 @@ def sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def load_cases(path: Path = CORPUS, *, source: str | None = None, legacy: bool = False) -> dict[str, dict]:
+def load_cases(path: Path = CORPUS, *, source: str | None = None, legacy: bool = False,
+               require_reads: bool = False) -> dict[str, dict]:
     groups = yaml.safe_load(path.read_text(encoding="utf-8") if source is None else source)
     if not isinstance(groups, list) or not groups:
         raise ValueError("Corpus must be a nonempty list")
     cases = {}
     for group in groups:
-        if not isinstance(group, dict) or set(group) != {"id", "category", "request", "expected"}:
+        if not isinstance(group, dict) or set(group) - {"required_reads"} != {"id", "category", "request", "expected"}:
             raise ValueError("Invalid case fields")
+        if legacy and "required_reads" in group:
+            raise ValueError("Legacy cases have no declared read requirements")
         name, expected = group["id"], group["expected"]
         if not isinstance(name, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", name):
             raise ValueError("Invalid case id")
@@ -122,6 +125,12 @@ def load_cases(path: Path = CORPUS, *, source: str | None = None, legacy: bool =
                         raise ValueError(f"Missing or escaping route: {value}")
                     if source is None and not resource.is_file():
                         raise ValueError(f"Missing route: {value}")
+        if require_reads or "required_reads" in group:
+            required = group.get("required_reads")
+            if (not isinstance(required, list) or any(
+                not isinstance(key, str) or key not in {"route", "resource_route"} for key in required
+            ) or len(set(required)) != len(required) or any("none" in expected[key] for key in required)):
+                raise ValueError("Invalid or missing current read requirements")
         requests = group["request"]
         if not isinstance(requests, dict) or set(requests) != {"en", "zh"}:
             raise ValueError("Every group requires en and zh requests")
@@ -224,8 +233,11 @@ def capture(output: Path, selected: list[str], *, entry_ref: str | None = None,
                        resources=json.dumps(resources, ensure_ascii=False, sort_keys=True),
                        reader=Path(resource_reader.__file__).read_text(encoding="utf-8"))
         snapshots = {**SNAPSHOTS, **RESOURCE_SNAPSHOTS}
-    cases = load_cases(source=sources["corpus"])
+    cases = load_cases(source=sources["corpus"], require_reads=read_resources)
     validate_selection(selected, cases)
+    if resources is not None and any(path not in resources for case in cases.values()
+                                     for key in case["required_reads"] for path in case["expected"][key]):
+        raise ValueError("Required guidance missing from resource snapshot")
     config_home = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
     config_path = config_home / "config.toml"
     config = tomllib.loads(config_path.read_text(encoding="utf-8")) if config_path.exists() else {}
@@ -255,7 +267,7 @@ def capture(output: Path, selected: list[str], *, entry_ref: str | None = None,
                            "enabled_tools": [resource_reader.TOOL], "required": True,
                            "default_tools_approval_mode": "approve"}.items():
             cmd += ["-c", f"{server}.{key}={json.dumps(value)}"]
-    manifest = {"kind": "codex-resource-reading-v1" if read_resources else "codex-supplied-entry-intent-v2",
+    manifest = {"kind": "codex-resource-reading-v2" if read_resources else "codex-supplied-entry-intent-v2",
                 "source": {key: sha(value) for key, value in sources.items()},
                 "variant": "no-skill" if no_skill else "preceding" if entry_ref else "candidate",
                 "entry_commit": commit,
@@ -320,10 +332,10 @@ def captured_inputs(output: Path, legacy_ref: str | None) -> tuple[dict, dict, d
             raise ValueError("Legacy instruction must be one literal string")
         sources = {**sources, "instruction": values[0]}
         manifest = {**manifest, "verified_legacy_commit": commit}
-    elif kind in {"codex-supplied-entry-intent-v2", "codex-resource-reading-v1"}:
+    elif kind in {"codex-supplied-entry-intent-v2", "codex-resource-reading-v1", "codex-resource-reading-v2"}:
         if legacy_ref:
             raise ValueError("--legacy-ref only applies to v1 captures")
-        snapshots = {**SNAPSHOTS, **RESOURCE_SNAPSHOTS} if kind == "codex-resource-reading-v1" else SNAPSHOTS
+        snapshots = SNAPSHOTS if kind == "codex-supplied-entry-intent-v2" else {**SNAPSHOTS, **RESOURCE_SNAPSHOTS}
         sources = {key: (output / filename).read_text(encoding="utf-8") for key, filename in snapshots.items()}
         if manifest.get("source") != {key: sha(value) for key, value in sources.items()}:
             raise ValueError("Captured source snapshot changed")
@@ -333,7 +345,8 @@ def captured_inputs(output: Path, legacy_ref: str | None) -> tuple[dict, dict, d
             raise ValueError("Invalid entry variant")
     else:
         raise ValueError("Unsupported capture kind")
-    cases = load_cases(source=sources["corpus"], legacy=kind == "codex-supplied-entry-intent-v1")
+    cases = load_cases(source=sources["corpus"], legacy=kind == "codex-supplied-entry-intent-v1",
+                      require_reads=kind == "codex-resource-reading-v2")
     validate_selection(manifest.get("cases"), cases)
     if manifest.get("corpus_count") != len(cases):
         raise ValueError("Captured corpus count differs")
@@ -353,6 +366,11 @@ def grading_cases(cases: dict, manifest: dict, corpus: Path | None,
             key: {k: v for k, v in case.items() if k != "expected"} for key, case in cases.items()
         }:
             raise ValueError("Regrading may change expectations only, not requests or case identities")
+        if manifest["kind"] == "codex-resource-reading-v2" and any(
+            set(revised[key]["expected"][field]) != set(case["expected"][field])
+            for key, case in cases.items() for field in case["required_reads"]
+        ):
+            raise ValueError("Regrading cannot change current read requirements or their candidate paths")
         return revised, {"kind": "regrade-v2", "grading_corpus_sha256": sha(source)}
     if adjudications is not None:
         source = adjudications.read_text(encoding="utf-8")
@@ -391,10 +409,14 @@ def score(output: Path, report: Path, *, legacy_ref: str | None = None,
     selected = manifest["cases"]
     legacy = (manifest["kind"] == "codex-supplied-entry-intent-v1")
     resources = json.loads(sources["resources"]) if "resources" in sources else None
+    declared_reads = manifest["kind"] == "codex-resource-reading-v2"
     if resources is not None and (not isinstance(resources, dict) or not resources or any(
         not isinstance(key, str) or not isinstance(value, str) for key, value in resources.items()
     )):
         raise ValueError("Invalid captured repository resources")
+    if declared_reads and any(path not in resources for case in cases.values()
+                              for key in case["required_reads"] for path in case["expected"][key]):
+        raise ValueError("Required guidance missing from resource snapshot")
     fields = LEGACY_FIELDS if legacy else FIELDS
     assessed = tuple(key for key in fields if not (
         manifest.get("variant") == "no-skill" and key in {"route", "resource_route"}))
@@ -419,8 +441,9 @@ def score(output: Path, report: Path, *, legacy_ref: str | None = None,
                                      "assertions": [{"type": "schema", "schema": schema_name}]}
         if resources is not None:
             read_schema = f"{case_id}.reads.json"
-            write_json(case_dir / read_schema, {"type": "object", "required": ["primary", "prerequisite"],
-                       "properties": {key: {"const": True} for key in ("primary", "prerequisite")}})
+            checks = ["current"] if declared_reads else ["primary", "prerequisite"]
+            write_json(case_dir / read_schema, {"type": "object", "required": checks,
+                       "properties": {key: {"const": True} for key in checks}})
             expected_outputs["resource_reads"] = {"artifact": "resource-reads.json", "required": True,
                                                  "assertions": [{"type": "schema", "schema": read_schema}]}
         (case_dir / f"{case_id}.yaml").write_text(yaml.safe_dump({
@@ -444,11 +467,16 @@ def score(output: Path, report: Path, *, legacy_ref: str | None = None,
             write_json(target / "observation.json", observation)
             if resources is not None:
                 expected = case["expected"]
-                evidence = {"primary": not reads if expected["route"] == ["none"] else
-                            any(path in reads for path in expected["route"]),
-                            "prerequisite": "none" in expected["resource_route"] or
-                            any(path in reads for path in expected["resource_route"]),
-                            "paths": reads, "read_count": len(reads), "unique_count": len(set(reads))}
+                if declared_reads:
+                    required = case["required_reads"]
+                    evidence = {"current": all(any(path in reads for path in expected[key]) for key in required)
+                                if required else not reads}
+                else:
+                    evidence = {"primary": not reads if expected["route"] == ["none"] else
+                                any(path in reads for path in expected["route"]),
+                                "prerequisite": "none" in expected["resource_route"] or
+                                any(path in reads for path in expected["resource_route"])}
+                evidence.update(paths=reads, read_count=len(reads), unique_count=len(set(reads)))
                 write_json(target / "resource-reads.json", evidence)
                 read_observations[case_id] = evidence
         except (OSError, ValueError, KeyError, TypeError):
@@ -472,6 +500,9 @@ def score(output: Path, report: Path, *, legacy_ref: str | None = None,
         "corpus_count": len(cases), "passed_cases": result.passed_cases, "case_count": result.case_count,
         "labels": label_results, "unassessed_labels": [key for key in fields if key not in assessed],
         "resource_reads": read_observations if resources is not None else None,
+        "read_requirements": ({"kind": "declared-current-reads-v1", "cases": {
+            key: cases[key]["required_reads"] for key in selected}} if declared_reads else
+            {"kind": "implicit-route-and-dependency-v1"} if resources is not None else None),
         "original_expectations": {key: original[key]["expected"] for key in selected},
         "graded_expectations": {key: cases[key]["expected"] for key in selected},
         "limitations": ("Resource reads are observed through a test-only repository-content MCP; no installed activation or live project evidence. "
@@ -480,7 +511,7 @@ def score(output: Path, report: Path, *, legacy_ref: str | None = None,
                        "No-Skill product routing is unassessed; compare common labels and actual answers only.",
     })
     print(log.getvalue(), end="")
-    print(f"Intent labels: {result.passed_cases}/{result.case_count}; selected {len(selected)} of {len(cases)}. "
+    print(f"Case checks: {result.passed_cases}/{result.case_count}; selected {len(selected)} of {len(cases)}. "
           f"Grading: {grading['kind']}. Answers require human review.")
     return result.success
 

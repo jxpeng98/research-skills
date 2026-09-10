@@ -52,10 +52,10 @@ class SkillRoutingProbeTests(unittest.TestCase):
                     self.assertEqual(1, probe.main(["capture", str(root / "capture"), "--report", str(report)]))
                 capture.assert_not_called()
 
-    def capture(self, root, *, raw=None, no_skill=False, read_resources=False):
+    def capture(self, root, *, raw=None, no_skill=False, read_resources=False, selected=None):
         root.mkdir(parents=True, exist_ok=True)
         cases = probe.load_cases()
-        selected = list(cases)[:2]
+        selected = list(cases)[:2] if selected is None else selected
         response = {key: values[0] for key, values in cases[selected[0]]["expected"].items()}
         response["answer"] = "Synthetic grader check, not a real Host answer."
         if no_skill:
@@ -67,7 +67,7 @@ class SkillRoutingProbeTests(unittest.TestCase):
                 return subprocess.CompletedProcess(cmd, 0, "codex-cli synthetic", "")
             calls.append((cmd, kwargs))
             text = trace(response) if raw is None else raw
-            if read_resources and raw is None:
+            if read_resources and raw is None and response["route"] != "none":
                 resources = json.loads((output / "resources.json").read_text())
                 text = read_trace(response, resources, response["route"])
             return subprocess.CompletedProcess(cmd, 0, text, "")
@@ -88,7 +88,7 @@ class SkillRoutingProbeTests(unittest.TestCase):
             output, selected, response, calls = self.capture(root, read_resources=True)
             self.assertTrue(probe.score(output, root / "scores"))
             manifest, sources, cases = probe.captured_inputs(output, None)
-            self.assertEqual("codex-resource-reading-v1", manifest["kind"])
+            self.assertEqual("codex-resource-reading-v2", manifest["kind"])
             self.assertIn(f'mcp_servers.{resource_reader.SERVER}.enabled_tools=["read_resource"]', calls[0][0])
             summary = json.loads((root / "scores/summary.json").read_text())
             self.assertEqual([response["route"]], summary["resource_reads"][selected[0]]["paths"])
@@ -100,6 +100,75 @@ class SkillRoutingProbeTests(unittest.TestCase):
             probe.write_json(output / "resources.json", changed)
             with self.assertRaisesRegex(ValueError, "snapshot changed"):
                 probe.score(output, root / "tampered-snapshot")
+
+    def test_current_reads_are_predeclared_and_legacy_reads_stay_strict(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            root = Path(temporary)
+            selected = ["continuation-academic-graph-denied-read-en"]
+            output, _, response, _ = self.capture(root / "graph", read_resources=True, selected=selected)
+            manifest, sources, cases = probe.captured_inputs(output, None)
+            self.assertTrue(probe.score(output, root / "current"))
+            summary = json.loads((root / "current/summary.json").read_text())
+            self.assertEqual({"kind": "declared-current-reads-v1", "cases": {selected[0]: ["route"]}},
+                             summary["read_requirements"])
+            groups = yaml.safe_load(sources["corpus"])
+            group = next(g for g in groups if g["id"] == cases[selected[0]]["id"])
+            group["required_reads"] = ["route", "resource_route"]
+            revised = root / "revised.yaml"
+            revised.write_text(yaml.safe_dump(groups))
+            with self.assertRaisesRegex(ValueError, "expectations only"):
+                probe.score(output, root / "changed-policy", corpus=revised)
+            # A NEW synthetic capture requiring both reads cannot waive one by reporting blocked.
+            with patch.object(probe, "CORPUS", revised):
+                both, _, _, _ = self.capture(root / "both", read_resources=True, selected=selected)
+            self.assertFalse(probe.score(both, root / "missing-current-prerequisite"))
+            group["required_reads"] = ["route"]
+            group["expected"]["route"] = ["references/platform-routing.md"]
+            revised.write_text(yaml.safe_dump(groups))
+            with self.assertRaisesRegex(ValueError, "candidate paths"):
+                probe.score(output, root / "changed-read-paths", corpus=revised)
+            group["expected"]["route"] = [response["route"]]
+            # Simulate the historical v1 format, without upgrading its implicit rule.
+            for group in groups:
+                del group["required_reads"]
+            (output / "cases.yaml").write_text(yaml.safe_dump(groups))
+            manifest["kind"] = "codex-resource-reading-v1"
+            manifest["source"]["corpus"] = probe.digest(output / "cases.yaml")
+            probe.write_json(output / "manifest.json", manifest)
+            self.assertFalse(probe.score(output, root / "legacy"))
+            self.assertFalse(json.loads((root / "legacy/summary.json").read_text())[
+                "resource_reads"][selected[0]]["prerequisite"])
+            # Generic work requires no reads, even if an irrelevant call succeeds.
+            generic_id = "generic-mean-function-en"
+            generic, _, generic_response, _ = self.capture(
+                root / "generic", read_resources=True, selected=[generic_id])
+            self.assertTrue(probe.score(generic, root / "zero-reads"))
+            raw = read_trace(generic_response, json.loads(sources["resources"]), response["route"])
+            events = generic / generic_id / "events.jsonl"
+            events.write_text(raw)
+            receipt_path = events.with_name("capture.json")
+            receipt = json.loads(receipt_path.read_text())
+            probe.write_json(receipt_path, {**receipt, "events_sha256": probe.digest(events)})
+            self.assertFalse(probe.score(generic, root / "unnecessary-read"))
+            # Missing/invalid policies fail before invoking even codex --version.
+            for required in (None, ["scope"], ["route", "route"], [None], ["resource_route"]):
+                invalid = yaml.safe_load(probe.CORPUS.read_text())[:1]
+                invalid[0]["required_reads"] = required
+                revised.write_text(yaml.safe_dump(invalid))
+                with patch.object(probe, "CORPUS", revised), patch.object(probe.subprocess, "run") as run:
+                    with self.assertRaisesRegex(ValueError, "read requirements"):
+                        probe.capture(root / "invalid", [invalid[0]["id"] + "-en"], read_resources=True)
+                    run.assert_not_called()
+            del invalid[0]["required_reads"]
+            with self.assertRaisesRegex(ValueError, "read requirements"):
+                probe.load_cases(source=yaml.safe_dump(invalid), require_reads=True)
+            invalid[0]["required_reads"] = ["route"]
+            invalid[0]["expected"]["route"] = ["skills/nonexistent.md"]
+            revised.write_text(yaml.safe_dump(invalid))
+            with patch.object(probe, "CORPUS", revised), patch.object(probe.subprocess, "run") as run:
+                with self.assertRaisesRegex(ValueError, "guidance missing"):
+                    probe.capture(root / "missing-guidance", [invalid[0]["id"] + "-en"], read_resources=True)
+                run.assert_not_called()
 
     def test_resource_mcp_fails_closed_for_bad_results_calls_and_paths(self):
         resources = {"workflows/paper-read.md": "public guidance"}
@@ -231,6 +300,7 @@ class SkillRoutingProbeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
             root = Path(temporary)
             groups = yaml.safe_load(probe.CORPUS.read_text())[:1]
+            del groups[0]["required_reads"]
             del groups[0]["expected"]["resource_route"]
             sources = {"entry": "historical entry", "corpus": yaml.safe_dump(groups),
                        "probe": 'INSTRUCTION = "historical instruction"\nraise RuntimeError("never execute")\n'}
@@ -290,8 +360,10 @@ class SkillRoutingProbeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "discovery indexes"):
             probe.load_cases(source=yaml.safe_dump(groups))
         del groups[0]["expected"]["resource_route"]
+        del groups[0]["required_reads"]
         self.assertEqual(2, len(probe.load_cases(source=yaml.safe_dump(groups[:1]), legacy=True)))
-        sample = dict(case, expected={"secret-label": ["DO_NOT_LEAK"]}, category="DO_NOT_LEAK")
+        sample = dict(case, expected={"secret-label": ["DO_NOT_LEAK"]}, category="DO_NOT_LEAK",
+                      required_reads=["DO_NOT_LEAK"])
         self.assertNotIn("DO_NOT_LEAK", probe.prompt(sample))
 
 

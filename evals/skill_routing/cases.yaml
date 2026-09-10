@@ -4,9 +4,12 @@
 # Expected lists enumerate acceptable labels, not a sequence of required routes.
 # Route selects the current remaining work, not the artifact's original stage.
 # V2 separates a necessary lookup/project read from the remaining task owner.
+# Resource-reading v2 requires one allowed path per named dimension NOW; [] requires zero reads.
+# Platform dependencies remain future-only here: this reader exposes no project operations.
 # next_action describes the current text-only response, never a future tool call.
 
 - id: supplied-abstract-explanation
+  required_reads: [route]
   category: activation
   request:
     en: >-
@@ -25,6 +28,7 @@
     next_action: [answer]
 
 - id: bounded-reference-discovery
+  required_reads: [route]
   category: activation
   request:
     en: >-
@@ -46,6 +50,7 @@
     next_action: [request_evidence]
 
 - id: generic-mean-function
+  required_reads: []
   category: activation
   request:
     en: >-
@@ -64,6 +69,7 @@
     next_action: [answer]
 
 - id: literal-data-conversion
+  required_reads: []
   category: activation
   request:
     en: >-
@@ -81,6 +87,7 @@
     next_action: [answer]
 
 - id: nonacademic-message-edit
+  required_reads: []
   category: activation
   request:
     en: >-
@@ -97,6 +104,7 @@
     next_action: [answer]
 
 - id: paired-analysis-code-correction
+  required_reads: [route]
   category: activation
   request:
     en: >-
@@ -118,6 +126,7 @@
     next_action: [answer]
 
 - id: substantive-method-critique
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -137,6 +146,7 @@
     next_action: [answer]
 
 - id: formal-referee-style-review
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -162,6 +172,7 @@
     next_action: [answer]
 
 - id: unavailable-independent-review
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -184,6 +195,7 @@
     next_action: [report_blocked]
 
 - id: thesis-grammar-only
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -202,6 +214,7 @@
     next_action: [answer]
 
 - id: discussion-argument-revision
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -223,6 +236,7 @@
     next_action: [answer]
 
 - id: results-interpretation-boundary
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -244,6 +258,7 @@
     next_action: [answer]
 
 - id: construct-measurement-choice
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -263,6 +278,7 @@
     next_action: [answer]
 
 - id: dataset-variable-construction
+  required_reads: [route]
   category: adjacent
   request:
     en: >-
@@ -284,6 +300,7 @@
     next_action: [answer]
 
 - id: language-audit-zero-findings
+  required_reads: [route]
   category: scope
   request:
     en: >-
@@ -308,6 +325,7 @@
     next_action: [answer]
 
 - id: rubric-bounded-revision
+  required_reads: [route]
   category: scope
   request:
     en: >-
@@ -332,6 +350,7 @@
     next_action: [answer]
 
 - id: supervisor-feedback-minimal-edit
+  required_reads: [route]
   category: scope
   request:
     en: >-
@@ -356,6 +375,7 @@
     next_action: [answer]
 
 - id: source-overlap-missing-original
+  required_reads: [route]
   category: scope
   request:
     en: >-
@@ -379,6 +399,7 @@
     next_action: [request_evidence]
 
 - id: formal-review-missing-corpus
+  required_reads: [route]
   category: scope
   request:
     en: >-
@@ -402,6 +423,7 @@
     next_action: [request_evidence]
 
 - id: registered-writing-needs-preview
+  required_reads: [route]
   category: scope
   request:
     en: >-
@@ -428,6 +450,7 @@
     next_action: [report_blocked]
 
 - id: continuation-revalidate-claim-graph
+  required_reads: [route]
   category: continuation
   request:
     en: >-
@@ -450,6 +473,7 @@
     next_action: [report_blocked]
 
 - id: continuation-minimum-review-passes
+  required_reads: [route]
   category: continuation
   request:
     en: >-
@@ -476,6 +500,7 @@
     next_action: [answer]
 
 - id: continuation-stale-approved-write
+  required_reads: [route]
   category: continuation
   request:
     en: >-
@@ -503,6 +528,7 @@
     next_action: [report_blocked]
 
 - id: continuation-academic-graph-denied-read
+  required_reads: [route]
   category: continuation
   request:
     en: >-

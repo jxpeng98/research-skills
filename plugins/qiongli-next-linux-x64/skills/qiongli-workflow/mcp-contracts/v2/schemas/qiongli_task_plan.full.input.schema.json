@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_task_plan.full.input.v2.json",
+  "title": "qiongli_task_plan full input",
+  "type": "object",
+  "required": [
+    "task_id",
+    "paper_type",
+    "topic"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "paper_type": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "cwd": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

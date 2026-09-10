@@ -1,0 +1,147 @@
+schema_version: 1.0
+subject: economics-accounting
+display_name: Economics-Accounting
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/economics.yaml
+overlay: ""
+subject_skill: content/subjects/economics-accounting/skills/economics-accounting-bridge-auditor.md
+signal_groups:
+  method:
+    - id: economics-accounting.method.identification-measurement-alignment
+      value: identification-measurement-alignment
+      weight: 0.30
+      activation: method_only
+      patterns:
+        - "\\bidentification[- ]measurement alignment\\b"
+        - "\\bestimand[- ]measurement[- ]proxy map\\b"
+        - "\\bestimand measurement proxy map\\b"
+      method_lenses:
+        - identification-measurement-alignment
+      examples:
+        - "Build an estimand measurement proxy map before choosing the estimator."
+      near_misses:
+        - "Identify owners for measurement tasks in a project plan."
+    - id: economics-accounting.method.fiscal-window-alignment
+      value: fiscal-window-alignment
+      weight: 0.25
+      activation: method_only
+      patterns:
+        - "\\bfiscal[- ]window alignment\\b"
+        - "\\bfiscal[- ]year timing\\b"
+        - "\\bcapital[- ]market outcome windows?\\b"
+      method_lenses:
+        - fiscal-window-alignment
+      examples:
+        - "Align fiscal-year timing with capital-market outcome windows."
+      near_misses:
+        - "Schedule fiscal-year budget meetings."
+  data_or_outcome:
+    - id: economics-accounting.data.disclosure-institution-window
+      value: disclosure-institution-window
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\baccounting disclosure rule\\b"
+        - "\\bdisclosure institution\\b"
+        - "\\breporting mandate sample\\b"
+        - "\\bcapital[- ]market outcome windows?\\b"
+      examples:
+        - "Use a disclosure institution and capital-market outcome window."
+      near_misses:
+        - "Prepare an internal disclosure checklist."
+    - id: economics-accounting.data.archival-firm-year-panel
+      value: archival-firm-year-panel
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\barchival firm[- ]year panel\\b"
+        - "\\bsource[- ]item mapping\\b"
+        - "\\bsample filter audit\\b"
+        - "\\bfiscal[- ]year timing\\b"
+      examples:
+        - "Audit the archival firm-year panel, source-item mapping, and sample filters."
+      near_misses:
+        - "Create a firm-wide annual budget spreadsheet."
+  venue:
+    - id: economics-accounting.venue.accounting-review
+      value: accounting-review
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bThe Accounting Review\\b"
+        - "\\bAccounting Review\\b"
+      examples:
+        - "Position the bridge manuscript for The Accounting Review."
+      near_misses:
+        - "Review accounting homework."
+    - id: economics-accounting.venue.journal-of-accounting-research
+      value: journal-of-accounting-research
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bJournal of Accounting Research\\b"
+      examples:
+        - "Frame the bridge design for Journal of Accounting Research."
+      near_misses:
+        - "List accounting research seminars."
+    - id: economics-accounting.venue.review-of-accounting-studies
+      value: review-of-accounting-studies
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bReview of Accounting Studies\\b"
+      examples:
+        - "Prepare the manuscript for Review of Accounting Studies."
+      near_misses:
+        - "Review accounting studies for a class."
+  theory_or_construct:
+    - id: economics-accounting.construct.cross-disciplinary-contribution
+      value: cross-disciplinary-contribution
+      weight: 0.30
+      activation: subject
+      patterns:
+        - "\\beconomics and accounting contribution\\b"
+        - "\\bcross[- ]disciplinary contribution\\b"
+        - "\\baccounting measurement and economic variation\\b"
+        - "\\bcomposite reviewer risk\\b"
+      method_lenses:
+        - economics-accounting-positioning
+      examples:
+        - "State the economics and accounting contribution and composite reviewer risk."
+      near_misses:
+        - "Compare economics and accounting course requirements."
+    - id: economics-accounting.construct.measurement-variation-standard
+      value: measurement-variation-standard
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bdual identification and measurement standard\\b"
+        - "\\bmeasurement-validity and variation standard\\b"
+        - "\\baccounting construct with identifying variation\\b"
+      method_lenses:
+        - economics-accounting-positioning
+      examples:
+        - "Defend the accounting construct with identifying variation."
+      near_misses:
+        - "Identify variation in team preferences."
+method_lenses:
+  identification-measurement-alignment:
+    resource: content/subjects/economics-accounting/overlays/skills/stats-engine.md
+    activation: method_only
+  fiscal-window-alignment:
+    resource: content/subjects/economics-accounting/overlays/skills/stats-engine.md
+    activation: method_only
+  economics-accounting-positioning:
+    resource: content/subjects/economics-accounting/overlays/skills/manuscript-architect.md
+    activation: method_only
+evaluation_pack: tests/fixtures/subject_router_eval/economics-accounting
+near_miss_policy:
+  forbidden_subjects:
+    - finance
+    - economics
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.95
+    suggest_subject_precision: 0.95
+    near_miss_false_positives: 0

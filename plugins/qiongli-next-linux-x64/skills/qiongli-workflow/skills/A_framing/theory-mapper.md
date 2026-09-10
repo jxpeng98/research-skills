@@ -1,0 +1,292 @@
+---
+id: theory-mapper
+stage: A_framing
+description: "Map theoretical concepts, relationships, and frameworks to build visual and structured research foundations with Mermaid diagrams."
+inputs:
+  - type: RQSet
+    description: "Research questions defining scope"
+  - type: LiteratureCorpus
+    description: "Collected papers with theoretical content"
+outputs:
+  - type: TheoreticalFramework
+    artifact: "theoretical_framework.md"
+constraints:
+  - "Must include construct definitions with operational measures"
+  - "Must generate Mermaid diagram for relationships"
+  - "Must compare at least 2 theories when applicable"
+failure_modes:
+  - "Insufficient literature for theory identification"
+  - "No clear theoretical basis in the domain"
+tools: [filesystem, scholarly-search]
+tags: [framing, theory, constructs, conceptual-model, mermaid]
+domain_aware: false
+---
+
+# Theory Mapper Skill
+
+Map theoretical concepts, relationships, and frameworks for research foundation building.
+
+## Purpose
+
+Create visual and structured representations of:
+- Existing theories in a domain
+- Concept definitions and relationships
+- Theoretical models and propositions
+- Theory comparisons and integrations
+
+## Inputs
+
+- `RQSet`: Research questions defining scope
+- `LiteratureCorpus`: Collected papers with theoretical content
+- If a required input is missing or insufficient, write a gap note under `RESEARCH/[topic]/context/gap_notes.md` and ask for the missing artifact instead of inventing content.
+- Treat literature, data, citations, and project files as evidence sources; keep unsupported assumptions visibly marked.
+
+## Process
+
+### 1. Theory Identification
+
+For each relevant theory, extract:
+
+```markdown
+## Theory Profile: [Theory Name]
+
+### Basic Information
+| Field | Value |
+|-------|-------|
+| Name | |
+| Origin | Author(s), Year |
+| Seminal Work | Title, Citation |
+| Domain | |
+| Type | Grand theory / Middle-range / Micro |
+
+### Core Proposition
+[The central claim or argument of the theory]
+
+### Key Assumptions
+1.
+2.
+3.
+
+### Scope Conditions
+[When/where the theory applies]
+```
+
+### 2. Construct Mapping
+
+For each key construct:
+
+```markdown
+## Construct: [Name]
+
+### Definition
+- **Conceptual Definition:** [Abstract meaning]
+- **Operational Definition:** [How it's measured]
+
+### Dimensions
+| Dimension | Description |
+|-----------|-------------|
+| Dimension 1 | |
+| Dimension 2 | |
+
+### Related Constructs
+| Construct | Relationship | Type |
+|-----------|--------------|------|
+| [Related 1] | [How related] | Antecedent/Outcome/Correlate |
+| [Related 2] | [How related] | |
+
+### Measurement Approaches
+| Measure | Source | Items |
+|---------|--------|-------|
+| [Scale 1] | Author, Year | X items |
+| [Scale 2] | Author, Year | Y items |
+```
+
+### 3. Relationship Mapping
+
+Map relationships between constructs:
+
+```markdown
+## Relationship: [Construct A] → [Construct B]
+
+### Nature of Relationship
+- **Direction:** Positive / Negative / Curvilinear
+- **Strength:** Strong / Moderate / Weak
+- **Type:** Causal / Correlational / Mediating / Moderating
+
+### Theoretical Justification
+[Why this relationship exists according to theory]
+
+### Empirical Evidence
+| Study | Finding | Effect Size |
+|-------|---------|-------------|
+| Author (Year) | | r/β = |
+```
+
+### 4. Visual Representation
+
+Generate Mermaid diagrams for theory visualization:
+
+#### Simple Causal Model
+```mermaid
+graph LR
+    A["Independent Variable"] -->|+/positive| B["Dependent Variable"]
+```
+
+#### Mediation Model
+```mermaid
+graph LR
+    A["X"] -->|a| M["Mediator"]
+    M -->|b| Y["Y"]
+    A -.->|c' direct| Y
+```
+
+#### Moderation Model
+```mermaid
+graph TD
+    X["X"] --> Y["Y"]
+    M["Moderator"] -.-> XY{" "}
+    XY --> Y
+```
+
+#### Complex Theoretical Model
+```mermaid
+graph TD
+    subgraph "Antecedents"
+        A1["Construct A1"]
+        A2["Construct A2"]
+    end
+
+    subgraph "Mediating Mechanisms"
+        M1["Mediator 1"]
+        M2["Mediator 2"]
+    end
+
+    subgraph "Outcomes"
+        O1["Outcome 1"]
+        O2["Outcome 2"]
+    end
+
+    subgraph "Boundary Conditions"
+        BC["Moderator"]
+    end
+
+    A1 -->|H1+| M1
+    A2 -->|H2+| M1
+    M1 -->|H3+| O1
+    M1 -->|H4+| O2
+    BC -.->|moderates| M1
+```
+
+### 5. Theory Comparison Matrix
+
+```markdown
+## Theory Comparison
+
+| Aspect | Theory A | Theory B | Theory C |
+|--------|----------|----------|----------|
+| **Core Focus** | | | |
+| **Unit of Analysis** | | | |
+| **Key Constructs** | | | |
+| **Causal Logic** | | | |
+| **Assumptions** | | | |
+| **Strengths** | | | |
+| **Limitations** | | | |
+| **Best Applied To** | | | |
+| **Complementary With** | | | |
+```
+
+### 6. Theoretical Synthesis
+
+Create integrated framework:
+
+```markdown
+## Theoretical Integration: [Your Framework Name]
+
+### Integration Approach
+[How theories are combined: complementary, competing, extension]
+
+### Core Propositions
+1. **P1:** [Proposition 1]
+2. **P2:** [Proposition 2]
+3. **P3:** [Proposition 3]
+
+### Conceptual Model
+
+```mermaid
+[Integrated model diagram]
+```
+
+### Hypotheses
+| ID | Hypothesis | Theoretical Basis |
+|----|------------|-------------------|
+| H1 | [Statement] | Based on Theory X... |
+| H2 | [Statement] | Extending Theory Y... |
+
+### Boundary Conditions
+- Condition 1: [When/where applies]
+- Condition 2: [When/where applies]
+
+### Theoretical Contribution
+[How this advances existing theory]
+```
+
+## Output Templates
+
+### Theory Summary Table
+```markdown
+| Theory | Core Idea | Key Constructs | Application |
+|--------|-----------|----------------|-------------|
+| | | | |
+```
+
+### Construct Definition Table
+```markdown
+| Construct | Definition | Dimensions | Source |
+|-----------|------------|------------|--------|
+| | | | |
+```
+
+### Hypothesis Table
+```markdown
+| # | Hypothesis | IV | DV | Expected Effect | Basis |
+|---|------------|----|----|-----------------|-------|
+| H1 | | | | +/- | Theory X |
+```
+
+## Usage
+
+This skill is called by:
+- `/build-framework` - Main framework building workflow
+- `/lit-review` - For theoretical synthesis
+
+## Output Contract
+
+- `TheoreticalFramework`: write `RESEARCH/[topic]/theoretical_framework.md`.
+- Separate finding, interpretation, and implication in the final artifact.
+- Do not invent citations, data, sample sizes, statistical results, or reviewer comments.
+- Apply `references/academic-output-rubric.md` before finalizing scholarly prose or review artifacts.
+
+## Quality Bar
+
+- [ ] 每个 construct 有明确定义和操作化路径
+- [ ] 关系箭头标注了方向、极性（正/负）和条件
+- [ ] Mermaid 图可正确渲染且无悬挂节点
+- [ ] 至少标注一个 boundary condition
+- [ ] 每个理论引用都有明确来源
+
+## Common Pitfalls
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| 概念定义模糊 | Construct 与 variable 混淆 | 分层：construct → dimension → indicator |
+| 关系箭头无标注 | 读者不知道是正相关还是调节 | 标注方向 + 机制 |
+| 框架过于复杂 | 一个图超过 15 个节点 | 拆分为核心框架 + 扩展因素 |
+| 缺少竞争解释 | Reviewer 质疑为何选此理论 | 添加 rival theory comparison |
+| 图文不一致 | 文字描述与 Mermaid 图不对应 | 以图为准，反向核验文字 |
+
+## When to Use
+
+- 需要概念图、理论框架或机制关系图时
+- 写 literature review 需要组织 theoretical landscape
+- 需要识别 mediator/moderator 关系时
+- 理论框架涉及多个 competing theories 需要比较时

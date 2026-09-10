@@ -1,0 +1,490 @@
+{
+  "schema_version": "1.0",
+  "tools": [
+    {
+      "name": "qiongli_config_status",
+      "description": "Return redacted Qiongli provider configuration status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cwd": {
+            "type": "string",
+            "description": "Project-config context used by Full and accepted as a compatibility context by Lite."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_save_provider_config",
+      "description": "Save explicit Qiongli provider config values from chat or scripts. Prefer qiongli_configure_provider for API keys.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["provider", "field", "value"],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openalex",
+              "semantic_scholar",
+              "semantic-scholar",
+              "semanticscholar",
+              "s2",
+              "crossref",
+              "pubmed",
+              "ncbi"
+            ]
+          },
+          "field": { "type": "string", "enum": ["api_key", "api-key", "email"] },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "writeOnly": true,
+            "description": "Provider value to store. This value is never returned."
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "provider": { "const": "openalex" },
+              "field": { "enum": ["api_key", "api-key", "email"] }
+            }
+          },
+          {
+            "properties": {
+              "provider": {
+                "enum": [
+                  "semantic_scholar",
+                  "semantic-scholar",
+                  "semanticscholar",
+                  "s2"
+                ]
+              },
+              "field": { "enum": ["api_key", "api-key"] }
+            }
+          },
+          {
+            "properties": {
+              "provider": { "const": "crossref" },
+              "field": { "const": "email" }
+            }
+          },
+          {
+            "properties": {
+              "provider": { "enum": ["pubmed", "ncbi"] },
+              "field": { "enum": ["api_key", "api-key"] }
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_configure_provider",
+      "description": "Start a tokenized loopback setup page and return its URL for provider configuration. Prefer this for API keys so secrets do not enter chat history.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openalex",
+              "semantic_scholar",
+              "semantic-scholar",
+              "semanticscholar",
+              "s2",
+              "crossref",
+              "pubmed"
+            ]
+          },
+          "host": {
+            "type": "string",
+            "enum": ["127.0.0.1", "localhost"],
+            "default": "127.0.0.1"
+          },
+          "port": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_open_config_wizard",
+      "description": "Compatibility alias for qiongli_configure_provider.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openalex",
+              "semantic_scholar",
+              "semantic-scholar",
+              "semanticscholar",
+              "s2",
+              "crossref",
+              "pubmed"
+            ]
+          },
+          "host": {
+            "type": "string",
+            "enum": ["127.0.0.1", "localhost"],
+            "default": "127.0.0.1"
+          },
+          "port": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_literature_status",
+      "description": "Report configured literature providers and capability mode without exposing secrets.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cwd": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": ".*\\S.*",
+            "description": "Project-config context used by Full and accepted as a compatibility context by Lite."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_search_plan",
+      "description": "Plan provider and platform-native literature search routing without executing search.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "cwd": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": ".*\\S.*",
+            "description": "Project-config context used by Full and accepted as a compatibility context by Lite."
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": ".*\\S.*"
+          },
+          "platform": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9]+(?:[ _-]+[A-Za-z0-9]+)*[ _-]*$"
+          },
+          "native_search_available": { "type": "boolean", "default": false },
+          "native_search_usable": {
+            "type": "boolean",
+            "deprecated": true,
+            "description": "Compatibility alias for native_search_available."
+          },
+          "nativeSearchAvailable": {
+            "type": "boolean",
+            "deprecated": true,
+            "description": "Compatibility alias for native_search_available."
+          },
+          "native_search_tools": { "$ref": "#/$defs/toolList" },
+          "nativeSearchTools": {
+            "$ref": "#/$defs/toolList",
+            "deprecated": true,
+            "description": "Compatibility alias for native_search_tools."
+          },
+          "query_variants": { "$ref": "#/$defs/queryList" },
+          "queryVariants": {
+            "$ref": "#/$defs/queryList",
+            "deprecated": true,
+            "description": "Compatibility alias for query_variants."
+          },
+          "include_working_papers": { "type": "boolean" },
+          "includeWorkingPapers": {
+            "type": "boolean",
+            "deprecated": true,
+            "description": "Compatibility alias for include_working_papers."
+          },
+          "from_year": { "$ref": "#/$defs/year" },
+          "fromYear": {
+            "$ref": "#/$defs/year",
+            "deprecated": true,
+            "description": "Compatibility alias for from_year."
+          },
+          "to_year": { "$ref": "#/$defs/year" },
+          "toYear": {
+            "$ref": "#/$defs/year",
+            "deprecated": true,
+            "description": "Compatibility alias for to_year."
+          },
+          "search_mode": { "$ref": "#/$defs/searchMode" },
+          "searchMode": {
+            "$ref": "#/$defs/searchMode",
+            "deprecated": true,
+            "description": "Compatibility alias for search_mode."
+          },
+          "venue_filter": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "venueFilter": {
+            "type": "string",
+            "maxLength": 256,
+            "deprecated": true,
+            "description": "Compatibility alias for venue_filter."
+          },
+          "document_types": { "$ref": "#/$defs/documentTypeList" },
+          "documentTypes": {
+            "$ref": "#/$defs/documentTypeList",
+            "deprecated": true,
+            "description": "Compatibility alias for document_types."
+          }
+        },
+        "additionalProperties": false,
+        "$defs": {
+          "year": {
+            "oneOf": [
+              { "type": "integer", "minimum": 1000, "maximum": 9999 },
+              {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 4,
+                "pattern": "^[0-9]{4}$"
+              }
+            ]
+          },
+          "searchMode": {
+            "type": "string",
+            "enum": ["auto", "topic", "title", "doi", "review", "systematic_review"]
+          },
+          "toolList": {
+            "type": "array",
+            "description": "Identifiers are trimmed, lowercased, and separator-normalized; duplicates after normalization are invalid.",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": ".*\\S.*"
+            },
+            "maxItems": 8,
+            "uniqueItems": true
+          },
+          "queryList": {
+            "type": "array",
+            "description": "Queries are trimmed; duplicates after Unicode lowercasing are invalid.",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "pattern": ".*\\S.*"
+            },
+            "maxItems": 16,
+            "uniqueItems": true
+          },
+          "documentTypeList": {
+            "type": "array",
+            "description": "Document types are trimmed; duplicates after Unicode lowercasing are invalid.",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": ".*\\S.*"
+            },
+            "maxItems": 32,
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    {
+      "name": "qiongli_literature_search",
+      "description": "Search academic literature using the providers available in the active Qiongli runtime profile.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string" },
+          "search_mode": {
+            "type": "string",
+            "enum": ["auto", "topic", "review", "systematic_review"]
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["openalex", "semantic_scholar", "crossref", "pubmed", "arxiv"]
+            },
+            "uniqueItems": true
+          },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 200 },
+          "per_provider_limit": { "type": "integer", "minimum": 1, "maximum": 200 },
+          "total_limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_literature_export_evidence",
+      "description": "Export an auditable provider capability, search plan, diagnostics, and result snapshot.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cwd": {
+            "type": "string",
+            "description": "Compatibility context path used by the Full runtime and ignored by Lite."
+          },
+          "query": { "type": "string" },
+          "provider_status": { "type": "object" },
+          "search_plan": { "type": "object" },
+          "results": { "type": "array", "items": { "type": "object" } },
+          "diagnostics": { "type": "object" },
+          "query_plan": {
+            "type": "object",
+            "deprecated": true,
+            "description": "Compatibility alias for search_plan."
+          },
+          "search_results": {
+            "type": "array",
+            "items": { "type": "object" },
+            "deprecated": true,
+            "description": "Compatibility alias for results."
+          },
+          "search_diagnostics": {
+            "type": "object",
+            "deprecated": true,
+            "description": "Compatibility alias for diagnostics."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_zotero_status",
+      "description": "Report local Zotero Desktop connector, Qiongli companion, and import-file fallback availability.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_zotero_search",
+      "description": "Search the user's local Zotero library through the bounded loopback Qiongli Companion.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doi": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "title": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "year": {
+            "oneOf": [
+              { "type": "integer", "minimum": 1000, "maximum": 9999 },
+              { "type": "string", "pattern": "^[0-9]{4}$" }
+            ]
+          },
+          "citekey": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "creator": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "tag": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "collection_path": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 }
+        },
+        "anyOf": [
+          { "required": ["doi"] },
+          { "required": ["title"] },
+          { "required": ["year"] },
+          { "required": ["citekey"] },
+          { "required": ["creator"] },
+          { "required": ["tag"] },
+          { "required": ["collection_path"] }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_zotero_upsert_references",
+      "description": "Preview or explicitly apply a receipt-bound reference upsert through the local Qiongli Zotero Companion.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": { "type": "object" }
+          },
+          "collection_path": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "update_policy": {
+            "type": "string",
+            "enum": ["fill_blank", "prefer_enriched"],
+            "default": "fill_blank"
+          },
+          "dry_run": { "type": "boolean", "default": true },
+          "write_intent": { "type": "string", "const": "apply" },
+          "dry_run_receipt": { "type": "string", "pattern": "^zwr1_[0-9a-f]{64}$" }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "dry_run": { "const": false } },
+              "required": ["dry_run"]
+            },
+            "then": { "required": ["write_intent", "dry_run_receipt"] }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_zotero_export_import_files",
+      "description": "Generate Zotero-compatible CSL-JSON, RIS, BibTeX, and import-report files from Qiongli references.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "records": { "type": "array" },
+          "formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["references.json", "references.ris", "bibliography.bib", "zotero-import-report.md"]
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_orchestrator_route",
+      "description": "Decide whether the active client should use skill-only routing or Full Qiongli orchestration.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["request"],
+        "properties": {
+          "request": { "type": "string" },
+          "platform": {
+            "type": "string",
+            "enum": ["codex", "claude_code", "claude", "antigravity", "cli", "unknown"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "qiongli_task_plan",
+      "description": "Render a Qiongli task execution plan without launching runtime agents.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["task_id", "paper_type", "topic"],
+        "properties": {
+          "task_id": { "type": "string" },
+          "paper_type": { "type": "string" },
+          "topic": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/runtime-subject.schema.json",
+  "title": "Qiongli Runtime Subject Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "subject",
+    "display_name",
+    "activation_status",
+    "extends",
+    "signal_groups",
+    "method_lenses",
+    "evaluation_pack",
+    "activation_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": [
+        "number",
+        "string"
+      ]
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "activation_status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "eval_ready",
+        "runtime_enabled",
+        "disabled"
+      ]
+    },
+    "extends": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain_profile": {
+      "type": "string"
+    },
+    "overlay": {
+      "type": "string"
+    },
+    "subject_skill": {
+      "type": "string"
+    },
+    "signal_groups": {
+      "type": "object"
+    },
+    "method_lenses": {
+      "type": "object"
+    },
+    "evaluation_pack": {
+      "type": "string"
+    },
+    "near_miss_policy": {
+      "type": "object"
+    },
+    "activation_gate": {
+      "type": "object",
+      "required": [
+        "required_metrics"
+      ],
+      "properties": {
+        "required_metrics": {
+          "type": "object",
+          "required": [
+            "primary_subject_accuracy",
+            "suggest_subject_precision",
+            "near_miss_false_positives"
+          ],
+          "properties": {
+            "primary_subject_accuracy": {
+              "type": "number"
+            },
+            "suggest_subject_precision": {
+              "type": "number"
+            },
+            "near_miss_false_positives": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

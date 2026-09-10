@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_search_plan.output.v2.json",
+  "title": "qiongli_search_plan structured output",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "query",
+    "search_mode",
+    "platform",
+    "search_execution_mode",
+    "provider_capability_mode",
+    "native_search_available",
+    "native_search_tools",
+    "provider_queries",
+    "native_search_queries",
+    "native_fulltext_queries",
+    "native_fulltext_candidate_schema",
+    "provenance_labels",
+    "execution_sequence",
+    "agent_instructions",
+    "merge_policy",
+    "limitations"
+  ],
+  "properties": {
+    "artifact_type": { "const": "qiongli_hybrid_search_plan" },
+    "query": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "search_mode": {
+      "enum": ["auto", "topic", "title", "doi", "review", "systematic_review"]
+    },
+    "platform": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "search_execution_mode": {
+      "enum": ["hybrid_search", "provider_connected", "native_only", "strategy_only"]
+    },
+    "provider_capability_mode": {
+      "enum": ["provider_connected", "strategy_only"]
+    },
+    "native_search_available": { "type": "boolean" },
+    "native_search_tools": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "provider_queries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/providerQuery" }
+    },
+    "native_search_queries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nativeQuery" }
+    },
+    "native_fulltext_queries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nativeFulltextQuery" }
+    },
+    "native_fulltext_candidate_schema": {
+      "type": "object",
+      "required": ["artifact_type", "required", "optional", "status_values", "evidence_rule"],
+      "properties": {
+        "artifact_type": { "const": "qiongli_native_fulltext_candidate_schema" },
+        "required": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "optional": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "status_values": {
+          "type": "array",
+          "items": { "const": "candidate_only" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidence_rule": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "provenance_labels": {
+      "type": "object",
+      "required": ["provider", "native", "user_corpus"],
+      "properties": {
+        "provider": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^mcp:" },
+          "uniqueItems": true
+        },
+        "native": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^native:" },
+          "uniqueItems": true
+        },
+        "user_corpus": {
+          "type": "array",
+          "items": { "const": "user_corpus" },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution_sequence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["actor", "action"],
+        "properties": {
+          "actor": { "const": "agent" },
+          "action": { "type": "string", "minLength": 1 },
+          "tool": { "type": "string", "minLength": 1 },
+          "queries": { "type": "string", "minLength": 1 },
+          "inputs": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 3
+    },
+    "agent_instructions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "merge_policy": {
+      "type": "object",
+      "required": [
+        "dedupe_keys",
+        "provider_records",
+        "native_records",
+        "fulltext_candidate_records",
+        "user_corpus_records",
+        "search_log"
+      ],
+      "properties": {
+        "dedupe_keys": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "provider_records": { "type": "string", "minLength": 1 },
+        "native_records": { "type": "string", "minLength": 1 },
+        "fulltext_candidate_records": { "type": "string", "minLength": 1 },
+        "user_corpus_records": { "type": "string", "minLength": 1 },
+        "search_log": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": { "enum": ["primary", "variant"] },
+    "year": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1000, "maximum": 9999 },
+        { "type": "string", "pattern": "^[0-9]{4}$" }
+      ]
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "include_working_papers": { "type": "boolean" },
+        "from_year": { "$ref": "#/$defs/year" },
+        "fromYear": { "$ref": "#/$defs/year", "deprecated": true },
+        "to_year": { "$ref": "#/$defs/year" },
+        "toYear": { "$ref": "#/$defs/year", "deprecated": true },
+        "search_mode": {
+          "enum": ["auto", "topic", "title", "doi", "review", "systematic_review"]
+        },
+        "venue_filter": { "type": "string" },
+        "document_types": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "providerQuery": {
+      "type": "object",
+      "required": ["provider", "query_id", "query", "source", "filters", "provenance_label"],
+      "properties": {
+        "provider": {
+          "enum": ["openalex", "semantic_scholar", "crossref", "pubmed", "arxiv"]
+        },
+        "query_id": { "type": "string", "pattern": "^Q[1-9][0-9]*$" },
+        "query": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/source" },
+        "filters": { "$ref": "#/$defs/filters" },
+        "provenance_label": { "type": "string", "pattern": "^mcp:" }
+      },
+      "additionalProperties": false
+    },
+    "nativeQuery": {
+      "type": "object",
+      "required": ["tool", "platform", "query_id", "query", "source", "filters", "provenance_label"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "platform": { "type": "string", "minLength": 1 },
+        "query_id": { "type": "string", "pattern": "^Q[1-9][0-9]*$" },
+        "query": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/source" },
+        "filters": { "$ref": "#/$defs/filters" },
+        "provenance_label": { "type": "string", "pattern": "^native:" }
+      },
+      "additionalProperties": false
+    },
+    "nativeFulltextQuery": {
+      "type": "object",
+      "required": [
+        "tool",
+        "platform",
+        "query_id",
+        "query",
+        "source",
+        "purpose",
+        "candidate_status",
+        "filters",
+        "expected_candidate_fields",
+        "provenance_label"
+      ],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "platform": { "type": "string", "minLength": 1 },
+        "query_id": { "type": "string", "pattern": "^Q[1-9][0-9]*$" },
+        "query": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/source" },
+        "purpose": { "const": "fulltext_candidate_discovery" },
+        "candidate_status": { "const": "candidate_only" },
+        "filters": { "$ref": "#/$defs/filters" },
+        "expected_candidate_fields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "provenance_label": { "type": "string", "pattern": "^native:" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

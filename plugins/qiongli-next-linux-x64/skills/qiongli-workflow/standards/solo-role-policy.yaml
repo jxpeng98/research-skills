@@ -1,0 +1,35 @@
+policy_version: "1.0.0"
+solo_modes:
+  solo_codex:
+    role: "Solo Codex research implementation operator"
+    writing_required_gates:
+      - evidence_ledger_check
+      - citation_risk_check
+      - claim_calibration_check
+      - scholarly_voice_check
+    code_required_gates:
+      - tests
+      - strict_validator
+      - diff_review
+  solo_claude:
+    role: "Solo Claude research implementation operator"
+    writing_required_gates:
+      - evidence_ledger_check
+      - citation_risk_check
+      - reviewer_self_critique
+    code_required_gates:
+      - implementation_intent
+      - declared_write_set
+      - failing_test_first
+      - command_evidence
+      - rollback_notes
+  solo_antigravity:
+    role: "Solo Antigravity research implementation operator"
+    writing_required_gates:
+      - story_spine_check
+      - claim_support_check
+      - reviewer_self_critique
+    code_required_gates:
+      - implementation_intent
+      - declared_write_set
+      - command_evidence

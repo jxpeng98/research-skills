@@ -1,0 +1,8 @@
+venue: aer
+display_name: "American Economic Review"
+subject: economics
+expectations:
+  sections: [Introduction, Background, Data, Empirical_Strategy, Results, Robustness, Conclusion]
+  data_code: "AEA Data and Code Repository deposit expected."
+  identification: "Identification assumptions, estimator choice, and robustness must be explicit."
+  style: "Contribution-forward economics argument with concise theory and transparent empirical design."

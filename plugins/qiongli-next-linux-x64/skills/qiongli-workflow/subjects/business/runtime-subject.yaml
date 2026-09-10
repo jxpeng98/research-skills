@@ -1,0 +1,251 @@
+schema_version: 1.0
+subject: business
+display_name: Business
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/business-management.yaml
+overlay: ""
+subject_skill: content/subjects/business/skills/business-journal-positioning-auditor.md
+signal_groups:
+  method:
+    - id: business.method.gioia
+      value: gioia-method
+      weight: 0.30
+      activation: method_only
+      patterns:
+        - "\\bGioia\\b"
+        - "\\bfirst[- ]order concepts\\b"
+        - "\\bsecond[- ]order themes\\b"
+        - "\\baggregate dimensions\\b"
+      method_lenses:
+        - qualitative-transparency
+      examples:
+        - "Use the Gioia method with first-order concepts and aggregate dimensions."
+      near_misses:
+        - "Sort generic brainstormed themes for a workshop."
+    - id: business.method.case-study
+      value: case-study
+      weight: 0.30
+      activation: method_only
+      patterns:
+        - "\\bmultiple case stud(?:y|ies)\\b"
+        - "\\bEisenhardt\\b"
+        - "\\bYin case study\\b"
+        - "\\bwithin[- ]case\\b"
+        - "\\bcross[- ]case\\b"
+      method_lenses:
+        - qualitative-transparency
+      examples:
+        - "Build a multiple case study with within-case and cross-case analysis."
+      near_misses:
+        - "Write a teaching case or business case for a course."
+    - id: business.method.process-research
+      value: process-research
+      weight: 0.25
+      activation: method_only
+      patterns:
+        - "\\bprocess research\\b"
+        - "\\btemporal bracketing\\b"
+        - "\\bevent timeline\\b"
+        - "\\bturning points\\b"
+      method_lenses:
+        - qualitative-transparency
+      examples:
+        - "Use temporal bracketing to explain organizational process change."
+      near_misses:
+        - "Improve a workflow process for an operations checklist."
+    - id: business.method.journal-positioning
+      value: journal-positioning
+      weight: 0.20
+      activation: method_only
+      patterns:
+        - "\\bbusiness journal positioning\\b"
+        - "\\bjournal positioning\\b"
+        - "\\bdoctoral[- ]level journal contribution\\b"
+      method_lenses:
+        - business-positioning
+      examples:
+        - "Audit business journal positioning for a doctoral-level contribution."
+      near_misses:
+        - "Choose a trade magazine for practitioner visibility."
+    - id: business.method.construct-fit
+      value: construct-fit
+      weight: 0.20
+      activation: method_only
+      patterns:
+        - "\\bconstruct clarity\\b"
+        - "\\blevel of analysis\\b"
+        - "\\bconstruct[- ]level fit\\b"
+      method_lenses:
+        - construct-level-fit
+      examples:
+        - "Check construct clarity and level-of-analysis fit."
+      near_misses:
+        - "Clarify a product feature label."
+  data_or_outcome:
+    - id: business.data.organization-panel
+      value: organization-panel
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bfirm[- ]level panel\\b"
+        - "\\borganization[- ]level data\\b"
+        - "\\bteam[- ]level data\\b"
+        - "\\bmanager survey\\b"
+        - "\\bemployee survey\\b"
+      examples:
+        - "Use firm-level panel data and manager survey measures."
+      near_misses:
+        - "Create a team schedule or employee rota."
+    - id: business.data.qualitative-fieldwork
+      value: qualitative-fieldwork
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\binterviews with managers\\b"
+        - "\\bfieldnotes\\b"
+        - "\\borganizational ethnography\\b"
+        - "\\bcase evidence database\\b"
+        - "\\barchival documents\\b"
+      examples:
+        - "Use interviews with managers and fieldnotes as qualitative evidence."
+      near_misses:
+        - "Summarize meeting notes from a consulting project."
+    - id: business.data.market-platform
+      value: market-platform
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bplatform marketplace\\b"
+        - "\\bcustomer journey mechanisms?\\b"
+        - "\\bmarketing channel strategy\\b"
+        - "\\bfirm[- ]customer interaction\\b"
+      examples:
+        - "Study platform marketplace design and firm-customer interaction."
+      near_misses:
+        - "Write sales enablement copy for a channel campaign."
+  venue:
+    - id: business.venue.amj
+      value: academy-of-management-journal
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bAcademy of Management Journal\\b"
+        - "\\bAMJ\\b"
+      method_lenses:
+        - business-positioning
+      examples:
+        - "Position the study for Academy of Management Journal."
+      near_misses:
+        - "Manage a journal club schedule."
+    - id: business.venue.organization-science
+      value: organization-science
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bOrganization Science\\b"
+      method_lenses:
+        - business-positioning
+      examples:
+        - "Frame the paper for Organization Science."
+      near_misses:
+        - "Organize a science fair project."
+    - id: business.venue.journal-of-management
+      value: journal-of-management
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bJournal of Management\\b"
+      method_lenses:
+        - business-positioning
+      examples:
+        - "Target Journal of Management."
+      near_misses:
+        - "Create a management journal for personal notes."
+    - id: business.venue.journal-of-marketing
+      value: journal-of-marketing
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bJournal of Marketing\\b"
+      method_lenses:
+        - business-positioning
+      examples:
+        - "Position the manuscript for Journal of Marketing."
+      near_misses:
+        - "Draft a marketing journal entry for a campaign review."
+    - id: business.venue.strategic-management-journal
+      value: strategic-management-journal
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bStrategic Management Journal\\b"
+        - "\\bSMJ\\b"
+      method_lenses:
+        - business-positioning
+      examples:
+        - "Position the strategy contribution for Strategic Management Journal."
+      near_misses:
+        - "Write a strategic management memo."
+  theory_or_construct:
+    - id: business.construct.theory-contribution
+      value: theory-contribution
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bmanagement theory\\b"
+        - "\\btheory contribution\\b"
+        - "\\bliterature stream\\b"
+        - "\\bconstruct clarity\\b"
+        - "\\bboundary conditions\\b"
+      examples:
+        - "Name the management theory contribution and boundary conditions."
+      near_misses:
+        - "Describe a practical business idea without a theory contribution."
+    - id: business.construct.organization-mechanism
+      value: organization-mechanism
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\borganizational mechanism\\b"
+        - "\\bstrategy mechanism\\b"
+        - "\\bcapabilit(?:y|ies)\\b"
+        - "\\bdynamic capabilities\\b"
+        - "\\borganizational routines\\b"
+      examples:
+        - "Explain the organizational mechanism and dynamic capabilities."
+      near_misses:
+        - "List operational capabilities for a product launch."
+    - id: business.construct.managerial-implication
+      value: managerial-implication
+      weight: 0.20
+      activation: subject
+      patterns:
+        - "\\bmanagerial implication\\b"
+        - "\\bbusiness phenomenon\\b"
+        - "\\bstrategic management\\b"
+        - "\\bsustained competitive advantage\\b"
+      examples:
+        - "Connect the business phenomenon to strategic management theory."
+      near_misses:
+        - "Write a consulting recommendation deck."
+method_lenses:
+  business-positioning:
+    resource: content/subjects/business/skills/business-journal-positioning-auditor.md
+    activation: method_only
+  qualitative-transparency:
+    resource: content/subjects/business/overlays/skills/study-designer.md
+    activation: method_only
+  construct-level-fit:
+    resource: content/subjects/business/overlays/skills/manuscript-architect.md
+    activation: method_only
+evaluation_pack: tests/fixtures/subject_router_eval/business
+near_miss_policy:
+  forbidden_subjects:
+    - finance
+    - economics
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.95
+    suggest_subject_precision: 0.95
+    near_miss_false_positives: 0

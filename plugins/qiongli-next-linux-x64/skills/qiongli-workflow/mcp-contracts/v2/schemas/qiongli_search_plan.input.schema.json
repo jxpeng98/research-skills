@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_search_plan.input.v2.json",
+  "title": "qiongli_search_plan input",
+  "type": "object",
+  "required": ["query"],
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": ".*\\S.*",
+      "description": "Project-config context used by Full and accepted as a compatibility context by Lite."
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": ".*\\S.*"
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9]+(?:[ _-]+[A-Za-z0-9]+)*[ _-]*$"
+    },
+    "native_search_available": { "type": "boolean", "default": false },
+    "native_search_usable": {
+      "type": "boolean",
+      "deprecated": true,
+      "description": "Compatibility alias for native_search_available."
+    },
+    "nativeSearchAvailable": {
+      "type": "boolean",
+      "deprecated": true,
+      "description": "Compatibility alias for native_search_available."
+    },
+    "native_search_tools": { "$ref": "#/$defs/toolList" },
+    "nativeSearchTools": {
+      "$ref": "#/$defs/toolList",
+      "deprecated": true,
+      "description": "Compatibility alias for native_search_tools."
+    },
+    "query_variants": { "$ref": "#/$defs/queryList" },
+    "queryVariants": {
+      "$ref": "#/$defs/queryList",
+      "deprecated": true,
+      "description": "Compatibility alias for query_variants."
+    },
+    "include_working_papers": { "type": "boolean" },
+    "includeWorkingPapers": {
+      "type": "boolean",
+      "deprecated": true,
+      "description": "Compatibility alias for include_working_papers."
+    },
+    "from_year": { "$ref": "#/$defs/year" },
+    "fromYear": {
+      "$ref": "#/$defs/year",
+      "deprecated": true,
+      "description": "Compatibility alias for from_year."
+    },
+    "to_year": { "$ref": "#/$defs/year" },
+    "toYear": {
+      "$ref": "#/$defs/year",
+      "deprecated": true,
+      "description": "Compatibility alias for to_year."
+    },
+    "search_mode": { "$ref": "#/$defs/searchMode" },
+    "searchMode": {
+      "$ref": "#/$defs/searchMode",
+      "deprecated": true,
+      "description": "Compatibility alias for search_mode."
+    },
+    "venue_filter": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "venueFilter": {
+      "type": "string",
+      "maxLength": 256,
+      "deprecated": true,
+      "description": "Compatibility alias for venue_filter."
+    },
+    "document_types": { "$ref": "#/$defs/documentTypeList" },
+    "documentTypes": {
+      "$ref": "#/$defs/documentTypeList",
+      "deprecated": true,
+      "description": "Compatibility alias for document_types."
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "year": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1000, "maximum": 9999 },
+        {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 4,
+          "pattern": "^[0-9]{4}$"
+        }
+      ]
+    },
+    "searchMode": {
+      "type": "string",
+      "enum": ["auto", "topic", "title", "doi", "review", "systematic_review"]
+    },
+    "toolList": {
+      "type": "array",
+      "description": "Identifiers are trimmed, lowercased, and separator-normalized; duplicates after normalization are invalid.",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": ".*\\S.*"
+      },
+      "maxItems": 8,
+      "uniqueItems": true
+    },
+    "queryList": {
+      "type": "array",
+      "description": "Queries are trimmed; duplicates after Unicode lowercasing are invalid.",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096,
+        "pattern": ".*\\S.*"
+      },
+      "maxItems": 16,
+      "uniqueItems": true
+    },
+    "documentTypeList": {
+      "type": "array",
+      "description": "Document types are trimmed; duplicates after Unicode lowercasing are invalid.",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": ".*\\S.*"
+      },
+      "maxItems": 32,
+      "uniqueItems": true
+    }
+  }
+}

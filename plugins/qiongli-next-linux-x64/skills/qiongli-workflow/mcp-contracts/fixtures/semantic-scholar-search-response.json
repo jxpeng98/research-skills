@@ -1,0 +1,12 @@
+{
+  "data": [
+    {
+      "title": "A Test Paper",
+      "year": 2025,
+      "venue": "Journal of Tests",
+      "externalIds": {
+        "DOI": "10.1234/example"
+      }
+    }
+  ]
+}

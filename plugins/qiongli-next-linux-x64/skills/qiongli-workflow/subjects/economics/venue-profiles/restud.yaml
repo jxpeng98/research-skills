@@ -1,0 +1,8 @@
+venue: restud
+display_name: "Review of Economic Studies"
+subject: economics
+expectations:
+  sections: [Introduction, Model_or_Framework, Data, Empirical_Strategy, Results, Robustness, Conclusion]
+  data_code: "Replication materials expected for empirical work."
+  identification: "Theory, identification, and robustness should reinforce one coherent contribution."
+  style: "Methodologically precise economics writing with explicit assumptions and boundary conditions."

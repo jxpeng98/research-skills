@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_orchestrator_route.marketplace-lite.output.v2.json",
+  "title": "qiongli_orchestrator_route marketplace-lite structured output",
+  "type": "object",
+  "required": [
+    "mode",
+    "preview_only",
+    "runtime_profile",
+    "run_agents_allowed",
+    "shell_execution_allowed",
+    "project_writes_allowed",
+    "request",
+    "platform",
+    "recommended_runtime",
+    "upgrade"
+  ],
+  "properties": {
+    "mode": {
+      "const": "preview"
+    },
+    "preview_only": {
+      "const": true
+    },
+    "runtime_profile": {
+      "const": "marketplace_lite"
+    },
+    "run_agents_allowed": {
+      "const": false
+    },
+    "shell_execution_allowed": {
+      "const": false
+    },
+    "project_writes_allowed": {
+      "const": false
+    },
+    "request": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "recommended_runtime": {
+      "type": "string"
+    },
+    "upgrade": {
+      "type": "object",
+      "properties": {
+        "required_for_execution": {
+          "type": "boolean"
+        },
+        "runtime_profile": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "required_for_execution",
+        "runtime_profile",
+        "command"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <entry>
+    <id>http://arxiv.org/abs/2501.00001</id>
+    <title>A Test Paper</title>
+    <published>2025-01-01T00:00:00Z</published>
+    <arxiv:doi>10.1234/example</arxiv:doi>
+    <arxiv:journal_ref>Journal of Tests</arxiv:journal_ref>
+  </entry>
+</feed>

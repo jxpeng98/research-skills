@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "title": "A Test Paper",
+      "doi": "10.1234/example",
+      "year": 2025,
+      "venue": "Journal of Tests",
+      "provider": "openalex",
+      "providers": ["openalex"]
+    }
+  ]
+}

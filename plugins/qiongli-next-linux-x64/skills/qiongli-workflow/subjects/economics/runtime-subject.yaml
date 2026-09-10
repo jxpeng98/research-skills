@@ -1,0 +1,27 @@
+schema_version: 1.0
+subject: economics
+display_name: Economics
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/economics.yaml
+overlay: overlays/economics.yaml
+subject_skill: skills/economics/SKILL.md
+signal_groups:
+  method: []
+  venue: []
+method_lenses:
+  did:
+    resource: method-packs/economics/did.yaml
+    activation: method_only
+  causal-identification:
+    resource: method-packs/economics/causal-identification.yaml
+    activation: subject
+evaluation_pack: tests/fixtures/subject_router_eval
+near_miss_policy:
+  forbidden_subjects:
+    - finance
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.90
+    suggest_subject_precision: 0.85
+    near_miss_false_positives: 0

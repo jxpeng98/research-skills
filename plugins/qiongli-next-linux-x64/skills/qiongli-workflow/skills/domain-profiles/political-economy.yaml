@@ -1,0 +1,118 @@
+domain: political-economy
+display_name: "Political Economy"
+
+libraries:
+  python:
+    - pandas
+    - statsmodels
+    - linearmodels
+    - networkx
+    - geopandas
+    - scikit-learn
+  r:
+    - fixest
+    - estimatr
+    - did
+    - MatchIt
+    - WeightIt
+    - quanteda
+    - stm
+  stata:
+    - reghdfe
+    - eventstudyinteract
+    - csdid
+    - estout
+
+method_templates:
+  - name: "Actor-Institution-Outcome Mechanism Audit"
+    tier: standard
+    library: qualitative process tracing / mixed methods
+    checklist:
+      - "Name the political actors and their incentives before stating the economic outcome."
+      - "Describe the institution, rule, or policy process that constrains actor behavior."
+      - "Map the political mechanism from incentive to action to policy or economic result."
+      - "List rival mechanisms such as ideology, capacity, electoral pressure, or external shocks."
+      - "Calibrate claim strength to the evidence supporting the political mechanism."
+
+  - name: "Panel Policy Design"
+    tier: standard
+    library: fixest / linearmodels
+    checklist:
+      - "Define treatment timing and institutional adoption process."
+      - "Cluster standard errors at the political or policy assignment level."
+      - "Test pre-trends, anticipation, and alternative policy timing windows."
+      - "Assess endogenous policy adoption and observable selection into treatment."
+      - "Report robustness to alternative institutional and geographic scopes."
+
+  - name: "Comparative Political Economy Case Design"
+    tier: standard
+    library: structured focused comparison
+    checklist:
+      - "Select cases using explicit variation in institution, actor coalition, or policy outcome."
+      - "Document within-case mechanism evidence and cross-case comparability."
+      - "Separate descriptive institutional context from causal mechanism evidence."
+      - "State boundary conditions for regime type, state capacity, and economic structure."
+
+stats_diagnostics:
+  - "Actor-institution-outcome alignment"
+  - "Policy adoption timing and anticipation"
+  - "Institutional clustering and multi-level dependence"
+  - "Endogenous policy adoption and omitted institutional confounders"
+  - "Alternative political mechanism and distributional conflict checks"
+
+reporting_guidelines:
+  primary: "Political economy mechanism reporting"
+  checklists:
+    - "Actor and incentive map"
+    - "Institutional scope statement"
+    - "Distributional conflict and coalition logic"
+    - "Policy timing and assignment diagnostics"
+    - "Claim strength calibration"
+
+common_pitfalls:
+  - "Treating policy outcomes as evidence of political mechanism without actor-level support."
+  - "Collapsing institutions, regimes, and governments into one vague political context."
+  - "Ignoring distributional conflict when economic winners and losers are central."
+  - "Using correlations between politics and outcomes as causal claims without mechanism evidence."
+  - "Generalizing from one institutional setting without stating boundary conditions."
+
+visualization_templates:
+  - "Actor-institution-outcome mechanism diagram"
+  - "Policy timing event-study plot"
+  - "Distributional conflict stakeholder matrix"
+  - "Coalition or elite network graph"
+  - "Comparative institutional case table"
+
+reporting_standards:
+  primary: "APSA and political economy transparency norms"
+  checklists: [DA-RT, pre-analysis-plan-when-applicable]
+  required_tables:
+    - "Institutional context table"
+    - "Mechanism evidence table"
+    - "Robustness and rival mechanism table"
+
+default_databases:
+  primary: [Web of Science, Scopus, JSTOR, ProQuest Political Science]
+  secondary: [Google Scholar, SSRN, SocArXiv, NBER]
+  preprints: [SSRN, SocArXiv, NBER]
+  query_syntax_notes: "Combine institution, actor, policy, mechanism, and outcome terms; avoid search strings that only name the country or policy."
+
+methodology_priors:
+  identification: "Causal claims require explicit assignment logic, timing, or process-tracing evidence for the political mechanism."
+  robustness: "Check alternative mechanisms, institutional scope, treatment timing, and level-of-analysis mismatch."
+  standard_hierarchy: [Natural_Experiment, DID, IV, RD, Panel_FE, Process_Tracing, Comparative_Case]
+  estimation_norms: "Report standard errors clustered at the policy or political assignment level when quantitative data are used."
+
+venue_norms:
+  apsr:
+    sections: [Introduction, Theory, Research_Design, Evidence, Conclusion]
+    word_limit: 12000
+    code_release: "Replication data and code expected when quantitative evidence is used."
+  ajps:
+    sections: [Introduction, Theory, Data, Results, Conclusion]
+    word_limit: 10000
+    code_release: "Replication materials expected."
+  world-politics:
+    sections: [Introduction, Theory, Historical_Context, Evidence, Conclusion]
+    word_limit: 12000
+    code_release: "Data transparency expected for empirical claims."

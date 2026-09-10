@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "canary_value": "QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c",
+  "calls": [
+    {
+      "id": "lite.qiongli_config_status.success",
+      "name": "qiongli_config_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "id": "lite.qiongli_save_provider_config.success",
+      "name": "qiongli_save_provider_config",
+      "arguments": {
+        "provider": "semantic_scholar",
+        "field": "api_key",
+        "value": "QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"
+      },
+      "expected_response_class": "bounded_local_result",
+      "side_effects": { "config": true, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "id": "lite.qiongli_configure_provider.invalid-host",
+      "name": "qiongli_configure_provider",
+      "arguments": { "host": "example.invalid", "port": 0 },
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "id": "lite.qiongli_open_config_wizard.invalid-host",
+      "name": "qiongli_open_config_wizard",
+      "arguments": { "host": "example.invalid", "port": 0 },
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "id": "lite.qiongli_literature_status.success",
+      "name": "qiongli_literature_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "id": "lite.qiongli_search_plan.success",
+      "name": "qiongli_search_plan",
+      "arguments": {
+        "query": "fixture literature planning query",
+        "platform": "codex",
+        "native_search_available": false,
+        "search_mode": "review",
+        "from_year": 2020,
+        "toYear": "2026"
+      },
+      "expected_response_class": "bounded_local_result",
+      "required_output_equalities": [
+        {
+          "left": "/provider_queries/0/filters/from_year",
+          "right": "/provider_queries/0/filters/fromYear"
+        },
+        {
+          "left": "/provider_queries/0/filters/to_year",
+          "right": "/provider_queries/0/filters/toYear"
+        }
+      ],
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_literature_search",
+      "arguments": {},
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "id": "lite.qiongli_literature_export_evidence.success",
+      "name": "qiongli_literature_export_evidence",
+      "arguments": { "query": "fixture query", "results": [], "diagnostics": {} },
+      "expected_response_class": "success",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_zotero_status",
+      "arguments": {},
+      "expected_response_class": "bounded_local_result",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_zotero_search",
+      "arguments": {},
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_zotero_upsert_references",
+      "arguments": {},
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_zotero_export_import_files",
+      "arguments": { "records": [], "formats": [] },
+      "expected_response_class": "success",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_orchestrator_route",
+      "arguments": {},
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    },
+    {
+      "name": "qiongli_task_plan",
+      "arguments": {},
+      "expected_response_class": "input_error",
+      "side_effects": { "config": false, "network": false, "loopback_listener": false },
+      "forbidden_output": ["QIONGLI_CANARY_DO_NOT_ECHO_7f3a9c"]
+    }
+  ]
+}

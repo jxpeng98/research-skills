@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "type": "object",
+  "required": ["results"],
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "provider", "providers"],
+        "properties": {
+          "title": { "type": "string" },
+          "doi": { "type": "string" },
+          "year": { "type": "integer" },
+          "venue": { "type": "string" },
+          "provider": { "type": "string" },
+          "providers": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

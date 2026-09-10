@@ -1,0 +1,11 @@
+id: review-of-accounting-studies
+display_name: "Review of Accounting Studies"
+discipline: accounting
+quality_bar:
+  - "Research question must connect accounting measurement to a clear mechanism and institutional setting."
+  - "Results must distinguish reporting, governance, financing, audit, and selection explanations."
+  - "Robustness must document sample screens, database coverage, scaling, winsorization, and timing choices."
+fit_notes:
+  - "Best fit for mechanism-forward accounting papers with rigorous empirical design."
+  - "Show how accounting variables map to latent constructs and why alternatives are less plausible."
+  - "Make additional analyses serve construct validity, not only statistical persistence."

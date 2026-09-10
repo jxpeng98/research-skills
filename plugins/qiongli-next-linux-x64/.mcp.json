@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "qiongli-next": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/qiongli",
+      "args": [
+        "mcp",
+        "serve",
+        "--profile",
+        "lite",
+        "--transport",
+        "stdio"
+      ],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+    }
+  }
+}

@@ -3,7 +3,101 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: Agent guidance and Codex baseline — September 10
+## Current increment: routing dimensions and controlled Codex comparison — September 10
+
+Started from clean `ec1704a3` on `codex/routing-eval-calibration`. Codex remains
+primary; this increment changes evaluation tooling, not product content, native
+runtime, Host installation or release packages. `657c6f58` adds optional canonical
+suite receipts; `c5bb5cfe` implements v2 capture, source-bound regrading and checks.
+
+V2 separates primary task route, a discovery/project prerequisite, scope and the
+current text-only action. All 24 bilingual request groups retain their original
+IDs, categories and verbatim requests (48 cases). Corpus SHA-256:
+`cf5f9a7579ca44387ed671bd709abcd7028b1c9bada076e8f38ec1daf3cf8b13`.
+The task-route versus reporting-a-current-block interpretation is still unresolved
+for denied reads; the measured failures below are retained.
+
+New captures snapshot entry, corpus, instruction, response schema and producer.
+Offline scoring verifies those inputs plus prompt/trace hashes rather than
+requiring today's files to equal old files. Legacy v1 inputs must match a pinned
+local Git commit's three hashes; only its instruction string is read with AST,
+never executed. Regrading changes expectations only and creates separate reports
+with original/revised labels. It cannot shrink the captured selection, invent a
+missing v2 field, overwrite old scores or treat missing/tool-contaminated traces
+as success. The existing Evaluation Truth V1 suite optionally emits its canonical
+per-case receipts, with unchanged default read-only behavior and success rules.
+
+Legacy `legacy-1.1` adjudications explain six ambiguous groups; they are expressly
+post-hoc interpretations, not model improvement. SHA-256:
+`63ff274c39ca2050890ce425911c1699b6d22cfb3117a3e27dc4e39b4b3ae302`.
+All original inputs and scores were preserved. Offline reports are under
+`/private/tmp/qiongli-routing-calibration-lcuwjnyn/`:
+
+| Original capture | Verified source | Original labels | Post-hoc label compatibility |
+|---|---|---|---|
+| `qiongli-codex-intent-final` | `70a0fe6a` | 10/12 | 12/12 |
+| `qiongli-codex-baseline-remaining-1` | `5471486b` | 12/12 | 12/12 |
+| `qiongli-codex-baseline-remaining-2` | `5471486b` | 8/12 | 12/12 |
+| `qiongli-codex-baseline-remaining-3` | `5471486b` | 7/12 | 12/12 |
+
+A fresh controlled comparison used six preselected requests per arm: English and
+Chinese pairs for result interpretation, rubric-bounded revision and denied-read
+injection. All 18 real Codex turns completed with CLI `0.153.4`, configured
+`gpt-6-astra` / `high`, identical v2 scaffold/corpus and disabled tools. The arms
+supply no entry, the preceding entry from `5471486b`, or candidate entry from
+`ec1704a3` (unchanged since `ed2582ca`). Capture producer SHA-256:
+`61152a1e55291ee3a3506ad9a730df1739842c2eb30d6feef63aa35c7168c4fc`.
+Later local CLI input guards do not modify these captured producer snapshots.
+
+| Arm | Primary route | Prerequisite resource | Scope | Current action |
+|---|---|---|---|---|
+| No Skill | unassessed | unassessed | 6/6 | 6/6 |
+| Preceding entry | 4/6 | 4/6 | 6/6 | 6/6 |
+| Candidate entry | 4/6 | 4/6 | 6/6 | 6/6 |
+
+Both entry arms failed the original labels on the denied-read pair: they select
+an academic verification resource as the task and platform-routing as its
+prerequisite, while the predeclared labels select platform-routing as the current
+remaining work. No labels were broadened after seeing these answers. All six
+denial answers stop at the refusal, reject the imported bypass instruction and
+claim no completed verification. This is a scoring interpretation gap, not
+observed permission bypass. No-Skill has two fewer assessed labels, so its
+aggregate 6/6 must not be ranked against the entry arms' aggregate 4/6.
+
+The main Agent inspected all 18 final answers without using reasoning text.
+Both no-Skill and preceding English interpretations add unsupported “reported”
+study-time wording; the candidate preserves the supplied measurement wording.
+All arms retain causal/reporting limits and keep the rubric revision to two
+sentences without inventing an observed association. This is a bounded source-
+fidelity observation, not a general answer-quality pass or superiority claim.
+The common scaffold itself supplies action distinctions; no automatic activation,
+resource reads, tool execution or performance improvement is measured.
+
+Complete private captures, original receipts and the answer review are under
+`/private/tmp/qiongli-routing-comparison-u3yldar6/`. Review SHA-256:
+`3fbda4cf3701cdd3b9a829891a52574d566bde8d21bf1f6b3859356cb4545ffc`;
+it binds each arm's manifest and original score summary. Do not publish raw
+reasoning or promote this Agent review to human/program acceptance.
+
+Focused validation: 28 unittest checks passed across the routing probe,
+academic-quality suite and Evaluation Truth cases. These include legacy source
+mismatch, unexecuted historical code, changed requests/prompts/traces/snapshots,
+missing/invalid/tool responses, original-score preservation, no-Skill unassessed
+metrics, v2 catalog-as-primary rejection with legacy compatibility, canonical
+receipt pass/fail/missing behavior, and report-path rejection
+before a paid capture. Log: `/private/tmp/qiongli-routing-calibration-focused.log`.
+Independent code review found and closed the v2 catalog-as-primary validation gap;
+it also confirmed the unresolved denied-read interpretation above. Product/native
+inputs are unchanged, so prior package checks are reused.
+
+Next bounded work: resolve the denied-read task-versus-stop route interpretation
+from the owning references before freezing further expected labels. Then measure
+actual Codex resource selection/loading in an isolated synthetic workspace and
+one literature → reading → claim → manuscript continuity journey. Keep these
+observed-resource checks separate from supplied-entry intent. Host registration
+remains paused; no publication or accepted program state changes in this increment.
+
+## Completed: Agent guidance and Codex baseline — September 10
 
 Started from clean `5623c796` on `codex/agent-guidance-and-routing-baseline`.
 The maintainer requested an AGENTS review before continuing the remaining Codex

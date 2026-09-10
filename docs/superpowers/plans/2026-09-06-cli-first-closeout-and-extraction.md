@@ -3,7 +3,60 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: authorized Codex resource-read observation — September 10
+## Current increment: declared reads and evidence-chain audit — September 10
+
+Base `2daac4c4`; branch `codex/current-read-requirements`. Each of the existing
+48 routing cases now declares its current read requirements separately from
+future dependency labels. New `codex-resource-reading-v2` captures bind those
+requirements in the corpus snapshot and keep them out of the model prompt.
+`[route]` requires one accepted primary resource; `[]` requires zero reads.
+`resource_route` can be required explicitly, regardless of `report_blocked`.
+In the current isolated corpus, project dependencies remain future-only because
+no project operations are available. Product entry, resource contents, model
+configuration and runtime contracts are unchanged.
+
+Missing/invalid requirements or missing candidate resources block collection
+before invoking Codex. Regrading cannot alter required dimensions or their
+candidate path sets. Independent review found and closed the indirect candidate-
+path regrading loophole; its regression is included. The existing Evaluation
+Truth V1 runner still owns assertions, receipts and suite success.
+
+Validation: **32 focused unittest checks passed** across the routing probe,
+academic-quality suite and Evaluation Truth cases. Log:
+`/private/tmp/qiongli-current-read-focused.log`. These include matched reads,
+false claims, zero-read boundaries, missing requirements/resources, immutable
+read policies, protocol/permission negatives and legacy compatibility.
+
+Offline replay with the final scorer preserves the original real resource score
+**4/6**, and the earlier no-Skill / preceding / candidate scores **6/6, 4/6, 4/6**.
+Every capture file and original score remained byte-identical. Reports:
+`/private/tmp/qiongli-current-read-final-4inuzx6n/`; replay-review SHA-256
+`6b035a2ef5f7c7f2f3d7d6678198ee9fa6c48557e303037f2249d4b67e520cd2`.
+No new model calls ran. V2 is tested offline, not a newly measured model result.
+
+The next research journey was audited using existing owners. The full-cycle,
+B2 reading-summary, evidence-ledger and citation-risk checks pass **16/16**;
+the canonical academic-quality suite passes **12/12**. However, two synthetic
+copies of `clean_empirical` still receive `ready_for_h5` and `coverage=complete`
+after (a) substituting a nonexistent paper/source artifact and empty locator, or
+(b) adding an untracked manuscript Claim C999. The first also passes the ledger
+shape audit. Exact inputs, commands and reports are retained at
+`/private/tmp/qiongli-journey-gap-pnkpni8m/`. This demonstrates a gap in the
+offline harness's status-based coverage; it is not a native/live project finding
+or proof of source semantics. Do not use that skeleton's green status as evidence
+that the literature-to-manuscript chain has been verified.
+
+Next bounded increment: one explicitly synthetic, closed-corpus paper flowing
+through its source-bound B2 note/summary/matrix, Claim C1 ledger and manuscript
+claim map/passage. Reuse existing V1 citation identity, locator, cross-artifact
+consistency and digest assertions with receipts. Require missing sources,
+untracked claims and changed source bytes to fail; source changes leave prior
+verification pending. Keep semantic answer review distinct from structural
+checks, then use the resulting fixed packet for a scoped Codex observation.
+No new runner, native API or orchestration framework is needed for this increment.
+Host registration remains paused; release and accepted program state are unchanged.
+
+## Completed: authorized Codex resource-read observation — September 10
 
 Base `8bfd1538bf300378aa3bbf59df324fd91c2e654b`; branch
 `codex/authorized-resource-read-validation`. The user explicitly confirmed

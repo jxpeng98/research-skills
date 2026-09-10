@@ -3,7 +3,7 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: alpha.8 publication and marketplace parity — September 10
+## Completed: alpha.8 publication and marketplace parity — September 10
 
 The maintainer requested a new release and a comparison of the Skillsplace Codex
 Plugin with npm. The candidate is `2.0.0-alpha.8`, npm `next`, PyPI `2.0.0a8`, on
@@ -32,8 +32,8 @@ exposed the same Plugin-source fixture failure on Linux and Windows. A local
 controlled reproduction gives `codex-plugin-bundle-binary-invalid` for a binary
 with two hard links and succeeds for an independent copy. The lifecycle test
 now copies the Cargo executable as installed packages do; production ownership,
-link-count, permission and receipt checks are unchanged. The failed candidate is
-not publishable; qualify the corrected source before creating immutable refs.
+link-count, permission and receipt checks are unchanged. The failed candidate
+was replaced by corrected, qualified source `3d64767c`; no failed bytes were published.
 
 The native release owner now exports the verified embedded `marketplace-lite`
 profile and packages Codex/Claude archives. Canonical research resources remain
@@ -43,12 +43,32 @@ retain Full (32). Archive verification binds resource bytes to the original pack
 and compares its digest with all three native executables. Skillsplace's 2.x
 synchronizer omits unshipped Desktop entries and preserves the 1.x gate.
 
-Publish only after exact-source native builds, combined installation and Plugin
-checks pass. Create immutable distribution refs from verified archives before
-updating Skillsplace's catalogs. The user requested publication; no announcement
-or private Host registration is included. Cargo has no configured `crates-io`
-environment/token and is not advertised as published. Release notes own claims
-and rollback; registry/download evidence will be recorded after publication.
+Published `v2.0.0-alpha.8` from `3d64767c52682464079a25cb59ef72683b229d8a`.
+Native distribution run **34490579219** passed all seven jobs: three builds,
+assembly and three combined-package installs. CLI/MCP tests passed **42/42** on
+macOS/Linux and **41/41** on Windows. npm publication **34492174086** and PyPI
+publication **34492174052** succeeded. All 11 public GitHub files and all four
+registry package downloads match CI-qualified bytes; public packages were
+reinstalled and the pinned npm Plugin bridge exercised on isolated macOS.
+
+Skillsplace main **973e1a04877611048d3e4b7ca341039201116839** now points next to
+the actual immutable Codex/Claude alpha.8 refs; stable remains 1.17.0. Its **29**
+checks passed. Independent public audit verified each platform's **430** remote
+Git blobs against its archive, and all **428** native resources against the same
+pack. Of these, **426** shared research resources are byte-identical; the two
+platform manifests are intentionally projected. No Host registration, private
+research access, new model observation or announcement ran.
+
+The durable release evidence is
+[`v2.0.0-alpha.8-distribution.json`](../../../tooling/release/acceptance/v2.0.0-alpha.8-distribution.json).
+Cargo run **34492174168** passed macOS/Linux source qualification but failed
+Windows when staging produced invalid TOML carriage returns; publication and
+public installs were skipped. Registry credentials are also unavailable. This
+does not invalidate the separately qualified Windows binary/npm/wheel packages.
+The next packaging fix is to normalize staged manifest line endings and rerun
+Cargo source qualification; keep registry publication separately gated. The next
+research increment remains the bounded Codex source-to-paragraph observation
+described below. CLI-410 stays active until its remaining acceptance gates close.
 
 ## Completed: flexible evidence journeys — September 10
 

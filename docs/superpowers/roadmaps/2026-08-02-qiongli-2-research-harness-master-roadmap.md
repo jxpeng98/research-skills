@@ -66,17 +66,19 @@ with focused compatibility checks. Preserve configured models, shared research
 state, approval/CAS and macOS/Windows/Linux delivery. This prioritizes execution;
 it does not supersede the External Host architecture or claim adapter acceptance.
 
-Current delivery priority: qualify and publish `2.0.0-alpha.8` through GitHub,
-npm `next` and PyPI `2.0.0a8`, and repair Skillsplace's stale prerelease Plugin
-reference with native content and an exact npm runtime pin. Keep the semantic
-research observation below as the next development increment. Source integration
-alone does not establish publication; Cargo credentials remain unavailable.
+Delivery closeout: `2.0.0-alpha.8` is published through GitHub, npm `next` and
+PyPI `2.0.0a8`. Skillsplace's prerelease Plugin now uses the same native research
+resources and an exact npm runtime pin. The
+[distribution evidence](../../../tooling/release/acceptance/v2.0.0-alpha.8-distribution.json)
+records qualified source, public bytes and marketplace parity. Continue with the
+bounded semantic research observation below. Cargo's Windows staged-TOML failure
+and missing registry credentials remain separate release gaps.
 
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
-| **NOW** | Alpha.7 is published from `de982b42` on GitHub, npm `next` (`2.0.0-alpha.7`) and PyPI (`2.0.0a7`), with native build and final-package installation passing on macOS ARM64, Windows x64 and Linux x64 (glibc 2.35+). Public downloads match CI bytes. `CLI-405` bounded Codex/Claude Code handoff with configured DeepSeek remains verified at `dfebb17c`, revision 2. Program and managed/App lifecycle acceptance remain separate. |
-| **NEXT** | Codex-first Skills quality: two bounded evidence-journey cases now check reading-to-manuscript and direct-source scopes through the existing V1 owner. Required outputs follow the task; prose/order/reuse stay flexible, while requested claims, active source links, evidence limits and source bytes remain constrained. Offline receipts pass 16/13 assertions, with missing/stale/mislinked evidence regressions. These are test observations, not full Markdown or semantic verification. Next bind actual Codex answers to these fixed synthetic inputs and review source fidelity, causal limits and unnecessary work alongside structural checks. Original resource-read score stays 4/6; no new model result is claimed. Other Agents adapt shared contracts; Host registration stays paused. Cargo still needs named-release three-platform and registry checks; acceptance stays separate. |
+| **NOW** | Alpha.8 is published from `3d64767c` on GitHub, npm `next` (`2.0.0-alpha.8`) and PyPI (`2.0.0a8`). Native run `34490579219` passed builds and final-package installation on macOS ARM64, Windows x64 and Linux x64 (glibc 2.35+); public downloads match CI bytes. Skillsplace `973e1a04` aligns next with verified Codex/Claude distributions; stable remains 1.17.0. Public Plugin Lite MCP uses 14 tools; CLI Full retains 32. `CLI-405` bounded Codex/Claude Code handoff with configured DeepSeek remains verified at `dfebb17c`, revision 2. Program and managed/App lifecycle acceptance remain separate. |
+| **NEXT** | Codex-first Skills quality: two bounded evidence-journey cases now check reading-to-manuscript and direct-source scopes through the existing V1 owner. Required outputs follow the task; prose/order/reuse stay flexible, while requested claims, active source links, evidence limits and source bytes remain constrained. Offline receipts pass 16/13 assertions, with missing/stale/mislinked evidence regressions. These are test observations, not full Markdown or semantic verification. Next bind actual Codex answers to these fixed synthetic inputs and review source fidelity, causal limits and unnecessary work alongside structural checks. Original resource-read score stays 4/6; no new model result is claimed. Other Agents adapt shared contracts; Host registration stays paused. Cargo separately needs staged manifest line-ending repair, three-platform source qualification and registry checks; acceptance stays separate. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 

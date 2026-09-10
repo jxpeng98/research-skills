@@ -1,0 +1,405 @@
+{
+  "status": "passed",
+  "version": "2.0.0-alpha.8",
+  "source_commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+  "release": "https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-alpha.8",
+  "published_at": "2026-09-10T14:54:44Z",
+  "qualification": {
+    "databaseId": 34490579219,
+    "headSha": "3d64767c52682464079a25cb59ef72683b229d8a",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34490579219"
+  },
+  "target_cli_mcp_tests_passed": {
+    "aarch64-apple-darwin": 42,
+    "x86_64-unknown-linux-gnu": 42,
+    "x86_64-pc-windows-msvc": 41
+  },
+  "linux_headless_clippy": "passed",
+  "release_tooling_tests_passed": 27,
+  "combined_package_install_checks": {
+    "windows-2022": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-alpha.8.tgz",
+          "sha256": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+          "bytes": 19462456
+        },
+        {
+          "file": "qiongli-2.0.0a8-py3-none-win_amd64.whl",
+          "sha256": "2f350c49e6f5d5f78c8fb664cb8ce5ef36f2fee0d9a5e36dafe89670c02a8a05",
+          "bytes": 5357169
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-alpha.8",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+        },
+        "pypi": {
+          "version": "2.0.0-alpha.8",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+        }
+      }
+    },
+    "macos-14": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-alpha.8.tgz",
+          "sha256": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+          "bytes": 19462456
+        },
+        {
+          "file": "qiongli-2.0.0a8-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "c5a27706971c6d89aaf72b86d7d1b92538777ba015df36cc33513a631ee25941",
+          "bytes": 6536554
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-alpha.8",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+        },
+        "pypi": {
+          "version": "2.0.0-alpha.8",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+        }
+      }
+    },
+    "ubuntu-22.04": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-alpha.8.tgz",
+          "sha256": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+          "bytes": 19462456
+        },
+        {
+          "file": "qiongli-2.0.0a8-py3-none-manylinux_2_35_x86_64.whl",
+          "sha256": "f12f4e7a316d4881914d082c5671caa6bfb5a45cc6cdedd37dce717f88d96ede",
+          "bytes": 7169994
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-alpha.8",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+        },
+        "pypi": {
+          "version": "2.0.0-alpha.8",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+        }
+      }
+    }
+  },
+  "github_downloaded_sha256": {
+    "SHA256SUMS": "c883efeaa322a95513001e62fcc67e3ec6435c032b08207ce4b2d8cadacf5c86",
+    "qiongli-2.0.0-alpha.8-aarch64-apple-darwin.tar.gz": "4fb690d108993e06a73454ff861608b7826e173eca3318c60d9836681f5f62b1",
+    "qiongli-2.0.0-alpha.8-x86_64-pc-windows-msvc.zip": "5c29473c5c6b0b5f4c6dd7f35e77834c6d07f7aec5f66664fb97a45a4200bb43",
+    "qiongli-2.0.0-alpha.8-x86_64-unknown-linux-gnu.tar.gz": "30f0d2dd12a81c0b5b1d416f429f23fb81516fd22be55b55a072ee7e0da56c08",
+    "qiongli-2.0.0-alpha.8.tgz": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+    "qiongli-2.0.0a8-py3-none-macosx_11_0_arm64.whl": "c5a27706971c6d89aaf72b86d7d1b92538777ba015df36cc33513a631ee25941",
+    "qiongli-2.0.0a8-py3-none-manylinux_2_35_x86_64.whl": "f12f4e7a316d4881914d082c5671caa6bfb5a45cc6cdedd37dce717f88d96ede",
+    "qiongli-2.0.0a8-py3-none-win_amd64.whl": "2f350c49e6f5d5f78c8fb664cb8ce5ef36f2fee0d9a5e36dafe89670c02a8a05",
+    "qiongli-next-claude-plugin-v2.0.0-alpha.8.tar.gz": "440dda30a8549a43c5a4340871ce62f7ec622fbe9f5804513c15daf928ebe688",
+    "qiongli-next-codex-plugin-v2.0.0-alpha.8.tar.gz": "edd3b11f190431b3121bb7471437c3a2821a5163e23eb00fa7b0d162557b54e3",
+    "release-manifest.json": "af9fae4c5c3f7292eae86fa316948ede81617ef0e3efa341f71e83f7e5b35159"
+  },
+  "npm_publication": {
+    "conclusion": "success",
+    "databaseId": 34492174086,
+    "headSha": "3d64767c52682464079a25cb59ef72683b229d8a",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174086"
+  },
+  "pypi_publication": {
+    "conclusion": "success",
+    "databaseId": 34492174052,
+    "headSha": "3d64767c52682464079a25cb59ef72683b229d8a",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174052"
+  },
+  "registry_download_verification": {
+    "status": "passed",
+    "npm_version": "2.0.0-alpha.8",
+    "npm_dist_tags": {
+      "latest": "1.17.0",
+      "next": "2.0.0-alpha.8"
+    },
+    "pypi_version": "2.0.0a8",
+    "downloaded_sha256": {
+      "qiongli-2.0.0-alpha.8.tgz": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+      "qiongli-2.0.0a8-py3-none-macosx_11_0_arm64.whl": "c5a27706971c6d89aaf72b86d7d1b92538777ba015df36cc33513a631ee25941",
+      "qiongli-2.0.0a8-py3-none-manylinux_2_35_x86_64.whl": "f12f4e7a316d4881914d082c5671caa6bfb5a45cc6cdedd37dce717f88d96ede",
+      "qiongli-2.0.0a8-py3-none-win_amd64.whl": "2f350c49e6f5d5f78c8fb664cb8ce5ef36f2fee0d9a5e36dafe89670c02a8a05"
+    }
+  },
+  "registry_downloaded_macos_install": {
+    "status": "passed",
+    "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+    "packages": [
+      {
+        "file": "qiongli-2.0.0-alpha.8.tgz",
+        "sha256": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9"
+      },
+      {
+        "file": "qiongli-2.0.0a8-py3-none-macosx_11_0_arm64.whl",
+        "sha256": "c5a27706971c6d89aaf72b86d7d1b92538777ba015df36cc33513a631ee25941"
+      }
+    ],
+    "checks": {
+      "npm": {
+        "version": "2.0.0-alpha.8",
+        "invalid_command_rejected": true,
+        "mcp_tools": {
+          "lite": 14,
+          "full": 32
+        },
+        "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+      },
+      "pypi": {
+        "version": "2.0.0-alpha.8",
+        "invalid_command_rejected": true,
+        "mcp_tools": {
+          "lite": 14,
+          "full": 32
+        },
+        "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9"
+      }
+    }
+  },
+  "marketplace": {
+    "repository": "jxpeng98/skillsplace",
+    "commit": "973e1a04877611048d3e4b7ca341039201116839",
+    "tests_passed": 29,
+    "distribution_refs": {
+      "codex": {
+        "ref": "codex/v2.0.0-alpha.8",
+        "commit": "2bddb3143862e83bf4af6c6fc2327df0195d68c1",
+        "manifest_sha256": "5db83878bbbb15eb1eb1dfa85bd74c50e10f3206bd57f44c5d2fd3f67ced8c51"
+      },
+      "claude": {
+        "ref": "claude/v2.0.0-alpha.8",
+        "commit": "a407155702c7584cd45cbd61bca5204aa1712cfb",
+        "manifest_sha256": "29ddd7fcfa0ece6cbf1252a001799c6c34b90cf118991f53c6b2bef7da3bd062"
+      }
+    },
+    "canonical_resources": 428,
+    "byte_identical_shared_skill_resources": 426,
+    "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+    "public_mcp_profile": "lite",
+    "public_mcp_tools": 14,
+    "host_registration_tested": false,
+    "independent_public_audit": {
+      "status": "passed",
+      "checked_at_utc": "2026-09-10T15:03:43.936905+00:00",
+      "release_source_commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+      "release_tag_commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+      "skillsplace_main_commit": "973e1a04877611048d3e4b7ca341039201116839",
+      "npm_dist_tags": {
+        "latest": "1.17.0",
+        "next": "2.0.0-alpha.8"
+      },
+      "npm_tarball_sha256": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+      "npm_registry_integrity_verified": true,
+      "npm_matches_public_github_tarball": true,
+      "stable_ref": {
+        "sha": "325b8a14d793bfa5a44d385a8b73881acc6faa87",
+        "date": "2026-07-08T09:08:43Z"
+      },
+      "catalog_checks": {
+        ".agents/plugins/marketplace.json": {
+          "stable_preserved_exactly": true,
+          "next_version": "2.0.0-alpha.8",
+          "no_stale_beta_ref": true
+        },
+        ".claude-plugin/marketplace.json": {
+          "stable_preserved_exactly": true,
+          "next_version": "2.0.0-alpha.8",
+          "no_stale_beta_ref": true
+        },
+        "marketplace.json": {
+          "stable_preserved_exactly": true,
+          "next_version": "2.0.0-alpha.8",
+          "no_stale_beta_ref": true
+        }
+      },
+      "native_next_desktop_catalog_entry": false,
+      "plugins": {
+        "codex": {
+          "version": "2.0.0-alpha.8",
+          "source_commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+          "platform": "codex",
+          "pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+          "content_root_sha256": "564187a37537b672940c1fd1ba6b2e4d8e9176aa14fed56487f449aeab60c9d1",
+          "sha256": "edd3b11f190431b3121bb7471437c3a2821a5163e23eb00fa7b0d162557b54e3",
+          "bytes": 612761,
+          "ref": "codex/v2.0.0-alpha.8",
+          "commit": "2bddb3143862e83bf4af6c6fc2327df0195d68c1",
+          "all_remote_files_match_public_archive": true,
+          "remote_file_count": 430,
+          "runtime_package": "qiongli@2.0.0-alpha.8",
+          "runtime_profile": "lite",
+          "plugin_receipt_sha256": "86b97f83d2056b6e77a70967757333a17412600c75776784005dd2d4a97cda0f",
+          "bridge_sha256": "cb55bffa3fc9619cf1590aa9af04babc3f0c3f3d72436ae31890a0d391720d1f"
+        },
+        "claude": {
+          "version": "2.0.0-alpha.8",
+          "source_commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+          "platform": "claude",
+          "pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+          "content_root_sha256": "564187a37537b672940c1fd1ba6b2e4d8e9176aa14fed56487f449aeab60c9d1",
+          "sha256": "440dda30a8549a43c5a4340871ce62f7ec622fbe9f5804513c15daf928ebe688",
+          "bytes": 612437,
+          "ref": "claude/v2.0.0-alpha.8",
+          "commit": "a407155702c7584cd45cbd61bca5204aa1712cfb",
+          "all_remote_files_match_public_archive": true,
+          "remote_file_count": 430,
+          "runtime_package": "qiongli@2.0.0-alpha.8",
+          "runtime_profile": "lite",
+          "plugin_receipt_sha256": "31590bd2ac9932dea8680886c7c0f64782aefd1d53fcb497d509b57c8a58f7d1",
+          "bridge_sha256": "cb55bffa3fc9619cf1590aa9af04babc3f0c3f3d72436ae31890a0d391720d1f"
+        }
+      },
+      "npm_embedded_packs": {
+        "aarch64-apple-darwin": {
+          "pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+          "content_root_sha256": "564187a37537b672940c1fd1ba6b2e4d8e9176aa14fed56487f449aeab60c9d1",
+          "content_source_commit": "736fbc87b80f1bbbf007f4d354e6a97f2c7b6a7c",
+          "verified_resource_count": 428
+        },
+        "x86_64-unknown-linux-gnu": {
+          "pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+          "content_root_sha256": "564187a37537b672940c1fd1ba6b2e4d8e9176aa14fed56487f449aeab60c9d1",
+          "content_source_commit": "736fbc87b80f1bbbf007f4d354e6a97f2c7b6a7c",
+          "verified_resource_count": 428
+        },
+        "x86_64-pc-windows-msvc": {
+          "pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+          "content_root_sha256": "564187a37537b672940c1fd1ba6b2e4d8e9176aa14fed56487f449aeab60c9d1",
+          "content_source_commit": "736fbc87b80f1bbbf007f4d354e6a97f2c7b6a7c",
+          "verified_resource_count": 428
+        }
+      },
+      "existing_public_bridge_evidence": {
+        "hashes_match_remote_codex_tree_and_public_npm": true,
+        "status": "passed",
+        "platform": "darwin",
+        "lite_tool_count": 14
+      },
+      "limitations": [
+        "This audit did not install/register/refresh any Host plugin or access configured Host/private research data.",
+        "Public bridge evidence is macOS Node/npm/native MCP via disposable localhost registry; no Windows or Claude Host live activation is claimed.",
+        "Three-platform native payloads were compared statically; this audit did not rerun CI jobs or target-native execution.",
+        "Public PyPI bytes were available from root validation but fresh PyPI registry metadata was outside this final Codex/npm parity check."
+      ]
+    }
+  },
+  "public_npm_plugin_bridge": {
+    "status": "passed",
+    "evidence_label": "published-package",
+    "platform": "darwin",
+    "version": "2.0.0-alpha.8",
+    "host_registration": false,
+    "external_model_calls": false,
+    "tarball_sha256": "47d035b5722f85e88f32f43d23a5f168269747f7c90e52a7f024b8cf910294c9",
+    "bridge_sha256": "cb55bffa3fc9619cf1590aa9af04babc3f0c3f3d72436ae31890a0d391720d1f",
+    "plugin_receipt_sha256": "86b97f83d2056b6e77a70967757333a17412600c75776784005dd2d4a97cda0f",
+    "source_commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+    "content_pack_sha256": "6a83545e9d0b5f53cb1da10bb9e620ed319ae1dc9d2d2ff82cdc11695d4ef4a9",
+    "elapsed_seconds": 1.011,
+    "returncode": 0,
+    "lite_tool_count": 14,
+    "stdout_framing": "three JSONL MCP responses only",
+    "config_status": "success",
+    "npm_source": "disposable localhost registry",
+    "npm_fetched_exact_tarball": true,
+    "process_group_cleaned": true,
+    "registry_thread_stopped": true,
+    "registry_socket_closed": true,
+    "isolated_home_and_cache_removed": true
+  },
+  "cargo": {
+    "published": false,
+    "registry_credentials_configured": false,
+    "qualification": {
+      "conclusion": "failure",
+      "databaseId": 34492174168,
+      "headSha": "3d64767c52682464079a25cb59ef72683b229d8a",
+      "jobs": [
+        {
+          "name": "qualify (ubuntu-22.04)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174168/job/102921414950"
+        },
+        {
+          "name": "qualify (macos-14)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174168/job/102921414989"
+        },
+        {
+          "name": "qualify (windows-2022)",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174168/job/102921414992"
+        },
+        {
+          "name": "publish",
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174168/job/102923708457"
+        },
+        {
+          "name": "public-install",
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174168/job/102923708678"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/jxpeng98/qiongli/actions/runs/34492174168"
+    },
+    "remaining": "Windows Cargo source qualification failed; publication and public installs were skipped. Configure registry authority after source qualification passes.",
+    "observed_windows_error": "Cargo rejected the staged Cargo.toml: carriage return must be followed by newline.",
+    "next_increment": "Check CRLF translation in staged manifest writes, normalize line endings, and rerun three-platform Cargo source qualification before registry publication."
+  },
+  "scope": "GitHub, npm next and PyPI native CLI delivery for macOS ARM64, Windows x64 and Linux x64 glibc 2.35+. Public downloads match CI; registry packages and the pinned npm Plugin bridge were checked on macOS. Codex/Claude marketplace archives share the native resource pack and pin the published npm version. No App, Cargo publication, live Host registration, additional architectures or complete research-baseline acceptance."
+}

@@ -382,12 +382,14 @@
         "tooling/release/acceptance/v2.0.0-alpha.6-github.json",
         "tooling/release/v2.0.0-alpha.7.md",
         "tooling/release/acceptance/v2.0.0-alpha.7-distribution.json",
-        "docs/architecture/decisions/0221-cargo-cli-publication.md"
+        "docs/architecture/decisions/0221-cargo-cli-publication.md",
+        "tooling/release/v2.0.0-alpha.8.md",
+        "tooling/release/acceptance/v2.0.0-alpha.8-distribution.json"
       ],
-      "commit": "de982b42479cddc54413317c2180ad201738413b",
-      "run": "34296331772",
-      "updated_at": "2026-09-09",
-      "blocker": "Alpha.7 remains published on GitHub, npm next (2.0.0-alpha.7) and PyPI (2.0.0a7), with its existing three-platform CI and public download evidence unchanged. Cargo source distribution is now in scope under ADR 0221; local implementation checks do not establish crates.io publication or three-platform Cargo acceptance. A new named release needs registry credentials, native source-install matrices and public registry install evidence. Registry CLI Plugin lifecycle and complete research baseline acceptance remain open."
+      "commit": "3d64767c52682464079a25cb59ef72683b229d8a",
+      "run": "34490579219",
+      "updated_at": "2026-09-10",
+      "blocker": "Alpha.8 is published on GitHub, npm next and PyPI with successful native build and combined-package installation on all three systems. Public bytes match CI. Skillsplace next now references verified same-version Codex/Claude distributions, and the public npm bridge passed on macOS. Cargo publication is still blocked by Windows source qualification and missing registry credentials; live Host registration and complete research baseline acceptance remain open."
     },
     {
       "id": "CLI-411",

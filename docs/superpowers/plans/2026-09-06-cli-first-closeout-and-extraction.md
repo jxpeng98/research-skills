@@ -3,7 +3,86 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: CLI onboarding and Cargo — September 9
+## Current increment: Plugin Skills interaction — September 10
+
+The maintainer paused Host registration and selected an audit of Plugin Skills,
+model interaction, efficiency and functional coverage. Source increment
+`8f921a53` updates canonical content and the two native Host guidance projectors;
+it does not register a Plugin, alter model configuration or publish new bytes.
+
+The structural audit covers all 82 registered cards; all have the required
+sections. Semantic review focused on shared entry/routing, paper reading,
+writing, interpretation, proofreading and collaboration. It found:
+
+- Mandatory project/type/Task ID menus interrupted requests already specified.
+  Direct supplied-material answers now stay in chat; formal task paths, gates
+  and project preview/approval/CAS remain required when those operations apply.
+- The entrypoint repeated detailed provider and subject instructions and loaded
+  the large core digest by default. Conditional details now live in referenced
+  resources, and execution loads the selected card. Entry bytes fell from 28,020
+  to 10,098 (about 64%); this is a size measurement, not a latency benchmark.
+- The quick index omitted 10 existing cards, including all coursework and
+  dissertation cards. It now covers all 82 registry entries, checked against the
+  actual registry and files. No new task IDs or claimed runtime tools were added.
+- Collaboration guidance launched obsolete Python controllers, assigned expertise
+  by Host name and merged confidence. It now uses actual capabilities, bounded
+  candidates and evidence-based disagreement resolution. Sequential roles remain
+  self-review; missing reviewers leave independent-review gates open.
+- Result interpretation demanded a mechanism even for descriptive evidence.
+  Both the card and shared output rubric now allow the strongest supported
+  description with inferential limits. Writing confirmation is a review decision,
+  not an automatic user turn after every paragraph. Proofreading preserves
+  meaning/disclosure and does not claim authorship or detector-score verification.
+
+Model guidance basis, checked September 10: [OpenAI instruction-following
+guidance](https://developers.openai.com/api/docs/guides/latest-model) supports
+making user/Skill priority explicit; [Anthropic Skill authoring
+guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+supports concise, progressively loaded instructions; [DeepSeek's Anthropic API
+compatibility reference](https://api-docs.deepseek.com/guides/anthropic_api/)
+shows why a compatible Host does not imply every native model feature. Runtime
+instructions use observed capabilities rather than a model-version allowlist.
+
+Focused evidence:
+
+- 64 content/contract/materialization checks passed, including complete discovery,
+  resource links, source provenance, writing/grill continuity and coursework/
+  dissertation routes. The strict 82-card section audit, Skill frontmatter
+  validator and capability contract passed. Tests for moved instructions now
+  follow the packaged references rather than requiring duplicate entry text.
+- An independent offline consumer evaluated four supplied-data scenarios: a
+  three-sentence abstract explanation, a DeepSeek-context sentence correction,
+  independent review without a second agent, and a denied read with an injected
+  approval instruction. Responses respected the available evidence and actions.
+  The mechanism requirement found during that pass was fixed and scenario 2
+  rechecked. Local report: `/private/tmp/qiongli-skill-forward-review.md`.
+- One real, tool-disabled Claude Code request used the existing DeepSeek endpoint
+  and configured model alias; it reported `deepseek-v4-pro[1m]`. With the revised
+  entry, interpretation card, writing reference and rubric, it replaced a causal
+  claim about a cross-sectional correlation with an association plus causal
+  caveat, without additional questions or saved artifacts. The process returned
+  successfully in 6.09 seconds. No tools, Plugin registration, private research
+  data or normal Host configuration changes were involved. Source hashes and
+  result: `/private/tmp/qiongli-skill-deepseek-w_sx2j7v/result.json`.
+- Native release-build bundle checks passed: Claude 5 and Codex 4, including
+  real embedded Lite/Full stdio inventories, deterministic projection, tamper
+  refusal, custom variants and local/signed source boundaries. The two existing
+  live registration tests remain ignored. Log:
+  `/private/tmp/qiongli-skill-native-bundles.log`.
+- The embedded lock was regenerated from `8f921a53` with 428 resources;
+  content root `9549d64b928701b6a261c5a713ad12618819b8aee8f1ea6d9cf549188ffa87b5`.
+  Formatting, version/lock and generated-index checks passed. The source hashes
+  in the DeepSeek sample match the final instructions.
+
+These checks do not establish universal model parity, live MCP interaction or
+new-version package acceptance. The frozen 1.x controller/materializers retain
+historical compatibility text; current native exports use canonical content.
+The next quality increment is representative literature, analysis-code and
+long-document evaluation with the selected models and available connections.
+Official Host registration/refresh/removal remains deferred at the maintainer's
+request; public Alpha.7 and program acceptance remain unchanged.
+
+## Onboarding and Cargo sequence — September 9
 
 The maintainer accepted the CLI → Plugin/MCP → Host onboarding focus and added
 Cargo publication scope. Deliver three bounded increments:
@@ -93,7 +172,8 @@ marketplace allowlist entry; the shared path/receipt validator was corrected
 before the successful runs. Current Windows/Linux source lifecycle execution
 and new-version package qualification remain pending.
 
-Next increment 2b: prepare and execute bounded official Host registration,
+Deferred increment 2b (paused by the September 10 Skills-first request):
+prepare and execute bounded official Host registration,
 refresh and removal plans, bind observed Host/source identity, and require fresh
 observations before readiness. The source commands do not automatically register,
 refresh, unregister or reload Hosts. Remove a Host registration before deleting

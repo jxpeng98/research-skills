@@ -51,7 +51,7 @@ Typed Kernel、Evidence/Reproducibility 和机构级科研治理扩张。
   checklist marks in this file are presentation only；
 - 旧路线图和计划保留为历史设计与验收记录，不再通过追加“当前状态”来控制未来队列。
 
-## Current execution horizon — September 8, 2026
+## Current execution horizon — September 10, 2026
 
 The maintainer has selected **CLI-first delivery without a Qiongli App window**.
 [ADR 0218](../../architecture/decisions/0218-cli-first-local-host-collaboration.md)
@@ -63,7 +63,7 @@ product acceptance. CLI First is the product direction; CI remains verification.
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
 | **NOW** | Alpha.7 is published from `de982b42` on GitHub, npm `next` (`2.0.0-alpha.7`) and PyPI (`2.0.0a7`), with native build and final-package installation passing on macOS ARM64, Windows x64 and Linux x64 (glibc 2.35+). Public downloads match CI bytes. `CLI-405` bounded Codex/Claude Code handoff with configured DeepSeek remains verified at `dfebb17c`, revision 2. Program and managed/App lifecycle acceptance remain separate. |
-| **NEXT** | Continue CLI → Plugin/MCP → Host onboarding: command/version documentation and Cargo distribution wiring are implemented locally (ADR 0221). Local Plugin source export/status/update/removal now reuse approval/CAS owners (ADR 0222); next complete official Host registration/refresh/removal with observed state, then qualify real Host tool discovery, project read, handoff and approved write. Cargo needs a named release's three-platform and public registry checks. Complete baseline acceptance remains separate. |
+| **NEXT** | Skills-first quality work: the maintainer paused Host registration. Canonical Plugin routing, complete skill discovery, model-capability guidance and evidence-safe interaction are strengthened locally; extend representative literature/code/long-document checks against selected models and available connections. Local Plugin source lifecycle (ADR 0222) and Cargo wiring (ADR 0221) remain implemented. Official Host registration/refresh/removal is deferred; Cargo still needs named-release three-platform and public registry checks. Baseline acceptance remains separate. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 

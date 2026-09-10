@@ -315,7 +315,7 @@
       "commit": "",
       "run": "",
       "updated_at": "2026-09-10",
-      "blocker": "Configured handoff, CLI approval/restart and denied-tool checks passed at dfebb17c. Shared native Host guidance now reports missing MCP truthfully in an explicit-guidance Claude/DeepSeek retry; original XML-only failure retained. Generated Codex/Claude bundle tests passed. New installed-candidate Host/SEC and provider account/quota qualification remain open; graph semantics/UI are not baseline gates. User-approved local Plugin source lifecycle is implemented under ADR 0222; source checks and isolated format/installation compatibility do not establish automatic Host lifecycle or live-session readiness."
+      "blocker": "Configured handoff, CLI approval/restart and denied-tool checks passed at dfebb17c. Shared native Host guidance now reports missing MCP truthfully in an explicit-guidance Claude/DeepSeek retry; original XML-only failure retained. Generated Codex/Claude bundle tests passed. New installed-candidate Host/SEC and provider account/quota qualification remain open; graph semantics/UI are not baseline gates. User-approved local Plugin source lifecycle is implemented under ADR 0222; source checks and isolated format/installation compatibility do not establish automatic Host lifecycle or live-session readiness. The maintainer paused Host registration on September 10 in favor of canonical Plugin Skills quality. Structural/content checks, offline interaction cases and a tool-disabled configured DeepSeek sample do not qualify live MCP or installed-candidate readiness."
     },
     {
       "id": "CLI-406",

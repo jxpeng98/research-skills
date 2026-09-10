@@ -1,0 +1,3 @@
+source_id,source_location,artifact_path,evidence_limit,inference_strength,reading_note,summary
+SyntheticStudy2026,SyntheticStudy2026:abstract-result,source.md,abstract_only,direct_evidence,Study time was positively associated with examination score (r = .32) in 120 students.,Study time was positively associated with examination score (r = .32) in 120 students.
+SyntheticStudy2026,SyntheticStudy2026:abstract-limit,source.md,abstract_only,direct_evidence,The cross-sectional evidence does not establish causality.,The cross-sectional evidence does not establish causality.

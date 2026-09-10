@@ -75,10 +75,10 @@ Every expected output contains:
 |---|---|---|
 | `contains_all` | non-empty string `values` | every value occurs case-insensitively |
 | `contains_any` | non-empty string `values` | at least one value occurs case-insensitively |
-| `schema` | case-relative JSON `schema` path | JSON/YAML artifact satisfies the existing supported Schema subset |
+| `schema` | case-relative JSON `schema` path | JSON/YAML value or CSV row array satisfies the existing supported Schema subset |
 | `field_constraint` | CSV `field`, non-empty `allowed_values` | every non-empty row value belongs to the allowlist |
 | `count_conservation` | `total` label, non-empty `parts` labels | unique `Label: n = N` counts satisfy total = sum(parts) |
-| `cross_artifact_consistency` | CSV `field`, output-relative `other_artifact`, `other_field`, `relation` | value multisets are `equal` or primary is a `subset` |
+| `cross_artifact_consistency` | CSV `field`, output-relative `other_artifact`, `other_field`, `relation` | value/tuple multisets are `equal` or primary is a `subset` |
 | `locator_syntax` | CSV `field` | every present locator is `p. N`, `pp. N-N`, or `citekey:anchor` |
 | `citation_identity` | output-relative `bibliography` | every paper/theory source ID exists as a BibTeX citekey |
 | `file_digest` | 64-hex `sha256` | SHA-256 matches the artifact's exact bytes |
@@ -89,6 +89,21 @@ duplicate-free. `schema` uses the tested subset owned by
 JSON Schema Draft 2020-12 support. Citation identity reuses
 `tooling/scripts/audit_citation_risk.py` and remains separate from locator,
 availability, relevance, and claim-support semantics.
+
+Cross-artifact fields may be strings or nonempty, duplicate-free lists of equal
+length. Lists compare the selected cells as one tuple; row order is irrelevant
+but duplicate counts remain significant. Primary cells must be nonempty. For
+multi-column `subset` only, incomplete rows on the other side may remain unused:
+they cannot match a complete primary tuple. Scalar comparisons and `equal` keep
+their existing blank-value rejection. Missing columns, malformed rows and empty
+tables always block. CSV schema inputs reuse the same strict CSV parser; cells
+remain strings with surrounding whitespace stripped, without type inference.
+
+The bounded cases in `evals/research_journey/` verify both reading-to-writing and
+direct-source scopes with shared synthetic inputs. Requiredness follows each
+declared task; supported active claim links, requested claim IDs and source byte
+bindings remain constraints. These are test observations, not parsed production
+Markdown or scientific entailment. Free prose needs separate semantic review.
 
 The primary artifact, bibliography, and cross-artifact references remain under
 the output root. Schema references remain under the case directory. Absolute
@@ -230,7 +245,7 @@ temporary file, then atomically replaced; parent directories are created.
 Run:
 
 ```bash
-python -m unittest tests.test_eval_cases tests.test_academic_quality_evals -v
+python -m unittest tests.test_eval_cases tests.test_academic_quality_evals tests.test_research_journey_evals -v
 python evals/runner/run_suite.py
 ```
 

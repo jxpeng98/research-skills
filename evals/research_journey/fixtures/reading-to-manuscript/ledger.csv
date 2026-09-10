@@ -1,0 +1,4 @@
+claim_id,claim_text,claim_type,evidence_type,source_id,source_location,artifact_path,evidence_limit,confidence,limitations,status
+C1,Study time was positively associated with examination score (r = .32) in 120 students.,finding,paper,SyntheticStudy2026,SyntheticStudy2026:abstract-result,source.md,abstract_only,medium,Single synthetic abstract; no causal identification,supported
+C2,The cross-sectional evidence does not establish causality.,limitation,paper,SyntheticStudy2026,SyntheticStudy2026:abstract-limit,source.md,abstract_only,medium,Single synthetic abstract; no causal identification,supported
+C3,A causal effect remains unverified.,speculation,gap_note,,,,,low,No causal evidence supplied,needs_evidence

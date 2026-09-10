@@ -47,3 +47,6 @@ jobs:
 
       - name: Run canonical evaluation suite
         run: python evals/runner/run_suite.py
+
+      - name: Check scoped evidence journeys and broken links
+        run: python -m unittest tests.test_research_journey_evals -v

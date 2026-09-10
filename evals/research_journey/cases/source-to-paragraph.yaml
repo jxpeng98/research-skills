@@ -1,0 +1,86 @@
+schema_version: '1.0'
+case_id: source-to-paragraph
+pipeline: bounded-research-journey
+input:
+  topic: Write only a bounded paragraph from the supplied synthetic abstract. Do not
+    create new reading artifacts or widen the task. Cover both the association (C1)
+    and causal limitation (C2); unused C3 stays pending.
+expected_outputs:
+  source:
+    artifact: source.md
+    required: true
+    assertions:
+    - type: file_digest
+      sha256: 19758a19d9d51b6096b59bb4fbdfdabc4d60d02323c4021e3a81eb42c5f0130e
+  source_registry:
+    artifact: sources.csv
+    required: true
+    assertions:
+    - type: file_digest
+      sha256: 86e73fd376b8544dc33686496e44d57068dfa5b679377647607685b40c4e7922
+  bibliography:
+    artifact: references.bib
+    required: true
+    assertions:
+    - type: file_digest
+      sha256: 7509126f9fac8f97fb1b64913ef9c8a7b24e29f1018d2bd8d0352954323664c1
+  ledger:
+    artifact: ledger.csv
+    required: true
+    assertions:
+    - type: citation_identity
+      bibliography: references.bib
+    - type: locator_syntax
+      field: source_location
+    - type: field_constraint
+      field: evidence_type
+      allowed_values:
+      - paper
+      - gap_note
+  manuscript:
+    artifact: manuscript.csv
+    required: true
+    assertions:
+    - type: schema
+      schema: manuscript.schema.json
+    - type: cross_artifact_consistency
+      field: &id001
+      - claim_id
+      - source_id
+      - source_location
+      - artifact_path
+      - evidence_limit
+      - status
+      - claim_type
+      other_artifact: ledger.csv
+      other_field: *id001
+      relation: subset
+    - type: cross_artifact_consistency
+      field: &id002
+      - source_id
+      - source_location
+      - artifact_path
+      - evidence_limit
+      other_artifact: sources.csv
+      other_field: *id002
+      relation: subset
+    - type: field_constraint
+      field: status
+      allowed_values:
+      - supported
+    - type: field_constraint
+      field: claim_type
+      allowed_values:
+      - finding
+      - limitation
+  requested_claims:
+    artifact: required_claims.csv
+    required: true
+    assertions:
+    - type: file_digest
+      sha256: db02780230ab49a181892946e5e479292c6712d606cf5c837154c46d2a9bae99
+    - type: cross_artifact_consistency
+      field: claim_id
+      other_artifact: manuscript.csv
+      other_field: claim_id
+      relation: subset

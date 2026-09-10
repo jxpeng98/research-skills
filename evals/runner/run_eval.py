@@ -183,12 +183,13 @@ def _normalize_assertion(
             if normalized["total"] in normalized["parts"]:
                 raise ValueError("total must not also appear in parts")
         elif assertion_type == "cross_artifact_consistency":
-            normalized["field"] = _clean_string(assertion["field"], "field")
+            for key in ("field", "other_field"):
+                value = assertion[key]
+                normalized[key] = _clean_string_list(value, key) if isinstance(value, list) else [_clean_string(value, key)]
+            if len(normalized["field"]) != len(normalized["other_field"]):
+                raise ValueError("cross-artifact fields must have equal lengths")
             normalized["other_artifact"] = _clean_string(
                 assertion["other_artifact"], "other_artifact"
-            )
-            normalized["other_field"] = _clean_string(
-                assertion["other_field"], "other_field"
             )
             relation = _clean_string(assertion["relation"], "relation")
             if relation not in {"equal", "subset"}:
@@ -276,6 +277,16 @@ def _read_csv_column(
     return values
 
 
+def _read_csv_keys(path: Path, fields: list[str], *, allow_blank: bool = False) -> Counter:
+    rows = _read_csv_rows(path)
+    if any(field not in rows[0] for field in fields):
+        raise ValueError("CSV key field not found")
+    keys = [tuple(row[field] for field in fields) for row in rows]
+    if not allow_blank and any(not value for key in keys for value in key):
+        raise ValueError("CSV key contains an empty value")
+    return Counter(keys)
+
+
 def _extract_count(content: str, label: str) -> int:
     pattern = re.compile(
         rf"^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}\s*:\s*"
@@ -294,7 +305,9 @@ def _load_structured_artifact(path: Path) -> object:
         return _load_json(path)
     if suffix in {".yaml", ".yml"}:
         return yaml.safe_load(_read_text(path))
-    raise ValueError("schema assertions require a JSON or YAML artifact")
+    if suffix == ".csv":
+        return _read_csv_rows(path)
+    raise ValueError("schema assertions require a JSON, YAML or CSV artifact")
 
 
 def _check_assertion(
@@ -355,17 +368,14 @@ def _check_assertion(
         ]
 
     if assertion_type == "cross_artifact_consistency":
-        primary = Counter(
-            _read_csv_column(artifact_path, assertion["field"])
-        )
+        primary = _read_csv_keys(artifact_path, assertion["field"])
         other_path = _require_file(
             _resolve_relative(output_root, assertion["other_artifact"]),
             "other artifact",
         )
-        other = Counter(
-            _read_csv_column(other_path, assertion["other_field"])
-        )
         relation = assertion["relation"]
+        other = _read_csv_keys(other_path, assertion["other_field"],
+                               allow_blank=relation == "subset" and len(assertion["other_field"]) > 1)
         matches = (
             primary == other if relation == "equal" else not (primary - other)
         )

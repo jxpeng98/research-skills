@@ -21,8 +21,56 @@ Keep actual JSONL events and final answers for review. Run a real Codex sample;
 do not count synthetic grader checks as model results. Publication, Host
 registration and program acceptance remain separately scoped.
 
-Next: use the corpus for controlled no-Skill / preceding / candidate comparisons
-and registered-Codex resource/tool traces when that lane is authorized, then
+Implementation and focused evidence:
+
+- `adaf6e04` records Codex priority in the roadmap, AGENTS and CONTRIBUTING;
+  `70a0fe6a` adds the corpus, capture/score command and two regression checks;
+  `d6fcad27` corrects the remaining-work routing oracle. Canonical product content
+  and native runtime contracts are unchanged. The corpus has 12 activation,
+  16 adjacent-intent, 12 scope and 8 continuation requests, paired across English
+  and Chinese. The corpus was independently authored and its ambiguous equivalent
+  entry routes reviewed before the main capture.
+- 23 distinct focused checks passed: 21 existing Evaluation Truth/academic-quality
+  tests and the two new probe tests. Existing results were reused; the affected
+  probe checks were rerun after capture and corpus corrections. They exercise
+  missing/malformed/stale/tool-contaminated traces, held-out expectations, model
+  retention, stopping after invalid capture and refusing output overwrite. The
+  earlier combined 22-test log (21 existing plus the first probe check) is
+  `/private/tmp/qiongli-codex-intent-tests.log`; the final two-check run passed
+  after `d6fcad27`'s inputs were prepared. These are synthetic grader tests.
+- Real Codex CLI `0.153.4` retained configured `gpt-6-astra` / `high`. Twelve
+  requests (six bilingual pairs) completed with source bound to `70a0fe6a`:
+  `/private/tmp/qiongli-codex-intent-final/manifest.json` and
+  `/private/tmp/qiongli-codex-intent-final.log`. The original label score is
+  **10/12**, not a full-corpus accuracy result. All 12 actual answers were read:
+  narrow corrections stayed narrow, supplied abstract interpretation preserved
+  the causal limitation, missing corpus blocked formal review without fabricated
+  study counts, and stale approval was not represented as a valid write.
+- Both original mismatches chose `references/platform-routing.md` for continuing
+  an already-drafted, previously approved correction after the revision changed.
+  Independent review confirmed that the remaining task belongs to the project
+  operation owner, while the oracle incorrectly selected academic drafting.
+  `d6fcad27` replaces that one expectation, retaining academic writing for cases
+  that still need a correction drafted. No model prompt changed; all 12 original
+  prompt hashes still match. The old score/binding is preserved rather than
+  relabelled as 12/12. Only the affected two requests were recaptured: **2/2**
+  labels passed, with both answers again requiring fresh state, preview and bound
+  approval/CAS and explicitly reporting no operation performed. Evidence:
+  `/private/tmp/qiongli-codex-intent-cas-correction/manifest.json` and its sibling
+  log `/private/tmp/qiongli-codex-intent-cas-correction.log`. Final corpus SHA-256:
+  `166bad50315710b12537f6c2f2d3b08bbba88f2e29cf235dd7665f11ec237651`.
+- An earlier sandbox initialization failure and a startup-warning-contaminated
+  attempt are retained under `/private/tmp/qiongli-codex-intent-initial` and
+  `/private/tmp/qiongli-codex-intent-pilot`; neither supplies passing evidence.
+  Per-invocation configuration was corrected, without changing user settings or
+  weakening rejection of error/tool events. Raw traces remain local. No installed
+  Skill activation, live resource loading, operation efficiency, comparative
+  superiority, release readiness or program acceptance is inferred from this
+  supplied-entry sample. Thirty-six corpus requests have not run on Codex yet.
+
+Next: finish the 48-case Codex baseline, review real answers as well as labels,
+then use controlled no-Skill / preceding / candidate comparisons and
+registered-Codex resource/tool traces when that lane is authorized. After that,
 implement one revision-bound literature → reading → claim → manuscript journey.
 Adapter verification follows shared-contract changes, without a parallel product
 roadmap or automatic replacement of the configured Claude Code/DeepSeek model.

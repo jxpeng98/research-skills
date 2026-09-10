@@ -183,7 +183,7 @@ Grill Issues` with a concrete `Revisit Trigger`.
 - *Q2:* "Does every figure or table support the spoken argument, or is it decorative complexity?"
 - *Q3:* "What would a skeptical audience member challenge first, and is the answer already on a backup slide or speaker note?"
 
-### Stage J: Proofread & De-AI
+### Stage J: Scholarly Proofreading
 - **Focus:** Human scholarly voice, originality, and final integrity.
 - *Q1:* "Which sentences sound polished but empty, and what concrete claim or evidence should replace them?"
 - *Q2:* "Does the humanized text preserve citations, hedging, and claim strength from the source draft?"

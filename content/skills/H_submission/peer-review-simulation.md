@@ -1,7 +1,7 @@
 ---
 id: peer-review-simulation
 stage: H_submission
-description: "Simulate parallel, independent cross-reviews using distinct reviewer personas (Methodologist, Domain Expert, Reviewer 2)."
+description: "Review a manuscript through relevant referee lenses, grounding findings in evidence and distinguishing simulation from actual independent review."
 inputs:
   - type: Manuscript
     description: "Draft manuscript for simulated review"
@@ -9,7 +9,7 @@ outputs:
   - type: PeerReviewSimulation
     artifact: "revision/peer_review_simulation.md"
 constraints:
-  - "Each persona must review independently with distinct focus areas"
+  - "Must disclose actual review participants; simulated lenses are not independent reviewers"
   - "Must aggregate and reconcile conflicting feedback"
   - "Must produce actionable items, not vague criticism"
 failure_modes:
@@ -23,11 +23,12 @@ domain_aware: false
 
 # Peer Review Simulation Skill
 
-Simulate rigorous, independent peer reviews using distinct reviewer personas — catching weaknesses before real reviewers do.
+Assess a manuscript from relevant referee perspectives, with source-bound findings and explicit review limits.
 
 ## Purpose
 
-Simulate parallel, independent cross-reviews using distinct reviewer personas (Methodologist, Domain Expert, Reviewer 2).
+Provide a requested referee-style critique. Distinguish evidence-backed weaknesses
+from speculative concerns; simulated recommendations are not journal decisions.
 
 ## Related Task IDs
 
@@ -39,13 +40,18 @@ Simulate parallel, independent cross-reviews using distinct reviewer personas (M
 
 ## When to Use
 
-- Before submission (final red-team pass)
-- Before sharing a preprint for informal feedback
-- After major revisions (verify the revision addresses original weaknesses)
+- When the user requests a referee-style manuscript review or formal H3 task
+- For a focused method/claim check, use the relevant lens without a full panel
+- Explaining a published paper belongs to paper reading; revising against actual
+  received comments belongs to rebuttal/revision work
 
 ## Inputs
 
 - `Manuscript`: Draft manuscript for simulated review
+- Reuse any supplied review scope, target venue and previous findings. A focused
+  answer may stay in chat; formal H3 retains its report and applicable gates.
+  Do not draft a new manuscript, launch other models or require a project merely
+  to review supplied material.
 - If a required input is missing or insufficient, write a gap note under `RESEARCH/[topic]/context/gap_notes.md` and ask for the missing artifact instead of inventing content.
 - Treat literature, data, citations, and project files as evidence sources; keep unsupported assumptions visibly marked.
 
@@ -53,7 +59,16 @@ Simulate parallel, independent cross-reviews using distinct reviewer personas (M
 
 ### Step 1: Configure the Review Panel
 
-Select 3–5 personas that match the expected reviewer pool for the target venue:
+Select lenses that address the requested scope. A full H3 review covers methods,
+positioning and internal consistency; a focused check uses only the relevant lens.
+Start with the active model. Distinct personas in one conversation are a simulated
+multi-perspective self-review, not independent reviewers.
+
+If actual independent review is requested or required, follow
+`skills/Z_cross_cutting/model-collaborator.md` using available authorized reviewers.
+Record real participants and separation. If they are unavailable, report that
+requirement as unresolved; do not satisfy it with renamed personas. Formal minimum
+review counts and existing BLOCK findings remain binding.
 
 #### Core Persona Set
 
@@ -73,16 +88,19 @@ Select 3–5 personas that match the expected reviewer pool for the target venue
 | **Practitioner** | Applied research with industry implications | Practical relevance, implementation feasibility, translation of findings |
 | **Associate Editor** | High-tier journal submission | Scope fit, novelty threshold, positioning clarity, desk-reject triggers |
 
-### Step 2: Execute Each Review Independently
+### Step 2: Review the Selected Material
 
-For each persona, produce a complete review following this structure:
+Check the source using the chosen lenses. For a full report, use the structure
+below without inventing findings to fill its slots. For a focused review, return
+only the relevant findings and limits. An ordinary check runs once plus targeted
+fix verification; repeated unchanged reviews are not progress.
 
 ```markdown
 ### Review by [Persona Name]
 
 #### Overall Assessment
 - Recommendation: [Accept / Minor Revision / Major Revision / Reject]
-- Confidence: [High / Medium / Low] (how qualified this reviewer feels for this topic)
+- Review basis: [source scope, relevant expertise limits, actual participants]
 
 #### Summary (3–5 sentences)
 [Overall impression of the paper's contribution, strengths, and weaknesses]
@@ -110,7 +128,10 @@ For each persona, produce a complete review following this structure:
 2. ...
 ```
 
-### Step 3: Apply Persona-Specific Critique Frameworks
+### Step 3: Apply Relevant Critique Lenses
+
+Use the questions appropriate to this design, evidence and venue. Examples are
+not universal thresholds or a quota of flaws; judge the claim actually made.
 
 #### Methodologist Checklist
 
@@ -118,7 +139,7 @@ For each persona, produce a complete review following this structure:
 |----------|--------------|----------|
 | Is the design appropriate for the RQ? | Causal claim → experimental/quasi; descriptive → observational | Causal claims with cross-sectional data |
 | Is the identification strategy sound? | Exogenous variation, instrument validity, parallel trends | "We control for X" as sole defense against endogeneity |
-| Is the sample size adequate? | Power analysis or MDE reported | N < 50 without justification; no power analysis |
+| Is the sample size adequate? | Power analysis or MDE reported | Missing justification for the precision or claims required by this design |
 | Are measures valid and reliable? | Cronbach's α, factor loading, validated scales | New scales without validation |
 | Are robustness checks sufficient? | Multiple specifications, sensitivity to outliers | Single model, no sensitivity analysis |
 | Is missing data handled? | Listwise deletion justification, imputation, or sensitivity | >20% missing without discussion |
@@ -153,32 +174,24 @@ After all reviews are complete, create a unified action plan:
 #### Deduplication
 - Group similar issues from different personas
 - When two personas flag the same problem differently, use the more specific version
-- Note when multiple personas independently identify the same weakness (higher severity signal)
+- Preserve each actual reviewer/source; severity follows evidence and consequence, not repeated votes
 
 #### Reconciliation Matrix
 
-| Issue | Flagged By | Severity | Consensus | Priority Action |
-|-------|-----------|----------|-----------|-----------------|
-| Weak identification strategy | Methodologist (M1), Reviewer 2 (M3) | Fatal | Unanimous | Must fix: add instrument / design defense |
-| Missing recent citations | Domain Expert (M2) | Major | Single reviewer | Should fix: update lit review |
-| Abstract overclaims | Reviewer 2 (M1), Methodologist (m4) | Major | 2/3 agree | Must fix: calibrate language |
+| Issue | Source / reviewer / lens | Evidence and location | Severity | Action / unresolved disagreement |
+|---|---|---|---|---|
 
-#### Decision Rules
+Judge disagreements against the same source and claim. A substantiated blocker
+remains blocking even if only one reviewer raises it; agreement alone establishes
+neither severity nor correctness. Keep prior issue IDs across revisions.
 
-| Consensus | Action |
-|-----------|--------|
-| 3/3 personas flag as fatal | **Do not submit** until fixed |
-| 2/3 flag as major | **Fix before submission** |
-| 1/3 flags as major | **Author judgment** — consider fixing if easy |
-| Conflicting recommendations | **Analyze why** — different methodological norms may apply |
+### Step 5: Produce the Requested Report
 
-### Step 5: Produce the Final Simulation Report
-
-The consolidation should result in:
-1. **Overall submission readiness**: Ready / Needs Major Revision / Not Ready
-2. **Top 3 risks**: Most likely reasons for rejection
-3. **Prioritized action list**: Ordered by severity × feasibility
-4. **Estimated revision effort**: Quick fixes (<1 day) vs major revisions (>1 week)
+Record actual review scope, self-review versus independent participants, supported
+findings and gaps. Rank actual risks without a minimum count. State readiness
+only against checks actually completed; unavailable evidence or independent
+review requirements remain unresolved. Do not predict a journal decision.
+Stop at the review; manuscript revision or a rebuttal is a separate requested action.
 
 ## Output Contract
 
@@ -197,14 +210,14 @@ The consolidation should result in:
 
 The simulation is **ready** when:
 
-- [ ] At least 3 independent persona reviews completed
-- [ ] Each review has summary + recommendation + major issues + minor issues
-- [ ] Methods are assessed for identification/validity (not just surface)
-- [ ] Literature coverage and positioning are assessed
-- [ ] Writing clarity and internal consistency are assessed
+- [ ] Requested lenses completed; actual independent-review requirements satisfied or explicitly unresolved
+- [ ] Findings are grounded in source locations; a clean review may have zero issues
+- [ ] Full H3 methods are assessed for relevant identification/validity requirements
+- [ ] Full H3 literature coverage and positioning are assessed within available evidence
+- [ ] Full H3 clarity and internal consistency are assessed
 - [ ] Consolidated reconciliation matrix produced
 - [ ] Prioritized action list maps each issue to a fix location and effort
-- [ ] Overall submission readiness recommendation given
+- [ ] Readiness limits and unavailable checks are explicit; no journal outcome is promised
 
 ## Minimal Output Format
 
@@ -212,12 +225,13 @@ The simulation is **ready** when:
 # Peer Review Simulation
 
 ## Overall Readiness: [Ready / Needs Revision / Not Ready]
-## Top 3 Rejection Risks:
-1. ...
-2. ...
-3. ...
+## Supported Risks and Evidence Gaps
+[Only actual findings; zero findings is valid within the stated scope]
 
-## Individual Reviews
+## Review Scope and Participants
+[Selected lenses; actual reviewers or simulated self-review; unavailable requirements]
+
+## Findings by Relevant Lens
 
 ### Methodologist
 - Recommendation: [Accept / Minor / Major / Reject]
@@ -251,8 +265,8 @@ The simulation is **ready** when:
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
-| Persona 不够刁钻 | 模拟太温和发现不了问题 | 包含 Reviewer 2（挑剔型） |
-| 不同 persona 意见雷同 | 缺少独立性 | 先独立生成再 cross-review |
+| 为凑问题而批评 | 制造不存在的缺陷 | 只报告有来源和影响的问题，允许零发现 |
+| 把 persona 当独立审稿人 | 虚报独立复核 | 记录实际参与者；单会话多个视角仍是自审 |
 | 只关注写作 | 忽视方法论和数据问题 | 包含 Methodologist persona |
 | 缺少 actionable feedback | 指出问题但不建议如何修 | 每条 concern 附带 suggested fix |
-| 未映射到修改计划 | 模拟完但不行动 | 输出 → rebuttal-assistant 接力 |
+| 自动转入修稿 | 超出用户请求 | 给出修改建议；用户要求修稿时再执行 |

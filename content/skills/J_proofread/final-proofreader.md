@@ -33,7 +33,7 @@ Perform language-level polish that catches errors no other stage addresses: gram
 ## When to Use
 
 - As the final step before submission (J4)
-- After J2 (human-voice rewrite) and J3 (similarity check) are complete
+- For a requested grammar or consistency check of a supplied scholarly passage
 - When switching from one venue's style to another
 
 ## Related Task IDs
@@ -49,6 +49,10 @@ Perform language-level polish that catches errors no other stage addresses: gram
 - `proofread/humanized_manuscript.md` (or current manuscript)
 - `proofread/similarity_report.md` (for context on any remaining issues)
 - Venue style guide (if available)
+- For a direct passage check, use the supplied text and return only requested
+  corrections in chat. Do not start J1/J2/J3 or require their reports. Formal
+  J4 retains declared inputs, outputs and gates; report inaccessible references
+  or rules as unverified. Correct text needs no rewrite.
 - If a required input is missing or insufficient, write a gap note under `RESEARCH/[topic]/context/gap_notes.md` and ask for the missing artifact instead of inventing content.
 
 ## Process
@@ -113,7 +117,9 @@ If venue style guide is available, check:
 
 ### Step 6: Final Checklist
 
-Run through the complete checklist and log all corrections.
+Check the applicable items within the requested scope and log actual corrections.
+For a formal full-manuscript pass, cover the whole checklist and record gaps.
+Stop when the selected checks are complete; do not manufacture style changes.
 
 ## Output Contract
 
@@ -130,7 +136,7 @@ Run through the complete checklist and log all corrections.
 
 ## Quality Bar
 
-The proofread checklist is **ready** when:
+The proofread checklist is **ready** for its stated scope when:
 
 - [ ] Grammar and syntax pass complete — all errors corrected
 - [ ] Tense consistency verified per section
@@ -147,8 +153,8 @@ The proofread checklist is **ready** when:
 | Changing content during proofread | This stage is language-only | Flag content issues for author but do not modify claims |
 | Missing orphaned citations | A reference in the bibliography but never cited | Search bibliography entries against manuscript text |
 | Inconsistent p-value formatting | p < .001 in one place, p<0.001 in another | Pick one format and enforce throughout |
-| Overcorrecting author voice | Removing stylistic choices that are intentional | Ask author about intentional style before correcting |
-| Skipping supplementary materials | Supplements also need proofing | Include supplements in the proofread pass |
+| Overcorrecting author voice | Removing stylistic choices that are intentional | Preserve valid intentional choices; ask only if the ambiguity changes a needed correction |
+| Skipping supplementary materials | Supplements also need proofing | Include supplied supplements in a requested full pass; record unavailable ones |
 
 ## Output Template
 
@@ -172,7 +178,7 @@ primary_artifact: proofread/proofread_checklist.md
 
 | # | Section | Location | Issue | Correction |
 |---|---------|----------|-------|------------|
-| 1 | Methods ¶4 | Sentence 2 | Subject-verb disagreement | "The data show" → "The data show" (correct as-is) |
+| 1 | Methods ¶4 | Sentence 2 | Subject-verb disagreement | "The data shows" → "The data show" |
 
 ## Acronym Register
 

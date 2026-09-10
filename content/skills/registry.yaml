@@ -889,12 +889,12 @@ skills:
     version: "2.0.0-alpha.7"
     file: skills/H_submission/peer-review-simulation.md
     canonical: true
-    summary: "Simulate parallel multi-persona cross-reviews (Methodologist, Expert, Reviewer 2)."
+    summary: "Review a manuscript through relevant referee lenses, distinguishing simulation from actual independent review."
     display_name: "Peer Review Simulation"
-    when_to_use: "Before submission (final red-team pass)"
-    summary_zh: "模拟多 persona 并行交叉评审，如方法学者、领域专家和 Reviewer 2。"
+    when_to_use: "Use for a requested referee-style manuscript review or formal H3 task; a focused check needs only relevant lenses."
+    summary_zh: "按相关审稿视角检查稿件，区分模拟自审和实际独立复核。"
     display_name_zh: "同行评审模拟"
-    when_to_use_zh: "当你想在投稿前做多 persona 压力测试时使用。"
+    when_to_use_zh: "需要模拟同行审稿或正式 H3 检查时使用；局部检查只用相关视角。"
     inputs: [Manuscript]
     outputs: [PeerReviewSimulation]
     tags: [submission, peer-review, simulation, multi-persona, red-team]
@@ -1271,19 +1271,19 @@ skills:
     domain_aware: false
 
   # ══════════════════════════════════════════════════════════
-  # J_proofread — AI detection, humanization, similarity, final polish
+  # J_proofread — language diagnosis, revision, attribution and final polish
   # ══════════════════════════════════════════════════════════
   - id: ai-fingerprint-scanner
     stage: J_proofread
     version: "2.0.0-alpha.7"
     file: skills/J_proofread/ai-fingerprint-scanner.md
     canonical: true
-    summary: "Scan manuscript for AI-generation fingerprints including formulaic transitions, uniform rhythm, and generic hedging."
+    summary: "Audit scholarly passages for concrete clarity, repetition and precision problems."
     display_name: "AI Fingerprint Scanner"
-    when_to_use: "After the first complete manuscript draft (F2+)"
-    summary_zh: "扫描稿件中的 AI 生成指纹，包括公式化过渡词、均匀节奏和笼统 hedging。"
+    when_to_use: "Use for a requested language-pattern diagnosis; grammar-only correction can enter final-proofreader directly."
+    summary_zh: "检查学术段落中的清晰度、重复和精确性问题，不推断作者身份。"
     display_name_zh: "AI指纹扫描"
-    when_to_use_zh: "当需要识别稿件中可能被 AI 检测器标记的段落时使用。"
+    when_to_use_zh: "需要诊断具体语言问题时使用；单纯语法校对直接进入终稿校对。"
     inputs: [Manuscript]
     outputs: [AIDetectionReport]
     tags: [proofread, ai-detection, fingerprint, writing-patterns]
@@ -1297,12 +1297,12 @@ skills:
     version: "2.0.0-alpha.7"
     file: skills/J_proofread/human-voice-rewriter.md
     canonical: true
-    summary: "Rewrite AI-flagged passages to sound authentically human-authored while preserving scientific accuracy."
+    summary: "Improve selected scholarly passages while preserving meaning, evidence and required disclosure."
     display_name: "Human-Voice Rewriter"
-    when_to_use: "After J1 (AI fingerprint scan) identifies high/medium severity passages"
-    summary_zh: "改写被标记的 AI 段落，使其具有真实人类写作风格，同时保持科学准确性。"
+    when_to_use: "Use for requested expression or voice revision; reuse supplied text and any existing findings."
+    summary_zh: "改善指定学术段落的表达，保留原意、证据和必要披露。"
     display_name_zh: "人类风格改写"
-    when_to_use_zh: "当 AI 检测报告中有高严重度段落需要改写时使用。"
+    when_to_use_zh: "用户要求改善表达或有具体语言反馈时使用，不为检测分数而改写。"
     inputs: [Manuscript, AIDetectionReport]
     outputs: [HumanizedManuscript]
     tags: [proofread, humanization, rewriting, voice, style]
@@ -1316,12 +1316,12 @@ skills:
     version: "2.0.0-alpha.7"
     file: skills/J_proofread/similarity-checker.md
     canonical: true
-    summary: "Identify text overlap including self-plagiarism, close paraphrasing, and boilerplate passages."
+    summary: "Compare available source text with a draft and identify attribution issues and coverage limits."
     display_name: "Similarity Checker"
-    when_to_use: "After J2 (human-voice rewrite) to ensure rewrites are original"
-    summary_zh: "识别文本重叠，包括自我抄袭、过近释义和模板化段落。"
+    when_to_use: "Use for requested source-overlap or attribution checks; prior rewriting is not an automatic prerequisite."
+    summary_zh: "对照可用来源检查文本重叠与归属，并报告比较范围和缺失材料。"
     display_name_zh: "相似度检查"
-    when_to_use_zh: "当需要在投稿前检查文本原创性和引用充分性时使用。"
+    when_to_use_zh: "需要对照来源核查引用和重叠时使用，无需先启动改写。"
     inputs: [HumanizedManuscript]
     outputs: [SimilarityReport]
     tags: [proofread, similarity, plagiarism, originality, paraphrase]
@@ -1337,10 +1337,10 @@ skills:
     canonical: true
     summary: "Language-level polish covering grammar, tense, acronyms, cross-references, and venue-specific formatting."
     display_name: "Final Proofreader"
-    when_to_use: "As the final step before submission (J4)"
+    when_to_use: "Use for requested scholarly grammar/consistency corrections or a formal final proofreading pass."
     summary_zh: "语言层面终审校对，覆盖语法、时态、缩写、交叉引用和期刊格式要求。"
     display_name_zh: "终审校对"
-    when_to_use_zh: "当稿件内容已定稿，需要做投稿前最后一遍语言校对时使用。"
+    when_to_use_zh: "需要学术段落的语法、一致性校对或正式终稿检查时使用。"
     inputs: [HumanizedManuscript, SimilarityReport]
     outputs: [ProofreadChecklist]
     tags: [proofread, grammar, formatting, consistency, final-polish]

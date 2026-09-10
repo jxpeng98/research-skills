@@ -11,7 +11,7 @@ outputs:
 constraints:
   - "Must check self-plagiarism, close paraphrase, and boilerplate"
   - "Must provide rewrite or attribution suggestions for each flag"
-  - "Must estimate overall similarity level"
+  - "Must state the compared corpus and unavailable sources; never invent similarity percentages"
 failure_modes:
   - "Unable to access author's prior publications for self-plagiarism check"
   - "Field-standard terminology flagged as overlap"
@@ -22,17 +22,18 @@ domain_aware: false
 
 # Similarity Checker Skill
 
-Identify text overlap with known sources, prior publications, and boilerplate passages — ensuring originality before submission.
+Compare the requested text with available sources and report attribution issues and coverage limits.
 
 ## Purpose
 
-Detect three types of overlap that can trigger similarity tools (Turnitin, iThenticate) or reviewer concerns: self-plagiarism from the author's prior work, insufficient paraphrasing of cited sources, and generic boilerplate that appears across many papers.
+Identify reuse or close paraphrase through actual source comparison. Keep
+quotation, citation and permitted reuse explicit. Do not infer plagiarism from
+style, common terminology or an unsupported similarity estimate.
 
 ## When to Use
 
-- After J2 (human-voice rewrite) to ensure rewrites are original
-- Before submission to any venue that uses plagiarism detection
-- As step J3 in the `/proofread` workflow
+- When the user asks to compare draft passages with supplied or accessible sources
+- For formal J3 attribution/overlap checks; J2 rewriting is not an automatic prerequisite
 
 ## Related Task IDs
 
@@ -44,7 +45,13 @@ Detect three types of overlap that can trigger similarity tools (Turnitin, iThen
 
 ## Inputs
 
-- `proofread/humanized_manuscript.md` (or current manuscript draft)
+- Requested passage or current manuscript and the source texts available for comparison
+- Direct comparisons may be reported in chat without J1/J2 or a project. Formal
+  J3 runs retain their artifact and citation-risk requirements. Missing source
+  text leaves that comparison unverified; do not claim a whole-corpus clearance.
+- If inputs are missing or insufficient, identify the unavailable comparison and
+  the source text needed. A formal run records a gap note in
+  `RESEARCH/[topic]/context/gap_notes.md`; a direct answer states the gap in chat.
 
 ## Process
 
@@ -74,15 +81,10 @@ For passages that cite sources:
 
 ### Step 3: Boilerplate Detection
 
-Flag generic phrases that appear in many academic papers:
-
-- "This study contributes to the literature by..."
-- "The remainder of this paper is organized as follows"
-- "Further research is needed to..."
-- "This study has several limitations"
-- "The findings have important implications for theory and practice"
-
-These are not plagiarism but may inflate similarity scores unnecessarily.
+Conventional headings, standard terms and common methods descriptions are not
+findings by themselves. Report a concern only when the available source comparison
+shows unattributed reuse or an actual wording problem. Preserve precise language;
+rewriting is not a substitute for appropriate quotation and attribution.
 
 ### Step 4: Document Each Flag
 
@@ -96,15 +98,13 @@ For every overlap:
 | **Excerpt** | The overlapping text |
 | **Suggestion** | Deeper rewrite / add quotation / add citation / acceptable as-is |
 
-### Step 5: Estimate Overall Similarity
+### Step 5: Record Coverage and Limits
 
-Provide a rough estimate based on flagged passages:
-
-| Level | Estimated Overlap | Risk |
-|-------|------------------|------|
-| **Low** | < 10% | Acceptable for most venues |
-| **Moderate** | 10–20% | Review flagged passages; rewrite close paraphrases |
-| **High** | > 20% | Significant rewriting needed before submission |
+List compared sources, their locators, unavailable sources and actual findings.
+Do not fabricate a percentage or use a numeric threshold to declare originality.
+An externally supplied similarity result is evidence only for its recorded tool,
+corpus and settings; inspect the matches instead of treating its score as a verdict.
+Stop at this comparison; revise text only when the user requested that action.
 
 ## Output Contract
 
@@ -124,10 +124,10 @@ Provide a rough estimate based on flagged passages:
 The similarity report is **ready** when:
 
 - [ ] Self-plagiarism check completed (or explicitly noted author's works not available)
-- [ ] Paraphrase quality assessed for all passages citing sources
-- [ ] Boilerplate passages identified
+- [ ] Paraphrase quality assessed against available source text; missing comparisons are marked
+- [ ] Conventional wording is distinguished from substantiated attribution concerns
 - [ ] Every flag has location, type, source, excerpt, and suggestion
-- [ ] Overall similarity estimate documented
+- [ ] Compared corpus, source locators and unavailable material documented
 
 ## Common Pitfalls
 
@@ -151,7 +151,7 @@ primary_artifact: proofread/similarity_report.md
 # Similarity & Originality Report
 
 ## Overall Assessment
-- Estimated overlap: [low / moderate / high]
+- Compared corpus and unavailable sources: [list with locators and limits]
 - Total flags: [n]
 - By type: verbatim [n] | close paraphrase [n] | structural [n] | boilerplate [n]
 

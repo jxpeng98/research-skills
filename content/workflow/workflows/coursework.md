@@ -26,7 +26,30 @@ $ARGUMENTS
 - Record missing rubric, learning outcome, source, and AI-policy information in `assignment/academic_integrity_notes.md`.
 - Treat timed exams, quizzes, and assessed problem sets as concept-explanation requests, not coursework drafting requests.
 
-## Workflow
+## Choose the requested task
+
+Use the brief, rubric, draft and decisions already supplied. A coursework label
+does not start the full sequence. For a direct explanation or a small language
+edit, answer in chat using the relevant reading/writing/proofreading skill.
+Do not require a new brief, rubric map or project for an answer the material
+already supports. Ask only for missing information that changes this task.
+
+| Requested outcome | Entry |
+|---|---|
+| Interpret an assignment brief | L1 |
+| Map marking criteria or learning outcomes | L2 |
+| Plan structure or supporting evidence | L3 or L4 |
+| Draft a specified section | L5, reusing the relevant rubric and evidence |
+| Revise an existing draft against supplied criteria | L6 |
+| Check final readiness | L7; unavailable required evidence remains a gap |
+
+For a formal task, keep its canonical outputs and applicable integrity gates.
+Reuse valid upstream artifacts; do not regenerate them just to enter later.
+Registered project writes use preview/approval/CAS. Stop at the requested task.
+
+## Full Workflow
+
+Use the full sequence when a complete coursework workflow is requested:
 
 1. Run `L1` to write `assignment/brief.md`.
 2. Run `L2` to write `assignment/rubric_map.md` and `assignment/learning_outcomes.md`.

@@ -1,7 +1,7 @@
 ---
 id: human-voice-rewriter
 stage: J_proofread
-description: "Rewrite AI-flagged passages to sound authentically human-authored while preserving scientific accuracy."
+description: "Improve the clarity and scholarly voice of requested passages while preserving meaning, evidence and required disclosure."
 inputs:
   - type: Manuscript
     description: "Current manuscript text"
@@ -13,7 +13,7 @@ outputs:
 constraints:
   - "Must not alter statistical values, citations, or technical terminology"
   - "Must preserve claim strength and evidence links"
-  - "Must vary rewriting strategy across passages"
+  - "Must change only what improves the requested text; correct passages may remain unchanged"
 failure_modes:
   - "Meaning drift from overly aggressive rewriting"
   - "Introducing factual errors during paraphrasing"
@@ -25,17 +25,19 @@ domain_aware: false
 
 # Human-Voice Rewriter Skill
 
-Rewrite AI-flagged passages so they sound authentically human-authored, while rigorously preserving scientific accuracy.
+Revise scholarly expression without changing the research or claiming to establish authorship.
 
 ## Purpose
 
-Transform passages identified by the AI fingerprint scanner (J1) into text that reads as if written by a human researcher — with varied rhythm, field-specific idiom, and natural imperfection — without distorting evidence or weakening claims.
+Resolve concrete expression problems using the smallest faithful edit. Do not
+add invented evidence, personal stance, deliberate mistakes or detector-oriented
+changes. Keep required AI disclosure; the legacy task/output names are retained.
 
 ## When to Use
 
-- After J1 (AI fingerprint scan) identifies high/medium severity passages
-- As the core rewriting step in the `/proofread` workflow (J2)
-- When reviewers or editors flag text as potentially AI-generated
+- When the user asks to improve scholarly expression or author voice
+- When actual language issues were identified in J1 or supplied feedback
+- Use J4 for grammar-only corrections and source comparison for attribution issues
 
 ## Related Task IDs
 
@@ -47,31 +49,26 @@ Transform passages identified by the AI fingerprint scanner (J1) into text that 
 
 ## Inputs
 
-- Full manuscript
-- `proofread/ai_detection_report.md` with flagged passages
+- Requested passage or manuscript; any existing J1 findings or supplied feedback
+- A direct edit needs only the relevant text and constraints; return it in chat
+  without starting J1 or requiring a project. Formal J2 runs retain the declared
+  inputs, full manuscript artifact and applicable gates below.
 - If a required input is missing or insufficient, write a gap note under `RESEARCH/[topic]/context/gap_notes.md` and ask for the missing artifact instead of inventing content.
 
 ## Process
 
 ### Step 1: Prioritize Passages
 
-Work through flagged passages in order:
-1. **High severity** — rewrite required
-2. **Medium severity** — rewrite recommended
-3. **Low severity** — consider but may leave if natural in context
+Prioritize actual meaning/readability problems and the user's selected passages.
+Verify supplied flags rather than treating their severity as a command to rewrite.
+Correct text may remain unchanged.
 
-### Step 2: Apply Diverse Rewriting Strategies
+### Step 2: Make the Smallest Useful Edit
 
-Vary your approach across passages — do NOT apply the same template to every rewrite:
-
-| Strategy | How | When to Use |
-|----------|-----|-------------|
-| **Sentence length variation** | Mix short declarative (5–10 words) with longer complex sentences (25–35 words) | Uniform-length passages |
-| **Field-specific connectives** | Replace generic transitions with discipline terms ("This identifies a tension between…", "Decomposing the effect…") | Formulaic transitions |
-| **Author voice injection** | Add personal stance markers: "We argue", "Our reading of the evidence suggests" | Generic hedging |
-| **Concrete specificity** | Replace abstract generalization with concrete examples or numbers | Vague elaboration |
-| **Structure breaking** | Use parenthetical asides, rhetorical questions, or mid-paragraph pivots | Template paragraph structures |
-| **Deliberate imperfection** | Minor stylistic asymmetry — not every parallel is perfectly balanced | Over-polished constructions |
+Remove empty qualifiers, clarify supported relationships and simplify awkward
+syntax where this improves the requested text. Preserve necessary uncertainty,
+technical phrasing, disciplinary conventions and intentional author voice.
+Choose strategies by the actual issue, with no minimum variety or length quota.
 
 ### Step 3: Verify Scientific Accuracy
 
@@ -86,17 +83,18 @@ For EVERY rewritten passage, check:
 | Causal language matches original intent | |
 | No evidence omitted or added | |
 
-### Step 4: Multi-Agent Verification (recommended)
+### Step 4: Verify the Affected Passages
 
-When using multi-agent mode:
-- **Agent 1 (Drafter)**: Performs the rewrite
-- **Agent 2 (Reviewer)**: Re-scans rewritten text for residual AI patterns
-- **Agent 3 (Auditor)**: Diff-checks original vs. rewrite for meaning preservation
-- Loop until reviewer AI-detection confidence ≥ 85%
+Compare the revised passage with its source using the integrity checks above.
+Fix any actual drift and recheck that change. Stop when the requested issues are
+resolved; do not run a detector-confidence loop. Use an independent reviewer
+only when required and actually available through the active Host; follow
+`skills/Z_cross_cutting/model-collaborator.md` and report unavailable requirements.
 
-### Step 5: Produce Full Revised Manuscript
+### Step 5: Return the Requested Output
 
-Output the complete manuscript with all rewrites integrated, not just the individual passages.
+Return the selected passages for a direct edit. For a formal J2 run, integrate
+changes into the full manuscript and record them in its change log.
 
 ## Output Contract
 
@@ -115,18 +113,18 @@ Output the complete manuscript with all rewrites integrated, not just the indivi
 
 The humanized manuscript is **ready** when:
 
-- [ ] All high-severity passages from J1 are rewritten
-- [ ] At least 3 different rewriting strategies used across the document
+- [ ] All substantive issues in the requested scope are resolved or reported as gaps
+- [ ] Every edit improves a demonstrated issue; no strategy quota applies
 - [ ] Scientific accuracy verified for every rewritten passage
-- [ ] No new AI patterns introduced by uniform rewriting
-- [ ] Full manuscript output (not fragments)
+- [ ] Meaning, author voice and required disclosure are preserved
+- [ ] Formal J2 output includes the full manuscript; direct edits respect requested scope
 - [ ] Change log documents every rewrite with original/new side by side
 
 ## Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
-| Using one rewrite template for all passages | Creates new detectable patterns | Deliberately vary strategy per passage |
+| Using one rewrite template for all passages | Ignores the actual language issue | Choose the smallest edit that helps this passage |
 | Over-casualizing academic prose | Sounds unprofessional | Keep formality level appropriate to venue |
 | Changing "significant" to a synonym without context | May alter statistical meaning | Distinguish statistical "significant" from colloquial use |
 | Rewriting Methods section too aggressively | Methods should be precise and reproducible | Lighter touch in Methods — focus on transitions, not procedures |

@@ -40,6 +40,11 @@ Map abstract constructs to concrete, measurable variables with validity/reliabil
 
 ## When to Use
 
+Use this card to select measures/instruments and justify how they represent a
+construct. For already chosen measures that need data-column mappings, coding or
+derivation rules, use `skills/C_design/variable-constructor.md`. Reuse settled
+measurement decisions rather than reopening them during a coding-only request.
+
 - After theoretical framework is established
 - When translating hypotheses into testable predictions
 - When selecting or adapting measurement instruments

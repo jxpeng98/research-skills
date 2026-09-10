@@ -46,6 +46,11 @@ Translate constructs and hypotheses into an operational variable specification w
 
 ## When to Use
 
+Use this card for data-column mappings, units, coding and derivation rules for
+chosen measures. To select or justify the measure itself, use
+`skills/C_design/variable-operationalizer.md`; load both only when both decisions
+are needed. A direct question does not require a complete new study design.
+
 - After study design is finalized
 - Before writing analysis code (variable spec drives code construction)
 - When working with secondary data (variable mapping is critical)

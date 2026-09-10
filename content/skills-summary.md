@@ -35,11 +35,11 @@ Quick-reference index of canonical skills. Load the selected `skills/[stage]/[sk
 | rival-hypothesis-designer | Construct competing theories to strengthen design |
 | robustness-planner | Pre-specify robustness checks and sensitivity analysis |
 | dataset-finder | Identify feasible datasets and access routes |
-| variable-constructor | Operationalize constructs into auditable variables |
+| variable-constructor | Specify data columns, units, coding and derivation rules for selected measures |
 | data-dictionary-builder | Create structured data dictionaries |
 | data-management-plan | Generate FAIR-compliant data management plans |
 | prereg-writer | Generate preregistration documents (OSF/AsPredicted) |
-| variable-operationalizer | Map abstract constructs to measurable variables |
+| variable-operationalizer | Choose how to measure constructs and justify instrument validity |
 
 ## D — Ethics & IRB
 
@@ -87,7 +87,7 @@ Quick-reference index of canonical skills. Load the selected `skills/[stage]/[sk
 | journal-fit-recommender | Rank journal fit from an existing manuscript and verified venue evidence |
 | submission-packager | Submission-ready packaging (cover letter + statements) |
 | rebuttal-assistant | Reviewer response workflow (response matrix + letter) |
-| peer-review-simulation | Simulate Reviewer 2 critique before submission |
+| peer-review-simulation | Requested referee-style manuscript critique; distinguish simulated lenses from actual independent reviewers |
 | fatal-flaw-detector | Identify deal-breaker issues before submission |
 | reviewer-empathy-checker | Ensure respectful, constructive rebuttal tone |
 | credit-taxonomy-helper | Generate CRediT author contribution statements |
@@ -112,9 +112,9 @@ Quick-reference index of canonical skills. Load the selected `skills/[stage]/[sk
 
 | Skill | Purpose |
 |-------|---------|
-| ai-fingerprint-scanner | Detect AI-typical patterns in academic prose |
-| human-voice-rewriter | Rewrite flagged passages with authentic human voice |
-| similarity-checker | Check text similarity against known sources |
+| ai-fingerprint-scanner | Diagnose concrete clarity and repetition problems; no authorship detection |
+| human-voice-rewriter | Improve selected scholarly passages while preserving meaning, evidence and disclosure |
+| similarity-checker | Compare available source text and attribution; report corpus limits |
 | final-proofreader | Final grammar, style, and consistency pass |
 
 ## K — Academic Presentation

@@ -4,11 +4,12 @@ description: 学术语言与终稿校对 — Improve clarity, scholarly voice, a
 
 # Scholarly Proofreading Workflow
 
-Use this workflow after manuscript drafting (Stage F) and compliance checks (Stage G), **before** submission (Stage H).
+Use this workflow for requested scholarly language edits and formal Stage J
+checks. A complete pre-submission pass follows drafting and applicable compliance
+checks; a supplied passage can be corrected directly.
 
 ## When to use
 
-- Your manuscript was substantially drafted or revised with AI assistance
 - You want clearer prose with accurate attribution and the author's intended voice
 - You need a final language-level proofread pass
 
@@ -16,9 +17,9 @@ Use this workflow after manuscript drafting (Stage F) and compliance checks (Sta
 
 | Task ID | Purpose |
 |---|---|
-| `J1` | AI fingerprint scan — detect AI-generated text patterns |
-| `J2` | Human-voice rewrite — rewrite flagged passages |
-| `J3` | Similarity & originality check — reduce text overlap |
+| `J1` | Language-pattern audit — flag concrete clarity and repetition problems |
+| `J2` | Scholarly voice revision — improve selected passages without meaning drift |
+| `J3` | Source-overlap check — inspect available sources and attribution |
 | `J4` | Final proofread — grammar, consistency, flow |
 
 These are stable task/artifact names, not evidence of authorship detection.
@@ -28,18 +29,25 @@ AI disclosure. J3 compares only the available sources; do not invent detector or
 similarity scores, claim a complete plagiarism search, or optimize for evasion.
 For a small passage, perform the requested edit directly; the full stage output
 set below applies to a formal J-stage run.
+Choose J4 for grammar/consistency, J2 for requested expression changes, J1 for a
+pattern diagnosis and J3 for source comparison. Mentioning proofreading does not
+schedule J1 → J2 → J3 → J4. Existing source/claim problems remain visible even
+when they are outside a language-only edit.
 
 ## Academic Boundary Review
 
-Before drafting this stage's checkpoint outputs, use `boundary-interviewer` when `context/boundary_review.md` is missing, stale, or contradicted by the current task. Continue within the locked boundary when the artifact already answers the stage question. Narrowing is allowed; broadening requires a new boundary review entry with a revisit trigger.
+Before formal checkpoint outputs, inspect the existing boundary and request.
+Use `boundary-interviewer` only for an unresolved consequential decision. A
+missing boundary file alone does not block a direct language edit. Broadening
+locked research claims requires a new boundary decision with a revisit trigger.
 
-For proofread work, lock meaning-preservation and final claim wording boundaries before style, similarity, or AI-detection edits.
+Preserve meaning, claim strength, citations and required AI disclosure.
 
 ## Quick Start
 
 ```
-Execute Task J1 on RESEARCH/[topic] to scan the manuscript for AI-generated patterns.
-Then run J2 to rewrite high-severity passages using human writing voice.
+Proofread this paragraph for grammar; keep its claims and citations unchanged.
+Execute Task J3 on RESEARCH/[topic] to compare the draft with the supplied sources.
 ```
 
 ## Independent Review When Needed
@@ -56,7 +64,7 @@ Triad describes three roles, not proof of three independent models. Only an
 actually available, authorized separate reviewer can provide independent review;
 sequential roles in the active conversation remain self-review:
 1. **Drafter** rewrites flagged passages
-2. **Reviewer** re-scans for residual AI patterns
+2. **Reviewer** checks whether the requested language issues are resolved
 3. **Auditor** verifies scientific accuracy is preserved
 
 ## Outputs

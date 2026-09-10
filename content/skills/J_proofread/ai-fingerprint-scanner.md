@@ -1,7 +1,7 @@
 ---
 id: ai-fingerprint-scanner
 stage: J_proofread
-description: "Scan manuscript for AI-generation fingerprints including formulaic transitions, uniform rhythm, and generic hedging."
+description: "Audit scholarly passages for concrete clarity, repetition and precision problems; does not determine authorship or detector scores."
 inputs:
   - type: Manuscript
     description: "Full draft manuscript to scan"
@@ -9,7 +9,7 @@ outputs:
   - type: AIDetectionReport
     artifact: "proofread/ai_detection_report.md"
 constraints:
-  - "Must scan for at least 5 pattern categories"
+  - "Must assess relevant language patterns in context without a finding quota"
   - "Must assign severity (high/medium/low) to each flagged passage"
   - "Must produce actionable rewrite directions"
 failure_modes:
@@ -22,17 +22,19 @@ domain_aware: false
 
 # AI Fingerprint Scanner Skill
 
-Scan a manuscript for passages that carry common AI-generation fingerprints, producing a prioritized detection report.
+Inspect the requested scholarly text for language problems supported by its context.
 
 ## Purpose
 
-Identify text segments with high probability of being flagged by AI detection tools, enabling targeted rewriting before submission. This is a diagnostic step — it does not rewrite anything.
+Identify unclear, repetitive or imprecise language and propose specific corrections.
+The legacy name and `AIDetectionReport` type do not imply authorship detection.
+Do not estimate detection probabilities, optimize for evasion or require a rewrite
+when the text is correct. Keep required AI disclosure and valid disciplinary style.
 
 ## When to Use
 
-- After the first complete manuscript draft (F2+)
-- Before submission to venues with AI-detection policies
-- As the first step in the `/proofread` workflow (J1)
+- When the user requests a language-pattern diagnosis of supplied scholarly text
+- For formal J1 language review; ordinary grammar edits can use J4 directly
 
 ## Related Task IDs
 
@@ -44,24 +46,28 @@ Identify text segments with high probability of being flagged by AI detection to
 
 ## Inputs
 
-- Full manuscript text or `proofread/humanized_manuscript.md` from a prior iteration
+- Requested passage or manuscript; reuse prior findings when their source is unchanged
+- Direct passage checks can be answered in chat. The artifact and full coverage
+  requirements below apply to formal J1 runs; missing project files alone do
+  not require an interview or a saved gap note for an answerable text check.
 - If a required input is missing or insufficient, write a gap note under `RESEARCH/[topic]/context/gap_notes.md` and ask for the missing artifact instead of inventing content.
 
 ## Process
 
 ### Step 1: Scan for Pattern Categories
 
-Check for each of these AI writing fingerprints:
+Inspect only relevant categories; a pattern is a finding only when it harms
+clarity, precision or the requested voice in this passage:
 
-| # | Pattern Category | Examples | Why It Triggers Detectors |
-|---|-----------------|---------|--------------------------|
-| 1 | **Formulaic transitions** | "Furthermore", "Moreover", "It is worth noting", "In light of" | AI over-relies on a small set of academic connectives |
-| 2 | **Uniform sentence length** | Every sentence 15–25 words with similar clause structure | Humans vary sentence length more widely |
-| 3 | **Generic hedging clusters** | "It is important to note that", "This suggests that further research is needed" | Vapid qualification that adds no information |
-| 4 | **Paragraph template: point–elaborate–conclude** | Every paragraph follows the same 3-part scaffold | Human writers use more diverse structures |
-| 5 | **Lack of field-specific jargon** | Generic vocabulary where domain terms should appear | AI defaults to broad language |
-| 6 | **Repetitive list structures** | "First, … Second, … Third, …" used identically across sections | Mechanical enumeration pattern |
-| 7 | **Symmetrical parallel constructions** | "X not only … but also …" repeated across passages | Over-polished balance |
+| Pattern | Check |
+|---|---|
+| Repeated transitions or lists | Do they obscure the relation between claims? |
+| Repetitive sentence/paragraph structure | Does it make the argument hard to follow? |
+| Empty qualifiers | Can they be removed without losing uncertainty or meaning? |
+| Vague wording | Can available evidence support a more precise expression? |
+| Unnecessary jargon or generic terms | Which wording is accurate for this audience? |
+
+Do not infer authorship from sentence length, polished prose or common phrases.
 
 ### Step 2: Flag Each Passage
 
@@ -74,20 +80,20 @@ For every flagged passage, record:
 | **Excerpt** | The exact flagged text (15–50 words) |
 | **Pattern type** | Which category from Step 1 |
 | **Severity** | `high` / `medium` / `low` |
-| **Rewrite direction** | One-line suggestion for how to humanize |
+| **Rewrite direction** | One-line correction tied to the actual language problem |
 
 ### Step 3: Prioritize and Summarize
 
 - Count passages by severity level
 - Identify the sections with highest concentration
-- Flag any passages detected by multiple pattern categories (highest priority)
+- Set priority by the effect on meaning and readability, not pattern counts
 
-### Step 4: Multi-Agent Consensus (recommended)
+### Step 4: Verify and Stop
 
-When using multi-agent mode:
-1. Run 2–3 agents independently on the same manuscript
-2. Merge results — passages flagged by ≥ 2 agents are automatically promoted to `high`
-3. Use `parallel --summarizer` to consolidate
+Check that every finding identifies an actual issue and preserves source meaning.
+Report zero findings when appropriate. Stop after the requested audit; do not
+start rewriting, another model or J2 merely because a passage was flagged.
+Independent review, when required, follows `skills/Z_cross_cutting/model-collaborator.md`.
 
 ## Output Contract
 
@@ -104,13 +110,13 @@ When using multi-agent mode:
 
 ## Quality Bar
 
-The detection report is **ready** when:
+The language-pattern report is **ready** for its stated scope when:
 
-- [ ] All pattern categories from the checklist have been scanned
+- [ ] Relevant patterns have been checked in context; no finding quota applies
 - [ ] Every flagged passage has section, paragraph, excerpt, pattern, severity, and direction
 - [ ] Severity distribution is documented (count per level)
-- [ ] Sections with highest AI fingerprint density are identified
-- [ ] No section of the manuscript has been skipped
+- [ ] Findings are prioritized by demonstrated language impact
+- [ ] Formal full-manuscript coverage is documented; unavailable sections remain explicit
 
 ## Common Pitfalls
 
@@ -119,7 +125,7 @@ The detection report is **ready** when:
 | Flagging domain-standard phrasing | "We conducted a regression analysis" is normal | Cross-check against field norms before flagging |
 | Missing structural patterns | Only checking word-level, not paragraph-level | Explicitly check paragraph rhythm and template patterns |
 | Over-sensitivity to hedging | All academic papers hedge | Only flag hedging that is generic and adds no information |
-| Ignoring Methods section | Methods naturally use formulaic language | Lower severity threshold for Methods but still scan |
+| Ignoring Methods section | Methods naturally use formulaic language | Preserve precise conventional wording unless a concrete problem is demonstrated |
 
 ## Output Template
 
@@ -131,12 +137,12 @@ topic: <topic>
 primary_artifact: proofread/ai_detection_report.md
 ---
 
-# AI Detection Report
+# Language-Pattern Report (J1)
 
 ## Summary
 - Total passages flagged: [n]
 - High severity: [n] | Medium: [n] | Low: [n]
-- Highest-density sections: [list]
+- Reviewed scope and evidence limits: [sections/passages; unavailable material]
 
 ## Flagged Passages
 
@@ -144,7 +150,8 @@ primary_artifact: proofread/ai_detection_report.md
 |---|---------|---|---------|---------|----------|-------------------|
 | 1 | Introduction | 3 | "Furthermore, it is important to note that..." | Formulaic transition + generic hedging | high | Replace with field-specific connective; drop empty qualifier |
 
-## Multi-Agent Consensus (if applicable)
-| # | Agent 1 | Agent 2 | Agent 3 | Consensus |
-|---|---------|---------|---------|-----------|
+## Review Basis
+- Actual reviewed source and locations: [list]
+- Review mode: [self-review / actual independent reviewers and limits]
+
 ```

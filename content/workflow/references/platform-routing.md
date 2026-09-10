@@ -22,7 +22,7 @@ judgment, or outputs:
 - academic analysis code, notebooks, R/Stata/Python/Julia/MATLAB scripts, Quarto,
   or replication packages when they affect data, models, tables, figures, results,
   or reproducibility
-- proofread, de-AI rewriting, citation-risk checking, reviewer response,
+- scholarly proofreading, voice revision, citation-risk checking, reviewer response,
   peer-review simulation, fatal-flaw analysis, or academic presentations
 - coursework, assignment briefs, marking rubrics, learning outcomes, capstone
   coursework, dissertations, theses, dissertation handbooks, supervisor
@@ -58,19 +58,27 @@ challenged like Reviewer 2, or checked for fatal flaws.
 |---|---|
 | "Read this paper / PDF / DOI" | `B2` or `/paper-read` |
 | "Find gaps / I don't know where to start" | Stage A + ambiguity grill, then `A4` or `/find-gap` |
-| "Run a literature review" | `B1` or `/lit-review` |
+| "Find a few relevant papers" | Bounded `academic-searcher` lookup |
+| "Run a systematic literature review" | Formal `B1` or `/lit-review` |
+| "Write a literature-review section from these sources" | `/academic-write literature-review`; reuse the supplied corpus |
 | "Improve related work" | `B4` or `/academic-write related-work` |
 | "Design the study / variables / robustness" | `C1`, `C3`, `C3_5`, or `/study-design` |
 | "Interpret these results" | `F3`, `F4`, `F5`, or `stats-engine` depending on artifact |
 | "Modify this analysis script / notebook" | Stage I at the requested focus; reuse existing decisions and check affected behavior. Use `I5 -> I6 -> I7 -> I8` for an explicit full workflow |
-| "Proofread / make it less AI-like" | Stage J or `/proofread` |
+| "Proofread this passage / improve its voice" | Selected J task or `/proofread`; preserve meaning and disclosure |
 | "Prepare submission / cover letter" | `H1` or `/submission-prep` |
 | "Reply to reviewer comments" | `H2`, `H2_5`, or `/rebuttal` |
 | "Make slides" | Stage K or `/academic-present` |
 | "Analyze this assignment brief / coursework rubric" | Stage L or `/coursework` |
-| "Plan or revise my coursework essay/report/case analysis" | `L1-L7` or `/coursework` |
+| "Plan my coursework essay/report/case analysis" | Selected planning task in `/coursework` |
+| "Revise this coursework against the rubric" | `L6`, reusing supplied criteria; a language-only edit enters J directly |
 | "Plan my dissertation / thesis / capstone" | Stage M or `/dissertation` |
 | "Integrate supervisor feedback / prepare viva questions" | `M4`, `M7`, or `/dissertation` |
+
+Use the adjacent-intent distinctions in `SKILL.md`. A project/degree label
+supplies context; load its wrapper only for a required project-level decision or
+formal L/M task. Ask about an ambiguous review only when the answer changes the
+operation; do not interpret every use of “review” as a systematic review or panel.
 
 ## Claude Desktop / Claude.ai
 

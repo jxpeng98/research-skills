@@ -93,6 +93,22 @@ use `workflows/paper.md` and the canonical contract; IDs and paths stay stable.
 | Independent review or collaboration | `skills/Z_cross_cutting/model-collaborator.md` |
 | Academic Graph, evidence gaps or continuity | `references/academic-graph-continuity.md` |
 
+For adjacent intents, select by the requested output and supplied material:
+
+- Explaining a paper uses `paper-read`; checking its substantive weaknesses uses
+  `skills/Z_cross_cutting/self-critique.md`. Use
+  `skills/H_submission/peer-review-simulation.md` for a requested referee-style
+  manuscript review. Reserve `model-collaborator` for actual collaboration or
+  independent review requirements.
+- Correcting language uses `proofread`; changing the argument or drafting a
+  section uses `academic-write`. A coursework/dissertation label alone does not
+  widen either task. Ask one question only if the intended kind of review is
+  materially ambiguous after reading the request and supplied material.
+- Choosing how to measure a construct uses
+  `skills/C_design/variable-operationalizer.md`; defining data columns, units and
+  derivations uses `skills/C_design/variable-constructor.md`. Load both only when
+  both decisions are needed.
+
 ## Work with the active model
 
 - Keep the user's configured Host/model, including DeepSeek behind Claude Code.
@@ -133,6 +149,8 @@ For registered project reads, handoffs or auditable orchestration, read
 `references/platform-routing.md` and use the exposed Full MCP tools, starting
 with `qiongli_orchestrator_route` when routing is needed. A Lite preview is not a
 Full run. The native Host adapter governs handoff bindings and candidate return.
+This tool selects the runtime entry; it does not choose the academic skill.
+Resolve the requested task above before entering project orchestration.
 
 If required tools are absent, report `qiongli-mcp-unavailable` for that operation.
 Offer the connection recovery step in `references/platform-routing.md` and

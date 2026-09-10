@@ -9,10 +9,10 @@ Assist with academic paper writing for different sections.
 Canonical Task ID (from the globally installed `qiongli-workflow` skill):
 - `F2` single-section writing
 
-For coursework or dissertation requests, use `/coursework` or `/dissertation`
-as the project wrapper first. Those workflows may delegate a section to this
-single-section writing workflow after rubric, chapter, evidence, and integrity
-boundaries are clear.
+For coursework or dissertation requests, reuse their rubric, chapter, evidence
+and integrity boundaries. Read `/coursework` or `/dissertation` only when that
+context needs interpretation or a formal L/M task was requested. A specified
+section edit does not require starting the enclosing project workflow.
 
 ## Request
 

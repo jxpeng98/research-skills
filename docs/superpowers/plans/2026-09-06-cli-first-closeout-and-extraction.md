@@ -3,7 +3,58 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: Plugin Skills interaction — September 10
+## Current increment: bounded Skill execution — September 10
+
+Following the first audit, the maintainer requested systematic consolidation to
+reduce unnecessary reasoning loops and execution. Source `30336389` keeps all
+82 cards, Task IDs, formal artifact/gate contracts and CLI/MCP architecture.
+The entrypoint now owns execution scope and stopping; cards remain references,
+not an automatically scheduled chain. No model settings or hard token budgets
+were changed. Instructions reduce unnecessary workflow activity; they cannot
+prove or guarantee a model's internal reasoning cost.
+
+- Ordinary questions, bounded reference discovery and narrow code fixes use one
+  primary route plus concrete dependencies. A project name alone does not start
+  a full Stage-I workflow, and a literature query does not start PRISMA scaffolding.
+- A requested formal artifact retains its required outputs and applicable gates.
+  Full workflows and independent reviews follow their explicitly selected scope.
+- Ordinary critique checks once, fixes actual defects and rechecks affected work.
+  No issue quota, compulsory adversarial persona or repeat of unchanged input
+  applies. Formal standard/deep minimum reviews, unresolved BLOCK findings,
+  source freshness and preview/approval/CAS remain intact. A missing boundary
+  file alone does not force a new interview for an otherwise answerable question.
+- The core digest, registry and quick index carry the same bounded critique
+  guidance so alternative loading paths do not reintroduce the old default.
+
+Validation: 16 focused content, resource-link, registry, literature-precision,
+writing/grill and materialized-command checks passed on the final content. The
+82-card structural audit, capability contract and Skill frontmatter checks also
+passed. Independent offline cases checked a one-function empty-list fix, a
+correct association sentence, and a formal standard review after its first PASS.
+They respectively stopped at the requested code, preserved the correct sentence,
+and completed the second stability review without inventing revisions. The
+initial abbreviated abstract was expanded to name its variables before judging
+those cases; no missing-input observation was counted as a Skill defect.
+Report: `/private/tmp/qiongli-bounded-execution-forward.md`.
+
+A real tool-disabled request through the existing Claude Code/DeepSeek
+configuration also left the correct sentence unchanged and grounded its clean
+review in the supplied abstract. It did not manufacture critique findings.
+Record: `/private/tmp/qiongli-bounded-deepseek-g_vcs8sl/result.json`; source hashes
+bind the exact entry and critique card. This was a single synthetic text request,
+not live MCP qualification or a comparative latency/reasoning benchmark.
+
+The 428-resource native content lock was regenerated from source `30336389`;
+its content root is `40ecbff90bac6bb84b6173c08ef4e79d7324de87caf16dc3bf58ffb5adadad34`.
+Both selected Codex/Claude bundle tests passed deterministic packaging, tamper
+detection and runtime independence checks against that content. Version
+consistency and the generated program index checks passed. Host registration
+remains paused, no package is published, and program acceptance is
+unchanged. Next: test representative bounded literature/code tasks with real
+available tools, measuring extra operations and outcome quality before changing
+model effort or physically merging specialist cards.
+
+## Completed: Plugin Skills interaction — September 10
 
 The maintainer paused Host registration and selected an audit of Plugin Skills,
 model interaction, efficiency and functional coverage. Source increment

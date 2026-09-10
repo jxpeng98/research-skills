@@ -3,7 +3,74 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: Codex-first routing evidence — September 10
+## Current increment: Agent guidance and Codex baseline — September 10
+
+Started from clean `5623c796` on `codex/agent-guidance-and-routing-baseline`.
+The maintainer requested an AGENTS review before continuing the remaining Codex
+cases. Keep Codex primary and other Hosts as adapters of the shared contracts.
+
+- `5471486b` condenses `AGENTS.md` from 54 lines / 3,427 bytes to 39 lines /
+  2,546 bytes. The previous direction was current, but approval, test reuse and
+  acceptance rules repeated one another and CONTRIBUTING. The revision retains
+  their essential boundaries, explicitly states CLI-first delivery and Desktop
+  maintenance scope, and leaves changing progress with this plan and the ledger.
+  All linked owner documents resolve. No additional repository AGENTS file was
+  found; the similarly named guide/template files are product documentation.
+- All remaining 36 requests completed using Codex CLI `0.153.4`, configured
+  `gpt-6-astra` / `high`. Three disjoint cohorts returned original intent-label
+  results **12/12, 8/12 and 7/12** (27/36). Manifests, captured events and logs are
+  under `/private/tmp/qiongli-codex-baseline-remaining-{1,2,3}` and matching `.log`
+  files. All share entry hash `d1926ec3f1e4dc27f24244f271ac3854f648fed69318a4f552e3f760b8e3c9ff`,
+  corpus hash `166bad50315710b12537f6c2f2d3b08bbba88f2e29cf235dd7665f11ec237651`
+  and probe hash `a2ec6bdd9dea9c173ba7125dbfd56a96011bf2fed8142292ad11a340081a7e3f`.
+  Their IDs plus the previous pilot's 12 cover all **48 distinct requests**.
+  Preserve that pilot's separate 10/12 and corrected-case 2/2 records below;
+  this is coverage across captures, not a single all-passing 48-case run.
+- All 36 new final answers were reviewed, including an independent review of ten
+  supplied-input/answer pairs without using expected labels. The nine label
+  differences remain visible; no expectations were broadened to make them pass:
+
+  | Cases | Observed difference and interpretation |
+  |---|---|
+  | Independent-review pair | `request_evidence` rather than `answer`; answers distinguish completed preliminary self-review from unavailable independent review. Immediate response and future prerequisite are different concepts. |
+  | Rubric revision and supervisor-feedback pairs | `academic-write` rather than coursework/dissertation routes; actual revisions obey supplied criteria and remain bounded. Context labels alone should not mandate a longer workflow. |
+  | Source-overlap Chinese | `skills-summary.md` as a discovery step; asks for missing original text and does not claim the unavailable card ran. Discovery and primary execution references need separate evaluation. |
+  | Denied-read pair | Project-operation rather than graph reference; English also labels the future step `revalidate_state`. Both actual answers stop at denial, reject the imported instruction, and perform no bypass. Current permitted action must be distinguished from a future dependency. |
+
+- Answer review found one concrete fidelity issue in two English cases:
+  `substantive-method-critique` and `results-interpretation-boundary` added
+  self-report wording when the supplied material only described measurement.
+  `fc1ec134` added a source-detail rule. Its four-case live regression returned
+  4/4 intent labels, but the English interpretation still added “reported”; that
+  attempt is preserved at `/private/tmp/qiongli-codex-study-detail-regression`.
+  `ed2582ca` then explicitly distinguishes a survey label from self-report and
+  preserves supplied measurement wording. Only the remaining interpretation pair
+  was repeated: 2/2 labels passed, and both actual answers omitted the unsupported
+  method while retaining causal/statistical limitations. Final evidence is at
+  `/private/tmp/qiongli-codex-study-detail-final` and its matching `.log` file.
+  This bounded sample does not establish general model superiority or a guarantee.
+- Seven focused content/discovery/resource tests passed on the final source,
+  as did Skill frontmatter and capability-contract validation. The 428-resource
+  embedded lock was regenerated from `ed2582ca`, with content root
+  `4d905160ff20c582b7d3d3f87fd0f2f8c986166d8409167bf2110c595fabf26b`.
+  Both native Codex/Claude bundle tests passed deterministic packaging, tamper
+  detection and runtime independence against the final lock; log:
+  `/private/tmp/qiongli-study-detail-final-native-bundles.log`. Final Codex capture
+  hashes match the current entry, corpus and probe. The first content iteration's
+  bundle checks are superseded rather than counted again.
+  Task/card identities, formal outputs, runtime routing and approval/CAS are unchanged.
+
+Next bounded work: clarify evaluation fields for primary task routing, resource
+discovery/project operations and the immediate permitted action. Version the
+expectations and preserve original scores; reuse unchanged model captures when
+only scoring changes, with explicit source/prompt/trace bindings and separate
+adjudication receipts. Then compare no-Skill / preceding / candidate under the
+same Codex model/tools before claiming routing improvements. Actual registered
+Host traces and one literature → reading → claim → manuscript continuity journey
+remain separately scoped. Host registration is still paused; publication and
+program acceptance are unchanged.
+
+## Completed: first Codex routing sample — September 10
 
 User outcome: prioritize Codex interaction quality and catch overly broad or
 incorrect route choices with repeatable bilingual evidence. Other Agents remain

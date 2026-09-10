@@ -110,6 +110,33 @@ fn run_without_path(args: &[&str]) -> Output {
         .expect("native qiongli binary should start without PATH")
 }
 
+#[test]
+fn installation_review_rejects_redirected_input_without_writes() {
+    let fixture = Fixture::new("installation-review");
+    let output = fixture_command(Path::new(env!("CARGO_BIN_EXE_qiongli")), &fixture)
+        .args(["install", "migrate", "--interactive"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("interactive-terminal-required"));
+    assert!(!fixture.config_root.exists());
+    let output = fixture_command(Path::new(env!("CARGO_BIN_EXE_qiongli")), &fixture)
+        .args(["install", "inventory", "--paths", "exact"])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{}", public_output(&output));
+    let inventory = parse_json(&output);
+    assert_eq!(inventory["cli"]["cleanup"], "user-operated-only");
+    assert!(
+        inventory["cli"]["installations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["running"] == true)
+    );
+    assert!(!fixture.config_root.exists());
+}
+
 fn run_without_home_or_path(args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_qiongli"))
         .args(args)

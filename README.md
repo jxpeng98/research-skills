@@ -33,7 +33,7 @@ The name comes from `穷理`: keep asking what principle, evidence, and limit si
 ## Start Here
 
 For native Qiongli 2, use the [CLI installation and command guide](docs/guide/cli-2x.md).
-Beta.1 adds Cargo alongside GitHub downloads, npm `next` and PyPI.
+Beta.2 supports GitHub downloads, npm `next`, PyPI and Cargo.
 No App is required. The stable installation instructions below describe 1.x.
 
 | Need | Best entry |
@@ -51,21 +51,21 @@ No App is required. The stable installation instructions below describe 1.x.
 
 **Download, extract, and run. You do not need Python, Node.js, Rust or a package manager.**
 
-Choose the complete CLI from [GitHub Release v2.0.0-beta.1](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.1).
+Choose the complete CLI from [GitHub Release v2.0.0-beta.2](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.2).
 After extraction, run `./qiongli --help` (PowerShell: `.\qiongli.exe --help`).
 The program already includes the research Skills, templates and Lite/Full MCP
 resources. You can use it from that folder; installing an App or changing PATH is optional.
 
 | Platform | Binary archive |
 |---|---|
-| macOS Apple Silicon (ARM64) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz) |
-| Windows x64 | [Download `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip) |
-| Linux x64 (glibc 2.35+) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon (ARM64) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [Download `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip) |
+| Linux x64 (glibc 2.35+) | [Download `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz) |
 
-Windows Beta.1 includes the C runtime in the executable; no Visual C++ runtime
+Windows beta releases include the C runtime in the executable; no Visual C++ runtime
 installation is needed. Linux uses system libraries with glibc 2.35+.
 
-Verify with the release's [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/SHA256SUMS)
+Verify with the release's [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/SHA256SUMS)
 before running. See [extraction, PATH and MCP setup](docs/guide/cli-2x.md#standalone-binary-download)
 for step-by-step instructions. Choose these platform archives from **Assets**, rather than
 GitHub's automatic **Source code** downloads. Host applications and online services remain separate.
@@ -73,10 +73,16 @@ GitHub's automatic **Source code** downloads. Host applications and online servi
 Cargo builds from source with Rust 1.97+ and a native linker.
 
 ```sh
-cargo install qiongli --version 2.0.0-beta.1 --locked
+cargo install qiongli --version 2.0.0-beta.2 --locked
 ```
 
 Cargo provides `qiongli` and `ql`. Choose the archives above to skip compilation.
+
+Beta.2 adds a read-only installation review. Run the new executable with
+`install migrate --interactive` to choose a preferred CLI and review manual
+archive/uninstall steps. npm can show it during a foreground install; pip and
+Cargo users run it afterward. No files or settings are changed. See the
+[installation review guide](docs/guide/cli-2x.md#review-existing-cli-installations).
 
 ## Latest Stable Downloads
 

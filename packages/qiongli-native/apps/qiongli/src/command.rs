@@ -38,7 +38,7 @@ use crate::update_cli::UpdateCliCommand;
 const OUTPUT_SCHEMA_VERSION: u32 = 1;
 const MAX_CLIENT_METADATA_BYTES: u64 = 256 * 1_024;
 
-const USAGE: &str = "Qiongli native CLI\n\nUsage:\n  qiongli\n  qiongli --version\n  qiongli --help\n  qiongli app <snapshot|verify-integrations|verify-skills|plan|apply>\n  qiongli project <list|show|doctor|create|register|migrate|import|export|archive|restore|refresh|unregister>\n  qiongli content list\n  qiongli config show\n  qiongli config set --expected-revision <revision> --default-profile <profile>\n  qiongli config backend status\n  qiongli update status\n  qiongli update recovery-preview\n  qiongli update recover --expected-marker-digest <sha256> --approve-filesystem-write\n  qiongli update channel --expected-revision <revision> --stream <stable|beta>\n  qiongli update check\n  qiongli update download --expected-revision <revision>\n  qiongli update verify --expected-revision <revision>\n  qiongli update stage --expected-revision <revision>\n  qiongli update install --expected-revision <revision>\n  qiongli update cancel --expected-revision <revision>\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n  qiongli migrate-1x <inspect|preview|apply|continue|status|recover> [options]\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli status\n  qiongli doctor\n\nProfiles:\n  skill-only | marketplace-lite | lite | full\n\nOptions:\n  -h, --help  Print help\n  --version   Print the native product version\n";
+const USAGE: &str = "Qiongli native CLI\n\nUsage:\n  qiongli\n  qiongli --version\n  qiongli --help\n  qiongli app <snapshot|verify-integrations|verify-skills|plan|apply>\n  qiongli project <list|show|doctor|create|register|migrate|import|export|archive|restore|refresh|unregister>\n  qiongli content list\n  qiongli config show\n  qiongli config set --expected-revision <revision> --default-profile <profile>\n  qiongli config backend status\n  qiongli update status\n  qiongli update recovery-preview\n  qiongli update recover --expected-marker-digest <sha256> --approve-filesystem-write\n  qiongli update channel --expected-revision <revision> --stream <stable|beta>\n  qiongli update check\n  qiongli update download --expected-revision <revision>\n  qiongli update verify --expected-revision <revision>\n  qiongli update stage --expected-revision <revision>\n  qiongli update install --expected-revision <revision>\n  qiongli update cancel --expected-revision <revision>\n  qiongli install status\n  qiongli install inventory [--paths exact]\n  qiongli install migrate --interactive\n  qiongli install codex status\n  qiongli install claude status\n  qiongli migrate-1x <inspect|preview|apply|continue|status|recover> [options]\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli status\n  qiongli doctor\n\nProfiles:\n  skill-only | marketplace-lite | lite | full\n\nOptions:\n  -h, --help  Print help\n  --version   Print the native product version\n";
 
 const INSPECTION_USAGE: &str = "\nInspection:\n  qiongli paths             Show exact resolved paths\n  qiongli paths --json      Show the versioned exact-path JSON snapshot\n  qiongli doctor            Run redacted native Product Doctor checks\n  qiongli doctor --paths exact\n                            Include the exact-path snapshot explicitly\n";
 
@@ -52,7 +52,7 @@ const UPDATE_USAGE: &str = "Qiongli native update\n\nUsage:\n  qiongli update st
 
 const MCP_USAGE: &str = "Qiongli native MCP\n\nUsage:\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli mcp --help\n\nFull profile adds redacted Research Library, capture, academic graph, and local checkpoint controls. The connected host owns model execution and returns revision-bound candidates through the host handoff contract.\n";
 
-const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --transaction-id <update-id> --expected-journal-digest <sha256> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate activate-recover --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-discard --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nNormal Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
+const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory [--paths exact]\n  qiongli install migrate --interactive\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --transaction-id <update-id> --expected-journal-digest <sha256> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate activate-recover --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-discard --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nCross-channel migration is a read-only interactive review. Select a preferred CLI and request manual archive/uninstall guidance; no files, PATH or Host settings are changed. Unknown executables are never launched during discovery.\n\nNormal managed Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
 
 const MIGRATION_USAGE: &str = "Qiongli 1.x replacement migration\n\nUsage:\n  qiongli migrate-1x inspect\n  qiongli migrate-1x preview [--provider-resolution <provider>=<keep-v2|use-legacy|merge-compatible>]...\n  qiongli migrate-1x apply --migration-id <id> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change] [--approve-secret-store-write]\n  qiongli migrate-1x continue --migration-id <id> --confirm-host-activation\n  qiongli migrate-1x continue --migration-id <id> --approve-cleanup\n  qiongli migrate-1x continue --migration-id <id> --finalize\n  qiongli migrate-1x status --migration-id <id>\n  qiongli migrate-1x recover --migration-id <id>\n  qiongli migrate-1x --help\n";
 
@@ -71,6 +71,9 @@ pub struct CommandEnvironment {
     claude_config_root: Option<PathBuf>,
     project_root: Option<PathBuf>,
     zotero_connector_url: Option<String>,
+    cli_search_path: Option<OsString>,
+    cli_executable: Option<PathBuf>,
+    cli_extra_bins: Vec<PathBuf>,
     codex_host_present: bool,
     claude_host_present: bool,
     codex_host_version: Option<DetectedClientVersion>,
@@ -89,6 +92,30 @@ impl CommandEnvironment {
             discover_client_host("claude", platform_home.as_deref(), false);
         Self {
             configured_root: env::var_os("QIONGLI_CONFIG_HOME"),
+            cli_search_path: env::var_os("PATH"),
+            cli_executable: env::current_exe().ok(),
+            cli_extra_bins: [
+                "CARGO_INSTALL_ROOT",
+                "CARGO_HOME",
+                "VIRTUAL_ENV",
+                "CONDA_PREFIX",
+                "NPM_CONFIG_PREFIX",
+            ]
+            .into_iter()
+            .filter_map(|key| {
+                let path = PathBuf::from(env::var_os(key)?);
+                if !path.is_absolute() {
+                    return None;
+                }
+                Some(if cfg!(windows) && key == "NPM_CONFIG_PREFIX" {
+                    path
+                } else if cfg!(windows) && ["VIRTUAL_ENV", "CONDA_PREFIX"].contains(&key) {
+                    path.join("Scripts")
+                } else {
+                    path.join("bin")
+                })
+            })
+            .collect(),
             codex_host_present,
             claude_host_present,
             codex_host_version,
@@ -113,6 +140,9 @@ impl CommandEnvironment {
     ) -> Self {
         Self {
             configured_root,
+            cli_search_path: None,
+            cli_executable: None,
+            cli_extra_bins: vec![],
             platform_home,
             codex_config_root: None,
             claude_config_root,
@@ -155,6 +185,23 @@ impl CommandEnvironment {
     #[cfg(test)]
     pub(crate) fn without_client_discovery(mut self) -> Self {
         self.client_discovery_disabled = true;
+        self
+    }
+
+    pub(crate) fn cli_search_path(&self) -> Option<&OsStr> {
+        self.cli_search_path.as_deref()
+    }
+    pub(crate) fn cli_executable(&self) -> Option<&Path> {
+        self.cli_executable.as_deref()
+    }
+    pub(crate) fn cli_extra_bins(&self) -> &[PathBuf] {
+        &self.cli_extra_bins
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_cli_paths(mut self, search_path: OsString, executable: PathBuf) -> Self {
+        self.cli_search_path = Some(search_path);
+        self.cli_executable = Some(executable);
         self
     }
 
@@ -238,6 +285,7 @@ pub struct CliOutput {
 }
 
 pub enum ProductAction {
+    ReviewCliInstallations,
     Output(CliOutput),
     ServeLiteMcpStdio,
     ServeFullMcpStdio,
@@ -298,6 +346,9 @@ pub fn run_cli(
 ) -> CliOutput {
     match prepare_action(args, environment, content) {
         ProductAction::Output(output) => output,
+        ProductAction::ReviewCliInstallations => {
+            CliOutput::operation_failure("interactive-command-requires-product-entrypoint")
+        }
         ProductAction::ServeLiteMcpStdio => {
             CliOutput::operation_failure("streaming-command-requires-product-entrypoint")
         }
@@ -488,7 +539,8 @@ pub(crate) fn prepare_action_with_release_authority(
         }
         Command::InstallHelp => CliOutput::success_text(INSTALL_USAGE),
         Command::InstallStatus => install_status(authority),
-        Command::InstallInventory => install_inventory(environment),
+        Command::InstallInventory { exact_paths } => install_inventory(environment, exact_paths),
+        Command::InstallMigrateInteractive => return ProductAction::ReviewCliInstallations,
         Command::InstallCodexStatus => install_codex_status(environment),
         Command::InstallClaudeStatus => install_claude_status(environment),
         Command::InstallCandidate(command) => {
@@ -570,7 +622,10 @@ enum Command {
     Update(UpdateCliCommand),
     InstallHelp,
     InstallStatus,
-    InstallInventory,
+    InstallInventory {
+        exact_paths: bool,
+    },
+    InstallMigrateInteractive,
     InstallCodexStatus,
     InstallClaudeStatus,
     InstallCandidate(CandidateCliCommand),
@@ -1018,7 +1073,13 @@ fn parse_install_args(args: &[OsString]) -> Result<Command, UsageError> {
     match subcommand {
         "--help" if args.len() == 1 => Ok(Command::InstallHelp),
         "status" if args.len() == 1 => Ok(Command::InstallStatus),
-        "inventory" if args.len() == 1 => Ok(Command::InstallInventory),
+        "inventory" if args.len() == 1 => Ok(Command::InstallInventory { exact_paths: false }),
+        "inventory" if args.len() == 3 && args[1] == "--paths" && args[2] == "exact" => {
+            Ok(Command::InstallInventory { exact_paths: true })
+        }
+        "migrate" if args.len() == 2 && args[1] == "--interactive" => {
+            Ok(Command::InstallMigrateInteractive)
+        }
         "codex"
             if args.get(1).and_then(|value| value.to_str()) == Some("status")
                 && args.len() == 2 =>
@@ -2461,7 +2522,7 @@ fn install_codex_status(environment: &CommandEnvironment) -> CliOutput {
     )
 }
 
-fn install_inventory(environment: &CommandEnvironment) -> CliOutput {
+fn install_inventory(environment: &CommandEnvironment, exact_paths: bool) -> CliOutput {
     let Some(inventory) = environment.client_inventory() else {
         return CliOutput::operation_failure("client-inventory-home-unavailable");
     };
@@ -2470,6 +2531,7 @@ fn install_inventory(environment: &CommandEnvironment) -> CliOutput {
             schema_version: OUTPUT_SCHEMA_VERSION,
             command: "install-inventory",
             inventory: inventory.summary(),
+            cli: cli_inventory(environment, exact_paths),
         },
         0,
     )
@@ -2561,6 +2623,18 @@ fn paths(environment: &CommandEnvironment, content: &EmbeddedContent, json: bool
     CliOutput::success_text(output)
 }
 
+fn cli_inventory(
+    environment: &CommandEnvironment,
+    exact_paths: bool,
+) -> crate::cli_inventory::CliInventory {
+    let inventory = crate::cli_inventory::discover(environment);
+    if exact_paths {
+        inventory
+    } else {
+        inventory.redact()
+    }
+}
+
 fn doctor(
     environment: &CommandEnvironment,
     content: &EmbeddedContent,
@@ -2570,13 +2644,15 @@ fn doctor(
     let inspection =
         crate::product_diagnostics::inspect_product(environment, content, secret_store.status());
     let blocking = inspection.blocking();
-    let attention = inspection.requires_attention();
+    let cli = cli_inventory(environment, exact_paths);
+    let attention = inspection.requires_attention() || cli.attention;
     json_output(
         &DoctorOutput {
             schema_version: inspection.schema_version,
             command: "doctor",
             overall: if attention { "attention" } else { "ready" },
             checks: &inspection.checks,
+            cli,
             paths: exact_paths.then_some(inspection.paths.as_slice()),
         },
         u8::from(blocking),
@@ -2735,6 +2811,7 @@ struct InstallInventoryOutput<'a> {
     schema_version: u32,
     command: &'static str,
     inventory: &'a ClientInventorySummaryV1,
+    cli: crate::cli_inventory::CliInventory,
 }
 
 #[derive(Serialize)]
@@ -2803,6 +2880,7 @@ struct DoctorOutput<'a> {
     command: &'static str,
     overall: &'static str,
     checks: &'a [crate::product_diagnostics::ProductDoctorCheckV1],
+    cli: crate::cli_inventory::CliInventory,
     #[serde(skip_serializing_if = "Option::is_none")]
     paths: Option<&'a [crate::product_diagnostics::ProductPathInspectionV1]>,
 }
@@ -3707,7 +3785,7 @@ mod tests {
         );
         assert_eq!(
             parse_args(args(&["install", "inventory"])),
-            Ok(Command::InstallInventory)
+            Ok(Command::InstallInventory { exact_paths: false })
         );
         assert_eq!(
             parse_args(args(&["install", "claude", "status"])),

@@ -68,7 +68,11 @@ into a new directory. Open a terminal there (PowerShell on Windows) and run:
 {command} --version
 {command} --help
 {command} content list
+{command} install migrate --interactive
 ```
+
+The interactive review detects visible CLI installations and offers manual archive
+or uninstall guidance. Enter keeps your setup; it never changes files or settings.
 
 You can run the executable by absolute path, or add its directory to your user
 PATH. This archive supplies `{executable}`; `ql` is a package-manager alias.

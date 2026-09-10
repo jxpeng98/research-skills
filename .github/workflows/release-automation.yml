@@ -60,7 +60,7 @@ permissions:
 
 jobs:
   native-release-dry-run:
-    if: ${{ startsWith(inputs.tag, 'v2.') || startsWith(inputs.tag, '2.') }}
+    if: ${{ inputs.mode == 'pre' && (startsWith(inputs.tag, 'v2.') || startsWith(inputs.tag, '2.')) }}
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -125,6 +125,32 @@ jobs:
           name: native-release-plan-${{ steps.release.outputs.repo_version }}
           path: ${{ runner.temp }}/qiongli-native-release-plan/
           if-no-files-found: error
+
+  native-publish:
+    concurrency:
+      group: native-publish-${{ inputs.tag }}
+      cancel-in-progress: false
+    if: ${{ inputs.mode == 'post' && inputs.create_release && startsWith(inputs.tag, 'v2.') }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Qualify and publish the requested native prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: python tooling/scripts/native_release_publish.py --tag "$RELEASE_TAG"
 
   legacy-release-automation:
     if: ${{ !startsWith(inputs.tag, 'v2.') && !startsWith(inputs.tag, '2.') }}

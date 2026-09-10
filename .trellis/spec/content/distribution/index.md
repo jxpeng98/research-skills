@@ -110,3 +110,18 @@ names and contents. New builds emit only schema 2. Public changes require a new
 version and six qualified immutable distributions; existing alpha.8 refs and
 assets remain unchanged. No signed grant, managed activation, Host registration,
 private research access or model configuration change is implied by an archive.
+
+Beta.2 permits exactly one npm `postinstall` script: the canonical terminal-only
+installation review launcher. Asset verification checks its command and bytes;
+arbitrary scripts remain rejected. It performs no download or cleanup, tolerates
+cancellation, and skips non-terminal streams. `--ignore-scripts` remains supported.
+Python wheels and Cargo retain standard installation; the installed native CLI
+owns their subsequent interactive review.
+
+An explicit `release-automation.yml` post dispatch at an immutable native
+prerelease tag qualifies the same tag through Native CLI distribution, verifies
+its packet, creates a GitHub prerelease, then dispatches the existing registry
+workflows at that tag. Dispatch uploads are opt-in and tag-only; existing
+credential environments and exact-source CI gates still apply. GITHUB_TOKEN
+release events do not chain jobs, so publisher dispatch is explicit. The local
+Agent may end after submission when requested; no public success is inferred.

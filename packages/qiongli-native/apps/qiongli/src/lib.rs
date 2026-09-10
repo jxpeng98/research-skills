@@ -17,6 +17,8 @@ mod capture_consolidation_cli;
 mod capture_delivery_cli;
 mod capture_resolution_cli;
 mod cli_install;
+mod cli_inventory;
+pub use cli_inventory::review_cli_installations;
 mod command;
 mod credential_store;
 mod desktop;

@@ -93,7 +93,19 @@ a separate decision authorizes announcement.
 
 The CLI lane builds no App and requires no Community Alpha signing key. It
 qualifies current-target CLI assets and npm/wheel installs; three-platform CI
-uses `native-cli-distribution.yml`. Publication uses
+uses `native-cli-distribution.yml`. For an unattended native prerelease, push an immutable tag containing the reviewed
+release notes, then dispatch the existing workflow at that tag:
+
+```sh
+gh workflow run release-automation.yml --ref v2.0.0-beta.2 -f mode=post -f tag=v2.0.0-beta.2
+```
+
+Use the actual new version for both values. The action waits for that tag's
+three-platform distribution run, verifies its assets, creates the GitHub Release
+and checks its public downloads before dispatching npm, PyPI and Cargo publishers.
+It refuses existing releases and never replaces published assets. The registry
+jobs keep their environments, credentials and exact-source gates. An accepted
+dispatch is not proof that publication has finished. Publication uses
 an immutable tag and `gh release`, followed by public download verification.
 The existing npm/PyPI workflows publish native assets on a published GitHub
 Release after exact-source CI checks; npm prereleases use `next`, and PyPI uses

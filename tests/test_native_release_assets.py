@@ -39,6 +39,9 @@ class NativeReleaseAssetsTests(unittest.TestCase):
                 assemble(root / 'targets', root / 'wrong-source', version, 'b' * 40)
             assemble(root / 'targets', root / 'assets', version, commit)
             manifest, npm, wheels = verify(root / 'assets', version, commit)
+            with patch('tooling.scripts.native_release_assets.NPM_INSTALL_REVIEW', 'unexpected script'):
+                with self.assertRaisesRegex(ValueError, 'installation review bytes'):
+                    verify(root / 'assets', version, commit)
             self.assertEqual(set(wheels), set(TARGETS))
             self.assertEqual(len(manifest['artifacts']), 7)
             # The Plugin verifier owns archive internals; this owner must bind

@@ -13,10 +13,10 @@ import tarfile
 import zipfile
 
 try:
-    from .native_registry_packages import TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
+    from .native_registry_packages import NPM_INSTALL_REVIEW, TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
     from .native_marketplace_plugins import PLATFORMS, archive_name, plugin_name, verify_archive, check_plugins
 except ImportError:
-    from native_registry_packages import TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
+    from native_registry_packages import NPM_INSTALL_REVIEW, TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
     from native_marketplace_plugins import PLATFORMS, archive_name, plugin_name, verify_archive, check_plugins
 
 
@@ -152,8 +152,14 @@ def verify(root, version, commit):
         metadata = json.load(packet.extractfile('package/package.json'))
         if metadata['version'] != identity.npm_version or metadata['publishConfig']['tag'] != identity.npm_dist_tag:
             raise ValueError('npm version/channel mismatch')
-        if metadata['name'] != 'qiongli' or metadata.get('scripts'):
-            raise ValueError('unexpected npm package or install scripts')
+        if metadata['name'] != 'qiongli':
+            raise ValueError('unexpected npm package')
+        scripts = metadata.get('scripts')
+        if scripts:
+            if scripts != {'postinstall': 'node bin/install.mjs'}:
+                raise ValueError('unexpected npm install scripts')
+            if packet.extractfile('package/bin/install.mjs').read() != NPM_INSTALL_REVIEW.encode():
+                raise ValueError('unexpected npm installation review bytes')
         for target, (_, _, binary) in TARGETS.items():
             data = packet.extractfile(f'package/native/{target}/{binary}').read()
             validate_binary(data, target)

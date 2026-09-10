@@ -93,6 +93,15 @@ def stage_cargo(out: Path, version: str) -> Path:
     return workspace
 
 
+NPM_INSTALL_REVIEW = """import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+if (process.stdin.isTTY && process.stdout.isTTY) {
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL('./qiongli.mjs', import.meta.url)), 'install', 'migrate', '--interactive'], { stdio: 'inherit' });
+  if (result.error || result.status !== 0) console.error('Installation review was skipped or cancelled. Run the installed Qiongli with install migrate --interactive to review later.');
+}
+"""
+
+
 NPM_LAUNCHER = '''#!/usr/bin/env node
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -174,7 +183,15 @@ def package_readme(version: str) -> str:
 Native CLI for macOS Apple Silicon, Windows x64, and Linux x64 (glibc 2.35+).
 Includes embedded research content and Lite/Full MCP. No App is required.
 The Host owns models and credentials. No executable download runs at install time.
-Run `qiongli --help` and `qiongli doctor` after installation.
+Run the newly installed command by its full path if another version is on PATH.
+Run `qiongli install migrate --interactive` to choose a preferred installation and
+review manual archive/uninstall guidance. Nothing is deleted or moved, and PATH,
+Host settings and research data stay unchanged. Empty-argument terminal launches
+open this review too; scripts and MCP never prompt. npm can show the review during
+`npm install -g qiongli@next --foreground-scripts` when stdin/stdout are terminals.
+Skipping install scripts does not affect the CLI. pip and Cargo users run the
+review after installation. `install inventory --paths exact` lists visible CLI
+entries; `doctor` includes a redacted overview.
 Research writes retain preview, explicit approval and revision checks.
 Managed Plugin/Skill activation, automatic migration and signed self-update still
 require their existing product authority; a registry install does not grant it.
@@ -189,6 +206,7 @@ def npm_package(out: Path, binaries: dict[str, Path], version: str) -> Path:
     (npm / 'bin').mkdir(parents=True)
     (npm / 'bin/qiongli.mjs').write_text(NPM_LAUNCHER)
     (npm / 'bin/qiongli.mjs').chmod(0o755)
+    (npm / 'bin/install.mjs').write_text(NPM_INSTALL_REVIEW)
     for target, binary in binaries.items():
         data = regular_bytes(binary)
         validate_binary(data, target)
@@ -205,6 +223,7 @@ def npm_package(out: Path, binaries: dict[str, Path], version: str) -> Path:
         'repository': {'type': 'git', 'url': 'git+https://github.com/jxpeng98/qiongli.git'},
         'bin': {'qiongli': 'bin/qiongli.mjs', 'ql': 'bin/qiongli.mjs'},
         'os': sorted({TARGETS[t][0] for t in binaries}), 'cpu': sorted({TARGETS[t][1] for t in binaries}),
+        'scripts': {'postinstall': 'node bin/install.mjs'},
         'engines': {'node': '>=18'}, 'files': ['bin/', 'native/', 'README.md', 'LICENSE'],
         'publishConfig': {'access': 'public', 'tag': identity.npm_dist_tag},
     }, indent=2) + '\n')

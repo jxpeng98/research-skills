@@ -20,6 +20,16 @@ from tooling.scripts import native_registry_packages as packages
 
 
 class NativeRegistryPackagesTests(unittest.TestCase):
+    def test_install_review_skips_noninteractive_installation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'install.mjs').write_text(packages.NPM_INSTALL_REVIEW)
+            (root / 'qiongli.mjs').write_text("throw new Error('must not launch without a terminal');")
+            node = subprocess.check_output(['node', '-p', 'process.execPath'], text=True).strip()
+            result = subprocess.run([node, str(root / 'install.mjs')], input='', capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout + result.stderr, '')
+
     def test_cargo_publication_requires_ci_token_without_exposing_it(self):
         workflow = yaml.safe_load((packages.ROOT / '.github/workflows/publish-cargo.yml').read_text())
         publish = workflow['jobs']['publish']
@@ -86,6 +96,8 @@ class NativeRegistryPackagesTests(unittest.TestCase):
                 manifest = json.load(archive.extractfile('package/package.json'))
                 self.assertEqual(manifest['version'], '2.0.0-beta.1')
                 self.assertEqual(manifest['publishConfig']['tag'], 'next')
+                self.assertEqual(manifest['scripts'], {'postinstall': 'node bin/install.mjs'})
+                self.assertEqual(archive.extractfile('package/bin/install.mjs').read(), packages.NPM_INSTALL_REVIEW.encode())
                 self.assertEqual(set(manifest['os']), {'darwin', 'linux', 'win32'})
                 for target, data in binary_data.items():
                     self.assertEqual(archive.extractfile(f'package/native/{target}/{packages.TARGETS[target][2]}').read(), data)

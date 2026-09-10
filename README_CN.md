@@ -51,21 +51,21 @@ Beta.1 新增 Cargo 渠道，同时提供 GitHub 二进制下载、npm `next` �
 
 **下载、解压、运行。不用先安装 Python、Node.js、Rust 或包管理器。**
 
-在 [GitHub Release v2.0.0-beta.1](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.1)
+在 [GitHub Release v2.0.0-beta.2](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.2)
 中选择对应平台的完整 CLI，解压后运行 `./qiongli --help`（Windows PowerShell 使用 `.\qiongli.exe --help`）。
 研究 Skills、模板和 Lite/Full MCP 资源都在程序里，不需要额外安装。
 你可以直接在解压目录使用，安装 App 或配置 PATH 都不是前提。
 
 | 平台 | 二进制压缩包 |
 |---|---|
-| macOS Apple Silicon（ARM64） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz) |
-| Windows x64 | [下载 `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip) |
-| Linux x64（glibc 2.35+） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon（ARM64） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [下载 `.zip`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip) |
+| Linux x64（glibc 2.35+） | [下载 `.tar.gz`](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz) |
 
 Windows Beta.1 已将 C 运行库编入程序，无需另外安装 Visual C++ 运行库。
 Linux 使用系统自带库，要求 glibc 2.35+。
 
-运行前使用同一 Release 的 [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/SHA256SUMS)
+运行前使用同一 Release 的 [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/SHA256SUMS)
 核对文件；[完整指南](docs/zh/guide/cli-2x.md)说明解压、PATH 和 MCP 接入步骤。
 请在 **Assets** 中选择上述平台包，GitHub 自动生成的 **Source code** 是源码。
 模型 Host 和在线文献服务仍需单独配置。
@@ -73,10 +73,15 @@ Linux 使用系统自带库，要求 glibc 2.35+。
 已有 Rust 1.97+ 和本机链接器的用户，也可以通过 Cargo 从源码安装。
 
 ```sh
-cargo install qiongli --version 2.0.0-beta.1 --locked
+cargo install qiongli --version 2.0.0-beta.2 --locked
 ```
 
 Cargo 提供 `qiongli` 和 `ql`。如果不想编译，直接下载上方二进制包即可。
+
+Beta.2 增加了只读安装检查：用新程序运行 `install migrate --interactive`，
+选择准备使用的 CLI，并逐项查看归档或卸载说明。npm 可在前台安装时显示向导，
+pip 和 Cargo 在安装后运行。向导不会删除文件或修改设置。
+详见[安装迁移说明](docs/zh/guide/cli-2x.md#检查和迁移已有-cli)。
 
 ## 最新稳定版下载
 

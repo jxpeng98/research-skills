@@ -1,9 +1,9 @@
 use std::env;
-use std::io::{self, BufReader};
+use std::io::{self, BufReader, IsTerminal};
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    let args = env::args_os().skip(1).collect::<Vec<_>>();
+    let mut args = env::args_os().skip(1).collect::<Vec<_>>();
     #[cfg(feature = "desktop")]
     if args.is_empty() {
         return match qiongli::run_desktop_application() {
@@ -15,6 +15,11 @@ fn main() -> ExitCode {
         };
     }
 
+    if args.is_empty() && io::stdin().is_terminal() && io::stdout().is_terminal() {
+        args = ["install", "migrate", "--interactive"]
+            .map(Into::into)
+            .to_vec();
+    }
     let environment = qiongli::CommandEnvironment::from_process();
     let content = match qiongli::embedded_content() {
         Ok(content) => content,
@@ -22,6 +27,15 @@ fn main() -> ExitCode {
     };
     match qiongli::prepare_action(args, &environment, &content) {
         qiongli::ProductAction::Output(output) => render_output(output),
+        qiongli::ProductAction::ReviewCliInstallations => {
+            match qiongli::review_cli_installations(&environment) {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(error) => {
+                    eprintln!("error: {error}");
+                    ExitCode::FAILURE
+                }
+            }
+        }
         qiongli::ProductAction::ServeLiteMcpStdio => {
             let stdin = io::stdin();
             let stdout = io::stdout();

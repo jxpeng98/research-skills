@@ -8,14 +8,14 @@ Qiongli 2 以原生 CLI 为入口，不需要打开或安装 Qiongli App。
 **推荐直接下载：解压后就能运行，不用先安装 Python、Node.js、Rust 或包管理器。**
 你可以直接在解压目录使用，PATH 配置是可选项。
 
-从 [GitHub Release v2.0.0-beta.1](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.1)
+从 [GitHub Release v2.0.0-beta.2](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.2)
 选择与你的操作系统和 CPU 对应的压缩包：
 
 | 平台 | 完整 CLI 二进制包 |
 |---|---|
-| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz) |
-| Windows x64 | [qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip) |
-| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip) |
+| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz) |
 
 Windows Beta.1 已将 C 运行库编入程序，不需要另装 Visual C++ 运行库。
 Linux 使用系统自带库，要求 glibc 2.35+。
@@ -30,19 +30,19 @@ Linux 使用系统自带库，要求 glibc 2.35+。
 
 ### 1. 校验下载文件
 
-下载同一 Release 的 [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.1/SHA256SUMS)。
+下载同一 Release 的 [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/SHA256SUMS)。
 在下载目录中，运行与你的平台对应的命令，将结果与 `SHA256SUMS` 中该文件名对应的摘要比较；一致后再继续。
 
 ```sh
 # macOS
-shasum -a 256 qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz
+shasum -a 256 qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz
 # Linux
-sha256sum qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz
+sha256sum qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```powershell
 # Windows
-Get-FileHash .\qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip -Algorithm SHA256
+Get-FileHash .\qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip -Algorithm SHA256
 ```
 
 ### 2. 解压后直接运行
@@ -50,9 +50,9 @@ Get-FileHash .\qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip -Algorithm SHA256
 使用一个新目录，保留已有安装和研究文件。在 macOS 终端中：
 
 ```sh
-mkdir qiongli-2.0.0-beta.1-macos-arm64
-tar -xzf qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-beta.1-macos-arm64
-cd qiongli-2.0.0-beta.1-macos-arm64
+mkdir qiongli-2.0.0-beta.2-macos-arm64
+tar -xzf qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-beta.2-macos-arm64
+cd qiongli-2.0.0-beta.2-macos-arm64
 ./qiongli --version
 ./qiongli --help
 ./qiongli content list
@@ -61,9 +61,9 @@ cd qiongli-2.0.0-beta.1-macos-arm64
 在 Linux 终端中：
 
 ```sh
-mkdir qiongli-2.0.0-beta.1-linux-x64
-tar -xzf qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-beta.1-linux-x64
-cd qiongli-2.0.0-beta.1-linux-x64
+mkdir qiongli-2.0.0-beta.2-linux-x64
+tar -xzf qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-beta.2-linux-x64
+cd qiongli-2.0.0-beta.2-linux-x64
 ./qiongli --version
 ./qiongli --help
 ./qiongli content list
@@ -72,14 +72,14 @@ cd qiongli-2.0.0-beta.1-linux-x64
 Windows 用户在下载目录打开 PowerShell：
 
 ```powershell
-Expand-Archive -Path .\qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-beta.1-windows-x64
-Set-Location .\qiongli-2.0.0-beta.1-windows-x64
+Expand-Archive -Path .\qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-beta.2-windows-x64
+Set-Location .\qiongli-2.0.0-beta.2-windows-x64
 .\qiongli.exe --version
 .\qiongli.exe --help
 .\qiongli.exe content list
 ```
 
-版本应显示 `qiongli 2.0.0-beta.1`。独立包只提供 `qiongli` 可执行文件；`ql` 别名由 npm / PyPI / Cargo 安装提供。
+版本应显示 `qiongli 2.0.0-beta.2`。独立包只提供 `qiongli` 可执行文件；`ql` 别名由 npm / PyPI / Cargo 安装提供。
 
 ### 3. 可选：加入 PATH
 
@@ -91,6 +91,35 @@ macOS / Linux 用 `type -a qiongli`，PowerShell 用 `Get-Command qiongli -All` 
 
 升级时将新版本解压到另一个目录，验证后再更新 PATH 或 Host 配置中的路径。
 保留旧二进制及研究数据以便回退；切换二进制不会撤销数据迁移。
+
+## 检查和迁移已有 CLI
+
+Beta.2 可以列出本机可见的穷理安装，并提供交互式迁移建议。如果旧版在 PATH 中
+排在前面，请用新安装程序的完整路径运行下面的命令：
+
+```sh
+qiongli install inventory --paths exact
+qiongli install migrate --interactive
+```
+
+清单会合并同一安装的别名，并区分包元数据版本与当前运行版本。检测范围包括
+PATH、常见用户安装目录及已配置的 Cargo、Python、npm 位置；其他环境和 Shell
+函数需要单独检查。检测不会执行来源不明的程序。`doctor` 默认隐藏实际路径，
+需要时再明确查看完整路径。
+
+向导让你选择准备使用的安装，并逐项查看其他版本的归档或卸载说明。直接按回车
+会保留现有设置。选择默认版本只生成建议，不会修改 PATH 或 Host 配置，也不会
+删除、移动或归档任何文件。卸载前要确认文件归属：旧包可能与新版共用启动入口。
+研究文件、配置和 Plugin 缓存不属于 CLI 清理范围。
+
+在终端中无参数运行新版 `qiongli` 也会打开向导。npm 可以通过
+`npm install -g qiongli@next --foreground-scripts` 在安装时显示向导，但要求输入和
+输出都连接终端。禁用安装脚本仍可正常使用 CLI。pip 和 Cargo 用户在安装完成后
+运行向导。脚本、帮助与版本查询、MCP 启动不会弹出交互提示。
+
+包管理器安装应保留在原位置，并记录版本及原环境以便重装；确认是独立发布包后，
+才适合另行复制完整备份并校验。归档副本本身不会停用旧命令。
+
 
 ## 接入 MCP 与 Plugin
 
@@ -119,7 +148,7 @@ npm install --global qiongli@next
 或者在 Python 虚拟环境中运行：
 
 ```sh
-python -m pip install --pre qiongli==2.0.0b1
+python -m pip install --pre qiongli==2.0.0b2
 ```
 
 npm 需要 Node 18+，PyPI 需要 Python 3.9+；两者都提供 `qiongli` 和 `ql`。
@@ -128,7 +157,7 @@ npm 需要 Node 18+，PyPI 需要 Python 3.9+；两者都提供 `qiongli` 和 `q
 Cargo 从源码构建同一个 CLI，需要 Rust 1.97+ 和本机链接器。
 
 ```sh
-cargo install qiongli --version 2.0.0-beta.1 --locked
+cargo install qiongli --version 2.0.0-beta.2 --locked
 ```
 
 安装后可使用 `qiongli` 和 `ql`。Cargo 没有 `next` 渠道，预发布版需指定完整版本号。

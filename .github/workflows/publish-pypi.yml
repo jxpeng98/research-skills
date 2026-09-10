@@ -1,6 +1,12 @@
 name: Publish to PyPI
 
 on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish this immutable native prerelease tag after release verification
+        type: boolean
+        default: false
   release:
     types: [published]
   push:
@@ -67,7 +73,7 @@ jobs:
           packages-dir: ${{ runner.temp }}/qiongli-dist/dist
 
   publish-native:
-    if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v2.') }}
+    if: ${{ (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v2.')) || (github.event_name == 'workflow_dispatch' && inputs.publish_release && github.ref_type == 'tag' && startsWith(github.ref_name, 'v2.')) }}
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     environment: pypi
@@ -76,7 +82,7 @@ jobs:
       actions: read
       id-token: write
     env:
-      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
         with:

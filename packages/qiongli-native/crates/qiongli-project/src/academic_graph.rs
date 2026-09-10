@@ -1226,6 +1226,12 @@ fn locate_project_artifact_anchor(
     anchor: &str,
 ) -> Option<usize> {
     let structured = (|| {
+        if format == ProjectArtifactFormat::Csv
+            && let Some(line) =
+                crate::academic_graph_extract::evidence_ledger_anchor_line(source, anchor)
+        {
+            return project_artifact_line_offset(source, line);
+        }
         if let Some(line) = anchor
             .strip_prefix("line:")
             .or_else(|| anchor.strip_prefix("row:"))
@@ -3061,6 +3067,17 @@ C1,Canonical claim,finding,paper,Smith2024,p. 4,notes/smith.md,high,Single study
         let fixture = Fixture::new();
         fs::create_dir_all(fixture.project_root.join("literature")).unwrap();
         fs::create_dir_all(fixture.project_root.join("manuscript")).unwrap();
+        fs::create_dir_all(fixture.project_root.join("evidence")).unwrap();
+        let ledger = "claim_id,claim_text,claim_type,evidence_type,source_id,source_location,artifact_path,confidence,limitations,status\n\
+CLM-001,Exposure is associated with abnormal returns,finding,paper,Smith2024,Table 1,notes/Smith2024.md,medium,One setting,supported\n\
+CLM-001,Exposure is associated with abnormal returns,finding,paper,Jones2025,Table 2,notes/Jones2025.md,medium,Observational,supported\n";
+        fs::write(
+            fixture
+                .project_root
+                .join("evidence/claim-evidence-ledger.csv"),
+            ledger,
+        )
+        .unwrap();
         fs::write(
             fixture.project_root.join("context/idea_funnel.md"),
             r#"# Academic Idea Funnel
@@ -3173,6 +3190,48 @@ C1,Canonical claim,finding,paper,Smith2024,p. 4,notes/smith.md,high,Single study
             .unwrap();
         assert!(paper.layers.contains(&AcademicGraphLayer::Literature));
         assert!(paper.layers.contains(&AcademicGraphLayer::Manuscript));
+        assert!(paper.layers.contains(&AcademicGraphLayer::Argument));
+        let claims = first
+            .nodes
+            .iter()
+            .filter(|node| node.canonical_id == "CLM-001")
+            .collect::<Vec<_>>();
+        assert_eq!(claims.len(), 1);
+        let supports = first
+            .edges
+            .iter()
+            .filter(|edge| edge.relation == AcademicGraphRelation::Supports)
+            .collect::<Vec<_>>();
+        assert_eq!(supports.len(), 2);
+        for edge in supports {
+            assert_eq!(edge.target_node_id, claims[0].node_id);
+            let offset = locate_project_artifact_anchor(
+                ledger,
+                ProjectArtifactFormat::Csv,
+                &edge.source_anchor,
+            )
+            .unwrap();
+            let source = first
+                .nodes
+                .iter()
+                .find(|node| node.node_id == edge.source_node_id)
+                .unwrap();
+            assert!(
+                ledger[offset..]
+                    .lines()
+                    .next()
+                    .unwrap()
+                    .contains(&source.label)
+            );
+            assert!(first.edges.iter().any(|origin| {
+                origin.source_node_id == source.node_id
+                    && origin.relation == AcademicGraphRelation::DerivedFrom
+                    && first.nodes.iter().any(|node| {
+                        node.node_id == origin.target_node_id
+                            && node.canonical_id == format!("citekey:{}", source.label)
+                    })
+            }));
+        }
         assert!(!first.diagnostics.iter().any(|diagnostic| {
             diagnostic.code == AcademicGraphDiagnosticCode::ConflictingIdentity
         }));

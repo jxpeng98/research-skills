@@ -191,6 +191,13 @@ When merging into existing summary files:
 - If a safe merge is unclear, append a dated entry under the relevant section.
 - Put unsupported or under-specified material in the uncertainty register.
 
+For project work, follow `references/academic-graph-continuity.md` to propose
+the affected paper/claim records for the canonical literature map and evidence
+ledger. Preserve the note and matrix as source material, reuse citekeys, and
+disambiguate note-local claim IDs before joining project claims. Do not invent
+clusters or support from an abstract. A direct summary stops at its requested
+scope; creating graph artifacts is not a prerequisite.
+
 ## Output Format
 
 The paper note should follow this structure:

@@ -48,6 +48,9 @@ Reuse supplied passages and any available J1 findings. Select the smallest edit
 that resolves a demonstrated issue, verify the changed text against the source,
 and retain correctly expressed passages. A formal J2 artifact integrates changes
 into the manuscript; a bounded edit returns only the requested material.
+Use `references/scholarly-voice.md` for natural English/Chinese expression and
+paragraph continuity. Language-only changes preserve the existing claim IDs,
+evidence ledger and graph; ambiguous reasoning is flagged, not rewritten as fact.
 
 ## J3 — Source-Overlap and Attribution Check
 

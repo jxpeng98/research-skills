@@ -83,6 +83,15 @@ Windows/Linux Plugin observations and publication remain the next distribution
 increment; published alpha.8 continues using its historical npm bridge. Research
 quality work and Cargo qualification remain independently scoped.
 
+September 10 research-quality increment: the maintainer requested local Graph
+normalization and bilingual scholarly voice improvements. The current plan now
+records multi-source evidence extraction, citekey-based cross-stage joins,
+record-bound source navigation, and Host-assisted candidate-to-canonical guidance.
+J2 reuses its existing Skill and adds English/Chinese voice guidance derived from
+`jxpeng98/skills` humanizer. No graph store, new tool or independent model runtime
+is added. Actual Codex semantic observation remains the next quality check;
+source/pack checks do not establish universal extraction or live Host readiness.
+
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |

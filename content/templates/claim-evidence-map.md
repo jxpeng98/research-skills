@@ -12,8 +12,12 @@ Save to: RESEARCH/[topic]/manuscript/claims_evidence_map.md
 
 ---
 
-Assign each atomic claim a stable `CLM-###` ID. Never renumber or reuse an ID. Use semicolons
-between citation keys and keep evidence pointers separate from citations: a citation link records
+Reuse evidence-ledger claim IDs and exact atomic claim text. Assign `CLM-###`
+only to a new claim; never rename an existing `C1` to fit that pattern.
+Never renumber or reuse an ID for a different claim. Multiple sources for one
+claim use separate evidence-ledger rows with that same ID. Use the same citekeys
+throughout, separated by semicolons. Keep evidence pointers separate from
+citations: a citation link records
 attribution, not direct support.
 
 | Claim ID | Claim | Claim Type | Evidence Pointer | Citation Keys | Manuscript Location | Confidence | Action |

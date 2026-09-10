@@ -220,7 +220,7 @@ Pick one:
 - I4 → use `reproducibility-auditor`
 - I1–I3 → `/code-build` (use `model-collaborator` when verification is needed)
 
-### J) Proofreading & Humanization (去AI痕迹与终审)
+### J) Scholarly Proofreading (学术表达润色与终审)
 Pick one:
 1. **J1 AI Fingerprint Scan** (Detect AI-generated text patterns)
 2. **J2 Human Voice Rewrite** (Rewrite flagged passages for natural tone)

@@ -1297,11 +1297,11 @@ skills:
     version: "2.0.0-alpha.8"
     file: skills/J_proofread/human-voice-rewriter.md
     canonical: true
-    summary: "Improve selected scholarly passages while preserving meaning, evidence and required disclosure."
+    summary: "Revise stiff or translated scholarly prose into natural English or Chinese while preserving evidence and author voice."
     display_name: "Human-Voice Rewriter"
     when_to_use: "Use for requested expression or voice revision; reuse supplied text and any existing findings."
-    summary_zh: "改善指定学术段落的表达，保留原意、证据和必要披露。"
-    display_name_zh: "人类风格改写"
+    summary_zh: "改善中英文学术段落的生硬表达、翻译腔与衔接，保留原意、证据和作者语气。"
+    display_name_zh: "学术表达润色"
     when_to_use_zh: "用户要求改善表达或有具体语言反馈时使用，不为检测分数而改写。"
     inputs: [Manuscript, AIDetectionReport]
     outputs: [HumanizedManuscript]

@@ -159,10 +159,10 @@ Use Stage J when the draft is substantively complete and needs AI-fingerprint re
 
 | Skill | Display Name | When to use | Produces |
 |---|---|---|---|
-| `ai-fingerprint-scanner` | AI Fingerprint Scanner | After the first complete manuscript draft (F2+) | `AIDetectionReport` |
-| `human-voice-rewriter` | Human-Voice Rewriter | After J1 (AI fingerprint scan) identifies high/medium severity passages | `HumanizedManuscript` |
-| `similarity-checker` | Similarity Checker | After J2 (human-voice rewrite) to ensure rewrites are original | `SimilarityReport` |
-| `final-proofreader` | Final Proofreader | As the final step before submission (J4) | `ProofreadChecklist` |
+| `ai-fingerprint-scanner` | AI Fingerprint Scanner | Use for a requested language-pattern diagnosis; grammar-only correction can enter final-proofreader directly. | `AIDetectionReport` |
+| `human-voice-rewriter` | Human-Voice Rewriter | Use for requested expression or voice revision; reuse supplied text and any existing findings. | `HumanizedManuscript` |
+| `similarity-checker` | Similarity Checker | Use for requested source-overlap or attribution checks; prior rewriting is not an automatic prerequisite. | `SimilarityReport` |
+| `final-proofreader` | Final Proofreader | Use for requested scholarly grammar/consistency corrections or a formal final proofreading pass. | `ProofreadChecklist` |
 
 ### H. Submission
 
@@ -172,7 +172,7 @@ Use Stage H when the manuscript is near submission or already under review.
 |---|---|---|---|
 | `submission-packager` | Submission Packager | You have a near-final manuscript draft ready for submission | `SubmissionPackage` |
 | `rebuttal-assistant` | Rebuttal Assistant | After receiving a Revise & Resubmit (R&R) decision | `ResponseToReviewers`, `ResponseLetter` |
-| `peer-review-simulation` | Peer Review Simulation | Before submission (final red-team pass) | `PeerReviewSimulation` |
+| `peer-review-simulation` | Peer Review Simulation | Use for a requested referee-style manuscript review or formal H3 task; a focused check needs only relevant lenses. | `PeerReviewSimulation` |
 | `fatal-flaw-detector` | Fatal Flaw Detector | Before final submission (last quality gate) | `FatalFlawAnalysis` |
 | `journal-fit-recommender` | Journal Fit Recommender | Use when an existing manuscript needs manuscript-first reverse journal fit before submission. | `JournalFitRecommendation` |
 | `reviewer-empathy-checker` | Reviewer Empathy Checker | After drafting the response letter (from `rebuttal-assistant` H2) but BEFORE submitting | `EmpathyCheck` |
@@ -249,7 +249,7 @@ Use Stage Z when the need cuts across stages rather than belonging to one paper 
 | `academic-context-maintainer` | Academic Context Maintainer | Use when you need a stage-aware academic state summary that preserves research question scope, locked methodological choices, stable findings, unresolved disputes, and decision rationale across long-running paper workflows. | `ResearchStateSnapshot`, `ResearchDecisionLog` |
 | `boundary-interviewer` | Boundary Interviewer | Use during brainstorms, Stage A framing, gap finding, or before high-risk study design, writing, submission, research code, and handoff work when research scope, claim strength, evidence threshold, validity risk, generalizability, or reviewer expectations remain unclear. | `AcademicIdeaFunnel`, `BoundaryReview` |
 | `model-collaborator` | Model Collaborator | Use when literature screening, peer review simulation, rebuttal drafting, qualitative coding, or code/statistics validation benefits from independent multi-model passes before synthesis. | `CollaborationTrace` |
-| `self-critique` | Self-Critique | Use when you need to iterative red teaming against superficial reasoning, contradictions, and overclaiming. | `CritiqueLog` |
+| `self-critique` | Self-Critique | Use for a requested research review or a required quality check; repeat only for affected fixes or the formal review contract. | `CritiqueLog` |
 
 ## Supplemental Cards And Mirror Files
 

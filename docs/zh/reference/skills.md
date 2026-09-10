@@ -159,10 +159,10 @@
 
 | Skill | 中文名 | 适用场景 | 产出类型 |
 |---|---|---|---|
-| `ai-fingerprint-scanner` | AI指纹扫描 | 当需要识别稿件中可能被 AI 检测器标记的段落时使用。 | `AIDetectionReport` |
-| `human-voice-rewriter` | 人类风格改写 | 当 AI 检测报告中有高严重度段落需要改写时使用。 | `HumanizedManuscript` |
-| `similarity-checker` | 相似度检查 | 当需要在投稿前检查文本原创性和引用充分性时使用。 | `SimilarityReport` |
-| `final-proofreader` | 终审校对 | 当稿件内容已定稿，需要做投稿前最后一遍语言校对时使用。 | `ProofreadChecklist` |
+| `ai-fingerprint-scanner` | AI指纹扫描 | 需要诊断具体语言问题时使用；单纯语法校对直接进入终稿校对。 | `AIDetectionReport` |
+| `human-voice-rewriter` | 学术表达润色 | 用户要求改善表达或有具体语言反馈时使用，不为检测分数而改写。 | `HumanizedManuscript` |
+| `similarity-checker` | 相似度检查 | 需要对照来源核查引用和重叠时使用，无需先启动改写。 | `SimilarityReport` |
+| `final-proofreader` | 终审校对 | 需要学术段落的语法、一致性校对或正式终稿检查时使用。 | `ProofreadChecklist` |
 
 ### H. Submission
 
@@ -172,7 +172,7 @@
 |---|---|---|---|
 | `submission-packager` | 投稿包组装 | 当稿件接近投稿，需要准备 cover letter、声明和补充材料时使用。 | `SubmissionPackage` |
 | `rebuttal-assistant` | 审稿回复助手 | 当你需要把审稿意见转成逐点回复矩阵时使用。 | `ResponseToReviewers`, `ResponseLetter` |
-| `peer-review-simulation` | 同行评审模拟 | 当你想在投稿前做多 persona 压力测试时使用。 | `PeerReviewSimulation` |
+| `peer-review-simulation` | 同行评审模拟 | 需要模拟同行审稿或正式 H3 检查时使用；局部检查只用相关视角。 | `PeerReviewSimulation` |
 | `fatal-flaw-detector` | 致命缺陷检测 | 当你想先做一轮 desk-reject 风险扫描时使用。 | `FatalFlawAnalysis` |
 | `journal-fit-recommender` | 期刊匹配推荐 | 当已有稿件需要先读全文、证据和方法，再反向推荐投稿期刊时使用。 | `JournalFitRecommendation` |
 | `reviewer-empathy-checker` | 审稿沟通校准 | 当回复内容技术上正确，但语气可能过硬或防御性过强时使用。 | `EmpathyCheck` |
@@ -249,7 +249,7 @@
 | `academic-context-maintainer` | 学术上下文维护 | 当你需要在长周期论文流程中持续保留研究问题边界、已锁定方法决策、稳定结论和未解决争议时使用。 | `ResearchStateSnapshot`, `ResearchDecisionLog` |
 | `boundary-interviewer` | 学术边界追问器 | 当研究问题、claim 强度、证据阈值、方法有效性、外推范围、投稿承诺或阶段交接仍不清楚时使用。 | `AcademicIdeaFunnel`, `BoundaryReview` |
 | `model-collaborator` | 多模型协作 | 当你需要 Codex、Claude 和 Antigravity 分工协作或交叉复核时使用。 | `CollaborationTrace` |
-| `self-critique` | 自我批判 | 当你想主动提高 red-teaming 强度、压制浅层推理和过度主张时使用。 | `CritiqueLog` |
+| `self-critique` | 自我批判 | 当你需要研究复核或任务要求质量检查时使用；只因具体修复或正式复核要求追加轮次。 | `CritiqueLog` |
 
 ## 补充卡片与镜像目录
 

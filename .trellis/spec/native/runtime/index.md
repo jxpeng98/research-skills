@@ -3,6 +3,16 @@
 The Qiongli 2 executable, CLI, Desktop service, Full MCP, project state, and
 embedded resources live under `packages/qiongli-native/`.
 
+Academic Graph v1 remains a rebuildable projection over registered canonical
+artifacts. `academic_graph_extract.rs` permits one claim ID/text/type across
+multiple evidence rows, diagnoses conflicting records, and requires source
+locations before projecting support. Paper evidence joins the existing global
+citekey identity through `derived-from`; citations alone do not establish support.
+Support anchors bind claim/source/location/artifact rather than CSV line order;
+the shared artifact reader resolves them against the current revision. Legacy
+claim/source anchors are also resolved. Host Skills normalize authorized prose
+into reviewed records; no new graph store, raw-PDF scanner or write owner exists.
+
 ## Local Pattern
 
 - `apps/qiongli/src/command.rs` owns public CLI parsing and help.

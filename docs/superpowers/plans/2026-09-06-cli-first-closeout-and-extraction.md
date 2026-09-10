@@ -3,6 +3,83 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Completed locally: Research Graph continuity and scholarly voice — September 10
+
+Base `cfc1cae8`; branch `codex/research-graph-and-voice`. The maintainer requested
+better extraction/normalization of local research into Graph and improvements to
+the Skills/Plugin Harmonizer using `jxpeng98/skills` humanizer as a reference.
+This increment retains Academic Graph v1, existing write owners and all tool names.
+
+The native evidence extractor now keeps multiple sources and source locations
+for one stable claim ID/text/type, deduplicates repeated records and diagnoses
+conflicting claim or support metadata. A missing source location cannot create
+reviewed support. Paper evidence has a source-bound `derived-from` link to the
+same citekey identity used by literature and manuscript records. Support anchors
+bind claim/source/location/artifact independently of CSV row order; the shared
+artifact reader resolves them to the current record. Legacy claim/source anchors
+are also resolved. Manuscript maps accept the ledger's method-assumption and
+speculation types without spurious diagnostics. Existing bounds, redaction,
+revision checks, unsupported-source behavior and approval/CAS are retained.
+
+Canonical Skills now describe whole-project inventory within authorized scope,
+source reading, candidate records, review, minimal normalization and rebuild.
+Reading/synthesis/analysis/writing reuse project-wide claim IDs, exact atomic
+claim wording and citekeys. Note-local IDs must be disambiguated. Existing prose
+stays intact; unverified support stays a gap and proposed relationships do not
+become reviewed solely to improve graph readiness. This is Host-assisted
+normalization into the existing source registry, not a native arbitrary-PDF or
+whole-directory semantic scanner. No new graph database or mutation API exists.
+
+Harmonizer reuses `human-voice-rewriter` / J2. A single bundled bilingual reference
+adapts fidelity, paragraph continuity and language-specific guidance from upstream
+commit `32acfac4951d567d1f9ec2c6e934120d84f3436d`. It protects numbers, citations,
+terms, author voice, uncertainty and causal limits; ambiguous reasoning is flagged
+rather than completed. Direct polish returns the requested text and material
+uncertainties in chat. Formal artifact IDs/paths remain stable. Expression-only
+edits preserve the evidence ledger and Graph. Canonical metadata and generated
+English/Chinese Skill catalogs are synchronized; no duplicate skill is introduced.
+
+Validation: **181 project tests passed, one pre-existing ignored test**; project
+Clippy passed with warnings denied. The graph subset passed **50** checks before
+the final support-metadata conflict case, which is included in the full project
+run. The real Full MCP project/capture/graph query and stale-revision test passed.
+Content/contract checks passed **30** distinct tests, with the final five affected
+resource-link/template checks repeated after text refinements. Capability Contract
+v2 is valid. Resource collector/loader/embedded checks passed **16** tests.
+
+One expanded legacy lint failed: `test_workflow_skill_documents_subject_installed_domain_pack_contract`
+expects four domain-profile phrases already absent in unmodified `2.x`. The
+baseline/current comparison confirms all four were absent before this change;
+this is retained as an existing test gap, not counted as a pass or silently
+repaired by restoring obsolete instructions. Logs:
+`/private/tmp/qiongli-graph-project.log`, `qiongli-graph-clippy.log`,
+`qiongli-graph-mcp.log`, `qiongli-graph-voice-content.log`,
+`qiongli-graph-voice-final-content.log`, and
+`qiongli-graph-voice-baseline-check.txt` under `/private/tmp/`.
+
+Codex/Claude bundle tests passed **9**, with **2** real-Host tests intentionally
+ignored; each complete-bundle check was also repeated after the template identity
+clarification. These cover composition, tamper/ownership refusal, customization
+and removal without live Host registration. Logs:
+`/private/tmp/qiongli-graph-voice-plugins.log` and
+`/private/tmp/qiongli-graph-voice-final-bundles.log`. After the final wording
+refinements, the native export rebuilt and verified all **429** embedded
+Marketplace resources byte-for-byte against canonical sources, including the new
+voice reference. Pack SHA-256:
+`daee6e6df5091a7dcb1208b91f0623ca04b81ab39ee49d2e9bce6e2f2ba244ec`.
+Receipt: `/private/tmp/qiongli-graph-voice-content-receipt.json`;
+export: `/private/tmp/qiongli-graph-voice-export/`. Its source-base metadata is
+`cfc1cae8`; changed worktree content is bound by the content/pack digests, not
+represented as a released exact-source candidate. Roadmap checks passed **7**.
+
+These local source and packaging checks do not establish a live installed-Host
+semantic outcome or publication readiness. No private project, Host registration, public catalog,
+version or release was changed. CLI-405 remains active; PLT-322 historical
+acceptance is unchanged. Next: use the existing fixed synthetic research journey
+to observe actual Codex source-to-record normalization and bilingual edits,
+checking source fidelity, unresolved coverage and causal limits. Existing
+Marketplace publication and Cargo qualification remain separately scoped.
+
 ## Completed locally: bundled Marketplace MCP — September 10
 
 The maintainer approved platform-specific Plugins carrying the existing native

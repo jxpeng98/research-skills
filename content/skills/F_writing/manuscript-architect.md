@@ -76,7 +76,8 @@ Use this contract for direct skill use, role-prompted agent work, `/academic-wri
 Before accepting a manuscript section as ready, create or update `RESEARCH/[topic]/quality-gate-report.md` with a Q2 `semantic_checks` entry using `q2_claim_evidence_traceability`. Use structured evidence refs for the semantic check: each `evidence_refs` item must include `artifact`, `anchor`, and `supports`, with optional `claim_id` or `diagnostic_id` when the evidence maps to a specific claim or diagnostic. The evidence must cite the claim-evidence ledger, manuscript claim map, source note, analysis output, citation anchor, or an explicit gap note. Unsupported central claims must be narrowed, moved to limitations, or recorded as `BLOCKED`; do not turn an unsupported claim into polished prose.
 
 Build `manuscript/claims_evidence_map.md` from `templates/claim-evidence-map.md`.
-Preserve its exact table headers, assign stable `CLM-###` claim IDs, and never
+Preserve its exact table headers and reuse evidence-ledger claim IDs and atomic
+claim text. Assign stable `CLM-###` claim IDs only to new claims, and never
 renumber or reuse a recorded ID. Keep citation keys distinct from evidence
 pointers: citation edges record attribution and do not by themselves prove a
 claim.

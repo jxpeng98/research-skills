@@ -1,7 +1,7 @@
 ---
 id: human-voice-rewriter
 stage: J_proofread
-description: "Improve the clarity and scholarly voice of requested passages while preserving meaning, evidence and required disclosure."
+description: "Revise stiff, translated or generic scholarly prose into natural English or Chinese while preserving meaning, evidence and author voice."
 inputs:
   - type: Manuscript
     description: "Current manuscript text"
@@ -37,6 +37,8 @@ changes. Keep required AI disclosure; the legacy task/output names are retained.
 
 - When the user asks to improve scholarly expression or author voice
 - When actual language issues were identified in J1 or supplied feedback
+- For requests described as humanizer, Harmonizer, naturalizing or removing
+  translationese; choose faithful expression, never detector evasion
 - Use J4 for grammar-only corrections and source comparison for attribution issues
 
 ## Related Task IDs
@@ -53,22 +55,32 @@ changes. Keep required AI disclosure; the legacy task/output names are retained.
 - A direct edit needs only the relevant text and constraints; return it in chat
   without starting J1 or requiring a project. Formal J2 runs retain the declared
   inputs, full manuscript artifact and applicable gates below.
-- If a required input is missing or insufficient, write a gap note under `RESEARCH/[topic]/context/gap_notes.md` and ask for the missing artifact instead of inventing content.
+- Ask only when missing text or context prevents a faithful edit. For a formal
+  project run, record required missing artifacts in `context/gap_notes.md`
+  through the authorized write path; a direct edit needs no gap-note file.
 
 ## Process
 
-### Step 1: Prioritize Passages
+### Step 1: Set Scope and Voice
 
 Prioritize actual meaning/readability problems and the user's selected passages.
 Verify supplied flags rather than treating their severity as a command to rewrite.
-Correct text may remain unchanged.
+Correct text may remain unchanged. Follow the user's voice sample, then the
+draft's voice, then disciplinary and venue conventions. Preserve the source's
+English variety or Chinese script unless a change is requested. Default to
+sentence and within-paragraph edits; restructure sections only within requested
+scope. For learning-oriented requests, explain targeted edits instead of silently
+replacing the author's reasoning.
 
 ### Step 2: Make the Smallest Useful Edit
 
-Remove empty qualifiers, clarify supported relationships and simplify awkward
-syntax where this improves the requested text. Preserve necessary uncertainty,
-technical phrasing, disciplinary conventions and intentional author voice.
-Choose strategies by the actual issue, with no minimum variety or length quota.
+Read `references/scholarly-voice.md` for the output language. Preserve meaning
+first, make it idiomatic second, polish only where useful (信、达、雅). Identify
+the paragraph's point and how each sentence supports, qualifies or develops it.
+Clarify referents and information order before adding transitions. A smoother
+sentence must not introduce a cause, contrast or premise absent from the source.
+Flag ambiguity rather than inventing a bridge. Keep necessary uncertainty,
+technical terms and author stance. No word blacklist or rhythm quota applies.
 
 ### Step 3: Verify Scientific Accuracy
 
@@ -86,6 +98,7 @@ For EVERY rewritten passage, check:
 ### Step 4: Verify the Affected Passages
 
 Compare the revised passage with its source using the integrity checks above.
+Read the revision continuously for natural phrasing and coherent paragraph flow.
 Fix any actual drift and recheck that change. Stop when the requested issues are
 resolved; do not run a detector-confidence loop. Use an independent reviewer
 only when required and actually available through the active Host; follow
@@ -93,21 +106,30 @@ only when required and actually available through the active Host; follow
 
 ### Step 5: Return the Requested Output
 
-Return the selected passages for a direct edit. For a formal J2 run, integrate
+Return only the revision for a direct polish, adding a brief note for a material
+uncertainty or when requested. For a formal J2 run, integrate
 changes into the full manuscript and record them in its change log.
 
 ## Output Contract
 
 - `HumanizedManuscript`: write `RESEARCH/[topic]/proofread/humanized_manuscript.md`.
-- Separate finding, interpretation, and implication in the final artifact.
+- Preserve the distinction between finding, interpretation and implication;
+  do not impose new headings on a bounded passage or fixed manuscript structure.
 - Do not invent citations, data, sample sizes, statistical results, or reviewer comments.
 - Apply `references/academic-output-rubric.md` before finalizing scholarly prose or review artifacts.
 
 ### Evidence Ledger and Source Integrity
 
-- Update `RESEARCH/[topic]/evidence/claim-evidence-ledger.csv` when producing, revising, or validating central scholarly claims.
-- Follow `references/evidence-ledger-contract.md`: supported claims need source pointers; unsupported central claims become `gap_note` rows and `RESEARCH/[topic]/context/gap_notes.md` entries.
-- For final writing, proofread, submission, rebuttal, citation, or presentation-facing outputs, apply `references/citation-risk-policy.md` and write or update `RESEARCH/[topic]/proofread/citation-risk-report.md` when citation risk is material.
+- Expression-only edits retain claim IDs, source links and the existing evidence
+  ledger. Do not rebuild the Research Graph or revise claims as a side effect of
+  polishing. If a substantive claim change is separately requested, follow
+  `references/evidence-ledger-contract.md` and
+  `references/academic-graph-continuity.md` within its approved scope.
+- For that substantive change, supported claims need source pointers; unsupported
+  central claims become `gap_note` rows under the evidence-ledger contract.
+- Apply `references/citation-risk-policy.md` when citation risk is material.
+  Report it in chat for a direct edit; formal project work records it in
+  `proofread/citation-risk-report.md` through the authorized write path.
 
 ## Quality Bar
 
@@ -118,7 +140,7 @@ The humanized manuscript is **ready** when:
 - [ ] Scientific accuracy verified for every rewritten passage
 - [ ] Meaning, author voice and required disclosure are preserved
 - [ ] Formal J2 output includes the full manuscript; direct edits respect requested scope
-- [ ] Change log documents every rewrite with original/new side by side
+- [ ] Formal J2 change log records rewrites; direct polish has only the requested output
 
 ## Common Pitfalls
 
@@ -150,5 +172,5 @@ primary_artifact: proofread/humanized_manuscript.md
 
 | # | Section | Original Excerpt | Rewritten Excerpt | Strategy Used | Accuracy Check |
 |---|---------|-----------------|-------------------|---------------|---------------|
-| 1 | Introduction ¶3 | "Furthermore, it is important to note that…" | "This tension surfaces most clearly when…" | Field-specific connective + concrete specificity | ✓ all 6 checks passed |
+| 1 | Results ¶2 | "We conducted an examination of the association." | "We examined the association." | Replace a noun-heavy phrase; retain association | Same claim and scope |
 ```

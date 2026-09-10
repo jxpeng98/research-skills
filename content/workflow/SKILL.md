@@ -193,6 +193,10 @@ append safely or propose a diff, and verify the actual write result.
   `main_question_or_thesis`, `contribution_claim`, template headings and stable
   columns (Decision ID, Idea ID, Cluster ID, Citekey, Gap ID, Claim ID). Use
   `references/stage-handoff-contract.md` for high-risk transitions.
+- When project reading, synthesis, analysis or writing changes academic records,
+  reconcile affected content through `references/academic-graph-continuity.md`:
+  source-bound candidates -> reviewed canonical records -> rebuilt graph. Reuse
+  claim IDs and citekeys across stages; standalone prose edits need no graph run.
 - After changing graph-bearing artifacts, an explicit `qiongli project refresh`
   is required. Follow `references/academic-graph-continuity.md`, then verify with
   visible `qiongli_project_graph_snapshot` or `qiongli_project_graph_query`.

@@ -112,10 +112,22 @@ PATH、常见用户安装目录及已配置的 Cargo、Python、npm 位置；其
 删除、移动或归档任何文件。卸载前要确认文件归属：旧包可能与新版共用启动入口。
 研究文件、配置和 Plugin 缓存不属于 CLI 清理范围。
 
-在终端中无参数运行新版 `qiongli` 也会打开向导。npm 可以通过
-`npm install -g qiongli@next --foreground-scripts` 在安装时显示向导，但要求输入和
-输出都连接终端。禁用安装脚本仍可正常使用 CLI。pip 和 Cargo 用户在安装完成后
-运行向导。脚本、帮助与版本查询、MCP 启动不会弹出交互提示。
+在终端中无参数运行新版 `qiongli` 也会打开向导。如需在 npm 安装过程中显示向导，
+可以为本次安装授权穷理的脚本，并让脚本连接终端：
+
+```sh
+npm install -g qiongli@next --allow-scripts=qiongli --foreground-scripts
+```
+
+新版 npm 会对尚未明确授权的 `postinstall` 脚本发出警告。警告本身不代表安装失败，
+也不代表脚本已被阻止；启用严格脚本策略后则可能报错。
+`--allow-scripts=qiongli` 只为本次命令明确授权穷理的脚本，不修改已保存的 npm 配置。
+`--foreground-scripts` 让脚本使用当前终端；输入和输出都连接终端时，向导才会出现。
+详见 [npm 脚本设置](https://docs.npmjs.com/cli/v11/commands/npm-install/#allow-scripts)。
+
+使用 `--ignore-scripts` 禁用安装脚本，仍可正常使用 CLI。已经安装成功时，无需重装，
+直接用新版可执行文件的完整路径运行 `install migrate --interactive` 即可。
+pip 和 Cargo 用户也在安装完成后运行向导。脚本、帮助与版本查询、MCP 启动不会弹出交互提示。
 
 包管理器安装应保留在原位置，并记录版本及原环境以便重装；确认是独立发布包后，
 才适合另行复制完整备份并校验。归档副本本身不会停用旧命令。

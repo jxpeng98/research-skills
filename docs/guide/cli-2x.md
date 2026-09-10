@@ -126,10 +126,25 @@ PATH or Host settings. No file is deleted, moved or archived. Review shared
 command files before uninstalling: an old package may own the same entry as a
 new one. Research files, configuration and Plugin caches are excluded.
 
-An empty-argument terminal launch also opens this review. npm can open it during
-`npm install -g qiongli@next --foreground-scripts` when input and output are
-terminals. Disabling install scripts does not affect the CLI. pip and Cargo users
-run the review after installation. Scripts, help/version commands and MCP do not
+An empty-argument terminal launch also opens this review. To open it during npm
+installation, allow Qiongli's script for that invocation and connect it to the
+terminal:
+
+```sh
+npm install -g qiongli@next --allow-scripts=qiongli --foreground-scripts
+```
+
+Recent npm versions warn when this `postinstall` script has not been explicitly
+allowed. The warning alone does not mean installation failed or the script was
+blocked; strict script policy can make it an error. `--allow-scripts=qiongli`
+records permission for this invocation without changing your saved configuration.
+`--foreground-scripts` enables interaction when input and output are terminals;
+otherwise Qiongli skips the review. See [npm's script settings](https://docs.npmjs.com/cli/v11/commands/npm-install/#allow-scripts).
+
+Disabling install scripts with `--ignore-scripts` still leaves a working CLI.
+If Qiongli is already installed, run the newly installed executable's
+`install migrate --interactive` command; reinstalling is unnecessary. pip and Cargo users also run
+the review after installation. Scripts, help/version commands and MCP do not
 prompt. Package-manager installations stay in place for backup; only a confirmed
 standalone release bundle is suitable for a separate, checksum-verified copy.
 

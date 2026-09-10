@@ -5,6 +5,20 @@ roadmap. The program ledger remains the only task-state authority.
 
 ## Beta.2 installation review and release submission — September 11
 
+Installation-doc follow-up on `codex/npm-install-permission-docs`, based on
+`535c184`: the maintainer reported npm's unreviewed-script warning after beta.2
+installation. English/Chinese guides and the canonical package README now show
+`--allow-scripts=qiongli --foreground-scripts`, explain warning versus strict-policy
+failure, and retain direct review after installation. The hook and user settings
+are unchanged. An isolated macOS terminal install of public npm beta.2 passed with
+both flags and `--strict-allow-scripts`, opened the review without the script-policy
+warning, and kept the setup on Enter. A local-tarball trial did not satisfy npm's
+resolved-package identity policy, so verification used the documented registry
+route. Five packaging tests and the docs build passed (existing highlighting and
+chunk-size warnings remain). Receipt: `/private/tmp/qiongli-beta2-npm-policy-check.json`;
+transcript: `/private/tmp/qiongli-beta2-npm-policy-transcript.log`. No release run
+was polled or new version published; the package README ships in a future release.
+
 The maintainer requested interactive detection of other CLI installations,
 user-operated archive/removal choices, and publication through Actions. They
 explicitly asked the Agent to stop after submission without tracking the run.

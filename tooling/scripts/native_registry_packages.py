@@ -187,11 +187,22 @@ Run the newly installed command by its full path if another version is on PATH.
 Run `qiongli install migrate --interactive` to choose a preferred installation and
 review manual archive/uninstall guidance. Nothing is deleted or moved, and PATH,
 Host settings and research data stay unchanged. Empty-argument terminal launches
-open this review too; scripts and MCP never prompt. npm can show the review during
-`npm install -g qiongli@next --foreground-scripts` when stdin/stdout are terminals.
-Skipping install scripts does not affect the CLI. pip and Cargo users run the
-review after installation. `install inventory --paths exact` lists visible CLI
-entries; `doctor` includes a redacted overview.
+open this review too; scripts and MCP never prompt. For review during npm install:
+
+```sh
+npm install -g qiongli@next --allow-scripts=qiongli --foreground-scripts
+```
+
+The first flag explicitly allows Qiongli's script for this invocation without
+changing saved npm settings; the second connects it to the terminal. Both stdin
+and stdout must be terminals. Recent npm versions warn about unreviewed scripts;
+the warning alone does not mean installation failed or scripts were blocked.
+Strict script policy can turn that warning into an error. See
+[npm's script settings](https://docs.npmjs.com/cli/v11/commands/npm-install/#allow-scripts).
+Skipping scripts with `--ignore-scripts` does not affect the CLI. After installation,
+run the review directly without reinstalling. pip and Cargo users also run it
+after installation. `install inventory --paths exact` lists visible CLI entries;
+`doctor` includes a redacted overview.
 Research writes retain preview, explicit approval and revision checks.
 Managed Plugin/Skill activation, automatic migration and signed self-update still
 require their existing product authority; a registry install does not grant it.

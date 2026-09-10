@@ -1,0 +1,26 @@
+venue_id: chi
+community: Human-computer interaction
+article_types:
+  - full paper
+  - case study
+contribution_expectations:
+  - clear HCI contribution type
+  - implications for design or theory
+methods_expectations:
+  - transparent study protocol
+  - credible qualitative or mixed-methods analysis
+evidence_standards:
+  - participant context and sampling rationale
+  - traceable quotes, observations, or interaction logs
+writing_style:
+  - accessible interdisciplinary prose
+  - explicit contribution framing
+common_reviewer_objections:
+  - unclear contribution to HCI
+  - thin participant or context description
+formatting_constraints:
+  - ACM format
+  - anonymization for review
+required_reporting_standards:
+  - ethics and consent statement
+  - data and materials availability where possible

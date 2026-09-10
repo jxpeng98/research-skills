@@ -1,0 +1,11 @@
+id: international-security
+display_name: "International Security"
+discipline: geoeconomics
+quality_bar:
+  - "Strategic competition or security claim must be central, not decorative."
+  - "Economic statecraft mechanism must identify instrument, sender, target, and response."
+  - "Policy implications must follow from evidence rather than rhetoric."
+fit_notes:
+  - "Best fit for sanctions, export controls, economic coercion, deterrence, or security-relevant supply chain work."
+  - "Use clear strategic logic and calibrated evidence."
+  - "Avoid purely economic outcome papers without security contribution."

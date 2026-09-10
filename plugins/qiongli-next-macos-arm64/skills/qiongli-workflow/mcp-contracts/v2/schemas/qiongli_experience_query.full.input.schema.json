@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_experience_query.full.input.v2.json",
+  "title": "qiongli_experience_query full input",
+  "type": "object",
+  "properties": {
+    "cwd": {
+      "type": "string",
+      "description": "Project directory to inspect."
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "validator_status": {
+      "type": "string"
+    },
+    "failure_mode": {
+      "type": "string"
+    },
+    "guidance_source": {
+      "type": "string"
+    },
+    "worker_mode": {
+      "type": "string"
+    },
+    "limit": {
+      "type": "integer",
+      "default": 20
+    }
+  },
+  "additionalProperties": false
+}

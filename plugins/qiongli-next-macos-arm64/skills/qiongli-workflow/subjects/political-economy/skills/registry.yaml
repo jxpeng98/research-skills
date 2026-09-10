@@ -1,0 +1,19 @@
+skills:
+  - id: political-economy-mechanism-auditor
+    stage: H_submission
+    version: "0.13.0"
+    file: skills/H_submission/political-economy-mechanism-auditor.md
+    canonical: true
+    summary: "Audit political economy drafts for actor, institution, incentive, distributional conflict, and policy mechanism alignment."
+    display_name: "Political Economy Mechanism Auditor"
+    when_to_use: "Use when a political economy project needs a reviewer-grade check of political mechanism, institutional setting, actor incentives, and economic outcome claims."
+    summary_zh: "审计政治经济学稿件中的行动者、制度、激励、分配冲突与政策机制是否对齐。"
+    display_name_zh: "政治经济学机制审计"
+    when_to_use_zh: "当政治经济学项目需要检查政治机制、制度场景、行动者激励和经济结果主张时使用。"
+    inputs: [DesignSpec, LiteratureMap, Manuscript]
+    outputs: [PoliticalEconomyMechanismAudit]
+    tags: [political-economy, political-mechanism, institution, policy, distributional-conflict]
+    depends_on: [study-designer, theory-mapper, contribution-crafter, manuscript-architect]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true

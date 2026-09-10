@@ -1,0 +1,4 @@
+interface:
+  display_name: "Qiongli"
+  short_description: "Academic paper workflow router"
+  default_prompt: "Use $qiongli to run Task F3 for my RESEARCH topic and produce the required outputs."

@@ -1,0 +1,11 @@
+id: strategic-management-journal
+display_name: "Strategic Management Journal"
+discipline: business
+quality_bar:
+  - "Strategy mechanism, competitive context, and firm-level contribution must be explicit."
+  - "Endogeneity, selection, and boundary conditions must be handled directly."
+  - "Managerial implications must follow from theory and evidence."
+fit_notes:
+  - "Best fit for firm strategy, competitive advantage, governance, innovation, and corporate scope papers."
+  - "Connect hypotheses to strategic management debates before empirical tests."
+  - "Report robustness that targets omitted variables, selection, and alternative mechanisms."

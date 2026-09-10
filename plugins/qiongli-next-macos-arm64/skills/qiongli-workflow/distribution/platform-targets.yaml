@@ -1,0 +1,244 @@
+schema_version: "1.0"
+targets:
+  codex-marketplace-plugin:
+    display_name: Codex Marketplace Plugin
+    artifact_kind: marketplace-plugin
+    archive_format: tar.gz
+    adapter:
+      kind: plugin
+      plugin_manifest_platform: codex
+      materializer: plugin_artifacts
+    smoke:
+      structural_archive_check: marketplace_validation
+      client_activation_check: local_install_acceptance
+    source_inputs:
+      - content/distribution/plugins.yaml
+      - content/workflow/**
+      - packages/qiongli-lite-mcp/**
+    required_paths:
+      - plugin.json
+      - .codex-plugin/plugin.json
+      - .mcp.json
+      - commands/
+      - bin/qiongli-literature-provider
+      - skills/qiongli-workflow/SKILL.md
+    allowed_wrapper_dirs:
+      - skills/qiongli-*
+    forbidden_paths:
+      - .claude-plugin/
+    bundled_mcp_mode: marketplace-lite-binary
+    command_surface: slash-commands
+    validator: codex-marketplace-plugin
+    release_download:
+      guide_label: Codex
+      recommended_key: codex
+      asset_groups:
+        - maintainer_plugin_tarballs
+      asset_name_contains:
+        - "-codex-plugin-"
+
+  claude-code-marketplace-plugin:
+    display_name: Claude Code Marketplace Plugin
+    artifact_kind: marketplace-plugin
+    archive_format: tar.gz
+    adapter:
+      kind: plugin
+      plugin_manifest_platform: claude
+      materializer: plugin_artifacts
+    smoke:
+      structural_archive_check: marketplace_validation
+      client_activation_check: local_install_acceptance
+    source_inputs:
+      - content/distribution/plugins.yaml
+      - content/workflow/**
+      - packages/qiongli-lite-mcp/**
+    required_paths:
+      - plugin.json
+      - .claude-plugin/plugin.json
+      - commands/
+      - bin/qiongli-literature-provider
+      - skills/qiongli-workflow/SKILL.md
+    allowed_wrapper_dirs: []
+    forbidden_paths:
+      - .codex-plugin/
+      - .mcp.json
+      - skills/qiongli-[!w]*/
+    bundled_mcp_mode: marketplace-lite-binary
+    command_surface: slash-commands
+    validator: claude-code-marketplace-plugin
+    release_download:
+      guide_label: Claude Code
+      recommended_key: claude_code
+      asset_groups:
+        - maintainer_plugin_tarballs
+        - maintainer_plugin_zips
+      asset_name_contains:
+        - "-claude-plugin-"
+
+  claude-desktop-direct-plugin:
+    display_name: Claude Desktop Direct Plugin
+    artifact_kind: direct-plugin
+    archive_format: zip
+    adapter:
+      kind: plugin
+      plugin_manifest_platform: claude
+      materializer: plugin_artifacts
+    smoke:
+      structural_archive_check: marketplace_validation
+      client_activation_check: not_applicable
+    source_inputs:
+      - content/distribution/plugins.yaml
+      - content/workflow/**
+      - packages/qiongli-lite-mcp/**
+    required_paths:
+      - plugin.json
+      - .claude-plugin/plugin.json
+      - commands/
+      - bin/qiongli-literature-provider
+      - skills/qiongli-workflow/SKILL.md
+    allowed_wrapper_dirs: []
+    forbidden_paths:
+      - .codex-plugin/
+      - .mcp.json
+      - skills/qiongli-[!w]*/
+    bundled_mcp_mode: marketplace-lite-binary
+    command_surface: slash-commands
+    validator: claude-desktop-direct-plugin
+    release_download:
+      guide_label: Claude Desktop direct plugin
+      recommended_key: claude_desktop_plugin
+      asset_groups:
+        - claude_desktop_plugin
+
+  claude-desktop-skill-zip:
+    display_name: Claude Desktop And Web Skill ZIP
+    artifact_kind: skill-zip
+    archive_format: zip
+    adapter:
+      kind: skill-zip
+      plugin_manifest_platform: none
+      materializer: desktop_skill_artifacts
+    smoke:
+      structural_archive_check: marketplace_validation
+      client_activation_check: not_applicable
+    source_inputs:
+      - content/workflow/**
+      - content/skills/**
+      - content/subjects/**
+    required_paths:
+      - SKILL.md
+      - VERSION
+      - skills/registry.yaml
+      - workflows/
+    allowed_wrapper_dirs: []
+    forbidden_paths:
+      - .codex-plugin/
+      - .claude-plugin/
+      - .mcp.json
+      - commands/
+    bundled_mcp_mode: none
+    command_surface: skill-workflows
+    validator: claude-desktop-skill-zip
+    release_download:
+      guide_label: Claude Desktop/Web skills
+      recommended_key: claude_desktop_skill
+      asset_groups:
+        - claude_desktop_skills
+        - claude_desktop_legacy_core_skill
+
+  antigravity-local-plugin:
+    display_name: Antigravity Local Plugin
+    artifact_kind: local-plugin
+    archive_format: directory
+    adapter:
+      kind: local-plugin
+      plugin_manifest_platform: none
+      materializer: local_plugin_installer
+    smoke:
+      structural_archive_check: marketplace_validation
+      client_activation_check: local_install_acceptance
+    source_inputs:
+      - content/distribution/plugins.yaml
+      - content/workflow/**
+    required_paths:
+      - plugin.json
+      - mcp_config.json
+      - commands/
+      - skills/qiongli-workflow/SKILL.md
+    allowed_wrapper_dirs: []
+    forbidden_paths:
+      - .codex-plugin/
+      - .claude-plugin/
+      - .mcp.json
+    bundled_mcp_mode: antigravity-python-runtime
+    command_surface: slash-commands
+    validator: antigravity-local-plugin
+    release_download:
+      guide_label: Antigravity local plugin
+      recommended_key: antigravity
+      asset_groups: []
+
+  npm-plugin-lite:
+    display_name: npm npx Plugin Lite
+    artifact_kind: npm-package
+    archive_format: npm-tarball
+    adapter:
+      kind: package
+      plugin_manifest_platform: none
+      materializer: npm_package
+    smoke:
+      structural_archive_check: package_build_validation
+      client_activation_check: not_applicable
+    source_inputs:
+      - packages/npm-qiongli/**
+      - content/workflow/**
+      - content/skills/**
+    required_paths:
+      - package.json
+      - bin/
+      - payload/qiongli-workflow/SKILL.md
+    allowed_wrapper_dirs: []
+    forbidden_paths:
+      - .codex-plugin/
+      - .claude-plugin/
+      - .mcp.json
+    bundled_mcp_mode: none
+    command_surface: npx-cli
+    validator: npm-plugin-lite
+    release_download:
+      guide_label: Qiongli npm/npx CLI
+      recommended_key: qiongli_cli
+      asset_groups: []
+
+  pypi-full-runtime:
+    display_name: PyPI Full Runtime
+    artifact_kind: python-package
+    archive_format: wheel-and-sdist
+    adapter:
+      kind: package
+      plugin_manifest_platform: none
+      materializer: python_package
+    smoke:
+      structural_archive_check: package_build_validation
+      client_activation_check: not_applicable
+    source_inputs:
+      - pyproject.toml
+      - packages/python-qiongli/**
+      - content/workflow/**
+      - content/skills/**
+    required_paths:
+      - pyproject.toml
+      - packages/python-qiongli/src/qiongli/cli.py
+      - packages/python-qiongli/src/qiongli/payload/qiongli-workflow/SKILL.md
+    allowed_wrapper_dirs: []
+    forbidden_paths:
+      - .codex-plugin/
+      - .claude-plugin/
+      - .mcp.json
+    bundled_mcp_mode: python-runtime
+    command_surface: qiongli-cli
+    validator: pypi-full-runtime
+    release_download:
+      guide_label: Qiongli Python full runtime
+      recommended_key: python_runtime
+      asset_groups: []

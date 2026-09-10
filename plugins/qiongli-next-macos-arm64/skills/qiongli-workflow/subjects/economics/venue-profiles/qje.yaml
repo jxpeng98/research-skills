@@ -1,0 +1,8 @@
+venue: qje
+display_name: "Quarterly Journal of Economics"
+subject: economics
+expectations:
+  sections: [Introduction, Conceptual_Framework, Data, Empirical_Strategy, Results, Mechanisms, Conclusion]
+  data_code: "Replication materials expected when empirical."
+  identification: "Reviewer-facing credibility must be built through design, institutional detail, and robustness."
+  style: "High-level economic insight, strong mechanism narrative, and disciplined empirical interpretation."

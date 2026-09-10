@@ -1,0 +1,155 @@
+# Skills Summary
+
+Quick-reference index of canonical skills. Load the selected `skills/[stage]/[skill-name].md` card; use only a matching section of `skills-core.md` when needed.
+
+## A — Research Framing
+
+| Skill | Purpose |
+|-------|---------|
+| question-refiner | Transform vague topics into structured RQs via PICO/PEO + FINER |
+| contribution-crafter | Draft contribution statement highlighting novelty |
+| hypothesis-generator | Translate RQs into testable hypotheses with mechanisms |
+| theory-mapper | Map theoretical concepts and frameworks with Mermaid diagrams |
+| gap-analyzer | Identify research gaps using 5-type taxonomy + FINER |
+| venue-analyzer | Analyze venue fit, formatting constraints, reviewer expectations |
+
+## B — Literature Search & Extraction
+
+| Skill | Purpose |
+|-------|---------|
+| academic-searcher | Query design, provider-backed retrieval, deduplicated search |
+| paper-screener | Two-stage PRISMA-compliant systematic screening |
+| paper-extractor | Extract structured theory/method/findings into notes |
+| citation-snowballer | Forward/backward citation tracing |
+| fulltext-fetcher | Retrieve full-text PDFs via OA channels |
+| citation-formatter | Format citations in APA/MLA/Chicago/IEEE/BibTeX |
+| concept-extractor | Expand search concepts with controlled vocabulary |
+| literature-mapper | Build literature taxonomy with mechanism-based clusters |
+| reference-manager-bridge | Export/import with Zotero/Mendeley/EndNote |
+
+## C — Study Design
+
+| Skill | Purpose |
+|-------|---------|
+| study-designer | Turn RQ into executable study design + analysis plan |
+| rival-hypothesis-designer | Construct competing theories to strengthen design |
+| robustness-planner | Pre-specify robustness checks and sensitivity analysis |
+| dataset-finder | Identify feasible datasets and access routes |
+| variable-constructor | Specify data columns, units, coding and derivation rules for selected measures |
+| data-dictionary-builder | Create structured data dictionaries |
+| data-management-plan | Generate FAIR-compliant data management plans |
+| prereg-writer | Generate preregistration documents (OSF/AsPredicted) |
+| variable-operationalizer | Choose how to measure constructs and justify instrument validity |
+
+## D — Ethics & IRB
+
+| Skill | Purpose |
+|-------|---------|
+| ethics-irb-helper | Prepare IRB-ready materials: consent, recruitment, data governance |
+| statement-generator | Generate ethics, data availability, and COI statements |
+| deidentification-planner | Design privacy measures via k-anonymity or differential privacy |
+
+## E — Evidence Synthesis
+
+| Skill | Purpose |
+|-------|---------|
+| effect-size-calculator | Calculate standard effect sizes for meta-analysis |
+| evidence-synthesizer | Synthesize evidence narratively or quantitatively (PRISMA) |
+| quality-assessor | Assess risk of bias via RoB 2, ROBINS-I, GRADE |
+| publication-bias-checker | Evaluate publication bias via funnel plots, Egger's test |
+| qualitative-coding | Thematic/grounded theory coding from qualitative data |
+
+## F — Academic Writing
+
+| Skill | Purpose |
+|-------|---------|
+| manuscript-architect | Draft and revise full research paper (outline → manuscript) |
+| proposal-writer | Draft research proposals, opening reports, prospectuses, and study plans |
+| analysis-interpreter | Translate findings into analytical prose with uncertainty |
+| effect-size-interpreter | Explain estimate magnitude in interpretable units |
+| table-generator | Generate publication-ready tables |
+| figure-specifier | Specify publication-quality figures with reproducible code |
+| meta-optimizer | Optimize abstract, title, keywords for discoverability |
+| discussion-writer | Draft Discussion section using structured story spine |
+
+## G — Compliance & Reporting
+
+| Skill | Purpose |
+|-------|---------|
+| prisma-checker | Verify PRISMA 2020 flow diagram and checklist |
+| reporting-checker | Validate CONSORT/STROBE/COREQ/SRQR/TRIPOD completeness |
+| tone-normalizer | Neutralize AI-typical phrasing patterns |
+
+## H — Submission & Rebuttal
+
+| Skill | Purpose |
+|-------|---------|
+| journal-fit-recommender | Rank journal fit from an existing manuscript and verified venue evidence |
+| submission-packager | Submission-ready packaging (cover letter + statements) |
+| rebuttal-assistant | Reviewer response workflow (response matrix + letter) |
+| peer-review-simulation | Requested referee-style manuscript critique; distinguish simulated lenses from actual independent reviewers |
+| fatal-flaw-detector | Identify deal-breaker issues before submission |
+| reviewer-empathy-checker | Ensure respectful, constructive rebuttal tone |
+| credit-taxonomy-helper | Generate CRediT author contribution statements |
+| limitation-auditor | Audit and strengthen the limitations section |
+
+## I — Research Code
+
+| Skill | Purpose |
+|-------|---------|
+| code-builder | Build academic research code (multi-discipline, multi-language) |
+| data-cleaning-planner | Plan structured data cleaning procedures |
+| data-merge-planner | Plan multi-source data merge operations |
+| code-specification | Define code requirements and architecture |
+| code-planning | Decompose code tasks into implementation steps |
+| code-execution | Execute and iterate on research code |
+| code-review | Domain-aware independent code review |
+| reproducibility-auditor | Audit code for reproducibility compliance |
+| release-packager | Assemble analysis code, data documentation and environment for reproducibility |
+| stats-engine | Statistical modeling with domain-specific method selection |
+
+## J — Proofreading & Scholarly Voice
+
+| Skill | Purpose |
+|-------|---------|
+| ai-fingerprint-scanner | Diagnose concrete clarity and repetition problems; no authorship detection |
+| human-voice-rewriter | Improve selected scholarly passages while preserving meaning, evidence and disclosure |
+| similarity-checker | Compare available source text and attribution; report corpus limits |
+| final-proofreader | Final grammar, style, and consistency pass |
+
+## K — Academic Presentation
+
+| Skill | Purpose |
+|-------|---------|
+| presentation-planner | Design story arc and content budget for academic talks |
+| slide-architect | Design backend-agnostic slide content specs |
+| slidev-scholarly-builder | Generate Slidev deck with scholarly theme |
+| beamer-builder | Generate LaTeX Beamer presentation |
+
+## L — Coursework
+
+| Skill | Purpose |
+|-------|---------|
+| assignment-brief-analyzer | Parse coursework, capstone, and dissertation assignment briefs into constraints, task type, missing information, and integrity boundaries. |
+| rubric-mapper | Map marking rubrics and learning outcomes to required content, evidence, sections, and coursework risks. |
+| coursework-architect | Design coursework structure, claim-evidence plans, and citation plans from assignment briefs and rubrics. |
+| coursework-reviser | Revise coursework drafts against rubrics, learning outcomes, evidence plans, word count, and integrity constraints. |
+
+## M — Dissertation
+
+| Skill | Purpose |
+|-------|---------|
+| dissertation-planner | Plan dissertations, theses, capstones, and major projects by degree level, method type, dependencies, milestones, and risks. |
+| chapter-architect | Design dissertation chapter maps, chapter status, dependencies, evidence thresholds, and word-count allocations. |
+| supervisor-feedback-integrator | Map supervisor feedback to dissertation chapters, claims, required actions, evidence needs, priorities, and revision status. |
+| dissertation-readiness-checker | Check dissertation final readiness and defense preparation against chapter completeness, evidence alignment, formatting, integrity, and unresolved risks. |
+
+## Z — Cross-Cutting
+
+| Skill | Purpose |
+|-------|---------|
+| academic-context-maintainer | Maintain research state and decision log across stages |
+| boundary-interviewer | Run Academic Idea Funnel (`context/idea_funnel.md`) and boundary critique one question at a time, then reuse locked answers as downstream constraints |
+| metadata-enricher | Normalize and complete paper metadata |
+| model-collaborator | Multi-model collaboration for research tasks |
+| self-critique | Check substantive defects, verify targeted fixes and stop at the applicable review contract |

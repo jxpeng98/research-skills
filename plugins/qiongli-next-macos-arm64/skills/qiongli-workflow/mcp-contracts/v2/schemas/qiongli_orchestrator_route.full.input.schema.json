@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_orchestrator_route.full.input.v2.json",
+  "title": "qiongli_orchestrator_route full input",
+  "type": "object",
+  "required": [
+    "request"
+  ],
+  "properties": {
+    "request": {
+      "type": "string",
+      "description": "Natural-language user request or current task summary."
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude_code",
+        "claude",
+        "antigravity",
+        "cli",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "cwd": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "paper_type": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": [
+        "solo",
+        "duo",
+        "triad"
+      ]
+    },
+    "controller": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "primary": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "reviewer": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "verifier": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude",
+        "antigravity"
+      ]
+    },
+    "solo_role_gates": {
+      "type": "string",
+      "enum": [
+        "strict",
+        "standard",
+        "off"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

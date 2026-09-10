@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_save_provider_config.output.v2.json",
+  "title": "qiongli_save_provider_config structured output",
+  "type": "object",
+  "required": ["status", "provider", "field", "saved", "config_path"],
+  "properties": {
+    "status": { "const": "saved" },
+    "provider": { "enum": ["openalex", "semantic_scholar", "crossref", "pubmed"] },
+    "field": { "enum": ["api_key", "email"] },
+    "saved": { "const": true },
+    "config_path": { "type": "string", "minLength": 1 },
+    "warning": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

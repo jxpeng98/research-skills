@@ -1,0 +1,11 @@
+id: financial-management
+display_name: "Financial Management"
+discipline: finance
+quality_bar:
+  - "Research question must be relevant to finance scholars and evidence must be technically transparent."
+  - "Risk adjustment, sample construction, and inference must be explicit."
+  - "Managerial implications must follow from finance evidence, not replace it."
+fit_notes:
+  - "Best fit for corporate finance, investments, risk, and applied financial management papers."
+  - "Use clear tables, robustness, and economic magnitude discussion."
+  - "Avoid practitioner-only framing without scholarly contribution."

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_save_provider_config.input.v2.json",
+  "title": "qiongli_save_provider_config input",
+  "type": "object",
+  "required": ["provider", "field", "value"],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "openalex",
+        "semantic_scholar",
+        "semantic-scholar",
+        "semanticscholar",
+        "s2",
+        "crossref",
+        "pubmed",
+        "ncbi"
+      ]
+    },
+    "field": { "type": "string", "enum": ["api_key", "api-key", "email"] },
+    "value": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "writeOnly": true,
+      "description": "Provider value to store. This value is never returned."
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "provider": { "const": "openalex" },
+        "field": { "enum": ["api_key", "api-key", "email"] }
+      }
+    },
+    {
+      "properties": {
+        "provider": {
+          "enum": ["semantic_scholar", "semantic-scholar", "semanticscholar", "s2"]
+        },
+        "field": { "enum": ["api_key", "api-key"] }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "crossref" },
+        "field": { "const": "email" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "enum": ["pubmed", "ncbi"] },
+        "field": { "enum": ["api_key", "api-key"] }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

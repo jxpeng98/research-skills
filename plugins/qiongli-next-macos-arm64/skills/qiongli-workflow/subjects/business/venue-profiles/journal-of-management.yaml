@@ -1,0 +1,11 @@
+id: journal-of-management
+display_name: "Journal of Management"
+discipline: business
+quality_bar:
+  - "Construct definitions and literature positioning must be precise."
+  - "Empirical tests must support the stated management contribution."
+  - "Theory, method, and discussion must be integrated around one contribution."
+fit_notes:
+  - "Best fit for management theory, organizational behavior, HR, and strategy-adjacent papers."
+  - "Use clear construct maps and boundary conditions."
+  - "Avoid broad literature summaries without a focused contribution."

@@ -1,0 +1,11 @@
+id: world-politics
+display_name: "World Politics"
+discipline: political-economy
+quality_bar:
+  - "Mechanism must connect institutions, actors, and political-economic outcomes."
+  - "Historical, comparative, or international evidence must support generalizable insight."
+  - "Case selection and scope conditions must be explicit."
+fit_notes:
+  - "Strong fit for comparative or international political economy with rich institutional evidence."
+  - "Use process evidence and historical context to support mechanism claims."
+  - "State boundary conditions for regime, period, and political economy setting."

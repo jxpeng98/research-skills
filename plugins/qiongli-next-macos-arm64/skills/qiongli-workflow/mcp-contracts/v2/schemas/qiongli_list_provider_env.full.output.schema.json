@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_list_provider_env.full.output.v2.json",
+  "title": "qiongli_list_provider_env full structured output",
+  "type": "object",
+  "required": ["providers"],
+  "properties": {
+    "providers": {
+      "type": "object",
+      "required": [
+        "openalex",
+        "semantic_scholar",
+        "crossref",
+        "pubmed",
+        "arxiv"
+      ],
+      "properties": {
+        "openalex": {
+          "type": "object",
+          "required": ["api_key", "email"],
+          "properties": {
+            "api_key": { "$ref": "#/$defs/environmentNames" },
+            "email": { "$ref": "#/$defs/environmentNames" }
+          },
+          "additionalProperties": false
+        },
+        "semantic_scholar": {
+          "type": "object",
+          "required": ["api_key"],
+          "properties": {
+            "api_key": { "$ref": "#/$defs/environmentNames" }
+          },
+          "additionalProperties": false
+        },
+        "crossref": {
+          "type": "object",
+          "required": ["email"],
+          "properties": {
+            "email": { "$ref": "#/$defs/environmentNames" }
+          },
+          "additionalProperties": false
+        },
+        "pubmed": {
+          "type": "object",
+          "required": ["api_key"],
+          "properties": {
+            "api_key": { "$ref": "#/$defs/environmentNames" }
+          },
+          "additionalProperties": false
+        },
+        "arxiv": {
+          "type": "object",
+          "maxProperties": 0,
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "environmentNames": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    }
+  }
+}

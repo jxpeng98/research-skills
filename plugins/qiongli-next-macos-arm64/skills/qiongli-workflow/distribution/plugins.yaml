@@ -1,0 +1,80 @@
+plugins:
+  qiongli:
+    display_name: Qiongli
+    skill_name: qiongli
+    mcp_server_name: qiongli
+    description: Qiongli academic research workflow for literature, manuscripts, statistics, analysis code, reproducibility, rebuttal, submission, presentation, and stage-aware grill.
+    author:
+      name: Jiaxin Peng
+      url: https://github.com/jxpeng98
+    category: Education
+    homepage: https://github.com/jxpeng98/qiongli
+    repository: https://github.com/jxpeng98/qiongli
+    license: MIT
+    keywords:
+      - research
+      - academic-writing
+      - literature-review
+      - manuscript
+      - analysis
+      - statistics
+      - reproducibility
+      - rebuttal
+      - academic-code
+      - grill
+    release_lines:
+      - legacy-1x
+    release_channels:
+      - stable
+    codex:
+      short_description: Academic research workflows for Codex.
+      default_prompts:
+        - Use $qiongli to plan or narrow an academic research project.
+        - Use $qiongli to revise a manuscript with claim-evidence checks.
+        - Use $qiongli to review statistics, analysis code, or rebuttal risks.
+      brand_color: "#2563EB"
+    claude:
+      enabled: true
+  qiongli-next:
+    display_name: Qiongli Next
+    skill_name: qiongli-next
+    mcp_server_name: qiongli-next
+    description: Qiongli Next prerelease academic research workflow plugin for testing the upcoming core workflow with bundled literature MCP tools.
+    author:
+      name: Jiaxin Peng
+      url: https://github.com/jxpeng98
+    category: Education
+    homepage: https://github.com/jxpeng98/qiongli
+    repository: https://github.com/jxpeng98/qiongli
+    license: MIT
+    keywords:
+      - research
+      - academic-writing
+      - literature-review
+      - manuscript
+      - analysis
+      - statistics
+      - reproducibility
+      - rebuttal
+      - academic-code
+      - grill
+      - qiongli-next
+      - prerelease
+    release_lines:
+      - legacy-1x
+    release_channels:
+      - beta
+    planned_release_lines:
+      - native-2x
+    planned_release_channels:
+      - alpha
+      - beta
+    codex:
+      short_description: Prerelease academic research workflows for Codex.
+      default_prompts:
+        - Use $qiongli-next to test the next Qiongli paper workflow.
+        - Use $qiongli-next to test a literature review workflow.
+        - Use $qiongli-next to test submission checks with the bundled literature MCP.
+      brand_color: "#2563EB"
+    claude:
+      enabled: true

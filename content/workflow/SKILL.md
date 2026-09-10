@@ -175,8 +175,9 @@ append safely or propose a diff, and verify the actual write result.
   reuse answers already present. Do not restart the interview on continuation.
 - Separate findings, interpretation and implication. Never invent citations,
   statistics, reviewer comments or completed experiments. Do not infer measurement,
-  recruitment or data-collection details from a study label; unreported details
-  remain unknown. Apply
+  recruitment or data-collection details from a study label: a survey does not
+  establish self-report. Preserve the supplied measurement wording and leave
+  unreported details unknown. Apply
   `references/academic-output-rubric.md`; central claims use
   `references/evidence-ledger-contract.md` and `references/citation-risk-policy.md`.
   Missing evidence is a gap, not a reason to manufacture a completed artifact.

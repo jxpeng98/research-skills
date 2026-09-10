@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from tooling.scripts.native_cli_release import archive_cli
 from tooling.scripts.native_registry_packages import TARGETS, wheel
@@ -40,6 +41,39 @@ class NativeReleaseAssetsTests(unittest.TestCase):
             manifest, npm, wheels = verify(root / 'assets', version, commit)
             self.assertEqual(set(wheels), set(TARGETS))
             self.assertEqual(len(manifest['artifacts']), 7)
+            # The Plugin verifier owns archive internals; this owner must bind
+            # both Plugin archives to every native executable's observed pack.
+            pack_hash = 'b' * 64
+            for target in fixtures:
+                folder = root / 'targets' / target
+                receipt = json.loads((folder / 'release-manifest.json').read_text())
+                receipt['checks']['archive_smoke']['content_pack_sha256'] = pack_hash
+                if target.endswith('linux-gnu'):
+                    for host in ('codex', 'claude'):
+                        plugin = folder / f'qiongli-next-{host}-plugin-v{version}.tar.gz'
+                        plugin.write_bytes(host.encode())
+                        receipt['artifacts'].append({'file': plugin.name,
+                            'sha256': hashlib.sha256(plugin.read_bytes()).hexdigest(),
+                            'bytes': plugin.stat().st_size})
+                (folder / 'release-manifest.json').write_text(json.dumps(receipt))
+            plugin_assets = root / 'with-plugins/assets'
+            with patch('tooling.scripts.native_release_assets.verify_archive',
+                       return_value={'pack_sha256': pack_hash}) as verify_plugin:
+                assemble(root / 'targets', plugin_assets, version, commit)
+                packet, _, _ = verify(plugin_assets, version, commit)
+                self.assertEqual(len(packet['artifacts']), 9)
+                verify_plugin.return_value = {'pack_sha256': 'c' * 64}
+                with self.assertRaisesRegex(ValueError, 'differs from CLI'):
+                    verify(plugin_assets, version, commit)
+                verify_plugin.return_value = {'pack_sha256': pack_hash}
+                packet['target_evidence'][0]['checks']['archive_smoke']['content_pack_sha256'] = 'c' * 64
+                (plugin_assets / 'release-manifest.json').write_text(json.dumps(packet))
+                with self.assertRaisesRegex(ValueError, 'all three CLI content packs'):
+                    verify(plugin_assets, version, commit)
+                packet['artifacts'] = [a for a in packet['artifacts'] if '-claude-plugin-' not in a['file']]
+                (plugin_assets / 'release-manifest.json').write_text(json.dumps(packet))
+                with self.assertRaisesRegex(ValueError, 'both marketplace Plugin archives'):
+                    verify(plugin_assets, version, commit)
             original = npm.read_bytes()
             npm.write_bytes(original + b'tamper')
             with self.assertRaisesRegex(ValueError, 'digest/size mismatch'):

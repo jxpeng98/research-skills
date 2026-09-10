@@ -14,8 +14,10 @@ import zipfile
 
 try:
     from .native_registry_packages import TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
+    from .native_marketplace_plugins import verify_archive
 except ImportError:
     from native_registry_packages import TARGETS, npm_package, parse_release_version, regular_bytes, validate_binary
+    from native_marketplace_plugins import verify_archive
 
 
 def checked_assets(root, manifest):
@@ -76,6 +78,15 @@ def assemble(root, out, version, commit):
             raise ValueError('expected one wheel per target')
         for path in [archive, *wheels]:
             shutil.copyfile(path, out / path.name)
+        if target.endswith('linux-gnu'):
+            plugins = [files.get(f'qiongli-next-{host}-plugin-v{version}.tar.gz')
+                       for host in ('codex', 'claude')]
+            if any(plugins):
+                if not all(plugins):
+                    raise ValueError('both marketplace Plugin archives are required')
+                for path in plugins:
+                    verify_archive(path, version, commit)
+                    shutil.copyfile(path, out / path.name)
         receipts.append(receipt)
     npm_work = out.parent / 'npm-combined'
     npm_work.mkdir(exist_ok=False)
@@ -126,8 +137,21 @@ def verify(root, version, commit):
             if f'\nVersion: {identity.package_version}\n' not in metadata:
                 raise ValueError('wheel metadata version mismatch')
         wheels[target] = matches[0]
-    if len(files) != 7:
-        raise ValueError('expected three archives, three wheels and one npm package')
+    plugin_names = {f'qiongli-next-{host}-plugin-v{version}.tar.gz' for host in ('codex', 'claude')}
+    plugins = plugin_names.intersection(files)
+    if plugins:
+        if plugins != plugin_names:
+            raise ValueError('both marketplace Plugin archives are required')
+        pack_hashes = {receipt['checks']['archive_smoke'].get('content_pack_sha256')
+                       for receipt in manifest['target_evidence']}
+        if len(pack_hashes) != 1 or None in pack_hashes:
+            raise ValueError('all three CLI content packs must match the marketplace Plugins')
+        for name in sorted(plugins):
+            provenance = verify_archive(files[name], version, commit)
+            if provenance['pack_sha256'] not in pack_hashes:
+                raise ValueError('marketplace Plugin content differs from CLI content')
+    if len(files) != 7 + len(plugins):
+        raise ValueError('expected three CLI archives, three wheels, one npm package and optional Plugin pair')
     return manifest, npm, wheels
 
 

@@ -29,7 +29,9 @@ def check_cli(executable, *, version, root, env):
     assert run(command + ['--version'], root=root, env=env).stdout.strip() == f'qiongli {version}'
     assert 'qiongli project' in run(command + ['--help'], root=root, env=env).stdout
     content = run(command + ['content', 'list'], root=root, env=env)
-    assert json.loads(content.stdout)
+    content = json.loads(content.stdout)
+    assert content['content_version'] == version
+    assert re.fullmatch(r'[a-f0-9]{64}', content['pack_sha256'])
     invalid = run(command + ['not-a-command'], root=root, env=env, check=False)
     assert invalid.returncode != 0 and not invalid.stdout and 'error:' in invalid.stderr
     tools = {}
@@ -50,7 +52,8 @@ def check_cli(executable, *, version, root, env):
         assert len(names) == expected_count and len(set(names)) == expected_count
         assert 'error' not in messages[3] and not messages[3]['result'].get('isError', False)
         tools[profile] = len(names)
-    return {'version': version, 'invalid_command_rejected': True, 'mcp_tools': tools}
+    return {'version': version, 'invalid_command_rejected': True, 'mcp_tools': tools,
+            'content_pack_sha256': content['pack_sha256']}
 
 
 def install_cargo_archives(package_root, receipt, root, env, target_dir):

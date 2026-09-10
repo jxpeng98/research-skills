@@ -55,3 +55,19 @@ or signed products. Their `user-local-host-full-mcp` receipts contain no signed
 grant digest; signed bundle APIs reject them. Source updates/removal require the
 expected receipt inside the existing bundle transaction. Host registration,
 cache refresh and live readiness remain separately observed actions.
+
+Public `qiongli-next` marketplace archives use `native_marketplace_plugins.py`
+and the CLI's `export_marketplace_content` example. The existing resource-pack
+loader/projector exports `marketplace-lite`; shared Skill resources retain their
+exact bytes. Only platform manifests and a Node bridge are added. The bridge
+pins the same npm SemVer and serves native Lite MCP (14 tools); Full MCP remains
+available through explicit CLI/local Plugin configuration. No signed grant,
+managed activation or Host registration is implied by a public archive.
+
+The CLI release packet may carry the Codex/Claude archive pair. Verification
+requires their version, release source, resource hashes and pack hash to agree
+with all three native CLI observations. Publish immutable `codex/v<version>` and
+`claude/v<version>` distribution refs before advancing marketplace catalogs;
+catalogs reference `plugins/qiongli-next`. The archive names preserve the existing
+Skillsplace release-sync contract. Node 18+ and access to npm on first MCP start
+are explicit dependencies; user caches and model configuration are not edited.

@@ -130,6 +130,17 @@ def main() -> None:
     (package_work / 'registry-packages.json').write_text(json.dumps(package_receipt))
     run([sys.executable, str(ROOT / 'scripts/native_registry_install_check.py'),
          '--packages', str(package_work), '--out-dir', str(out / 'install')], cwd=ROOT)
+    # One native build exports the same verified pack used by its npm executable.
+    # Local macOS qualification also exercises the projector before remote builds.
+    if not ci or platform.system() == 'Linux':
+        run(['cargo', 'run', '-p', 'qiongli', '--example', 'export_marketplace_content',
+             '--release', '--target', target, *cargo_args, '--', str(out / 'plugin-content')])
+        run([sys.executable, str(ROOT / 'tooling/scripts/native_marketplace_plugins.py'),
+             '--content-dir', str(out / 'plugin-content'), '--out-dir', str(out / 'plugins'),
+             '--version', version, '--commit', commit], cwd=ROOT)
+        for host in ('codex', 'claude'):
+            path = out / 'plugins' / f'qiongli-next-{host}-plugin-v{version}.tar.gz'
+            shutil.copyfile(path, assets / path.name)
     if git('rev-parse', 'HEAD') != commit or git('status', '--porcelain', '--untracked-files=normal'):
         raise ValueError('source changed during qualification')
     receipt = {'version': version, 'source_commit': commit, 'target': target,

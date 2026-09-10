@@ -3,7 +3,69 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: routing dimensions and controlled Codex comparison — September 10
+## Current increment: task routes and observable resource reading — September 10
+
+Base `a72e3197`; branch `codex/codex-resource-read-probe`; implementation
+`e99f8d4d`. The existing entry
+requires selecting the academic task before runtime/project access. Permission
+blocks therefore change the current action, not the academic task owner.
+`resource_route` records a dependency even when blocked and authorizes no retry.
+Applying an already-drafted change remains an operation-owned task.
+
+The previous denial request did not distinguish claim-ledger checking from graph
+verification. The active corpus replaces that pair with new IDs,
+`continuation-academic-graph-denied-read-{en,zh}`, explicitly requesting Academic
+Graph verification with a denied graph read. Expected graph/platform/formal/
+report-blocked labels are fixed before collection. The other 46 requests and
+expectations are unchanged. Old requests, expectations and original scores remain
+in Git and captured snapshots; regrading refuses changed requests/identities.
+Offline replay of the preceding three-arm comparison still gives **6/6, 4/6, 4/6**
+on its original expectations. New reports:
+`/private/tmp/qiongli-resource-read-old-scores-a6jmicm3/`.
+
+`probe.py capture --read-resources` adds a distinct `codex-resource-reading-v1`
+lane through a small, test-only local MCP reader. Native MCP has no Skill-body
+read API; this reader is evaluation infrastructure, not a production interface or
+installed Plugin. It reuses canonical bundle path mapping and serves only an
+in-memory snapshot of the 428 `content/` files. It exposes no shell, research
+project, arbitrary filesystem, web or write tool. Model and effort remain the
+configured `gpt-6-astra` / `high`; Host discovery/registration stays disabled.
+
+Observed reads require matched successful tool starts/completions and returned
+text matching the captured source. Pure answer claims cannot count. Existing
+Evaluation Truth V1 assertions separately check primary/prerequisite resource
+reads and retain actual paths, counts and duplicates; generic utility requests
+require zero reads. Reader/source snapshots and the current read scorer's digest
+are bound separately. The original intent-only lane still rejects tool events.
+This establishes neither automatic activation nor live project/CAS behavior.
+
+31 focused unittest checks passed across the routing probe, academic-quality suite
+and Evaluation Truth cases; log `/private/tmp/qiongli-resource-read-focused.log`.
+They include actual local MCP stdio exchanges plus mocked Codex trace positives
+and negatives: false read claims, missing/failed/unknown calls, forged content,
+malformed success markers, traversal attempts, and snapshot changes. Independent
+review found and closed malformed-start/error handling and current-helper source
+binding gaps. Product content/native/package inputs are unchanged.
+
+**Real Codex resource collection has not started.** Automatic approval review
+rejected the model invocation because explicit authorization for sending this
+repository-content scope to the external model was missing. No workaround or
+alternate model call ran. A concrete six-request packet is prepared at
+`/private/tmp/qiongli-resource-read-approval-02cjxzy4/scope.json`: result
+interpretation, explicit graph denial and generic mean-function pairs. The entry
+and requested resource results would be sent to the configured OpenAI provider;
+the available snapshot contains unpublished changes, totals 1,910,223 bytes and
+has SHA-256 `6f22a1ff513b6f71b52c4e627e6b457977b01920ed343e681d33dbc20585507f`.
+The user has been asked to authorize that exact six-request scope.
+
+Next: after that authorization, capture these six requests, inspect actual tool
+results and final answers, and record any remaining routing or loading failures
+without broadening labels after collection. Then continue the bounded literature
+→ reading → claim → manuscript journey. Until collection runs, this increment is
+offline implementation evidence only; Host registration, release and accepted
+program state remain unchanged.
+
+## Completed: routing dimensions and controlled Codex comparison — September 10
 
 Started from clean `ec1704a3` on `codex/routing-eval-calibration`. Codex remains
 primary; this increment changes evaluation tooling, not product content, native

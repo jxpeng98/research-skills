@@ -50,6 +50,50 @@ proof of comparative routing accuracy. Record actual results here once at
 integration; commit planning, implementation and packaging/evidence separately,
 then fast-forward merge into local `2.x`.
 
+Implementation and focused evidence:
+
+- Planning commit `ce4f78a7` precedes source commit `6960ccc4`. The source updates
+  shared/adjacent routing, the Stage-J reference and four cards, referee review,
+  coursework/dissertation entry and the two local-revision cards. Registry and
+  quick-index prose agree with the revised behavior; the core digest has no
+  duplicate J/H3/L6/M4 card to change. The 82 registry identities, formal inputs,
+  outputs, dependencies and tool requirements match the baseline; task paths,
+  public schemas, approval/CAS and formal minimum review counts are unchanged.
+- 32 existing focused tests passed across skill discovery, resource links,
+  formal contract alignment, coursework/dissertation, writing/grill and command
+  materialization. After the two L6/M4 clarifications, the 11 affected L/M and
+  resource tests passed again (a subset, not 11 additional distinct tests).
+  Logs: `/private/tmp/qiongli-routing-consistency-tests.log` and
+  `/private/tmp/qiongli-routing-consistency-final-lm.log`. The strict 82-card
+  audit, capability contract and Skill validator passed. Pytest was unavailable;
+  the repository's existing unittest-compatible tests ran without adding a dependency.
+- Six independent offline forward cases delivered a one-word grammar correction,
+  a zero-finding language audit, an explicitly non-independent methods self-review,
+  a two-sentence rubric revision, a bounded supervisor-feedback interpretation,
+  and an unverified source-overlap result when the original source was missing.
+  Initial reading exposed L6/M4 card-level input/output ambiguity; both cards
+  were clarified and only those two cases repeated. The final report records
+  responses, limits and selected-resource hashes:
+  `/private/tmp/qiongli-routing-consistency-forward.md`. These synthetic cases
+  do not measure real Host activation or cross-model routing accuracy.
+- One real, tool-disabled Claude Code request used the configured DeepSeek
+  endpoint. It corrected `results indicates` to `results indicate`, retained
+  `Causality cannot be inferred`, and added no project planning, file operation
+  or detector score. It returned successfully; reported models were
+  `deepseek-v4-flash` and `deepseek-v4-pro[1m]`. Final source hashes match
+  `/private/tmp/qiongli-proofread-deepseek-ibrr59mp/result.json`. This is a
+  supplied-instruction text sample, not a live Plugin/MCP or latency qualification.
+- The 428-resource content lock was regenerated from `6960ccc4`, with root
+  `b968ef9335f255a3422f3e1c52c80d1021bca70436a41209237ea7c02c10e5dd`.
+  Version consistency and generated-index checks passed. Both selected native
+  Codex/Claude bundle tests passed deterministic packaging, tamper detection and
+  runtime independence against the final embedded content. Log:
+  `/private/tmp/qiongli-routing-consistency-native-bundles.log`.
+
+Next implementation is step 2 above. No full-library semantic completeness,
+measured routing superiority, installed-candidate readiness or program acceptance
+is claimed. Host registration and publication remain outside this increment.
+
 ## Completed: bounded Skill execution — September 10
 
 Following the first audit, the maintainer requested systematic consolidation to

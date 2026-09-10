@@ -1,0 +1,8 @@
+venue: review-of-accounting-studies
+display_name: "Review of Accounting Studies"
+subject: economics-accounting
+expectations:
+  sections: [Introduction, Background, Data, Research_Design, Results, Cross_Sectional_Tests, Robustness]
+  data_code: "Transparent sample construction, database coverage, and variable definitions expected."
+  identification: "Design must separate accounting measurement, economic mechanism, and alternative channels."
+  style: "Mechanism-forward accounting research with rigorous empirical design and clear robustness logic."

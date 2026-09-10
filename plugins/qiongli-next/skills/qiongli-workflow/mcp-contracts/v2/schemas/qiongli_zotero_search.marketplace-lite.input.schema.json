@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_search.input.v2.json",
+  "title": "qiongli_zotero_search input",
+  "type": "object",
+  "properties": {
+    "doi": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "title": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "year": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1000, "maximum": 9999 },
+        { "type": "string", "pattern": "^[0-9]{4}$" }
+      ]
+    },
+    "citekey": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "creator": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "tag": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "collection_path": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 }
+  },
+  "anyOf": [
+    { "required": ["doi"] },
+    { "required": ["title"] },
+    { "required": ["year"] },
+    { "required": ["citekey"] },
+    { "required": ["creator"] },
+    { "required": ["tag"] },
+    { "required": ["collection_path"] }
+  ],
+  "additionalProperties": false
+}

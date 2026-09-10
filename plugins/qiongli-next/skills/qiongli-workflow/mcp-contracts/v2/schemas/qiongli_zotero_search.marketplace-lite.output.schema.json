@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_search.output.v2.json",
+  "title": "qiongli_zotero_search structured output",
+  "type": "object",
+  "required": ["status", "limit", "results"],
+  "properties": {
+    "status": { "type": "string" },
+    "error_code": { "type": "string" },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 200 },
+    "results": {
+      "type": "array",
+      "maxItems": 200,
+      "items": { "type": "object" }
+    }
+  },
+  "additionalProperties": false
+}

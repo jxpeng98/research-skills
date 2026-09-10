@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_test_provider.full.input.v2.json",
+  "title": "qiongli_test_provider full input",
+  "type": "object",
+  "required": [
+    "provider"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string"
+    },
+    "cwd": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

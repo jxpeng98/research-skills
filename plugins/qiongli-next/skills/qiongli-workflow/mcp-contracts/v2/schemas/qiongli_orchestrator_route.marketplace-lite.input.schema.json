@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_orchestrator_route.marketplace-lite.input.v2.json",
+  "title": "qiongli_orchestrator_route marketplace-lite input",
+  "type": "object",
+  "required": [
+    "request"
+  ],
+  "properties": {
+    "request": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude_code",
+        "claude",
+        "antigravity",
+        "cli",
+        "unknown"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

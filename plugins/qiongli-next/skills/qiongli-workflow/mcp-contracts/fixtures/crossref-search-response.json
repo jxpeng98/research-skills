@@ -1,0 +1,12 @@
+{
+  "message": {
+    "items": [
+      {
+        "title": ["A Test Paper"],
+        "issued": { "date-parts": [[2025]] },
+        "DOI": "10.1234/example",
+        "container-title": ["Journal of Tests"]
+      }
+    ]
+  }
+}

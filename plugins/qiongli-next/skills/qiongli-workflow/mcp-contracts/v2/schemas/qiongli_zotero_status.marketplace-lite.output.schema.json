@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_status.output.v2.json",
+  "title": "qiongli_zotero_status structured output",
+  "type": "object",
+  "required": [
+    "status",
+    "connector",
+    "companion",
+    "fallback_import_files"
+  ],
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "connector": {
+      "type": "object",
+      "required": [
+        "available"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        }
+      },
+      "additionalProperties": false
+    },
+    "companion": {
+      "type": "object",
+      "required": [
+        "available"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "version": {
+          "type": "string"
+        },
+        "endpoint_version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fallback_import_files": {
+      "type": "object",
+      "required": [
+        "available",
+        "formats"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

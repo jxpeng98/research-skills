@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "type": "object",
+  "required": ["files"],
+  "properties": {
+    "files": {
+      "type": "object",
+      "properties": {
+        "references.json": { "type": "string" },
+        "references.ris": { "type": "string" },
+        "bibliography.bib": { "type": "string" },
+        "zotero-import-report.md": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

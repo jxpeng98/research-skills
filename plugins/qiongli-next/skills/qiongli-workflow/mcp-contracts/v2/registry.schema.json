@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/mcp-capability-registry-v2.json",
+  "title": "Qiongli MCP Capability Registry v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "contract_version",
+    "status",
+    "coverage",
+    "profiles",
+    "side_effect_classes",
+    "error_taxonomy",
+    "tools"
+  ],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schema_version": { "const": "2.0" },
+    "contract_version": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["pilot", "preview", "stable"] },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "mode",
+        "canonical_tool_count",
+        "target_canonical_tool_count",
+        "public_name_count",
+        "target_public_name_count"
+      ],
+      "properties": {
+        "mode": { "enum": ["pilot", "complete"] },
+        "canonical_tool_count": { "type": "integer", "minimum": 1 },
+        "target_canonical_tool_count": { "type": "integer", "minimum": 1 },
+        "public_name_count": { "type": "integer", "minimum": 1 },
+        "target_public_name_count": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "profiles": {
+      "type": "array",
+      "const": ["skill-only", "marketplace-lite", "full"]
+    },
+    "profile_aliases": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "uniqueItems": true
+      }
+    },
+    "side_effect_classes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "read",
+          "local-config-write",
+          "local-reference-write",
+          "project-write",
+          "network",
+          "loopback-listener",
+          "process-launch",
+          "agent-launch"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "error_taxonomy": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["retryable", "redaction_required"],
+        "properties": {
+          "retryable": { "type": "boolean" },
+          "redaction_required": { "type": "boolean" },
+          "description": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/tool" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "alias": {
+      "type": "object",
+      "required": ["name", "kind", "introduced_in", "deprecated_in", "remove_after"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^qiongli_[a-z0-9_]+$" },
+        "kind": { "enum": ["compatibility"] },
+        "introduced_in": { "type": "string", "minLength": 1 },
+        "deprecated_in": { "type": ["string", "null"] },
+        "remove_after": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "required": ["exposure", "error_transport"],
+      "properties": {
+        "exposure": { "enum": ["tool", "metadata-only", "unavailable"] },
+        "input_schema_ref": { "type": "string", "minLength": 1 },
+        "output_schema_ref": { "type": "string", "minLength": 1 },
+        "error_transport": {
+          "enum": ["json-rpc", "tool-result", "json-rpc-and-tool-result", "not-applicable"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "sideEffect": {
+      "type": "object",
+      "required": ["class", "mode"],
+      "properties": {
+        "class": { "type": "string", "minLength": 1 },
+        "mode": { "enum": ["always", "conditional", "deferred"] },
+        "trigger": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "tool": {
+      "type": "object",
+      "required": [
+        "name",
+        "description",
+        "aliases",
+        "maturity",
+        "lifecycle",
+        "profiles",
+        "errors",
+        "side_effects",
+        "security",
+        "smoke_call_ids"
+      ],
+      "properties": {
+        "name": { "type": "string", "pattern": "^qiongli_[a-z0-9_]+$" },
+        "description": { "type": "string", "minLength": 1 },
+        "aliases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/alias" },
+          "uniqueItems": true
+        },
+        "maturity": { "enum": ["stable", "preview", "experimental", "deprecated"] },
+        "lifecycle": {
+          "type": "object",
+          "required": ["introduced_in", "deprecated_in", "remove_after"],
+          "properties": {
+            "introduced_in": { "type": "string", "minLength": 1 },
+            "deprecated_in": { "type": ["string", "null"] },
+            "remove_after": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "profiles": {
+          "type": "object",
+          "required": ["skill-only", "marketplace-lite", "full"],
+          "properties": {
+            "skill-only": { "$ref": "#/$defs/profile" },
+            "marketplace-lite": { "$ref": "#/$defs/profile" },
+            "full": { "$ref": "#/$defs/profile" }
+          },
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "side_effects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sideEffect" }
+        },
+        "security": {
+          "type": "object",
+          "required": [
+            "accepts_secret_input",
+            "raw_secret_output",
+            "redaction_required",
+            "sensitive_output_paths",
+            "notes"
+          ],
+          "properties": {
+            "accepts_secret_input": { "type": "boolean" },
+            "raw_secret_output": { "const": "forbidden" },
+            "redaction_required": { "type": "boolean" },
+            "sensitive_output_paths": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^/" },
+              "uniqueItems": true
+            },
+            "profile_sensitive_output_paths": {
+              "type": "object",
+              "minProperties": 1,
+              "properties": {
+                "marketplace-lite": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^/" },
+                  "uniqueItems": true
+                },
+                "full": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^/" },
+                  "uniqueItems": true
+                }
+              },
+              "additionalProperties": false
+            },
+            "notes": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "smoke_call_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

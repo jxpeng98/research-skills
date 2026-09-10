@@ -1,0 +1,11 @@
+id: review-of-financial-studies
+display_name: "Review of Financial Studies"
+discipline: finance
+quality_bar:
+  - "Design, model, and evidence must identify a finance mechanism."
+  - "Factor exposure, endogeneity, timing, and robustness threats must be handled directly."
+  - "The paper must show theoretical and empirical contribution."
+fit_notes:
+  - "Best fit for rigorous empirical or theoretical finance with strong mechanism."
+  - "Use transparent risk adjustment and inference diagnostics."
+  - "Avoid descriptive anomalies without mechanism or benchmark discipline."

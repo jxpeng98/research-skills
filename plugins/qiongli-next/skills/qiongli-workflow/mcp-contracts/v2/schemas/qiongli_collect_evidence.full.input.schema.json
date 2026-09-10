@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_collect_evidence.full.input.v2.json",
+  "title": "qiongli_collect_evidence full input",
+  "type": "object",
+  "required": [
+    "provider",
+    "task_packet"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string"
+    },
+    "task_packet": {
+      "type": "object"
+    },
+    "cwd": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_test_provider.full.output.v2.json",
+  "title": "qiongli_test_provider full structured output",
+  "type": "object",
+  "required": [
+    "provider",
+    "status",
+    "configured",
+    "fields"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "configured",
+        "missing"
+      ]
+    },
+    "configured": {
+      "type": "boolean"
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

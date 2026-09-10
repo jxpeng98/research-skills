@@ -1,0 +1,19 @@
+skills:
+  - id: finance-identification-risk-auditor
+    stage: C_design
+    version: "0.13.0"
+    file: skills/C_design/finance-identification-risk-auditor.md
+    canonical: true
+    summary: "Audit finance identification, risk adjustment, return construction, factor exposure, and bias controls."
+    display_name: "Finance Identification And Risk Auditor"
+    when_to_use: "Use when a finance paper needs asset pricing, corporate finance, market microstructure, event-study, or risk-adjusted design checks."
+    summary_zh: "审计金融学识别、风险调整、收益构造、因子暴露和偏误控制。"
+    display_name_zh: "金融识别与风险审计"
+    when_to_use_zh: "当金融学论文需要资产定价、公司金融、市场微观结构、事件研究或风险调整设计检查时使用。"
+    inputs: [DesignSpec, DataDictionary, AnalysisPlan]
+    outputs: [FinanceIdentificationRiskAudit]
+    tags: [finance, asset-pricing, corporate-finance, risk-adjusted, identification]
+    depends_on: [study-designer, robustness-planner, stats-engine, data-dictionary-builder]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true

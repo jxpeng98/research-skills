@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "type": "object",
+  "required": ["version", "providers"],
+  "properties": {
+    "version": { "type": "integer" },
+    "providers": {
+      "type": "object",
+      "properties": {
+        "openalex": { "$ref": "#/$defs/openalex" },
+        "semantic_scholar": { "$ref": "#/$defs/semanticScholar" },
+        "crossref": { "$ref": "#/$defs/crossref" },
+        "pubmed": { "$ref": "#/$defs/pubmed" },
+        "arxiv": { "$ref": "#/$defs/arxiv" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "openalex": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "api_key": { "type": "string", "x-qiongli-field-role": "activation_required" },
+        "email": { "type": "string", "x-qiongli-field-role": "optional" }
+      },
+      "additionalProperties": false
+    },
+    "semanticScholar": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "api_key": { "type": "string", "x-qiongli-field-role": "activation_required" }
+      },
+      "additionalProperties": false
+    },
+    "crossref": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "email": { "type": "string", "x-qiongli-field-role": "activation_required" }
+      },
+      "additionalProperties": false
+    },
+    "pubmed": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "api_key": { "type": "string", "x-qiongli-field-role": "activation_required" }
+      },
+      "additionalProperties": false
+    },
+    "arxiv": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "x-qiongli-env-aliases": {
+    "openalex.api_key": ["QIONGLI_OPENALEX_API_KEY", "OPENALEX_API_KEY", "QIONGLI_MCPB_OPENALEX_API_KEY"],
+    "openalex.email": ["QIONGLI_OPENALEX_EMAIL", "OPENALEX_EMAIL", "QIONGLI_MCPB_OPENALEX_EMAIL"],
+    "semantic_scholar.api_key": ["QIONGLI_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY", "S2_API_KEY", "QIONGLI_MCPB_SEMANTIC_SCHOLAR_API_KEY"],
+    "crossref.email": ["QIONGLI_CROSSREF_EMAIL", "CROSSREF_EMAIL", "QIONGLI_MCPB_CROSSREF_EMAIL"],
+    "pubmed.api_key": ["QIONGLI_NCBI_API_KEY", "NCBI_API_KEY", "PUBMED_API_KEY", "QIONGLI_MCPB_PUBMED_API_KEY"]
+  }
+}

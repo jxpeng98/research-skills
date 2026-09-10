@@ -1,0 +1,19 @@
+skills:
+  - id: business-journal-positioning-auditor
+    stage: C_design
+    version: "0.13.0"
+    file: skills/C_design/business-journal-positioning-auditor.md
+    canonical: true
+    summary: "Audit business and management manuscripts for theory contribution, construct clarity, setting fit, and journal positioning."
+    display_name: "Business Journal Positioning Auditor"
+    when_to_use: "Use when a business, management, strategy, organization, marketing, or operations paper needs doctoral-level journal contribution and positioning checks."
+    summary_zh: "审计商业与管理学论文的理论贡献、构念清晰度、场景契合和期刊定位。"
+    display_name_zh: "商业管理期刊定位审计"
+    when_to_use_zh: "当商业、管理、战略、组织、营销或运营论文需要博士及以上期刊贡献与定位检查时使用。"
+    inputs: [DesignSpec, LiteratureMap, Manuscript]
+    outputs: [BusinessJournalPositioningAudit]
+    tags: [business, management, theory-contribution, journal-positioning]
+    depends_on: [study-designer, theory-mapper, contribution-crafter, venue-analyzer]
+    compatible_models: [codex, claude, gpt]
+    tooling_requirements: [filesystem]
+    domain_aware: true

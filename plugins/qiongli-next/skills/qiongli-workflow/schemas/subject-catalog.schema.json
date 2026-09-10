@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/subject-catalog.schema.json",
+  "title": "Qiongli Subject Catalog",
+  "type": "object",
+  "required": ["subjects"],
+  "properties": {
+    "subjects": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["display_name", "package_goal", "skill_groups"],
+        "properties": {
+          "display_name": {"type": "string", "minLength": 1},
+          "extends": {"type": "string", "minLength": 1},
+          "package_goal": {"type": "string", "minLength": 1},
+          "domain_profiles": {"type": "array", "items": {"type": "string"}},
+          "venue_profiles": {"type": "array", "items": {"type": "string"}},
+          "template_refs": {"type": "array", "items": {"type": "string"}},
+          "skill_overrides": {"type": "array", "items": {"type": "object"}},
+          "subject_specific_skill_refs": {"type": "array", "items": {"type": "string"}},
+          "skill_groups": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["order", "heading", "subheading", "skill_refs"],
+              "properties": {
+                "order": {"type": "integer", "minimum": 1},
+                "heading": {"type": "string", "minLength": 1},
+                "subheading": {"type": "string", "minLength": 1},
+                "stages": {"type": "array", "items": {"type": "string"}},
+                "task_ids": {"type": "array", "items": {"type": "string"}},
+                "skill_refs": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

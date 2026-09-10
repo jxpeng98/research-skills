@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_orchestrator_route.full.output.v2.json",
+  "title": "qiongli_orchestrator_route full structured output",
+  "type": "object",
+  "required": [
+    "route",
+    "recommended_tool",
+    "requires_full_runtime",
+    "platform",
+    "platform_note",
+    "why",
+    "sequence",
+    "missing",
+    "safety"
+  ],
+  "properties": {
+    "route": {
+      "enum": [
+        "orchestrator_mcp",
+        "skill_workflow"
+      ]
+    },
+    "recommended_tool": {
+      "type": "string"
+    },
+    "requires_full_runtime": {
+      "type": "boolean"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "platform_note": {
+      "type": "string"
+    },
+    "why": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sequence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "missing": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "safety": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -3,15 +3,21 @@
 Codex is the primary development and verification Host. The corpus contains 24
 paired English/Chinese requests (48 cases), covering applicability, adjacent
 intents, bounded scope and continuation. Inputs are synthetic and require neither
-private research nor Host registration. V2 preserves every v1 request verbatim.
+private research nor Host registration. The current corpus retains 46 previous
+requests and replaces the ambiguous Claim C1 denial pair with explicitly named
+Academic Graph verification under new case IDs. Historical snapshots retain the
+old requests and scores; the new pair cannot regrade those old inputs.
 
 The probe supplies only `content/workflow/SKILL.md`, a preceding version of that
 entry, or no entry. Expected labels are held out of the prompt. V2 separates:
 
 - `route`: primary execution workflow, card or operation reference for the work
-  still needed; a discovery index is not a primary task route.
+  still needed; a capability/permission block does not replace that task with
+  an access operation. Applying an already-drafted change is itself an operation.
+  A discovery index is not a primary task route.
 - `resource_route`: a separate discovery/project-access prerequisite, or `none`.
-  These labels describe intended prerequisites, not observed resource reads.
+  This includes currently blocked dependencies and does not authorize access or
+  retry. These labels describe prerequisites, not observed resource reads.
 - `scope`: `direct` bounded chat work or a `formal` named deliverable/workflow.
 - `next_action`: the current text-only response — `answer`, `request_evidence`
   for missing user-supplied material, or `report_blocked` for unavailable project
@@ -85,5 +91,42 @@ text. One small sample does not establish superiority or latency improvement.
 Actual registered-Codex activation/resource/tool evidence remains separate;
 other Hosts adapt shared cases after Codex rather than gain independent workflows.
 
+## Observed resource reads (test-only)
+
+`--read-resources` supplies the current entry and exposes one local MCP tool,
+`read_resource(path)`. It serves an immutable in-memory snapshot of canonical
+`content/` files with the existing bundle path mapping (`workflow/` is stripped).
+It has no arbitrary filesystem or project access. The snapshot includes repository
+changes that may be unpublished; running a real capture sends the entry, synthetic
+request and any requested resource contents to the configured model service.
+
+```sh
+.venv/bin/python evals/skill_routing/probe.py capture /private/tmp/qiongli-resource-reads \
+  --read-resources --case results-interpretation-boundary-en \
+  --case continuation-academic-graph-denied-read-en --case generic-mean-function-en
+```
+
+This lane uses a distinct capture kind, `codex-resource-reading-v1`, plus reader
+source and resource snapshots. The producer uses the same configured model and
+per-invocation isolation; only the test reader is enabled. No Host registration or
+production MCP interface is added. Historical-entry/no-Skill arms are unavailable
+in this lane to avoid combining an entry with unrelated current resource bytes.
+
+Scoring requires matched successful MCP start/completion events, exact path and
+returned content matching the snapshot, and a final answer after reads. Failed,
+malformed, unexpected or incomplete calls fail closed. Tool-shaped answer text
+cannot count as a read. Existing intent-only captures continue rejecting tools.
+The existing V1 suite checks actual primary/prerequisite reads independently of
+self-reported labels. Generic non-Qiongli requests require zero resource reads.
+Reports retain paths and total/unique read counts; duplicates are visible, without
+inventing an efficiency threshold. Both capture-time reader source and the current
+read scorer's hash are recorded separately.
+
+These are observed deliveries through a test interface, not proof of installed
+Skill activation, comprehension of every returned word, native MCP resource
+support or a live project operation. Supplied denial scenarios remain synthetic.
+Keep actual model outcomes distinct from mocked trace/stdio unit checks.
+
 Codex invocation follows the official
-[non-interactive mode documentation](https://developers.openai.com/codex/noninteractive).
+[non-interactive mode documentation](https://developers.openai.com/codex/noninteractive)
+and [MCP tool configuration](https://developers.openai.com/codex/mcp).

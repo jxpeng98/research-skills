@@ -11,6 +11,7 @@ from unittest.mock import patch
 import yaml
 
 from evals.skill_routing import probe
+from evals.skill_routing import resource_reader
 
 
 def trace(response):
@@ -19,6 +20,16 @@ def trace(response):
         {"type": "item.completed", "item": {"id": "1", "type": "agent_message", "text": json.dumps(response)}},
         {"type": "turn.completed"},
     ]))
+
+
+def read_trace(response, resources, path):
+    events = list(map(json.loads, trace(response).splitlines()))
+    item = {"id": "read-1", "type": "mcp_tool_call", "server": resource_reader.SERVER,
+            "tool": resource_reader.TOOL, "arguments": {"path": path}}
+    events[2:2] = [{"type": "item.started", "item": {**item, "status": "in_progress"}},
+                   {"type": "item.completed", "item": {**item, "status": "completed",
+                    "result": resource_reader.read_result(resources, item["arguments"]), "error": None}}]
+    return "\n".join(map(json.dumps, events))
 
 
 def store_trace(output, case_id, response, sources):
@@ -41,7 +52,8 @@ class SkillRoutingProbeTests(unittest.TestCase):
                     self.assertEqual(1, probe.main(["capture", str(root / "capture"), "--report", str(report)]))
                 capture.assert_not_called()
 
-    def capture(self, root, *, raw=None, no_skill=False):
+    def capture(self, root, *, raw=None, no_skill=False, read_resources=False):
+        root.mkdir(parents=True, exist_ok=True)
         cases = probe.load_cases()
         selected = list(cases)[:2]
         response = {key: values[0] for key, values in cases[selected[0]]["expected"].items()}
@@ -54,17 +66,93 @@ class SkillRoutingProbeTests(unittest.TestCase):
             if cmd == ["codex", "--version"]:
                 return subprocess.CompletedProcess(cmd, 0, "codex-cli synthetic", "")
             calls.append((cmd, kwargs))
-            return subprocess.CompletedProcess(cmd, 0, trace(response) if raw is None else raw, "")
+            text = trace(response) if raw is None else raw
+            if read_resources and raw is None:
+                resources = json.loads((output / "resources.json").read_text())
+                text = read_trace(response, resources, response["route"])
+            return subprocess.CompletedProcess(cmd, 0, text, "")
 
         (root / "config.toml").write_text('model="configured-test-model"\nmodel_reasoning_effort="high"\n')
         output = root / "capture"
         with patch.dict(os.environ, {"CODEX_HOME": str(root)}), patch.object(
             probe.subprocess, "run", side_effect=codex
         ), redirect_stdout(io.StringIO()):
-            probe.capture(output, selected, no_skill=no_skill)
+            probe.capture(output, selected, no_skill=no_skill, read_resources=read_resources)
             with self.assertRaises(FileExistsError):
-                probe.capture(output, selected, no_skill=no_skill)
+                probe.capture(output, selected, no_skill=no_skill, read_resources=read_resources)
         return output, selected, response, calls
+
+    def test_resource_capture_requires_actual_matching_reads(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            root = Path(temporary)
+            output, selected, response, calls = self.capture(root, read_resources=True)
+            self.assertTrue(probe.score(output, root / "scores"))
+            manifest, sources, cases = probe.captured_inputs(output, None)
+            self.assertEqual("codex-resource-reading-v1", manifest["kind"])
+            self.assertIn(f'mcp_servers.{resource_reader.SERVER}.enabled_tools=["read_resource"]', calls[0][0])
+            summary = json.loads((root / "scores/summary.json").read_text())
+            self.assertEqual([response["route"]], summary["resource_reads"][selected[0]]["paths"])
+            # A claimed read with a successful text-only trace is insufficient.
+            store_trace(output, selected[0], {**response, "answer": "I read the whole card."}, sources)
+            self.assertFalse(probe.score(output, root / "claimed-only"))
+            changed = json.loads(sources["resources"])
+            changed[response["route"]] = "tampered guidance"
+            probe.write_json(output / "resources.json", changed)
+            with self.assertRaisesRegex(ValueError, "snapshot changed"):
+                probe.score(output, root / "tampered-snapshot")
+
+    def test_resource_mcp_fails_closed_for_bad_results_calls_and_paths(self):
+        resources = {"workflows/paper-read.md": "public guidance"}
+        response = {"route": "workflows/paper-read.md", "resource_route": "none", "scope": "direct",
+                    "next_action": "answer", "answer": "Synthetic answer"}
+        raw = read_trace(response, resources, response["route"])
+        filtered, reads = resource_reader.observed_reads(raw, resources)
+        self.assertEqual(response, probe.trace_observation(filtered, 0))
+        self.assertEqual([response["route"]], reads)
+        with self.assertRaises(ValueError):
+            probe.trace_observation(raw, 0)  # Tool-free intent lane remains strict.
+        events = list(map(json.loads, raw.splitlines()))
+        variants = [events[:2] + events[3:], events[:3] + events[4:], [events[2], *events],
+                    events[:4] + [events[3]] + events[4:]]
+        for field, value in (("server", "unexpected"), ("tool", "project_write"),
+                             ("status", "failed"), ("arguments", {"path": "../../private"}),
+                             ("result", {"content": [{"type": "text", "text": "forged"}]})):
+            changed = json.loads(json.dumps(events))
+            changed[3]["item"][field] = value
+            variants.append(changed)
+        for field, value in (("status", "failed"), ("status", None), ("error", {"message": "denied"}), ("result", {})):
+            changed = json.loads(json.dumps(events))
+            changed[2]["item"][field] = value
+            variants.append(changed)
+        for value in (True, "true", 0, None):
+            changed = json.loads(json.dumps(events))
+            changed[3]["item"]["result"]["isError"] = value
+            variants.append(changed)
+        for invalid in variants:
+            with self.assertRaises(ValueError):
+                resource_reader.observed_reads("\n".join(map(json.dumps, invalid)), resources)
+        for arguments in ({"path": "/etc/passwd"}, {"path": "../private"}, {"path": "missing"}, {"path": 3}, {}):
+            result = resource_reader.dispatch({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                       "params": {"name": "read_resource", "arguments": arguments}}, resources)
+            self.assertTrue(result["result"]["isError"])
+
+    def test_resource_reader_stdio_only_serves_snapshotted_content(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "resources.json"
+            probe.write_json(path, {"card.md": "Synthetic public guidance"})
+            requests = [
+                {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-11-25"}},
+                {"jsonrpc": "2.0", "method": "notifications/initialized"},
+                {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+                {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "read_resource", "arguments": {"path": "card.md"}}},
+            ]
+            result = subprocess.run([probe.sys.executable, resource_reader.__file__, str(path)],
+                                    input="\n".join(map(json.dumps, requests)) + "\n",
+                                    capture_output=True, text=True, check=True)
+            replies = list(map(json.loads, result.stdout.splitlines()))
+            self.assertEqual([1, 2, 3], [reply["id"] for reply in replies])
+            self.assertEqual(["read_resource"], [tool["name"] for tool in replies[1]["result"]["tools"]])
+            self.assertEqual("Synthetic public guidance", replies[2]["result"]["structuredContent"]["text"])
 
     def test_capture_preserves_model_and_stops_on_invalid_trace(self):
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):

@@ -79,7 +79,7 @@ Set-Location .\qiongli-2.0.0-beta.1-windows-x64
 .\qiongli.exe content list
 ```
 
-版本应显示 `qiongli 2.0.0-beta.1`。独立包只提供 `qiongli` 可执行文件；`ql` 别名由 npm / PyPI 安装提供。
+版本应显示 `qiongli 2.0.0-beta.1`。独立包只提供 `qiongli` 可执行文件；`ql` 别名由 npm / PyPI / Cargo 安装提供。
 
 ### 3. 可选：加入 PATH
 
@@ -126,9 +126,6 @@ npm 需要 Node 18+，PyPI 需要 Python 3.9+；两者都提供 `qiongli` 和 `q
 安装后分别用 `--version` 核对版本。通过原包管理器升级包管理器安装的版本。
 
 Cargo 从源码构建同一个 CLI，需要 Rust 1.97+ 和本机链接器。
-
-Cargo 尚待完成发布，上传 crates.io 后才能使用以下命令。
-目前请使用独立二进制、npm 或 PyPI。
 
 ```sh
 cargo install qiongli --version 2.0.0-beta.1 --locked

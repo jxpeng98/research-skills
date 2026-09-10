@@ -72,9 +72,6 @@ Linux 使用系统自带库，要求 glibc 2.35+。
 
 已有 Rust 1.97+ 和本机链接器的用户，也可以通过 Cargo 从源码安装。
 
-Cargo 尚待完成发布，上传 crates.io 后才能使用以下命令。
-目前可直接使用独立二进制、npm 或 PyPI。
-
 ```sh
 cargo install qiongli --version 2.0.0-beta.1 --locked
 ```

@@ -3,7 +3,7 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Published beta.1; Cargo awaiting account verification — September 10
+## Published beta.1 on all distribution channels — September 10
 
 The maintainer requested a beta release and explicitly authorized local Cargo
 publication using the existing login. Candidate `2.0.0-beta.1` / PyPI `2.0.0b1`
@@ -57,26 +57,49 @@ of those pins during legacy sync. All three public catalogs match reviewed bytes
 The generic next entry stays on alpha.8 and stable stays on 1.17.0. No installed
 Host configuration or private research data was accessed.
 
-Cargo upload reached crates.io using the local login but the first crate was
-rejected with HTTP 400: a verified account email is required. **No crate was
-uploaded.** The user has been asked to verify the email at
-`https://crates.io/settings/profile`; release notes and current install guidance
-disclose that Cargo is pending. This is an account gate, not a packaging failure.
-Upload log: `/private/tmp/qiongli-beta1-cargo-publish.log`. Frozen staged source:
-`/private/tmp/qiongli-beta1-cargo-local/cargo-source`, bound by
-`/private/tmp/qiongli-beta1-cargo-frozen-source.json`.
+The first Cargo upload was rejected because the account email was unverified;
+no crate was uploaded in that attempt. After the user verified the email, the
+same frozen source passed normal Cargo verification and published five crates.
+crates.io then enforced its new-crate limit: five initially, then one per ten
+minutes. Each remaining version was checked for absence before publishing its
+crate at the permitted time. All nine are now public; the main `qiongli` crate
+was published at **2026-09-10 21:34:13 UTC**. No token was copied to CI.
 
-After user verification, inspect existing registry versions before uploading
-only missing packages from this same source with normal Cargo verification.
-Then dispatch `publish-cargo.yml` on `v2.0.0-beta.1` with `verify_public=true`,
-verify public Cargo installs, and clear the availability notice. Do not retag or
-replace existing beta assets. Channel evidence is retained in
-`tooling/release/acceptance/v2.0.0-beta.1-distribution.json`; CLI-410 stays active.
-Documentation source is updated; no separate website deployment was performed.
-The final availability/evidence update passed 17 documentation/roadmap checks,
-evidence consistency checks and the VitePress build. Logs:
-`/private/tmp/qiongli-beta1-publication-docs-tests.log` and
-`/private/tmp/qiongli-beta1-publication-docs-build.log`.
+All nine public downloads and registry checksums match the qualified archives
+and actual upload bytes. The staged source still matches all 662 frozen file
+digests. An isolated public Cargo install passed both `qiongli` and `ql`, invalid
+command refusal, embedded content and Lite/Full MCP (**14/32 tools**). Public
+install run **34532954182** passed on macOS ARM64, Windows x64 and Linux x64
+from the exact beta tag. All three downloaded receipts confirm both command
+names, the same content-pack digest, invalid-command refusal and MCP 14/32.
+
+Logs and receipts under `/private/tmp/`:
+`qiongli-beta1-cargo-publish.log` retains the initial email rejection;
+`qiongli-beta1-cargo-publish-verified.log` retains the partial upload/limit;
+`qiongli-beta1-cargo-resumed-publication.json` records the four resumed uploads;
+`qiongli-beta1-cargo-public-downloads/registry-receipt.json` binds public bytes;
+`qiongli-beta1-cargo-public-check/install-check.json` records the local install.
+The staged workspace and manifest remain `qiongli-beta1-cargo-local/cargo-source`
+and `qiongli-beta1-cargo-frozen-source.json`.
+
+README, bilingual CLI guides and release notes now show Cargo as available.
+The earlier availability update passed 17 documentation/roadmap checks and the
+VitePress build. This update's installation prose also passed those 17 checks;
+`npm run docs:build` passed with existing syntax-highlighter/chunk warnings.
+The `pnpm` shim first failed to write its global cache; the existing npm script
+built the same site successfully. Final documentation/roadmap checks and the
+VitePress build passed after the public matrix was recorded. Logs:
+`qiongli-beta1-cargo-final-tests.log`, `qiongli-beta1-cargo-final-docs-build.log`,
+`qiongli-beta1-cargo-docs-tests.log`,
+`qiongli-beta1-cargo-docs-build.log` and `qiongli-beta1-cargo-docs-build-npm.log`.
+
+Channel evidence remains in
+`tooling/release/acceptance/v2.0.0-beta.1-distribution.json`. Published tags and
+asset bytes remain unchanged. Documentation source is updated; no separate
+website deployment was performed. CLI-410 stays active: live Host registration,
+complete research-baseline evidence and managed/App/program acceptance remain
+separate. Next: the bounded Codex-first Skills/source-fidelity increment in the
+master roadmap; documentation-site deployment remains separate.
 
 ## Completed locally: portable runtime and final language pass — September 10
 

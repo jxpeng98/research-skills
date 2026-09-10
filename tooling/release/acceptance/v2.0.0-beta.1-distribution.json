@@ -1,5 +1,5 @@
 {
-  "status": "published-with-cargo-pending",
+  "status": "published-and-verified",
   "version": "2.0.0-beta.1",
   "source_commit": "a9472e2407512ba21572a289aa75b3267955e24d",
   "release": "https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.1",
@@ -219,8 +219,90 @@
     ]
   },
   "cargo": {
-    "status": "blocked-account-email-verification",
-    "uploaded_crates": [],
+    "status": "published",
+    "uploaded_crates": [
+      {
+        "name": "qiongli",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T21:34:13.993924Z",
+        "yanked": false,
+        "checksum": "db362df74d6814f197923deab18b213bf59903738b548d830936414bea18359e",
+        "bytes": 1006000,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-config",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T20:53:48.350045Z",
+        "yanked": false,
+        "checksum": "819d3f61d92068b76cf27a73d6209fe1f06761ae02250e7aceff6b4c16e2b3e3",
+        "bytes": 37833,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-content",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T20:53:41.861299Z",
+        "yanked": false,
+        "checksum": "1c194e7685118479133e7f24dcff434db1e2d5d6b1a42ee8ea059d0cb47f5d93",
+        "bytes": 32754,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-execution",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T21:24:06.128713Z",
+        "yanked": false,
+        "checksum": "cc9918476ab6b46e1df90a28d5092e517272cc4998d3832b7e0676dbe85a3ab1",
+        "bytes": 145229,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-platform",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T20:53:51.739897Z",
+        "yanked": false,
+        "checksum": "4010c0df8729d27e5fad9af0044e3075278f17e0342369593cc3bdf8b7e7e9d2",
+        "bytes": 240184,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-project",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T21:03:58.935902Z",
+        "yanked": false,
+        "checksum": "1c06d69f97e1614ed35c88582ffc2088bd885857c3f6d123adae328a1cd2d94c",
+        "bytes": 251658,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-runtime",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T21:14:04.016881Z",
+        "yanked": false,
+        "checksum": "1332c5fe7623fff7aabd45a23cf47f7afbcf43b23d9aaebccb29003236c18f79",
+        "bytes": 68214,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-ui",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T20:53:44.709538Z",
+        "yanked": false,
+        "checksum": "7cd51bfc5b2b75962bfa48bd738b872ef3252a4087abc228d6804aee0fe03535",
+        "bytes": 70811,
+        "public_download_matches_qualified_archive": true
+      },
+      {
+        "name": "qiongli-windows-security",
+        "version": "2.0.0-beta.1",
+        "created_at": "2026-09-10T20:53:46.035384Z",
+        "yanked": false,
+        "checksum": "5e5c8e3ad799d8d3794bc952a20d10216ac4c92d3099d828ee0a0cd74bccd4c7",
+        "bytes": 8953,
+        "public_download_matches_qualified_archive": true
+      }
+    ],
     "source_packages_verified": 9,
     "local_toolchain": "1.97.0",
     "local_archive_install": {
@@ -294,12 +376,163 @@
         }
       }
     },
-    "publication_error": "crates.io HTTP 400: A verified email address is required to publish crates.",
-    "required_user_action": "Verify the account email at https://crates.io/settings/profile.",
-    "upload_log": "/private/tmp/qiongli-beta1-cargo-publish.log",
+    "upload_log": "/private/tmp/qiongli-beta1-cargo-publish-verified.log",
     "frozen_source_manifest": "/private/tmp/qiongli-beta1-cargo-frozen-source.json",
     "staged_workspace": "/private/tmp/qiongli-beta1-cargo-local/cargo-source",
-    "resume": "Inspect existing versions, publish only missing packages from the frozen release source using normal Cargo verification, then dispatch publish-cargo.yml on v2.0.0-beta.1 with verify_public=true."
+    "initial_attempt": {
+      "status": "blocked-account-email-verification",
+      "publication_error": "crates.io HTTP 400: A verified email address is required to publish crates.",
+      "upload_log": "/private/tmp/qiongli-beta1-cargo-publish.log",
+      "uploaded_crates": []
+    },
+    "rate_limit": {
+      "http_status": 429,
+      "rule": "New crates: burst of five, then one additional crate every ten minutes.",
+      "source": "https://crates.io/docs/rate-limits",
+      "resolved": true
+    },
+    "public_registry_checked_at": "2026-09-10T21:35:37.738448+00:00",
+    "registry_url": "https://crates.io/crates/qiongli/2.0.0-beta.1",
+    "local_public_install": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [],
+      "checks": {
+        "cargo": {
+          "version": "2.0.0-beta.1",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+        },
+        "cargo_alias": {
+          "version": "2.0.0-beta.1",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+        }
+      }
+    },
+    "local_public_install_log": "/private/tmp/qiongli-beta1-cargo-public-install.log",
+    "resumed_uploads": [
+      {
+        "name": "qiongli-project",
+        "version": "2.0.0-beta.1",
+        "checksum": "1c06d69f97e1614ed35c88582ffc2088bd885857c3f6d123adae328a1cd2d94c",
+        "created_at": "2026-09-10T21:03:58.935902Z",
+        "upload_log": "/private/tmp/qiongli-beta1-cargo-publish-qiongli-project.log"
+      },
+      {
+        "name": "qiongli-runtime",
+        "version": "2.0.0-beta.1",
+        "checksum": "1332c5fe7623fff7aabd45a23cf47f7afbcf43b23d9aaebccb29003236c18f79",
+        "created_at": "2026-09-10T21:14:04.016881Z",
+        "upload_log": "/private/tmp/qiongli-beta1-cargo-publish-qiongli-runtime.log"
+      },
+      {
+        "name": "qiongli-execution",
+        "version": "2.0.0-beta.1",
+        "checksum": "cc9918476ab6b46e1df90a28d5092e517272cc4998d3832b7e0676dbe85a3ab1",
+        "created_at": "2026-09-10T21:24:06.128713Z",
+        "upload_log": "/private/tmp/qiongli-beta1-cargo-publish-qiongli-execution.log"
+      },
+      {
+        "name": "qiongli",
+        "version": "2.0.0-beta.1",
+        "checksum": "db362df74d6814f197923deab18b213bf59903738b548d830936414bea18359e",
+        "created_at": "2026-09-10T21:34:13.993924Z",
+        "upload_log": "/private/tmp/qiongli-beta1-cargo-publish-qiongli.log"
+      }
+    ],
+    "public_install_ci": {
+      "databaseId": 34532954182,
+      "headSha": "a9472e2407512ba21572a289aa75b3267955e24d",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/jxpeng98/qiongli/actions/runs/34532954182",
+      "platforms": {
+        "ubuntu-22.04": {
+          "status": "passed",
+          "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+          "packages": [],
+          "checks": {
+            "cargo": {
+              "version": "2.0.0-beta.1",
+              "invalid_command_rejected": true,
+              "mcp_tools": {
+                "lite": 14,
+                "full": 32
+              },
+              "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+            },
+            "cargo_alias": {
+              "version": "2.0.0-beta.1",
+              "invalid_command_rejected": true,
+              "mcp_tools": {
+                "lite": 14,
+                "full": 32
+              },
+              "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+            }
+          }
+        },
+        "macos-14": {
+          "status": "passed",
+          "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+          "packages": [],
+          "checks": {
+            "cargo": {
+              "version": "2.0.0-beta.1",
+              "invalid_command_rejected": true,
+              "mcp_tools": {
+                "lite": 14,
+                "full": 32
+              },
+              "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+            },
+            "cargo_alias": {
+              "version": "2.0.0-beta.1",
+              "invalid_command_rejected": true,
+              "mcp_tools": {
+                "lite": 14,
+                "full": 32
+              },
+              "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+            }
+          }
+        },
+        "windows-2022": {
+          "status": "passed",
+          "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+          "packages": [],
+          "checks": {
+            "cargo": {
+              "version": "2.0.0-beta.1",
+              "invalid_command_rejected": true,
+              "mcp_tools": {
+                "lite": 14,
+                "full": 32
+              },
+              "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+            },
+            "cargo_alias": {
+              "version": "2.0.0-beta.1",
+              "invalid_command_rejected": true,
+              "mcp_tools": {
+                "lite": 14,
+                "full": 32
+              },
+              "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+            }
+          }
+        }
+      }
+    }
   },
   "artifacts": [
     {

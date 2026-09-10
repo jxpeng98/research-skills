@@ -72,9 +72,6 @@ GitHub's automatic **Source code** downloads. Host applications and online servi
 
 Cargo builds from source with Rust 1.97+ and a native linker.
 
-Cargo publication is pending; use the command below once the crates.io upload
-is complete. Standalone downloads, npm and PyPI are available now.
-
 ```sh
 cargo install qiongli --version 2.0.0-beta.1 --locked
 ```

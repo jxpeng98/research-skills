@@ -116,19 +116,21 @@ remain pending. Stage consolidation now applies the existing Humanizer before
 preview/save, preserving evidence, structured history and user-only retention
 decisions. The current plan records local packaging and language-pass evidence.
 
-September 10 beta publication: **2.0.0-beta.1** is now on GitHub, npm `next`
-and PyPI `2.0.0b1`. Native builds/combined installs and Cargo source/archive
+September 10 beta publication: **2.0.0-beta.1** is now on GitHub, npm `next`,
+crates.io and PyPI `2.0.0b1`. Native builds/combined installs and Cargo source/archive
 checks passed on all three systems at `a9472e24`. Public bytes and Marketplace
-platform entries are verified. Cargo's local upload is blocked solely by the
-account's unverified email; no crate was uploaded. The current plan and channel
-evidence retain the exact resume path. No managed/App or live-Host acceptance
-is promoted by this publication.
+platform entries are verified. After email verification and the registry's
+new-crate waiting periods, all nine Cargo crates were published from the frozen
+source. Public crate downloads match qualified bytes; isolated macOS registry
+installation passed both commands and Lite/Full MCP. Three-platform public Cargo
+run `34532954182` passed on macOS, Windows and Linux. No managed/App or live-Host acceptance is
+promoted by this publication.
 
 | Horizon | Ordered work |
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
-| **NOW** | Beta.1 is published from `a9472e24` on GitHub, npm `next` and PyPI. Native run `34525953141` passed three-platform builds/final installs; Cargo run `34525994551` passed source/archive checks. Public files match CI. Skillsplace `39c8963` publishes explicit native platform entries; stable stays 1.17.0 and generic next stays alpha.8. Local Cargo upload awaits verified account email. Prior bounded Host evidence remains at `dfebb17c`; full program and managed/App acceptance remain separate. |
-| **NEXT** | Codex-first Skills quality: two bounded evidence-journey cases now check reading-to-manuscript and direct-source scopes through the existing V1 owner. Required outputs follow the task; prose/order/reuse stay flexible, while requested claims, active source links, evidence limits and source bytes remain constrained. Offline receipts pass 16/13 assertions, with missing/stale/mislinked evidence regressions. These are test observations, not full Markdown or semantic verification. Next bind actual Codex answers to these fixed synthetic inputs and review source fidelity, causal limits and unnecessary work alongside structural checks. Original resource-read score stays 4/6; no new model result is claimed. Other Agents adapt shared contracts; Host registration stays paused. Cargo now needs account email verification, the authorized local upload, and public registry installs; source qualification passed. Acceptance stays separate. |
+| **NOW** | Beta.1 is published from `a9472e24` on GitHub, npm `next`, PyPI and crates.io. Native run `34525953141` passed three-platform builds/final installs; Cargo run `34525994551` passed source/archive checks. Public files match CI. Skillsplace `39c8963` publishes explicit native platform entries; stable stays 1.17.0 and generic next stays alpha.8. All nine Cargo crates are public and match qualified bytes; isolated macOS registry installation passed. Public Cargo matrix `34532954182` passed on all three platforms. Prior bounded Host evidence remains at `dfebb17c`; full program and managed/App acceptance remain separate. |
+| **NEXT** | Codex-first Skills quality: two bounded evidence-journey cases now check reading-to-manuscript and direct-source scopes through the existing V1 owner. Required outputs follow the task; prose/order/reuse stay flexible, while requested claims, active source links, evidence limits and source bytes remain constrained. Offline receipts pass 16/13 assertions, with missing/stale/mislinked evidence regressions. These are test observations, not full Markdown or semantic verification. Next bind actual Codex answers to these fixed synthetic inputs and review source fidelity, causal limits and unnecessary work alongside structural checks. Original resource-read score stays 4/6; no new model result is claimed. Other Agents adapt shared contracts; Host registration stays paused. Cargo publication and all three public registry installs are complete. Acceptance stays separate. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 

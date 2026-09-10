@@ -22,6 +22,7 @@ main(argv: list[str] | None = None) -> int
 run_evals(
     case_dir: Path,
     fixture_root: Path | None = None,
+    receipt_root: Path | None = None,
 ) -> EvalRunResult
 ```
 
@@ -30,11 +31,13 @@ python evals/runner/run_eval.py CASE [OUTPUT_DIR]
     [--json-receipt PATH] [--junit-receipt PATH]
 
 python evals/runner/run_suite.py [CASE_DIR] [--fixture-root PATH]
+    [--receipt-root PATH]
 ```
 
-The Python API remains boolean. The CLI exits `0` only for `True`, otherwise
-it exits non-zero. Receipt flags are independent and opt-in; without either
-flag, the Python and CLI paths remain read-only.
+The single-case Python API remains boolean; the suite returns `EvalRunResult`.
+The CLI exits `0` only on success. Receipts remain opt-in; without receipt
+arguments, the Python and CLI paths remain read-only. `receipt_root` writes one
+existing canonical JSON receipt per case, named `<case-file-stem>.json`.
 
 ## 3. Contracts
 
@@ -42,7 +45,8 @@ The suite result preserves `case_count`, `passed_cases`, `failed_cases`, and a
 derived `success`. With no arguments, the command resolves the repository's 12
 academic-quality cases and fixtures from its own file location, independent of
 the process working directory. Explicit case and fixture roots remain available
-for focused runs. Cases are sorted by filename and each delegates to `run_case`;
+for focused runs. Cases are sorted by filename and each delegates to `run_case`
+(or its CLI with `--json-receipt` when receipts are requested), evaluating once;
 the suite succeeds only when at least one case ran and every case passed.
 
 `tooling/scripts/run_academic_quality_evals.py` and the root `scripts/` entry

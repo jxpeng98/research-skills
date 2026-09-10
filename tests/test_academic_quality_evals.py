@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import shutil
 import subprocess
 import sys
@@ -112,6 +113,26 @@ class AcademicQualityEvalTests(unittest.TestCase):
         self.assertNotIn("\n  push:\n", workflow)
         self.assertEqual(1, workflow.count("python evals/runner/run_suite.py"))
         self.assertNotIn("run_academic_quality_evals.py", workflow)
+
+    def test_optional_suite_receipts_preserve_pass_fail_and_missing_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            root = Path(temporary)
+            case_dir, fixtures = root / "cases", root / "fixtures"
+            case_dir.mkdir()
+            name = "q2-unsupported-claim"
+            shutil.copy2(CASE_DIR / f"{name}.yaml", case_dir)
+            shutil.copytree(FIXTURE_ROOT / name, fixtures / name)
+            artifact = fixtures / name / "quality_findings.md"
+            for label, content in (("valid", artifact.read_text()), ("wrong", "unrelated"), ("missing", None)):
+                if content is None:
+                    artifact.unlink()
+                else:
+                    artifact.write_text(content)
+                self.assertEqual(label == "valid", run_evals(case_dir, fixtures, root / label).success)
+                receipt = json.loads((root / label / f"{name}.json").read_text())
+                self.assertEqual(label == "valid", receipt["case"]["status"] == "pass")
+                if label == "missing":
+                    self.assertGreater(receipt["summary"]["required_missing"], 0)
 
     def test_all_cases_use_v1_inputs_and_contained_fixture_assertions(self) -> None:
         self.assertEqual(EXPECTED_CASES, {path.name for path in CASE_DIR.glob("*.yaml")})

@@ -1,66 +1,89 @@
 # Codex routing intent probe
 
-Codex is the primary development and verification Host. This corpus contains 24
-paired English/Chinese requests (48 cases) for entry applicability, adjacent
-intents, bounded scope and continuation. Inputs are synthetic, contain no private
-research, and require no Host registration.
+Codex is the primary development and verification Host. The corpus contains 24
+paired English/Chinese requests (48 cases), covering applicability, adjacent
+intents, bounded scope and continuation. Inputs are synthetic and require neither
+private research nor Host registration. V2 preserves every v1 request verbatim.
 
-The probe supplies only the canonical `content/workflow/SKILL.md`. Codex returns
-its intended primary route, scope, next needed action, and an actual text answer.
-Expected labels are held out of the prompt. These are **self-reported intentions**,
-not observed automatic Skill activation or resource reads. Only JSONL text and
-reasoning items are allowed; tool items, unknown events, failed/incomplete turns,
-nonzero exits, stale bindings and missing responses fail closed. Do not interpret
-zero tool calls in this tool-disabled setup as evidence of efficient live execution.
+The probe supplies only `content/workflow/SKILL.md`, a preceding version of that
+entry, or no entry. Expected labels are held out of the prompt. V2 separates:
 
-The primary route belongs to the work still needed. Drafting a corrected passage
-uses academic writing; applying an already-drafted change after its approved
-revision became stale uses the existing project-operation reference. This does
-not turn native runtime routing into an academic semantic classifier.
+- `route`: primary execution workflow, card or operation reference for the work
+  still needed; a discovery index is not a primary task route.
+- `resource_route`: a separate discovery/project-access prerequisite, or `none`.
+  These labels describe intended prerequisites, not observed resource reads.
+- `scope`: `direct` bounded chat work or a `formal` named deliverable/workflow.
+- `next_action`: the current text-only response — `answer`, `request_evidence`
+  for missing user-supplied material, or `report_blocked` for unavailable project
+  tools/independent review or denied access. Future steps belong in the answer.
 
-Use Python 3.11+ with the repository's existing PyYAML environment and an
-authenticated Codex CLI. The initial capture is verified with CLI 0.153.4. CLI
-authentication is reused; credentials are never copied into the run. The default
-OpenAI provider's configured model and reasoning effort are retained. Profiles
-and custom providers are currently unsupported, and require a separate adapter.
-Per-invocation isolation disables user config, Host Skill discovery, plugins,
-connectors and execution tools. It does not change installed configuration.
+`answer` contains the actual bounded response and requires separate human review.
+These are **self-reported intentions**, not automatic activation, full-card
+execution, live project/CAS checks or research-quality acceptance. Only JSONL text
+and reasoning items are allowed; tool items, unknown events, failed/incomplete
+turns, nonzero exits, altered bindings and missing answers fail closed. Zero tool
+calls in this tool-disabled setting do not establish efficient live execution.
+
+Use Python 3.11+, the repository's existing PyYAML environment, and authenticated
+Codex CLI (verified with 0.153.4). The default OpenAI provider's configured model
+and reasoning effort are retained. Profiles and custom providers need a separate
+adapter. Per-invocation isolation disables user config, Host Skill discovery,
+plugins, connectors and execution tools without changing installed configuration
+or copying credentials. Captures stop on a Host/trace failure or timeout, without
+automatic retries; unattempted selected cases stay in the denominator.
 
 ```sh
-# Offline grader and malformed/missing/stale-evidence checks; no model calls.
-.venv/bin/python -m unittest tests.test_skill_routing_probe
+# Offline checks; no model calls.
+.venv/bin/python -m unittest tests.test_skill_routing_probe tests.test_academic_quality_evals
 
-# Use a NEW directory outside the repository. Omit --case to capture all 48.
-.venv/bin/python evals/skill_routing/probe.py capture /private/tmp/qiongli-codex-intents
+# Always use new capture/report directories. Omit --case to capture all 48.
+.venv/bin/python evals/skill_routing/probe.py capture /private/tmp/qiongli-intents \
+  --case results-interpretation-boundary-en --case results-interpretation-boundary-zh
 
-# Re-score the complete captured selection without another model call.
-.venv/bin/python evals/skill_routing/probe.py score /private/tmp/qiongli-codex-intents
+# Score the captured expectations again, without another model call.
+.venv/bin/python evals/skill_routing/probe.py score /private/tmp/qiongli-intents \
+  --report /private/tmp/qiongli-intents-score-2
+
+# Explicitly change only expectations; requests and case identities must match.
+.venv/bin/python evals/skill_routing/probe.py regrade /private/tmp/qiongli-intents \
+  --grading-corpus evals/skill_routing/cases.yaml --report /private/tmp/qiongli-intents-regrade
+
+# Legacy captures: verify all three source hashes against a local commit.
+.venv/bin/python evals/skill_routing/probe.py regrade /private/tmp/qiongli-codex-baseline-remaining-2 \
+  --legacy-ref 5471486b --adjudications evals/skill_routing/legacy-adjudications.yaml \
+  --report /private/tmp/qiongli-legacy-adjudication
 ```
 
-For a subset, repeat `--case <group-id>-en` or `--case <group-id>-zh`. The summary
-always gives both selected and full-corpus counts. A run directory contains the
-CLI version, configured model/effort, invocation settings, source hashes, per-case
-prompt/trace hashes, raw events, stderr and exit/timing records. Treat those local
-logs as private; do not publish credentials, local configuration or raw reasoning.
-Host failures, invalid traces and timeouts stop capture; remaining selected cases
-stay missing rather than disappearing from the denominator. There is no automatic
-retry. Existing output directories
-are refused so a later run cannot overwrite earlier evidence.
+Capture also scores into `OUTPUT/scores` by default. Other score/regrade commands
+use the complete captured selection; they cannot select only passing cases. New
+runs snapshot the entry, corpus, prompt instruction, response schema and producer
+source. Manifests bind those bytes and record CLI version, configured settings,
+invocation and selection; each response binds its prompt and event SHA-256.
+Current source edits do not invalidate an intact historical capture. Legacy v1
+has no snapshots, so `--legacy-ref` must match entry/corpus/producer hashes; the
+old instruction is read as an AST string literal, never executed. V1 is scored
+with its original three fields, never upgraded by inventing missing v2 evidence.
 
-Scoring generates temporary Evaluation Truth V1 cases and delegates every
-schema assertion and suite result to `evals/runner/run_suite.py`. No core scorer,
-runtime classifier, model manager or dependency is added. Source bindings cover
-the entry, corpus and probe; changed inputs require a new capture. This records
-provenance, not cryptographic attestation against a forged local run directory.
+Regrading writes a new report, preserving raw captures and original scores. The
+report contains normalized observations, generated Evaluation Truth V1 cases,
+canonical per-case JSON receipts, per-field results, original/revised expectations
+and source/grading/scorer bindings. All assertions and suite success use the
+existing `evals/runner/run_suite.py`; there is no second truth evaluator. Hashes
+record provenance, not cryptographic attestation against a forged local run.
+Treat local events, stderr and model responses as private; do not publish raw
+reasoning, credentials or local configuration. Legacy adjudications explicitly
+record post-hoc interpretations, not new model accuracy or improved answers.
 
-Review the actual answers separately for unnecessary questions, scope expansion,
-invented evidence, unsupported completion and preservation of correct text.
-Passing three intent labels does not establish answer quality, true activation,
-full-card execution, research validity, latency superiority or release readiness.
-Continuation here uses supplied state; it does not prove live revision/CAS checks.
-No-Skill / preceding / candidate comparisons and actual registered-Codex tool
-traces remain the next evidence slice. Other Hosts adapt these shared cases and
-contracts after Codex; they do not acquire a separate product workflow.
+For a controlled comparison, use identical case IDs and invocation settings in
+three NEW captures: `--no-skill`, `--entry-ref <preceding-local-commit>`, and the
+default candidate. No-Skill returns `none` for product routing fields; those two
+metrics are **unassessed**, not route hits. Compare only common scope/current-action
+labels and actual answer quality across all three arms; the unequal aggregate
+case scores are not an accuracy ranking. Review source fidelity, unsupported
+completion, unnecessary questions, scope expansion and preservation of correct
+text. One small sample does not establish superiority or latency improvement.
+Actual registered-Codex activation/resource/tool evidence remains separate;
+other Hosts adapt shared cases after Codex rather than gain independent workflows.
 
-Codex invocation and JSONL behavior follow the official
+Codex invocation follows the official
 [non-interactive mode documentation](https://developers.openai.com/codex/noninteractive).

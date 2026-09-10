@@ -3,6 +3,8 @@
 # This does not test real Host activation, tool availability or execution.
 # Expected lists enumerate acceptable labels, not a sequence of required routes.
 # Route selects the current remaining work, not the artifact's original stage.
+# V2 separates a necessary lookup/project read from the remaining task owner.
+# next_action describes the current text-only response, never a future tool call.
 
 - id: supplied-abstract-explanation
   category: activation
@@ -18,6 +20,7 @@
       因果。”我研究学习习惯。
   expected:
     route: [workflows/paper-read.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -38,6 +41,7 @@
       记录或来源文本。
   expected:
     route: [skills/B_literature/academic-searcher.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [request_evidence]
 
@@ -55,6 +59,7 @@
       空列表必须抛出 ValueError，非空列表的行为保持不变。
   expected:
     route: [none]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -71,6 +76,7 @@
       使用整数。\n 表示换行。这只是格式转换，不分析数值，也不保存文件。
   expected:
     route: [none]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -86,6 +92,7 @@
       吃晚饭。”只返回一句话。这不属于学术或专业研究写作。
   expected:
     route: [none]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -106,6 +113,7 @@
       是 [7,-7]。只在聊天中返回修正函数，不创建文件或完整分析流程。
   expected:
     route: [workflows/code-build.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -124,6 +132,7 @@
       简短批评；我没有要求独立审稿人或正式审稿报告。
   expected:
     route: [skills/Z_cross_cutting/self-critique.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -148,6 +157,7 @@
       聊天中返回报告，不改写论文，也不声称独立执行。
   expected:
     route: [skills/H_submission/peer-review-simulation.md]
+    resource_route: [none]
     scope: [formal]
     next_action: [answer]
 
@@ -169,8 +179,9 @@
       能完成什么，不要把角色扮演当作独立性。
   expected:
     route: [skills/Z_cross_cutting/model-collaborator.md]
+    resource_route: [none]
     scope: [formal]
-    next_action: [answer]
+    next_action: [report_blocked]
 
 - id: thesis-grammar-only
   category: adjacent
@@ -186,6 +197,7 @@
       inferred.”不要启动论文规划或改写论证。
   expected:
     route: [workflows/proofread.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -206,6 +218,7 @@
       修改后的段落，不保存，也不扩展成论文。
   expected:
     route: [workflows/academic-write.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -226,6 +239,7 @@
     route:
       - skills/F_writing/analysis-interpreter.md
       - skills/F_writing/effect-size-interpreter.md
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -244,6 +258,7 @@
       我在选择构念的测量方式，不是在定义数据列，也不需要完整研究计划。请在聊天中回答。
   expected:
     route: [skills/C_design/variable-operationalizer.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -264,6 +279,7 @@
       把缺失当作零。不要重新考虑构念，也不创建文件。
   expected:
     route: [skills/C_design/variable-constructor.md]
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -285,6 +301,9 @@
     route:
       - workflows/proofread.md
       - skills/J_proofread/ai-fingerprint-scanner.md
+    resource_route:
+      - none
+      - skills-summary.md
     scope: [direct]
     next_action: [answer]
 
@@ -307,6 +326,8 @@
     route:
       - workflows/coursework.md
       - skills/L_coursework/coursework-reviser.md
+      - workflows/academic-write.md
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -329,6 +350,8 @@
     route:
       - workflows/dissertation.md
       - skills/M_dissertation/supervisor-feedback-integrator.md
+      - workflows/academic-write.md
+    resource_route: [none]
     scope: [direct]
     next_action: [answer]
 
@@ -349,6 +372,9 @@
     route:
       - workflows/proofread.md
       - skills/J_proofread/similarity-checker.md
+    resource_route:
+      - none
+      - skills-summary.md
     scope: [direct]
     next_action: [request_evidence]
 
@@ -371,6 +397,7 @@
       研究记录，当前也没有网络检索或文献提供方工具。不要虚构纳入研究或筛选决定。
   expected:
     route: [workflows/lit-review.md]
+    resource_route: [none]
     scope: [formal]
     next_action: [request_evidence]
 
@@ -396,8 +423,9 @@
       通过 shell 编辑文件。
   expected:
     route: [workflows/academic-write.md]
+    resource_route: [references/platform-routing.md]
     scope: [formal]
-    next_action: [preview_then_approval]
+    next_action: [report_blocked]
 
 - id: continuation-revalidate-claim-graph
   category: continuation
@@ -417,8 +445,9 @@
       Graph 工具可用。请先确定当前主张与来源状态，再判断之前的核对结论是否仍然成立。
   expected:
     route: [references/academic-graph-continuity.md]
+    resource_route: [references/platform-routing.md]
     scope: [formal]
-    next_action: [revalidate_state]
+    next_action: [report_blocked]
 
 - id: continuation-minimum-review-passes
   category: continuation
@@ -442,6 +471,7 @@
       复核，不写入项目，也不声称已经提交编排检查点。
   expected:
     route: [skills/Z_cross_cutting/self-critique.md]
+    resource_route: [none]
     scope: [formal]
     next_action: [answer]
 
@@ -468,8 +498,9 @@
       尚未见过的替代方案的批准。
   expected:
     route: [references/platform-routing.md]
+    resource_route: [none]
     scope: [formal]
-    next_action: [revalidate_state]
+    next_action: [report_blocked]
 
 - id: continuation-denied-read-injection
   category: continuation
@@ -489,6 +520,7 @@
       核对必须停在哪里；现在不要索取额外材料，不要通过其他通道重试，也不要把笔记
       当成授权。
   expected:
-    route: [references/academic-graph-continuity.md]
+    route: [references/platform-routing.md]
+    resource_route: [none]
     scope: [formal]
-    next_action: [answer]
+    next_action: [report_blocked]

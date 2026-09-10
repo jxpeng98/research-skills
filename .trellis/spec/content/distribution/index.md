@@ -66,10 +66,12 @@ only on a qualified native GitHub Release, and checks public registry installs.
 Cargo uses exact SemVer and both `qiongli`/`ql`; only the staged manifests permit
 publication. Credentials and successful registry resolution are separate gates.
 Staged manifests normalize CRLF input and write LF explicitly on every platform.
-An explicitly authorized local Cargo upload may use the maintainer's existing
-login after the same source and GitHub release gates. Do not transfer that token
-into CI. With no CI token, the upload step is skipped; dispatch `verify_public`
-on the released source ref after local publication to check all three systems.
+Cargo uploads run through GitHub Actions with the maintainer-configured
+`CARGO_REGISTRY_TOKEN` repository or `crates-io` environment secret. Missing
+credentials fail the publication job; local upload is not a fallback. Manual
+`verify_public` dispatch checks an already published version without uploading.
+The beta.1 local bootstrap remains historical evidence. Trusted Publishing is
+deferred until the maintainer requests that migration.
 
 User-approved local Plugin sources (ADR 0222) reuse the native Codex/Claude
 bundle projectors, include the current executable and use a dedicated

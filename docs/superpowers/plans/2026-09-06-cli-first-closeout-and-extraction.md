@@ -3,6 +3,38 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Cargo publication through GitHub Actions — September 10
+
+The maintainer configured the repository secret `CARGO_REGISTRY_TOKEN` and
+selected GitHub Actions for subsequent Cargo uploads. Base `72d31a5c`; branch
+`codex/cargo-actions-publication`. Read-only GitHub metadata confirms that secret
+was updated at `2026-09-10T22:16:20Z`; no same-name `crates-io` environment secret
+was listed. The secret value was neither read nor copied.
+
+The existing release workflow already consumes that repository secret. Missing
+credentials now fail the upload job instead of reporting a successful skip and
+suggesting local publication. `verify_public` remains an upload-free check of an
+existing registry version. Published-release triggers, three-platform source
+qualification, exact-source native release verification, normal Cargo upload
+verification and public registry installs retain their existing owners.
+CONTRIBUTING and the distribution contract record the Actions-only upload path;
+Trusted Publishing remains deferred. The initial local beta.1 upload below is
+historical evidence, not the default for future versions.
+
+Validation: four registry-packaging checks passed, including execution of the
+actual workflow credential guard with an unset, empty and synthetic nonempty
+token. Missing values fail; the synthetic token is not printed and no skip output
+is emitted. Seven roadmap checks passed after updating the ledger and index.
+Logs: `/private/tmp/qiongli-cargo-actions-tests.log` and
+`/private/tmp/qiongli-cargo-actions-roadmap.log`.
+
+No new version or upload was triggered. Secret presence does not establish its
+crates.io scope or expiry; the next authorized release must establish actual CI
+upload success. The workflow hardening is integrated locally and will travel
+with the next synchronized release candidate. The existing remote workflow can
+already consume the repository secret. CLI-410 and the separate Host/program
+acceptance gaps remain unchanged.
+
 ## Published beta.1 on all distribution channels — September 10
 
 The maintainer requested a beta release and explicitly authorized local Cargo

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       verify_public:
-        description: Verify this ref's version after a local Cargo publication
+        description: Verify this ref's published crates.io version without uploading
         type: boolean
         default: false
   release:
@@ -66,15 +66,13 @@ jobs:
         with:
           python-version: '3.12'
       - uses: dtolnay/rust-toolchain@1.97.0
-      - name: Check initial crates.io credentials
+      - name: Require crates.io publishing token
         id: credentials
         shell: bash
         run: |
           if [[ -z "$CARGO_REGISTRY_TOKEN" ]]; then
-            echo 'No CI token configured; use authorized local Cargo publication, then dispatch verify_public.'
-            echo 'configured=false' >> "$GITHUB_OUTPUT"
-          else
-            echo 'configured=true' >> "$GITHUB_OUTPUT"
+            echo '::error::Configure the CARGO_REGISTRY_TOKEN repository or crates-io environment secret before publishing.'
+            exit 1
           fi
       - name: Verify the published release and exact-source native CI
         env:
@@ -84,7 +82,6 @@ jobs:
           python tooling/scripts/native_release_assets.py verify --root "$RUNNER_TEMP/assets" --version "$RELEASE_TAG" --commit "$GITHUB_SHA" --require-ci
       - name: Publish the staged workspace with Cargo verification
         id: upload
-        if: steps.credentials.outputs.configured == 'true'
         shell: bash
         run: |
           python scripts/native_registry_packages.py --out-dir "$RUNNER_TEMP/cargo-packet"

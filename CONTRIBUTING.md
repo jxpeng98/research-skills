@@ -99,7 +99,12 @@ The existing npm/PyPI workflows publish native assets on a published GitHub
 Release after exact-source CI checks; npm prereleases use `next`, and PyPI uses
 PEP 440 aN/bN versions. Cargo uses `publish-cargo.yml` and the staged workspace
 (ADR 0221), with native archive checks before upload and registry install checks
-afterward. Managed-product activation remains
+afterward. Cargo publication runs through GitHub Actions using the
+`CARGO_REGISTRY_TOKEN` repository or `crates-io` environment secret. A missing
+token fails the publication job; do not fall back to local publication.
+Manual dispatch with `verify_public=true` only checks an already published
+version. Trusted Publishing migration is deferred.
+Managed-product activation remains
 separate. See [ADR 0220](docs/architecture/decisions/0220-three-platform-cli-registry-distribution.md) and
 [ADR 0219](docs/architecture/decisions/0219-cli-github-release-distribution.md).
 Omit `--cli-github` only for the retained legacy/desktop diagnostic lanes.

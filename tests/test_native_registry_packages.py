@@ -4,7 +4,9 @@ import base64
 import csv
 import hashlib
 import io
+import os
 from pathlib import Path
+import subprocess
 import tempfile
 import tarfile
 import tomllib
@@ -12,10 +14,39 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
+import yaml
+
 from tooling.scripts import native_registry_packages as packages
 
 
 class NativeRegistryPackagesTests(unittest.TestCase):
+    def test_cargo_publication_requires_ci_token_without_exposing_it(self):
+        workflow = yaml.safe_load((packages.ROOT / '.github/workflows/publish-cargo.yml').read_text())
+        publish = workflow['jobs']['publish']
+        self.assertEqual(publish['env']['CARGO_REGISTRY_TOKEN'], '${{ secrets.CARGO_REGISTRY_TOKEN }}')
+        credentials = next(step for step in publish['steps'] if step.get('id') == 'credentials')
+        upload = next(step for step in publish['steps'] if step.get('id') == 'upload')
+        self.assertLess(publish['steps'].index(credentials), publish['steps'].index(upload))
+        self.assertNotIn('if', upload)
+        self.assertIn('cargo publish', upload['run'])
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / 'outputs'
+            env = {key: value for key, value in os.environ.items() if key != 'CARGO_REGISTRY_TOKEN'}
+            env['GITHUB_OUTPUT'] = str(output)
+            for token in (None, '', 'test-only-token-not-a-credential'):
+                with self.subTest(token_present=bool(token)):
+                    if token is not None:
+                        env['CARGO_REGISTRY_TOKEN'] = token
+                    result = subprocess.run(['bash', '-e', '-c', credentials['run']],
+                                            env=env, capture_output=True, text=True)
+                    if token:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        self.assertNotIn(token, result.stdout + result.stderr)
+                    else:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn('::error::', result.stdout)
+                    self.assertFalse(output.exists())
+
     def test_cargo_staging_normalizes_windows_manifests(self):
         version = tomllib.loads((packages.NATIVE / 'Cargo.toml').read_text())['workspace']['package']['version']
         read = packages.regular_bytes

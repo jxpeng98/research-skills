@@ -36,6 +36,35 @@ scope. This does not waive tool permissions, Qiongli preview/approval/CAS checks
 or justify fabricated evidence or readiness claims. If guidance forces a pause,
 name the exact resource and blocking requirement so the user can assess it.
 
+## Execution scope and stopping
+
+Choose scope from the requested outcome; these are internal routing decisions,
+not a new menu, CLI option or model setting:
+
+| Outcome | Execution scope | Done when |
+|---|---|---|
+| Explain, compare, find a few sources or make a narrow correction | One primary skill and the source material needed for this question | The requested answer/change is supported, checked and its limits stated |
+| Produce a named research artifact or execute a formal task | The selected workflow's required skills, outputs and applicable gates | That deliverable meets its contract, or its exact remaining blocker is reported |
+| Audit, reproduce, run a full lifecycle or obtain independent review | The explicitly requested stages and available authorized reviewers | Required checks pass, or unresolved issues and unavailable checks are reported |
+
+Treat skill cards as a reference library. A card mentioning another skill or
+stage does not automatically schedule it. Add a supporting skill only to resolve
+a concrete missing input, method, output or gate of the current task. Reuse
+already loaded guidance and verified results when their inputs have not changed.
+Project presence, a technical topic or a strong model does not widen the scope.
+
+Check scope, evidence and correctness once for an ordinary answer. Revise a
+concrete defect and recheck what changed; do not run extra personas or repeat
+the same review merely to generate more criticism. Formal runs still honor
+their configured minimum reviews, required independence and approval boundaries.
+Do not reopen settled decisions without new evidence or a changed requirement.
+
+Stop when the requested result and its applicable checks are complete. If progress
+requires unavailable evidence, permission or a capability, report that gap and
+stop that branch; repeated attempts with unchanged inputs are not progress.
+Keep optional next steps separate from execution. Never fill an output quota
+with invented references, critique issues, hypotheses or tool results.
+
 ## Route by intent
 
 Workflow names below are optional Host shortcuts, not native `qiongli` CLI
@@ -47,7 +76,8 @@ use `workflows/paper.md` and the canonical contract; IDs and paths stay stable.
 | Topic, question, gap, theory or journal fit | `workflows/paper.md`, `workflows/find-gap.md` or `workflows/build-framework.md` |
 | Whole paper lifecycle | `workflows/paper-lifecycle.md` |
 | Read a paper, PDF or DOI | `workflows/paper-read.md` (B2) |
-| Search, screen or review literature | `workflows/lit-review.md` (B1); discovery is not automatically a systematic review |
+| Find a bounded set of references | `skills/B_literature/academic-searcher.md` (targeted discovery) |
+| Systematically search, screen or review literature | `workflows/lit-review.md` (formal B1) |
 | Synthesize findings or meta-analysis | `workflows/synthesize.md` (E) |
 | Design a study or analysis plan | `workflows/study-design.md` (C) |
 | Ethics, consent or availability statement | `workflows/ethics-check.md` (D) |

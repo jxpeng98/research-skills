@@ -1591,12 +1591,12 @@ skills:
     version: "2.0.0-alpha.7"
     file: skills/Z_cross_cutting/self-critique.md
     canonical: true
-    summary: "Iterative red teaming against superficial reasoning, contradictions, and overclaiming."
+    summary: "Check concrete claim, evidence and method defects without expanding the requested review."
     display_name: "Self-Critique"
-    when_to_use: "Use when you need to iterative red teaming against superficial reasoning, contradictions, and overclaiming."
-    summary_zh: "通过迭代式 red teaming 打击浅层推理、矛盾和过度主张。"
+    when_to_use: "Use for a requested research review or a required quality check; repeat only for affected fixes or the formal review contract."
+    summary_zh: "按请求范围检查主张、证据和方法问题，核对修复后按适用规则停止。"
     display_name_zh: "自我批判"
-    when_to_use_zh: "当你想主动提高 red-teaming 强度、压制浅层推理和过度主张时使用。"
+    when_to_use_zh: "当你需要研究复核或任务要求质量检查时使用；只因具体修复或正式复核要求追加轮次。"
     inputs: [AnyArtifact]
     outputs: [CritiqueLog]
     tags: [cross-cutting, critique, red-team, quality-assurance, Socratic]

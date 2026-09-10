@@ -152,4 +152,4 @@ Quick-reference index of canonical skills. Load the selected `skills/[stage]/[sk
 | boundary-interviewer | Run Academic Idea Funnel (`context/idea_funnel.md`) and boundary critique one question at a time, then reuse locked answers as downstream constraints |
 | metadata-enricher | Normalize and complete paper metadata |
 | model-collaborator | Multi-model collaboration for research tasks |
-| self-critique | Iterative red teaming and Socratic critique |
+| self-critique | Check substantive defects, verify targeted fixes and stop at the applicable review contract |

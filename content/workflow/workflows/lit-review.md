@@ -6,6 +6,11 @@ description: 执行系统性文献综述，遵循 PRISMA 2020 方法论
 
 Execute a systematic literature review following PRISMA 2020 methodology.
 
+Use this full workflow for a requested systematic review or formal B1 run. For
+"find a few papers", use `skills/B_literature/academic-searcher.md` at the
+requested scope; do not create the project scaffold or run later phases merely
+because the task mentions literature.
+
 Canonical Task ID (from the globally installed `qiongli-workflow` skill):
 - `B1` systematic review pipeline
 

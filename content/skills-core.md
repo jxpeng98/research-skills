@@ -585,15 +585,14 @@ legacy Python controller commands are not native 2.x dependencies.
 
 ## self-critique
 
-**Purpose:** Iterative red teaming and Socratic critique of outputs
+**Purpose:** Check concrete claim, evidence and method defects at the requested scope
 
 **Process:**
-1. Act as a harsh "Reviewer 2" or Socratic Questioner.
-2. Ask stage-specific critique questions (e.g., claiming causality vs correlation, omitted variables, confirmation bias).
-3. Keep a persistent issue register in `review/self_critique_log.md`.
-4. Carry unresolved issues across rounds; mark each as open / partial / resolved instead of restarting critique from zero.
-5. Challenge the Generator to defend or revise their work.
-6. Ensure logical flow, empathy in rebuttals, and rigorous claims.
+1. Identify the requested artifact and applicable checks; use only relevant stage lenses.
+2. Review an ordinary answer once. Fix concrete defects and recheck affected work; no findings is a valid result, and no question quota applies.
+3. Formal orchestrated runs retain configured limits and the minimum review contract: standard 2 passes, deep 3 when revision rounds are available. An early PASS receives the required stability review; it does not require inventing revisions.
+4. Reuse issue IDs and keep unresolved blockers. Stop a blocked branch when progress requires unavailable evidence or a decision; reaching a limit does not turn BLOCK into PASS.
+5. Keep `review/self_critique_log.md` for formal runs. A direct answer can report its check in chat. Do not start another model or persona merely because this card was loaded.
 
 **Output:** Self-critique log and revised (improved) output
 
@@ -602,7 +601,7 @@ legacy Python controller commands are not native 2.x dependencies.
 **Purpose:** Clarify scholarly boundaries one question at a time before high-risk Qiongli work proceeds; also run the Academic Grill Loop for academic idea discovery when a vague topic needs to become a defensible paper idea.
 
 **Process:**
-1. Inspect existing research artifacts before asking the user.
+1. Inspect the request and existing research artifacts before asking. If they settle the relevant boundary, continue without a new interview; a missing boundary file alone does not block a direct answer.
 2. Map the task to an academic boundary dimension: phenomenon, construct, contribution, claim strength, evidence threshold, method validity, rival explanation, generalizability, ethics/governance, venue/reviewer, research code, or submission/revision.
 3. For brainstorms or Stage A work, use the Academic Grill Loop: ask one scholarly question at a time that tests whether the topic can become one answerable paper.
 4. Write `AcademicIdeaFunnel` -> `context/idea_funnel.md` before Stage A outputs when the idea is still unsettled; include Candidate Idea Triage, recommended idea, core claim, research question, candidate gap, contribution type, evidence plan, weakest assumption, reviewer risk, `next_stage_recommendation`, and `boundary_review_handoff`.

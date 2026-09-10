@@ -84,7 +84,9 @@ For Stage A idea-discovery, prefer questions that move from "interesting topic" 
 Use stage-aware grill as Qiongli's cross-platform academic judgment layer. The
 same contract applies across chat, IDE, CLI, and portable skill installs.
 
-Run a light automatic grill when:
+Inspect the relevant boundary when any condition below applies. Ask a light
+automatic grill question only if the request and existing evidence do not settle
+a consequential decision; uncertainty words alone do not require an interview:
 
 - a stage starts with vague or underdefined academic scope
 - a stage handoff contains open risks, stale decisions, or unresolved reviewer
@@ -151,7 +153,7 @@ carry it forward, or explicitly mark why it is no longer relevant.
 ## When to Use
 
 - Before high-risk framing, study design, writing, submission, research code, or handoff work when scope, claim strength, evidence threshold, validity risk, generalizability, or reviewer expectations remain unclear.
-- When `context/boundary_review.md` is missing, stale, or contradicted by the current task.
+- When the current task needs a boundary decision not settled by its request or evidence; a missing `context/boundary_review.md` alone does not block a direct answer.
 - When broadening a previous boundary would change downstream artifacts, claims, evidence thresholds, code decisions, or submission promises.
 - When a vague topic or brainstorm needs to become a defensible academic idea before `A1`, `A2`, `A4`, or `A5` artifacts are drafted.
 
@@ -189,7 +191,7 @@ carry it forward, or explicitly mark why it is no longer relevant.
 ## Process
 
 1. Map the task to an academic boundary dimension from `standards/boundary-review-contract.yaml`.
-2. Inspect existing artifacts before asking the user. If the boundary is already settled, cite the artifact and record the decision.
+2. Inspect existing artifacts before asking the user. If the boundary is already settled, reuse it and continue the requested work without a new question or interview. Formal tasks record the decision in their required artifact.
 3. Choose the next blocking question. Prefer the question whose answer would most change the research question, claim strength, evidence threshold, method validity, or submission position.
 4. Ask exactly one user-facing question.
 5. Include a recommended answer with:

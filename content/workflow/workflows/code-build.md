@@ -46,7 +46,7 @@ Canonical Task IDs (from the globally installed `qiongli-workflow` skill):
   - single-stage example: `--focus code_planning --only-target S1`
   - `full` example: `--focus full --only-target I5:decision-1 --only-target I8:P1-01`
 
-## Workflow Steps
+## Full Workflow Steps (`--focus full`)
 
 1. **Specification (`I5`)**:
    - lock the method, I/O contract, seeds, diagnostics, acceptance tests, and forbidden shortcuts
@@ -68,7 +68,14 @@ Canonical Task IDs (from the globally installed `qiongli-workflow` skill):
 5. **Optional Audit (`I4`)**:
    - run a targeted reproducibility audit when you need environment, seed, and rerun guarantees reviewed separately
 
-If `--topic` is omitted, `code-build` falls back to the legacy prompt-driven mode for quick one-off code generation. If `--topic` is present, the strict Stage-I flow is the primary path.
+Infer the requested focus when it is omitted. A named project or `--topic`
+selects context and destination, not the full sequence. For a narrow code change,
+reuse the existing specification and analysis decisions, edit only the affected
+code and run its meaningful checks. Do not create new specification, plan,
+packaging or review artifacts unless the selected formal task requires them.
+Use the full sequence for an explicit full implementation/reproduction request
+or `--focus full`. A bounded correction must not be claimed as a completed full
+Stage-I run. Native 2.x executes in the active Host without a legacy controller.
 
 ## Academic Boundary Review Trigger (MVP)
 

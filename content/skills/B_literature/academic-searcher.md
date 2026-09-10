@@ -96,6 +96,14 @@ execution path. Preserve provenance labels across all outputs:
 
 ## Process
 
+For a bounded reference lookup, use the user's topic and filters, record the
+query/mode/provenance, verify and deduplicate the relevant records, and return
+the requested set or a clearly stated shortfall. These may be reported in chat
+when no saved artifact was requested. Stop at the requested scope; do not start
+screening, snowballing, full-text retrieval or a systematic review automatically.
+The formal B1 output/diagnostic contract below remains required for a formal
+run or review-grade claims. A small lookup must not be labelled exhaustive.
+
 ### 1. Build or validate `search_strategy.md`
 
 Write `RESEARCH/[topic]/search_strategy.md` and validate `qiongli_search_plan`

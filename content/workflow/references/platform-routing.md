@@ -62,7 +62,7 @@ challenged like Reviewer 2, or checked for fatal flaws.
 | "Improve related work" | `B4` or `/academic-write related-work` |
 | "Design the study / variables / robustness" | `C1`, `C3`, `C3_5`, or `/study-design` |
 | "Interpret these results" | `F3`, `F4`, `F5`, or `stats-engine` depending on artifact |
-| "Modify this analysis script / notebook" | Stage I, usually `I5 -> I6 -> I7 -> I8` for claim-supporting code |
+| "Modify this analysis script / notebook" | Stage I at the requested focus; reuse existing decisions and check affected behavior. Use `I5 -> I6 -> I7 -> I8` for an explicit full workflow |
 | "Proofread / make it less AI-like" | Stage J or `/proofread` |
 | "Prepare submission / cover letter" | `H1` or `/submission-prep` |
 | "Reply to reviewer comments" | `H2`, `H2_5`, or `/rebuttal` |

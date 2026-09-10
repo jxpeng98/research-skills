@@ -1,6 +1,6 @@
 ---
 name: qiongli
-description: "Qiongli version: v2.0.0-alpha.7. Academic research workflow for reading papers, literature review, study design, scholarly writing, analysis code, reproducibility, rebuttal, submission, presentations, coursework and dissertations. Use for natural academic requests involving claims, sources, methods or reviewer judgment, without requiring a command. Excludes generic coding, file conversion and non-academic editing."
+description: "Qiongli version: v2.0.0-alpha.8. Academic research workflow for reading papers, literature review, study design, scholarly writing, analysis code, reproducibility, rebuttal, submission, presentations, coursework and dissertations. Use for natural academic requests involving claims, sources, methods or reviewer judgment, without requiring a command. Excludes generic coding, file conversion and non-academic editing."
 ---
 
 # Qiongli Academic Workflow
@@ -11,7 +11,7 @@ Qiongli supplies research contracts,
 references and project services. This is a self-contained skill package: all
 resource paths below are relative to this package, not the working directory.
 
-Installed Qiongli workflow version: `v2.0.0-alpha.7`
+Installed Qiongli workflow version: `v2.0.0-alpha.8`
 
 ## Start with the request
 

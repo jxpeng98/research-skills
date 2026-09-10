@@ -3,7 +3,66 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: task routes and observable resource reading — September 10
+## Current increment: authorized Codex resource-read observation — September 10
+
+Base `8bfd1538bf300378aa3bbf59df324fd91c2e654b`; branch
+`codex/authorized-resource-read-validation`. The user explicitly confirmed
+execution of the prepared six-case transmission scope. Before collection, the
+entry, corpus, all resource bytes, six request texts and configured model settings
+were checked against `/private/tmp/qiongli-resource-read-approval-02cjxzy4/scope.json`.
+This resolves the earlier approval block for these six cases only.
+
+All six real Codex CLI `0.153.4` turns completed with exit 0 under configured
+`gpt-6-astra` / `high`. The same source and predeclared expectations were used;
+there were no retries, model changes or post-hoc regrades. The four intent fields
+(primary route, dependency resource, scope and current action) each passed **6/6**.
+The original combined label/read result is **4/6**, retained as recorded; the
+capture/score command correctly exits 1 for these failed assertions:
+
+| Case pair | Observed resource reads per answer | Original strict result |
+|---|---|---|
+| Result interpretation, en/zh | `skills/F_writing/analysis-interpreter.md` once | 2/2 |
+| Explicit Academic Graph denial, en/zh | `references/academic-graph-continuity.md` once; no platform-reference read | 0/2: prerequisite-read assertion |
+| Generic mean-function correction, en/zh | none | 2/2 |
+
+There were **four actual resource calls**, no duplicate reads within any turn,
+and no tool calls in either generic case. Completed tool results match the
+snapshotted resource bytes. No project operation or installed Skill activation
+was tested; the denied graph operation is supplied scenario data, not an observed
+Host permission denial.
+
+The main Agent inspected all six final answers without inspecting reasoning text.
+Both interpretation answers preserve the supplied measurement wording and explain
+causal/reporting limits; neither invents self-report. Both utility answers return
+an empty-list ValueError guard and retain the original nonempty sum/length result.
+The graph answers keep verification pending, do not infer the presence or absence
+of a support relation without evidence, and make no project-write or successful-
+verification claim. An independent review of that pair found no product violation.
+
+The two strict failures expose a scoring boundary: `resource_route` includes a
+blocked dependency, while the observed-read assertion currently requires every
+non-`none` dependency reference to be read in this turn. The entry permits stopping
+after reporting the existing block; these answers do not enter project operations.
+Do not turn this omission into an access-bypass claim or silently replace 4/6 with
+6/6. Next distinguish current required guidance from dependencies for resuming a
+blocked task, with expectations fixed before future collection. This result does
+not establish general answer quality, efficiency superiority or program acceptance.
+
+Private evidence: `/private/tmp/qiongli-authorized-resource-reads-rktgay4m/` contains
+`capture/`, the original `capture/scores/`, `capture.log` and `validation-review.json`.
+Bindings:
+
+- capture manifest SHA-256: `49c9f3e68f520f61d7b5731d5cffb3e468e203a3b4abecd409b627647eed138b`;
+- original summary SHA-256: `7ee9f013e3a5eeefc40403da3aea26799c446049dfeb576c7e4e105963605395`;
+- reviewed receipt SHA-256: `3fbf95c3989fb9de60b6c3debfd2977d3b13620c86481c10d031582871238ef3`.
+
+Implementation inputs are unchanged, so the previous 31 focused offline checks
+are reused. This integration updates evidence and the execution horizon only.
+After the read-requirement contract is clarified, continue the bounded literature
+→ reading → claim → manuscript journey. Host registration remains paused, and
+publication and accepted program rows are unchanged.
+
+## Completed: task routes and observable resource reading — September 10
 
 Base `a72e3197`; branch `codex/codex-resource-read-probe`; implementation
 `e99f8d4d`. The existing entry
@@ -47,7 +106,7 @@ malformed success markers, traversal attempts, and snapshot changes. Independent
 review found and closed malformed-start/error handling and current-helper source
 binding gaps. Product content/native/package inputs are unchanged.
 
-**Real Codex resource collection has not started.** Automatic approval review
+**At the implementation boundary, real collection had not started.** Automatic approval review
 rejected the model invocation because explicit authorization for sending this
 repository-content scope to the external model was missing. No workaround or
 alternate model call ran. A concrete six-request packet is prepared at
@@ -56,14 +115,13 @@ interpretation, explicit graph denial and generic mean-function pairs. The entry
 and requested resource results would be sent to the configured OpenAI provider;
 the available snapshot contains unpublished changes, totals 1,910,223 bytes and
 has SHA-256 `6f22a1ff513b6f71b52c4e627e6b457977b01920ed343e681d33dbc20585507f`.
-The user has been asked to authorize that exact six-request scope.
+That exact scope was subsequently authorized and collected in the observation above.
 
-Next: after that authorization, capture these six requests, inspect actual tool
-results and final answers, and record any remaining routing or loading failures
-without broadening labels after collection. Then continue the bounded literature
-→ reading → claim → manuscript journey. Until collection runs, this increment is
-offline implementation evidence only; Host registration, release and accepted
-program state remain unchanged.
+The planned follow-up was to capture these six requests after authorization,
+inspect actual tool results and final answers, and preserve any routing/loading
+failures without broadening labels after collection. At this boundary the evidence
+was offline implementation only. The authorized observation above records that
+follow-up; Host registration, release and accepted program state remain unchanged.
 
 ## Completed: routing dimensions and controlled Codex comparison — September 10
 

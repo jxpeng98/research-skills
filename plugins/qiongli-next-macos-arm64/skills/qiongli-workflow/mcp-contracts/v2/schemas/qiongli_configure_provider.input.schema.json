@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_configure_provider.input.v2.json",
+  "title": "qiongli_configure_provider input",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "openalex",
+        "semantic_scholar",
+        "semantic-scholar",
+        "semanticscholar",
+        "s2",
+        "crossref",
+        "pubmed"
+      ]
+    },
+    "host": {
+      "type": "string",
+      "enum": ["127.0.0.1", "localhost"],
+      "default": "127.0.0.1"
+    },
+    "port": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 0 }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,28 @@
+venue_id: nature
+community: Broad scientific readership
+article_types:
+  - article
+  - letter
+  - review
+contribution_expectations:
+  - field-level significance
+  - broad conceptual advance
+methods_expectations:
+  - robust design and transparent methods
+  - strong validation and independent checks where possible
+evidence_standards:
+  - primary evidence for central claims
+  - clear data and code availability
+writing_style:
+  - concise, accessible, high-significance framing
+  - minimal jargon
+common_reviewer_objections:
+  - insufficient general interest
+  - overclaimed significance
+formatting_constraints:
+  - journal-specific article limits
+  - separate methods or supplementary material where required
+required_reporting_standards:
+  - data availability
+  - code availability where applicable
+  - competing interests

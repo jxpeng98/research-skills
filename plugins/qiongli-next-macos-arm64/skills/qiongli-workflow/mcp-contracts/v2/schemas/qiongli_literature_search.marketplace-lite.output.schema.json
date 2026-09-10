@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_literature_search.marketplace-lite.output.v2.json",
+  "title": "qiongli_literature_search marketplace-lite structured output",
+  "type": "object",
+  "required": [
+    "status",
+    "search_plan",
+    "diagnostics",
+    "results"
+  ],
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "search_plan": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

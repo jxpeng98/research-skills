@@ -1,0 +1,11 @@
+id: accounting-review
+display_name: "The Accounting Review"
+discipline: accounting
+quality_bar:
+  - "Contribution must be grounded in an accounting institution, reporting mechanism, or contracting setting."
+  - "Construct validity, sample construction, and variable measurement must be explicit and replicable."
+  - "Causal language must match the design and clearly separate identification from measurement validity."
+fit_notes:
+  - "Best fit for theory-driven accounting papers with transparent archival measurement."
+  - "Position disclosure, audit, governance, or financial reporting mechanisms before empirical tests."
+  - "Emphasize robustness that addresses both alternative constructs and research design threats."

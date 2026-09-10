@@ -1,0 +1,162 @@
+schema_version: 1.0
+subject: geoeconomics
+display_name: Geoeconomics
+activation_status: runtime_enabled
+extends: core
+domain_profile: content/skills/domain-profiles/geoeconomics.yaml
+overlay: ""
+subject_skill: content/subjects/geoeconomics/skills/geoeconomic-statecraft-auditor.md
+signal_groups:
+  method:
+    - id: geoeconomics.method.statecraft-instrument-audit
+      value: statecraft-instrument-audit
+      weight: 0.30
+      activation: method_only
+      patterns:
+        - "\\beconomic statecraft instrument audit\\b"
+        - "\\bstatecraft instrument audit\\b"
+        - "\\binstrument[- ]sender[- ]target map\\b"
+      method_lenses:
+        - geoeconomic-statecraft-audit
+      examples:
+        - "Use an economic statecraft instrument audit before evaluating evidence."
+      near_misses:
+        - "Audit a generic policy memo for clarity."
+    - id: geoeconomics.method.supply-chain-exposure-design
+      value: supply-chain-exposure-design
+      weight: 0.25
+      activation: method_only
+      patterns:
+        - "\\bsupply chain exposure design\\b"
+        - "\\bstrategic sector exposure\\b"
+        - "\\bchokepoint exposure\\b"
+      method_lenses:
+        - supply-chain-exposure-design
+      examples:
+        - "Design a supply chain exposure measure for strategic sectors."
+      near_misses:
+        - "Improve a supply chain operations checklist."
+  data_or_outcome:
+    - id: geoeconomics.data.sanctions-export-control-response
+      value: sanctions-export-control-response
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bsanctions?\\b"
+        - "\\bexport controls?\\b"
+        - "\\btarget response\\b"
+        - "\\benforcement dates?\\b"
+      examples:
+        - "Measure target response to sanctions and export controls."
+      near_misses:
+        - "Sanction a project plan in an internal approval workflow."
+    - id: geoeconomics.data.supply-chain-security-exposure
+      value: supply-chain-security-exposure
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bsupply chain exposure\\b"
+        - "\\bcritical minerals?\\b"
+        - "\\bsubstitute suppliers?\\b"
+        - "\\bevasion\\b"
+        - "\\bmarket substitution\\b"
+      examples:
+        - "Construct supply chain exposure to strategic chokepoints."
+      near_misses:
+        - "Plan a supplier onboarding workflow."
+  venue:
+    - id: geoeconomics.venue.international-security
+      value: international-security
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bInternational Security\\b"
+      method_lenses:
+        - geoeconomic-positioning
+      examples:
+        - "Frame the manuscript for International Security."
+      near_misses:
+        - "Summarize international security news."
+    - id: geoeconomics.venue.international-organization
+      value: international-organization
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bInternational Organization\\b"
+      method_lenses:
+        - geoeconomic-positioning
+      examples:
+        - "Position the statecraft mechanism for International Organization."
+      near_misses:
+        - "Create an international organization contact list."
+    - id: geoeconomics.venue.ripe
+      value: review-of-international-political-economy
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bReview of International Political Economy\\b"
+        - "\\bRIPE\\b"
+      method_lenses:
+        - geoeconomic-positioning
+      examples:
+        - "Target Review of International Political Economy."
+      near_misses:
+        - "Review international political economy headlines."
+    - id: geoeconomics.venue.world-politics
+      value: world-politics
+      weight: 0.20
+      activation: context_only
+      patterns:
+        - "\\bWorld Politics\\b"
+      examples:
+        - "Frame the paper for World Politics."
+      near_misses:
+        - "Summarize world politics headlines."
+  theory_or_construct:
+    - id: geoeconomics.construct.economic-statecraft-mechanism
+      value: economic-statecraft-mechanism
+      weight: 0.30
+      activation: subject
+      patterns:
+        - "\\beconomic statecraft\\b"
+        - "\\bstatecraft mechanism\\b"
+        - "\\bsender[- ]target[- ]instrument[- ]response\\b"
+        - "\\bstrategic competition\\b"
+      examples:
+        - "Explain the sender-target-instrument-response statecraft mechanism."
+      near_misses:
+        - "Write a geopolitical context paragraph without economic evidence."
+    - id: geoeconomics.construct.countermeasure-substitution
+      value: countermeasure-substitution
+      weight: 0.25
+      activation: subject
+      patterns:
+        - "\\bcountermeasures?\\b"
+        - "\\brerouting\\b"
+        - "\\bindustrial policy\\b"
+        - "\\bfinancial statecraft\\b"
+        - "\\binvestment screening\\b"
+      examples:
+        - "Assess evasion, countermeasures, and substitution after export controls."
+      near_misses:
+        - "Screen investment options for a personal portfolio."
+method_lenses:
+  geoeconomic-statecraft-audit:
+    resource: content/subjects/geoeconomics/skills/geoeconomic-statecraft-auditor.md
+    activation: method_only
+  supply-chain-exposure-design:
+    resource: content/subjects/geoeconomics/overlays/skills/study-designer.md
+    activation: method_only
+  geoeconomic-positioning:
+    resource: content/subjects/geoeconomics/overlays/skills/manuscript-architect.md
+    activation: method_only
+evaluation_pack: tests/fixtures/subject_router_eval/geoeconomics
+near_miss_policy:
+  forbidden_subjects:
+    - finance
+    - economics
+activation_gate:
+  required_metrics:
+    primary_subject_accuracy: 0.95
+    suggest_subject_precision: 0.95
+    near_miss_false_positives: 0

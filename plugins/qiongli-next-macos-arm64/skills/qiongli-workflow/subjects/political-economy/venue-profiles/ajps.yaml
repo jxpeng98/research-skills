@@ -1,0 +1,11 @@
+id: ajps
+display_name: "American Journal of Political Science"
+discipline: political-economy
+quality_bar:
+  - "Research design must support the stated political mechanism and claim strength."
+  - "Actor incentives, institutional setting, and outcome measurement must be transparent."
+  - "Empirical contribution must be precise and methodologically credible."
+fit_notes:
+  - "Best fit for well-identified political economy designs with concise theory."
+  - "Report design assumptions, robustness, and replication materials clearly."
+  - "Narrow claims are acceptable when evidence is strong."

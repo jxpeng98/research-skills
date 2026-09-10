@@ -1,0 +1,2218 @@
+map_version: "1.0.0"
+name: "mcp-agent-capability-map"
+scope: "task-level orchestration for Skills + MCP + Agents"
+
+coordination_contract:
+  entrypoint: "Task ID from standards/research-workflow-contract.yaml"
+  required_packet_fields:
+    - "task_id"
+    - "paper_type"
+    - "topic"
+    - "required_outputs"
+    - "required_skills"
+    - "required_skill_cards"
+    - "quality_gates"
+  fixed_execution_chain:
+    - "plan"
+    - "mcp-evidence"
+    - "primary-agent-draft"
+    - "review-agent-check"
+    - "validator-gate"
+
+mcp_registry:
+  - "filesystem"
+  - "scholarly-search"
+  - "citation-graph"
+  - "metadata-registry"
+  - "fulltext-retrieval"
+  - "screening-tracker"
+  - "extraction-store"
+  - "stats-engine"
+  - "code-runtime"
+  - "reporting-guidelines"
+  - "submission-kit"
+
+# Provider adapters and database-specific connectors belong in MCP / bridge space.
+# They should not be modeled as top-level skills unless they own a distinct contract artifact.
+skill_granularity_policy:
+  top_level_skill_criteria:
+    - "Consumes typed inputs and produces typed outputs"
+    - "Owns at least one stable artifact path under RESEARCH/[topic]/"
+    - "Is worth direct task/pipeline dependency wiring"
+    - "Carries distinct failure modes or review expectations"
+  keep_as_embedded_subflow:
+    - "query-builder"
+    - "keyword-expander"
+    - "methodology-extractor"
+    - "dataset-extractor"
+    - "theory-extractor"
+    - "limitation-extractor"
+  keep_in_provider_layer:
+    - "semantic-scholar-search"
+    - "crossref-search"
+    - "openalex-search"
+    - "database-connector"
+    - "zotero-sync"
+    - "doi-metadata-lookup"
+
+provider_capability_examples:
+  scholarly-search:
+    includes:
+      - "semantic-scholar-search"
+      - "crossref-search"
+      - "openalex-search"
+      - "keyword expansion against provider indexes"
+  metadata-registry:
+    includes:
+      - "doi lookup"
+      - "venue normalization"
+      - "citation export/import metadata sync"
+  fulltext-retrieval:
+    includes:
+      - "retrieval-manifest planning"
+      - "local fulltext path verification"
+      - "oa resolution"
+      - "repository fallback"
+      - "publisher landing-page resolution"
+
+literature_provider_contract:
+  shared_bundle:
+    - "search_strategy.md"
+    - "search_log.md"
+    - "search_results.csv"
+    - "dedup_log.csv"
+    - "snowball_log.md"
+    - "bibliography.bib"
+    - "screening/full_text.md"
+    - "retrieval_manifest.csv"
+  scholarly-search:
+    owns_artifacts:
+      - "search_strategy.md"
+      - "search_log.md"
+      - "search_results.csv"
+    appends_to:
+      - "dedup_log.csv"
+    responsibilities:
+      - "provider-backed discovery"
+      - "query translation and execution"
+      - "raw hit capture before screening"
+    must_not_own:
+      - "bibliography.bib"
+      - "retrieval_manifest.csv"
+  citation-graph:
+    owns_artifacts:
+      - "snowball_log.md"
+    appends_to:
+      - "search_results.csv"
+      - "dedup_log.csv"
+    responsibilities:
+      - "seed-paper expansion"
+      - "forward and backward citation tracing"
+      - "traceable corpus-growth logging"
+    must_not_own:
+      - "search_strategy.md"
+      - "bibliography.bib"
+      - "retrieval_manifest.csv"
+  metadata-registry:
+    owns_artifacts:
+      - "bibliography.bib"
+    appends_to:
+      - "dedup_log.csv"
+    responsibilities:
+      - "identifier normalization"
+      - "metadata merge and citekey stabilization"
+      - "venue/year/author/DOI cleanup"
+      - "ingest and normalize local reference state from bibtex, ris, csl-json, search results, or notes"
+    must_not_own:
+      - "search_strategy.md"
+      - "retrieval_manifest.csv"
+  fulltext-retrieval:
+    owns_artifacts:
+      - "screening/full_text.md"
+      - "retrieval_manifest.csv"
+    responsibilities:
+      - "full-text access resolution"
+      - "version provenance"
+      - "PRISMA-style retrieval status tracking"
+    must_not_own:
+      - "search_strategy.md"
+      - "bibliography.bib"
+
+agent_registry:
+  - "codex"
+  - "claude"
+  - "antigravity"
+
+# Runtime agent registry above is intentionally model-only.
+# Functional ownership is tracked separately below so we do not mix
+# "who owns the research responsibility" with "which model executes it".
+functional_agent_registry:
+  - "research-orchestrator"
+  - "literature-agent"
+  - "theory-agent"
+  - "methodology-agent"
+  - "data-agent"
+  - "analysis-agent"
+  - "code-review-agent"
+  - "writing-agent"
+  - "publication-agent"
+
+functional_agents:
+  research-orchestrator:
+    file: "roles/research-orchestrator.yaml"
+    focus: "Cross-stage planning, prerequisite checks, contract integrity, and handoff management."
+    owns_stages:
+      - "A"
+      - "B"
+      - "C"
+      - "D"
+      - "E"
+      - "F"
+      - "G"
+      - "H"
+      - "I"
+      - "J"
+      - "M"
+  literature-agent:
+    file: "roles/literature-ra.yaml"
+    mapped_role: "literature-ra"
+    focus: "Search, screening, extraction, citation expansion, and literature mapping."
+    owns_stages:
+      - "B"
+  theory-agent:
+    file: "roles/theory-agent.yaml"
+    mapped_role: "theory-agent"
+    focus: "Theoretical framing, mechanism building, hypothesis logic, and gap interpretation."
+    owns_stages:
+      - "A"
+  methodology-agent:
+    file: "roles/methods-lead.yaml"
+    mapped_role: "methods-lead"
+    focus: "Study design, identification strategy, robustness, and preregistration design."
+    owns_stages:
+      - "C"
+  data-agent:
+    file: "roles/data-agent.yaml"
+    mapped_role: "data-agent"
+    focus: "Dataset strategy, data management, privacy controls, and data-pipeline handoff."
+    owns_stages:
+      - "C"
+      - "D"
+      - "I"
+  analysis-agent:
+    file: "roles/statistician.yaml"
+    mapped_role: "statistician"
+    focus: "Quantitative execution, diagnostics, synthesis, and numerical interpretation."
+    owns_stages:
+      - "E"
+      - "I"
+  code-review-agent:
+    file: "roles/academic-code-reviewer.yaml"
+    mapped_role: "academic-code-reviewer"
+    focus: "Independent academic code review for method fidelity, inferential validity, leakage, and reproducibility evidence."
+    owns_stages:
+      - "I"
+  writing-agent:
+    file: "roles/science-writer.yaml"
+    mapped_role: "academic-writer"
+    focus: "Drafting, restructuring, deep interpretation, and claim presentation."
+    owns_stages:
+      - "F"
+      - "L"
+  publication-agent:
+    file: "roles/compliance-officer.yaml"
+    mapped_role: "compliance-officer"
+    focus: "Reporting checklist ownership, submission packaging, rebuttal, and compliance review."
+    owns_stages:
+      - "D"
+      - "G"
+      - "H"
+      - "J"
+
+skill_registry:
+  - "question-refiner"
+  - "contribution-crafter"
+  - "academic-searcher"
+  - "paper-screener"
+  - "paper-extractor"
+  - "quality-assessor"
+  - "gap-analyzer"
+  - "theory-mapper"
+  - "citation-snowballer"
+  - "fulltext-fetcher"
+  - "metadata-enricher"
+  - "citation-formatter"
+  - "reference-manager-bridge"
+  - "study-designer"
+  - "ethics-irb-helper"
+  - "statement-generator"
+  - "evidence-synthesizer"
+  - "effect-size-calculator"
+  - "manuscript-architect"
+  - "proposal-writer"
+  - "prisma-checker"
+  - "reporting-checker"
+  - "submission-packager"
+  - "rebuttal-assistant"
+  - "code-builder"
+  - "model-collaborator"
+  - "self-critique"
+  - "hypothesis-generator"
+  - "venue-analyzer"
+  - "concept-extractor"
+  - "literature-mapper"
+  - "rival-hypothesis-designer"
+  - "robustness-planner"
+  - "dataset-finder"
+  - "variable-constructor"
+  - "deidentification-planner"
+  - "publication-bias-checker"
+  - "analysis-interpreter"
+  - "effect-size-interpreter"
+  - "table-generator"
+  - "figure-specifier"
+  - "meta-optimizer"
+  - "tone-normalizer"
+  - "reviewer-empathy-checker"
+  - "data-cleaning-planner"
+  - "data-merge-planner"
+  - "reproducibility-auditor"
+  - "stats-engine"
+  - "peer-review-simulation"
+  - "fatal-flaw-detector"
+  - "journal-fit-recommender"
+  - "code-specification"
+  - "code-planning"
+  - "code-execution"
+  - "code-review"
+  - "release-packager"
+  - "presentation-planner"
+  - "slide-architect"
+  - "slidev-scholarly-builder"
+  - "beamer-builder"
+  - "academic-context-maintainer"
+  - "boundary-interviewer"
+  - "data-dictionary-builder"
+  - "data-management-plan"
+  - "prereg-writer"
+  - "variable-operationalizer"
+  - "credit-taxonomy-helper"
+  - "ai-fingerprint-scanner"
+  - "human-voice-rewriter"
+  - "similarity-checker"
+  - "final-proofreader"
+  - "discussion-writer"
+  - "limitation-auditor"
+  - "qualitative-coding"
+  - "assignment-brief-analyzer"
+  - "rubric-mapper"
+  - "coursework-architect"
+  - "coursework-reviser"
+  - "dissertation-planner"
+  - "chapter-architect"
+  - "supervisor-feedback-integrator"
+  - "dissertation-readiness-checker"
+
+skill_catalog:
+  assignment-brief-analyzer:
+    file: "skills/L_coursework/assignment-brief-analyzer.md"
+    category: "coursework"
+    focus: "Parse assignment briefs into constraints, task type, deliverables, missing information, and academic integrity boundaries."
+    default_outputs:
+      - "assignment/brief.md"
+      - "assignment/academic_integrity_notes.md"
+  rubric-mapper:
+    file: "skills/L_coursework/rubric-mapper.md"
+    category: "coursework"
+    focus: "Map marking rubrics and learning outcomes to evidence requirements, section priorities, quality thresholds, and risks."
+    default_outputs:
+      - "assignment/rubric_map.md"
+      - "assignment/learning_outcomes.md"
+  coursework-architect:
+    file: "skills/L_coursework/coursework-architect.md"
+    category: "coursework"
+    focus: "Design coursework outlines, claim-evidence plans, citation plans, and bounded drafting plans from briefs and rubrics."
+    default_outputs:
+      - "coursework/outline.md"
+      - "coursework/claim_evidence_plan.md"
+      - "coursework/citation_plan.md"
+  coursework-reviser:
+    file: "skills/L_coursework/coursework-reviser.md"
+    category: "coursework"
+    focus: "Revise coursework against rubric, learning outcomes, evidence plan, word count, and permitted-assistance constraints."
+    default_outputs:
+      - "coursework/revision_plan.md"
+      - "assignment/submission_checklist.md"
+  dissertation-planner:
+    file: "skills/M_dissertation/dissertation-planner.md"
+    category: "dissertation"
+    focus: "Plan dissertations, theses, capstones, and major projects by level, method, dependencies, milestones, and risks."
+    default_outputs:
+      - "dissertation/dissertation_plan.md"
+      - "dissertation/milestone_plan.md"
+  chapter-architect:
+    file: "skills/M_dissertation/chapter-architect.md"
+    category: "dissertation"
+    focus: "Design dissertation chapter maps, dependencies, evidence thresholds, status, and word-count allocations."
+    default_outputs:
+      - "dissertation/chapter_map.md"
+      - "dissertation/chapter_status.md"
+  supervisor-feedback-integrator:
+    file: "skills/M_dissertation/supervisor-feedback-integrator.md"
+    category: "dissertation"
+    focus: "Map supervisor feedback to chapters, claims, required actions, evidence needs, priorities, and revision status."
+    default_outputs:
+      - "dissertation/supervisor_feedback_log.md"
+      - "dissertation/revision_plan.md"
+  dissertation-readiness-checker:
+    file: "skills/M_dissertation/dissertation-readiness-checker.md"
+    category: "dissertation"
+    focus: "Check dissertation submission and defense readiness against completeness, evidence, formatting, and integrity constraints."
+    default_outputs:
+      - "dissertation/final_readiness.md"
+      - "dissertation/defense_prep.md"
+  academic-context-maintainer:
+    file: "skills/Z_cross_cutting/academic-context-maintainer.md"
+    category: "research-continuity"
+    focus: "Maintain project-level academic state continuity across major stage transitions."
+    default_outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+  boundary-interviewer:
+    file: "skills/Z_cross_cutting/boundary-interviewer.md"
+    category: "research-boundary"
+    focus: "Run academic idea-discovery and clarify scholarly boundaries one question at a time before high-risk Qiongli work proceeds."
+    default_outputs:
+      - "context/boundary_review.md"
+  qualitative-coding:
+    file: "skills/E_synthesis/qualitative-coding.md"
+    category: "synthesis"
+    focus: "Extract phenomena, perform thematic/grounded theory coding, and build a codebook from qualitative transcripts or extracted text."
+    default_outputs:
+      - "synthesis/qualitative_data_dictionary.md"
+      - "synthesis/thematic_codebook.md"
+  discussion-writer:
+    file: "skills/F_writing/discussion-writer.md"
+    category: "writing"
+    focus: "Drafts the Discussion section using a structured story spine, separating factual findings from theoretical implications."
+    default_outputs:
+      - "manuscript/discussion.md"
+      - "manuscript/discussion_story_spine.md"
+  limitation-auditor:
+    file: "skills/H_submission/limitation-auditor.md"
+    category: "submission"
+    focus: "Identifies and structures study constraints, ensuring rigorous self-critique without undermining the manuscript's core contribution."
+    default_outputs:
+      - "revision/limitations_audit.md"
+      - "revision/limitation_mitigations.md"
+  question-refiner:
+    file: "skills/A_framing/question-refiner.md"
+    category: "framing"
+    focus: "Refine research questions, scope boundaries, and keyword strategy."
+    default_outputs:
+      - "framing/research_question.md"
+  contribution-crafter:
+    file: "skills/A_framing/contribution-crafter.md"
+    category: "framing"
+    focus: "Draft compelling statement highlighting theoretical, methodological, and empirical novelty."
+    default_outputs:
+      - "framing/contribution_statement.md"
+  academic-searcher:
+    file: "skills/B_literature/academic-searcher.md"
+    category: "literature-discovery"
+    focus: "Own query design, provider-backed retrieval, raw search capture, and deduplicated search bundle outputs."
+    default_outputs:
+      - "search_strategy.md"
+      - "search_results.csv"
+      - "search_log.md"
+      - "dedup_log.csv"
+  paper-screener:
+    file: "skills/B_literature/paper-screener.md"
+    category: "study-selection"
+    focus: "Screen records by inclusion/exclusion rules with decision trace."
+    default_outputs:
+      - "screening/title_abstract.md"
+      - "screening/full_text.md"
+      - "screening/prisma_flow.md"
+  paper-extractor:
+    file: "skills/B_literature/paper-extractor.md"
+    category: "data-extraction"
+    focus: "Extract structured theory, method, data, finding, and limitation slots."
+    default_outputs:
+      - "notes/"
+      - "extraction_table.md"
+  quality-assessor:
+    file: "skills/E_synthesis/quality-assessor.md"
+    category: "quality-appraisal"
+    focus: "Assess risk of bias, certainty, and evidence strength."
+    default_outputs:
+      - "quality_table.md"
+      - "grade_sof.md"
+  gap-analyzer:
+    file: "skills/A_framing/gap-analyzer.md"
+    category: "research-positioning"
+    focus: "Identify unresolved theoretical, empirical, or methodological gaps."
+    default_outputs:
+      - "gap_analysis.md"
+  theory-mapper:
+    file: "skills/A_framing/theory-mapper.md"
+    category: "theoretical-framing"
+    focus: "Map constructs and derive testable propositions or hypotheses."
+    default_outputs:
+      - "theoretical_framework.md"
+  citation-snowballer:
+    file: "skills/B_literature/citation-snowballer.md"
+    category: "citation-expansion"
+    focus: "Expand corpus using forward/backward citation chaining."
+    default_outputs:
+      - "snowball_log.md"
+      - "search_results.csv"
+      - "dedup_log.csv"
+  fulltext-fetcher:
+    file: "skills/B_literature/fulltext-fetcher.md"
+    category: "fulltext-acquisition"
+    focus: "Resolve full text access, version provenance, and retrieval status."
+    default_outputs:
+      - "screening/full_text.md"
+      - "retrieval_manifest.csv"
+  metadata-enricher:
+    file: "skills/Z_cross_cutting/metadata-enricher.md"
+    category: "metadata-normalization"
+    focus: "Normalize DOI, venue, year, author, and identifier metadata while stabilizing bibliography and dedup decisions."
+    default_outputs:
+      - "bibliography.bib"
+      - "dedup_log.csv"
+  citation-formatter:
+    file: "skills/B_literature/citation-formatter.md"
+    category: "reference-formatting"
+    focus: "Format references in target style and validate citation integrity."
+    default_outputs:
+      - "bibliography.bib"
+  reference-manager-bridge:
+    file: "skills/B_literature/reference-manager-bridge.md"
+    category: "reference-sync"
+    focus: "Sync citation library with Zotero/EndNote/Mendeley workflows."
+    default_outputs:
+      - "bibliography.bib"
+      - "references.ris"
+      - "references.json"
+  study-designer:
+    file: "skills/C_design/study-designer.md"
+    category: "study-design"
+    focus: "Own study design rationale, measures, analysis summary, and design handoff artifacts."
+    default_outputs:
+      - "study_design.md"
+      - "analysis_plan.md"
+      - "data_management_plan.md"
+      - "instruments/"
+      - "preregistration.md"
+  ethics-irb-helper:
+    file: "skills/D_ethics/ethics-irb-helper.md"
+    category: "ethics-compliance"
+    focus: "Prepare IRB-ready risk, consent, privacy, and governance content."
+    default_outputs:
+      - "ethics_irb.md"
+  statement-generator:
+    file: "skills/D_ethics/statement-generator.md"
+    category: "ethics-compliance"
+    focus: "Generate standardized ethics, data availability, and COI statements for manuscript inclusion."
+    default_outputs:
+      - "manuscript/manuscript.md"
+  evidence-synthesizer:
+    file: "skills/E_synthesis/evidence-synthesizer.md"
+    category: "evidence-synthesis"
+    focus: "Synthesize evidence narratively, qualitatively, or quantitatively."
+    default_outputs:
+      - "synthesis.md"
+      - "synthesis_matrix.md"
+  effect-size-calculator:
+    file: "skills/E_synthesis/effect-size-calculator.md"
+    category: "evidence-synthesis"
+    focus: "Calculate standard effect sizes from raw statistics to enable meta-analysis synthesis."
+    default_outputs:
+      - "effect_size_table.md"
+  manuscript-architect:
+    file: "skills/F_writing/manuscript-architect.md"
+    category: "manuscript-structure"
+    focus: "Own story spine, section drafting, and visual planning as one manuscript package."
+    default_outputs:
+      - "manuscript/outline.md"
+      - "manuscript/manuscript.md"
+      - "manuscript/claims_evidence_map.md"
+      - "manuscript/figures_tables_plan.md"
+  proposal-writer:
+    file: "skills/F_writing/proposal-writer.md"
+    category: "manuscript-structure"
+    focus: "Draft research proposals, opening reports, prospectuses, and study plans from framing and design artifacts."
+    default_outputs:
+      - "proposal/research_proposal.md"
+  analysis-interpreter:
+    file: "skills/F_writing/analysis-interpreter.md"
+    category: "manuscript-structure"
+    focus: "Translate statistical output into bounded result narratives."
+    default_outputs:
+      - "manuscript/results_interpretation.md"
+  effect-size-interpreter:
+    file: "skills/F_writing/effect-size-interpreter.md"
+    category: "manuscript-structure"
+    focus: "Explain estimate magnitude and practical importance in readable terms."
+    default_outputs:
+      - "manuscript/effect_interpretation.md"
+  table-generator:
+    file: "skills/F_writing/table-generator.md"
+    category: "manuscript-structure"
+    focus: "Generate venue-aware publication tables from statistical output."
+    default_outputs:
+      - "manuscript/tables/"
+  figure-specifier:
+    file: "skills/F_writing/figure-specifier.md"
+    category: "manuscript-structure"
+    focus: "Specify reproducible figures with accessibility and caption guidance."
+    default_outputs:
+      - "manuscript/figures/"
+  prisma-checker:
+    file: "skills/G_compliance/prisma-checker.md"
+    category: "prisma-compliance"
+    focus: "Verify PRISMA flow, checklist coverage, and reporting transparency."
+    default_outputs:
+      - "prisma_checklist.md"
+  reporting-checker:
+    file: "skills/G_compliance/reporting-checker.md"
+    category: "reporting-compliance"
+    focus: "Validate reporting guideline completeness for target study type."
+    default_outputs:
+      - "reporting_checklist.md"
+  submission-packager:
+    file: "skills/H_submission/submission-packager.md"
+    category: "submission-readiness"
+    focus: "Assemble cover letter, compliance files, and submission bundle."
+    default_outputs:
+      - "submission/cover_letter.md"
+      - "submission/submission_checklist.md"
+      - "submission/title_page.md"
+      - "submission/highlights.md"
+      - "submission/suggested_reviewers.md"
+      - "submission/author_contributions_credit.md"
+      - "submission/funding_statement.md"
+      - "submission/coi_statement.md"
+      - "submission/data_availability.md"
+      - "submission/ai_disclosure.md"
+      - "submission/supplementary_inventory.md"
+  rebuttal-assistant:
+    file: "skills/H_submission/rebuttal-assistant.md"
+    category: "revision-response"
+    focus: "Generate point-by-point response and tracked revision plan."
+    default_outputs:
+      - "revision/response_matrix.md"
+      - "revision/response_letter.md"
+  code-builder:
+    file: "skills/I_code/code-builder.md"
+    category: "research-code"
+    focus: "Translate methods into reproducible implementation and validation."
+    default_outputs:
+      - "analysis/"
+  data-cleaning-planner:
+    file: "skills/I_code/data-cleaning-planner.md"
+    category: "research-code"
+    focus: "Define reproducible cleaning rules before execution."
+    default_outputs:
+      - "data/cleaning_plan.md"
+  data-merge-planner:
+    file: "skills/I_code/data-merge-planner.md"
+    category: "research-code"
+    focus: "Define join logic, key validation, and multi-source provenance controls."
+    default_outputs:
+      - "data/merge_plan.md"
+  model-collaborator:
+    file: "skills/Z_cross_cutting/model-collaborator.md"
+    category: "research-collaboration"
+    focus: "Coordinate independent multi-agent execution, disagreement logging, and synthesis across research tasks."
+    default_outputs:
+      - "logs/model_collab_trace.md"
+
+  academic-context-maintainer:
+    file: "skills/Z_cross_cutting/academic-context-maintainer.md"
+    category: "research-continuity"
+    focus: "Maintain project-level academic state continuity across major stage transitions."
+    default_outputs:
+      - "context/research_state.md"
+      - "context/decision_log.md"
+
+  self-critique:
+    file: "skills/Z_cross_cutting/self-critique.md"
+    category: "quality-assurance"
+    focus: "Iterative red teaming and Socratic critique of outputs."
+    default_outputs:
+      - "review/self_critique_log.md"
+  hypothesis-generator:
+    file: "skills/A_framing/hypothesis-generator.md"
+    category: "framing"
+    focus: "Translate abstract research questions into testable formal hypotheses."
+    default_outputs:
+      - "framing/hypothesis.md"
+  venue-analyzer:
+    file: "skills/A_framing/venue-analyzer.md"
+    category: "framing"
+    focus: "Analyze fit, format, and scoping constraints for target venue."
+    default_outputs:
+      - "framing/venue_analysis.md"
+  concept-extractor:
+    file: "skills/B_literature/concept-extractor.md"
+    category: "literature-discovery"
+    focus: "Expand search seeds intelligently to break confirmation bias."
+    default_outputs:
+      - "literature/concept_extraction.md"
+  literature-mapper:
+    file: "skills/B_literature/literature-mapper.md"
+    category: "study-selection"
+    focus: "Visualize and map State-of-the-art taxonomies prior to deep reading."
+    default_outputs:
+      - "literature/literature_map.md"
+  rival-hypothesis-designer:
+    file: "skills/C_design/rival-hypothesis-designer.md"
+    category: "study-design"
+    focus: "Proactively construct and address competitive theories."
+    default_outputs:
+      - "design/rival_hypotheses.md"
+  robustness-planner:
+    file: "skills/C_design/robustness-planner.md"
+    category: "study-design"
+    focus: "Pre-specify robustness checks, sensitivity analysis, and bounds scaling."
+    default_outputs:
+      - "design/robustness_plan.md"
+  dataset-finder:
+    file: "skills/C_design/dataset-finder.md"
+    category: "study-design"
+    focus: "Identify feasible datasets, access routes, and coverage risks."
+    default_outputs:
+      - "design/dataset_plan.md"
+  variable-constructor:
+    file: "skills/C_design/variable-constructor.md"
+    category: "study-design"
+    focus: "Operationalize constructs into variable definitions and transformation rules."
+    default_outputs:
+      - "design/variable_spec.md"
+  deidentification-planner:
+    file: "skills/D_ethics/deidentification-planner.md"
+    category: "ethics-compliance"
+    focus: "Ensure technical privacy via k-anonymity or secure data pipelines."
+    default_outputs:
+      - "compliance/deidentification_plan.md"
+  publication-bias-checker:
+    file: "skills/E_synthesis/publication-bias-checker.md"
+    category: "evidence-synthesis"
+    focus: "Evaluate fail-safe N, funnel plot asymmetry, and correction models."
+    default_outputs:
+      - "synthesis/publication_bias.md"
+  meta-optimizer:
+    file: "skills/F_writing/meta-optimizer.md"
+    category: "manuscript-structure"
+    focus: "Optimize Abstract and Title for indexing, SEO, and engagement."
+    default_outputs:
+      - "manuscript/meta_optimization.md"
+  tone-normalizer:
+    file: "skills/G_compliance/tone-normalizer.md"
+    category: "reporting-compliance"
+    focus: "Ruthlessly cut fluff, transition words, and absolute claims."
+    default_outputs:
+      - "compliance/tone_normalization.md"
+  reviewer-empathy-checker:
+    file: "skills/H_submission/reviewer-empathy-checker.md"
+    category: "revision-response"
+    focus: "Neutralize defensiveness and ensure exact addressing of concerns."
+    default_outputs:
+      - "revision/reviewer_empathy_check.md"
+  reproducibility-auditor:
+    file: "skills/I_code/reproducibility-auditor.md"
+    category: "research-code"
+    focus: "Verify magic numbers, random seeds, and fail-graceful contingencies."
+    default_outputs:
+      - "code/reproducibility_audit.md"
+  stats-engine:
+    file: "skills/I_code/stats-engine.md"
+    category: "research-code"
+    focus: "Statistical modeling, tests, and analytics execution."
+    default_outputs:
+      - "analysis/stats_report.md"
+  peer-review-simulation:
+    file: "skills/H_submission/peer-review-simulation.md"
+    category: "revision-response"
+    focus: "Adopt specific reviewer personas to conduct parallel, independent cross-reviews."
+    default_outputs:
+      - "revision/peer_review_simulation.md"
+  fatal-flaw-detector:
+    file: "skills/H_submission/fatal-flaw-detector.md"
+    category: "revision-response"
+    focus: "Constructive desk-reject analysis identifying critical flaws."
+    default_outputs:
+      - "revision/fatal_flaw_analysis.md"
+  journal-fit-recommender:
+    file: "skills/H_submission/journal-fit-recommender.md"
+    category: "submission"
+    focus: "Recommend journals from an existing manuscript using fit, evidence, and reviewer-risk checks."
+    default_outputs:
+      - "submission/journal_fit_recommendation.md"
+      - "submission/journal_fit_recommendation.json"
+  code-specification:
+    file: "skills/I_code/code-specification.md"
+    category: "research-code"
+    focus: "Requirement research generating strict constraint sets before coding."
+    default_outputs:
+      - "code/code_specification.md"
+  code-planning:
+    file: "skills/I_code/code-planning.md"
+    category: "research-code"
+    focus: "Transforming specs into parallelizable execution plans."
+    default_outputs:
+      - "code/plan.md"
+  code-execution:
+    file: "skills/I_code/code-execution.md"
+    category: "research-code"
+    focus: "Executing the plan and optimizing performance (cProfile/vectorization)."
+    default_outputs:
+      - "code/performance_profile.md"
+  code-review:
+    file: "skills/I_code/code-review.md"
+    category: "research-code"
+    focus: "Secondary model reviews code logic, security, and statistical validity."
+    default_outputs:
+      - "code/code_review.md"
+  release-packager:
+    file: "skills/I_code/release-packager.md"
+    category: "research-code"
+    focus: "Package code, data, environment, and documentation for reproducible release."
+    default_outputs:
+      - "release/"
+  presentation-planner:
+    file: "skills/K_presentation/presentation-planner.md"
+    category: "academic-presentation"
+    focus: "Plan talk-level story arc, audience calibration, and time budget from manuscript material."
+    default_outputs:
+      - "presentation/presentation_plan.md"
+  slide-architect:
+    file: "skills/K_presentation/slide-architect.md"
+    category: "academic-presentation"
+    focus: "Translate talk plan into slide-by-slide assertion-evidence specs and backend-agnostic layout guidance."
+    default_outputs:
+      - "presentation/slide_deck_spec.md"
+  slidev-scholarly-builder:
+    file: "skills/K_presentation/slidev-scholarly-builder.md"
+    category: "academic-presentation"
+    focus: "Build Slidev scholarly decks with citation wiring and visual layout presets."
+    default_outputs:
+      - "presentation/slidev/"
+      - "presentation/slides.bib"
+  beamer-builder:
+    file: "skills/K_presentation/beamer-builder.md"
+    category: "academic-presentation"
+    focus: "Build LaTeX Beamer decks with theme selection, math support, and BibLaTeX references."
+    default_outputs:
+      - "presentation/beamer/"
+      - "presentation/slides.bib"
+  data-dictionary-builder:
+    file: "skills/C_design/data-dictionary-builder.md"
+    category: "study-design"
+    focus: "Create structured data dictionaries defining variables, types, ranges, and coding."
+    default_outputs:
+      - "design/data_dictionary.md"
+  data-management-plan:
+    file: "skills/C_design/data-management-plan.md"
+    category: "study-design"
+    focus: "Generate FAIR-compliant data management plans with storage and sharing strategy."
+    default_outputs:
+      - "data_management_plan.md"
+  prereg-writer:
+    file: "skills/C_design/prereg-writer.md"
+    category: "study-design"
+    focus: "Generate preregistration documents for OSF/AsPredicted platforms."
+    default_outputs:
+      - "preregistration.md"
+  variable-operationalizer:
+    file: "skills/C_design/variable-operationalizer.md"
+    category: "study-design"
+    focus: "Map constructs to measurable variables with validity/reliability justification."
+    default_outputs:
+      - "design/operationalization.md"
+  credit-taxonomy-helper:
+    file: "skills/H_submission/credit-taxonomy-helper.md"
+    category: "submission-readiness"
+    focus: "Generate CRediT author contribution statements with ICMJE cross-check."
+    default_outputs:
+      - "submission/credit_statement.md"
+  ai-fingerprint-scanner:
+    file: "skills/J_proofread/ai-fingerprint-scanner.md"
+    category: "proofread"
+    focus: "Scan manuscript for AI-generation fingerprints and formulaic patterns."
+    default_outputs:
+      - "proofread/ai_detection_report.md"
+  human-voice-rewriter:
+    file: "skills/J_proofread/human-voice-rewriter.md"
+    category: "proofread"
+    focus: "Rewrite AI-flagged passages to sound authentically human-authored."
+    default_outputs:
+      - "proofread/humanized_manuscript.md"
+  similarity-checker:
+    file: "skills/J_proofread/similarity-checker.md"
+    category: "proofread"
+    focus: "Identify text overlap, self-plagiarism, and boilerplate passages."
+    default_outputs:
+      - "proofread/similarity_report.md"
+  final-proofreader:
+    file: "skills/J_proofread/final-proofreader.md"
+    category: "proofread"
+    focus: "Final language-level polish covering grammar, tense, and cross-references."
+    default_outputs:
+      - "proofread/proofread_checklist.md"
+
+skill_boundary_notes:
+  academic-searcher:
+    owns_contract_artifacts:
+      - "search_strategy.md"
+      - "search_results.csv"
+      - "search_log.md"
+      - "dedup_log.csv"
+    embedded_subflows:
+      - "query drafting"
+      - "keyword expansion"
+      - "provider-specific query translation"
+      - "deduplication and metadata normalization"
+    provider_dependencies:
+      - "scholarly-search"
+      - "metadata-registry"
+    templates:
+      - "templates/search-strategy.md"
+      - "templates/search-log.md"
+      - "templates/dedup-log.csv"
+  citation-snowballer:
+    owns_contract_artifacts:
+      - "snowball_log.md"
+    appends_shared_artifacts:
+      - "search_results.csv"
+      - "dedup_log.csv"
+    provider_dependencies:
+      - "citation-graph"
+      - "metadata-registry"
+    templates:
+      - "templates/dedup-log.csv"
+  fulltext-fetcher:
+    owns_contract_artifacts:
+      - "screening/full_text.md"
+      - "retrieval_manifest.csv"
+    provider_dependencies:
+      - "fulltext-retrieval"
+      - "metadata-registry"
+    templates:
+      - "templates/retrieval-manifest.csv"
+  metadata-enricher:
+    owns_contract_artifacts:
+      - "bibliography.bib"
+    appends_shared_artifacts:
+      - "dedup_log.csv"
+    provider_dependencies:
+      - "metadata-registry"
+    templates:
+      - "templates/dedup-log.csv"
+  paper-extractor:
+    owns_contract_artifacts:
+      - "notes/"
+      - "extraction_table.md"
+    embedded_subflows:
+      - "theory extraction slot"
+      - "methodology extraction slot"
+      - "dataset extraction slot"
+      - "limitation extraction slot"
+    provider_dependencies:
+      - "extraction-store"
+    templates:
+      - "templates/paper-note.md"
+      - "templates/extraction-table.md"
+  study-designer:
+    owns_contract_artifacts:
+      - "study_design.md"
+      - "analysis_plan.md"
+      - "data_management_plan.md"
+      - "instruments/"
+      - "preregistration.md"
+    embedded_subflows:
+      - "design choice rationale"
+      - "construct-to-measure mapping"
+      - "sampling and power planning"
+      - "handoff planning to dataset and variable specs"
+    provider_dependencies:
+      - "metadata-registry"
+    templates:
+      - "templates/study-design.md"
+      - "templates/analysis-plan.md"
+      - "templates/data-management-plan.md"
+  manuscript-architect:
+    owns_contract_artifacts:
+      - "manuscript/outline.md"
+      - "manuscript/manuscript.md"
+      - "manuscript/claims_evidence_map.md"
+      - "manuscript/figures_tables_plan.md"
+    embedded_subflows:
+      - "story spine construction"
+      - "section-level drafting"
+      - "results anchoring"
+      - "figure/table placement planning"
+    provider_dependencies:
+      - "filesystem"
+    templates:
+      - "templates/manuscript-outline.md"
+      - "templates/manuscript-skeleton.md"
+      - "templates/claim-evidence-map.md"
+      - "templates/figures-tables-plan.md"
+
+# Additive metadata only: this section documents who conceptually owns a task.
+# Runtime execution still uses task_execution.primary_agent/review_agent/fallback_agent.
+task_functional_routing:
+  defaults_by_stage:
+    A: "research-orchestrator"
+    B: "literature-agent"
+    C: "methodology-agent"
+    D: "publication-agent"
+    E: "analysis-agent"
+    F: "writing-agent"
+    G: "publication-agent"
+    H: "publication-agent"
+    I: "analysis-agent"
+    J: "publication-agent"
+    K: "publication-agent"
+    L: "writing-agent"
+    M: "research-orchestrator"
+  overrides:
+    A1_5: "theory-agent"
+    A2: "theory-agent"
+    A3: "theory-agent"
+    A4: "theory-agent"
+    A5: "publication-agent"
+    B4: "writing-agent"
+    C4: "data-agent"
+    D3: "data-agent"
+    G4: "writing-agent"
+    H2_5: "writing-agent"
+    I1: "methodology-agent"
+    I3: "data-agent"
+    I4: "methodology-agent"
+    I5: "methodology-agent"
+    I6: "methodology-agent"
+    I8: "code-review-agent"
+
+task_skill_mapping:
+  A1:
+    required_skills:
+      - "question-refiner"
+      - "metadata-enricher"
+      - "self-critique"
+  A1_5:
+    required_skills:
+      - "hypothesis-generator"
+      - "question-refiner"
+      - "self-critique"
+  A2:
+    required_skills:
+      - "contribution-crafter"
+      - "question-refiner"
+      - "manuscript-architect"
+  A3:
+    required_skills:
+      - "theory-mapper"
+      - "question-refiner"
+  A4:
+    required_skills:
+      - "gap-analyzer"
+      - "academic-searcher"
+  A5:
+    required_skills:
+      - "venue-analyzer"
+      - "academic-searcher"
+      - "academic-context-maintainer"
+
+  B1:
+    required_skills:
+      - "academic-searcher"
+      - "paper-screener"
+      - "model-collaborator"
+      - "fulltext-fetcher"
+      - "paper-extractor"
+      - "quality-assessor"
+      - "prisma-checker"
+      - "evidence-synthesizer"
+      - "self-critique"
+  B1_5:
+    required_skills:
+      - "concept-extractor"
+      - "question-refiner"
+  B2:
+    required_skills:
+      - "paper-extractor"
+      - "fulltext-fetcher"
+      - "metadata-enricher"
+      - "citation-formatter"
+  B3:
+    required_skills:
+      - "citation-snowballer"
+      - "metadata-enricher"
+  B4:
+    required_skills:
+      - "manuscript-architect"
+      - "citation-formatter"
+  B5:
+    required_skills:
+      - "citation-formatter"
+      - "reference-manager-bridge"
+  B6:
+    required_skills:
+      - "literature-mapper"
+      - "paper-extractor"
+      - "academic-context-maintainer"
+
+  C1:
+    required_skills:
+      - "study-designer"
+      - "question-refiner"
+      - "self-critique"
+  C1_5:
+    required_skills:
+      - "rival-hypothesis-designer"
+      - "study-designer"
+  C2:
+    required_skills:
+      - "study-designer"
+      - "ethics-irb-helper"
+  C3:
+    required_skills:
+      - "study-designer"
+      - "variable-constructor"
+      - "code-builder"
+  C3_5:
+    required_skills:
+      - "robustness-planner"
+      - "study-designer"
+  C4:
+    required_skills:
+      - "study-designer"
+      - "dataset-finder"
+      - "variable-constructor"
+      - "ethics-irb-helper"
+  C5:
+    required_skills:
+      - "study-designer"
+      - "metadata-enricher"
+      - "academic-context-maintainer"
+
+  D1:
+    required_skills:
+      - "ethics-irb-helper"
+      - "study-designer"
+      - "self-critique"
+  D2:
+    required_skills:
+      - "statement-generator"
+      - "manuscript-architect"
+  D3:
+    required_skills:
+      - "deidentification-planner"
+      - "ethics-irb-helper"
+      - "academic-context-maintainer"
+
+  E1:
+    required_skills:
+      - "evidence-synthesizer"
+      - "quality-assessor"
+  E2:
+    required_skills:
+      - "effect-size-calculator"
+      - "evidence-synthesizer"
+      - "paper-extractor"
+  E3:
+    required_skills:
+      - "evidence-synthesizer"
+      - "code-builder"
+      - "model-collaborator"
+      - "self-critique"
+  E3_5:
+    required_skills:
+      - "publication-bias-checker"
+      - "stats-engine"
+  E4:
+    required_skills:
+      - "quality-assessor"
+      - "evidence-synthesizer"
+  E5:
+    required_skills:
+      - "evidence-synthesizer"
+      - "manuscript-architect"
+      - "qualitative-coding"
+      - "academic-context-maintainer"
+
+  F1:
+    required_skills:
+      - "manuscript-architect"
+      - "metadata-enricher"
+  F2:
+    required_skills:
+      - "manuscript-architect"
+      - "citation-formatter"
+  F3:
+    required_skills:
+      - "manuscript-architect"
+      - "analysis-interpreter"
+      - "effect-size-interpreter"
+      - "discussion-writer"
+      - "citation-formatter"
+      - "reporting-checker"
+      - "self-critique"
+  F4:
+    required_skills:
+      - "manuscript-architect"
+      - "quality-assessor"
+  F5:
+    required_skills:
+      - "manuscript-architect"
+      - "table-generator"
+      - "figure-specifier"
+      - "metadata-enricher"
+  F6:
+    required_skills:
+      - "meta-optimizer"
+      - "manuscript-architect"
+      - "academic-context-maintainer"
+
+  G1:
+    required_skills:
+      - "reporting-checker"
+      - "quality-assessor"
+      - "self-critique"
+  G2:
+    required_skills:
+      - "prisma-checker"
+      - "reporting-checker"
+  G3:
+    required_skills:
+      - "manuscript-architect"
+      - "quality-assessor"
+  G4:
+    required_skills:
+      - "tone-normalizer"
+      - "manuscript-architect"
+      - "self-critique"
+
+  H1:
+    required_skills:
+      - "submission-packager"
+      - "reporting-checker"
+      - "citation-formatter"
+      - "self-critique"
+  H2:
+    required_skills:
+      - "rebuttal-assistant"
+      - "manuscript-architect"
+  H2_5:
+    required_skills:
+      - "reviewer-empathy-checker"
+      - "self-critique"
+  H3:
+    required_skills:
+      - "peer-review-simulation"
+      - "model-collaborator"
+      - "manuscript-architect"
+      - "quality-assessor"
+  H4:
+    required_skills:
+      - "fatal-flaw-detector"
+      - "limitation-auditor"
+      - "self-critique"
+      - "academic-context-maintainer"
+  H5:
+    required_skills:
+      - "journal-fit-recommender"
+      - "venue-analyzer"
+      - "manuscript-architect"
+      - "quality-assessor"
+      - "fatal-flaw-detector"
+      - "academic-context-maintainer"
+
+  I1:
+    required_skills:
+      - "code-builder"
+      - "model-collaborator"
+      - "self-critique"
+  I2:
+    required_skills:
+      - "code-builder"
+      - "stats-engine"
+      - "model-collaborator"
+      - "metadata-enricher"
+  I3:
+    required_skills:
+      - "code-builder"
+      - "data-cleaning-planner"
+      - "data-merge-planner"
+      - "model-collaborator"
+      - "metadata-enricher"
+  I4:
+    required_skills:
+      - "reproducibility-auditor"
+      - "model-collaborator"
+      - "self-critique"
+  I5:
+    required_skills:
+      - "code-specification"
+      - "self-critique"
+  I6:
+    required_skills:
+      - "code-planning"
+      - "model-collaborator"
+  I7:
+    required_skills:
+      - "code-execution"
+      - "model-collaborator"
+  I8:
+    required_skills:
+      - "code-review"
+      - "model-collaborator"
+  I9:
+    required_skills:
+      - "release-packager"
+      - "reproducibility-auditor"
+
+  J1:
+    required_skills:
+      - "ai-fingerprint-scanner"
+      - "manuscript-architect"
+  J2:
+    required_skills:
+      - "human-voice-rewriter"
+      - "ai-fingerprint-scanner"
+  J3:
+    required_skills:
+      - "similarity-checker"
+      - "human-voice-rewriter"
+  J4:
+    required_skills:
+      - "final-proofreader"
+      - "similarity-checker"
+
+  K1:
+    required_skills:
+      - "presentation-planner"
+      - "manuscript-architect"
+  K2:
+    required_skills:
+      - "slide-architect"
+      - "presentation-planner"
+  K3:
+    required_skills:
+      - "slidev-scholarly-builder"
+      - "slide-architect"
+      - "citation-formatter"
+  K4:
+    required_skills:
+      - "beamer-builder"
+      - "slide-architect"
+      - "citation-formatter"
+  L1:
+    required_skills:
+      - "assignment-brief-analyzer"
+      - "academic-context-maintainer"
+  L2:
+    required_skills:
+      - "rubric-mapper"
+      - "assignment-brief-analyzer"
+  L3:
+    required_skills:
+      - "coursework-architect"
+      - "rubric-mapper"
+  L4:
+    required_skills:
+      - "coursework-architect"
+      - "citation-formatter"
+  L5:
+    required_skills:
+      - "coursework-architect"
+      - "manuscript-architect"
+  L6:
+    required_skills:
+      - "coursework-reviser"
+      - "rubric-mapper"
+  L7:
+    required_skills:
+      - "coursework-reviser"
+      - "academic-context-maintainer"
+  M1:
+    required_skills:
+      - "dissertation-planner"
+      - "academic-context-maintainer"
+  M2:
+    required_skills:
+      - "chapter-architect"
+      - "dissertation-planner"
+  M3:
+    required_skills:
+      - "chapter-architect"
+      - "manuscript-architect"
+  M4:
+    required_skills:
+      - "supervisor-feedback-integrator"
+      - "chapter-architect"
+  M5:
+    required_skills:
+      - "dissertation-planner"
+      - "academic-context-maintainer"
+  M6:
+    required_skills:
+      - "dissertation-readiness-checker"
+      - "chapter-architect"
+  M7:
+    required_skills:
+      - "dissertation-readiness-checker"
+      - "presentation-planner"
+
+task_execution:
+  A1:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  A1_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+  A2:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  A3:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "citation-graph"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  A4:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "citation-graph"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q4"
+  A5:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+
+  B1:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "citation-graph"
+      - "fulltext-retrieval"
+      - "screening-tracker"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+  B1_5:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+  B2:
+    required_mcp:
+      - "filesystem"
+      - "fulltext-retrieval"
+      - "metadata-registry"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  B3:
+    required_mcp:
+      - "filesystem"
+      - "citation-graph"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  B4:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  B5:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  B6:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+
+  C1:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C1_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+  C2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C3:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+      - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C3_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  C4:
+    required_mcp:
+      - "filesystem"
+      - "scholarly-search"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  C5:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+
+  D1:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  D2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q3"
+      - "Q4"
+  D3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+
+  E1:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  E2:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "stats-engine"
+    primary_agent: "codex"
+    review_agent: "antigravity"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  E3:
+    required_mcp:
+      - "filesystem"
+      - "stats-engine"
+      - "extraction-store"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  E3_5:
+    required_mcp:
+      - "filesystem"
+      - "stats-engine"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+  E4:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  E5:
+    required_mcp:
+      - "filesystem"
+      - "extraction-store"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+
+  F1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  F2:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  F3:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q3"
+  F4:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  F5:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  F6:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+
+  G1:
+    required_mcp:
+      - "filesystem"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q3"
+  G2:
+    required_mcp:
+      - "filesystem"
+      - "reporting-guidelines"
+      - "screening-tracker"
+      - "extraction-store"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+  G3:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+      - "Q4"
+  G4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+
+  H1:
+    required_mcp:
+      - "filesystem"
+      - "submission-kit"
+      - "reporting-guidelines"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+      - "Q4"
+  H2:
+    required_mcp:
+      - "filesystem"
+      - "metadata-registry"
+    primary_agent: "claude"
+    review_agent: "codex"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+      - "Q4"
+  H2_5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+  H3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  H4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  H5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+
+  I1:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "codex"
+    review_agent: "antigravity"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I2:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "claude"
+    fallback_agent: "antigravity"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I3:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+      - "extraction-store"
+      - "metadata-registry"
+    primary_agent: "codex"
+    review_agent: "antigravity"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q4"
+  I4:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "codex"
+    review_agent: "antigravity"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q4"
+  I5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I6:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  I7:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "codex"
+    review_agent: "antigravity"
+    fallback_agent: "claude"
+    quality_gates:
+      - "Q4"
+  I8:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "antigravity"
+    review_agent: "claude"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  I9:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q4"
+  J1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  J2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  J3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  J4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q4"
+  K1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  K2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  K3:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  K4:
+    required_mcp:
+      - "filesystem"
+      - "code-runtime"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q3"
+  L1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  L2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  L3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  L4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  L5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  L6:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  L7:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  M1:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  M2:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q2"
+  M3:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  M4:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  M5:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q1"
+      - "Q4"
+  M6:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+  M7:
+    required_mcp:
+      - "filesystem"
+    primary_agent: "claude"
+    review_agent: "antigravity"
+    fallback_agent: "codex"
+    quality_gates:
+      - "Q2"
+      - "Q3"
+
+# ── Team-Run (Research Fanout/Fanin) Configuration ──────────────────
+# MVP scope: only B1 and H3 are supported.
+# team-run splits a single Task ID into parallel work_units, each
+# executed by an independent worker agent, then merged into canonical
+# output by a dedicated merge agent.
+#
+# Terminology:
+#   work_unit  – the smallest parallelizable sub-task within a Task ID
+#   shard      – the output directory owned by one work_unit
+#   canonical  – the final merged output written to RESEARCH/[topic]/
+#   merge      – the convergence step that combines shards into canonical
+team_run_config:
+  B1:
+    execution_mode: fanout_merge
+    partition_strategy: by_paper_batch
+    max_parallel_units: 5
+    planner_agent: claude
+    worker_pool:
+      - codex
+      - claude
+      - antigravity
+    merge_agent: claude
+    review_pool:
+      - codex
+      - antigravity
+    consensus_policy: majority_rules
+    barrier_rules:
+      min_success_ratio: 0.6
+      on_failure: degrade       # degrade | block | retry
+    shard_outputs:
+      - "search_results_shard.csv"
+      - "extraction_shard.md"
+      - "quality_shard.md"
+    canonical_outputs:
+      - "search_results.csv"
+      - "extraction_table.md"
+      - "quality_table.md"
+      - "synthesis_matrix.md"
+
+  H3:
+    execution_mode: fanout_merge
+    partition_strategy: by_reviewer_persona
+    max_parallel_units: 3
+    planner_agent: claude
+    worker_pool:
+      - codex
+      - claude
+      - antigravity
+    merge_agent: claude
+    review_pool:
+      - codex
+      - antigravity
+    consensus_policy: union_with_priority
+    barrier_rules:
+      min_success_ratio: 1.0
+      on_failure: block         # all reviewers must succeed
+    personas:
+      - id: methodologist
+        focus: "Statistical validity, identification strategy, robustness"
+      - id: domain_expert
+        focus: "Theoretical grounding, literature coverage, contribution"
+      - id: reviewer_2
+        focus: "Presentation, reproducibility, formatting"
+    shard_outputs:
+      - "review_shard.md"
+    canonical_outputs:
+      - "revision/peer_review_simulation.md"
+
+# -- Worker Orchestration Configuration --------------------------------------
+# Worker orchestration describes how one controller runtime can split a Task ID
+# into scoped in-platform workers before merge/review. It is disabled by
+# default in task-run and only activates when worker-mode flags request it.
+worker_orchestration_config:
+  B1:
+    default_mode: delegated_workers
+    adapter_preference:
+      codex: codex_subagent
+      claude: claude_cowork
+      antigravity: generic_prompt
+    partition_strategy: by_search_facet
+    max_workers: 4
+    worker_pool:
+      - literature_search_worker
+      - screening_worker
+      - extraction_worker
+    merge_policy: synthesize_with_conflict_matrix
+    barrier_rules:
+      min_success_ratio: 0.6
+      on_failure: degrade
+
+  H3:
+    default_mode: review_swarm
+    adapter_preference:
+      codex: codex_subagent
+      claude: claude_cowork
+      antigravity: generic_prompt
+    partition_strategy: by_reviewer_persona
+    max_workers: 3
+    worker_pool:
+      - methodologist
+      - domain_expert
+      - reviewer_2
+    merge_policy: controller_adjudication
+    barrier_rules:
+      min_success_ratio: 1.0
+      on_failure: block

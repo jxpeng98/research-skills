@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "type": "object",
+  "required": ["status", "providers"],
+  "properties": {
+    "status": { "type": "string", "enum": ["complete", "partial", "failed"] },
+    "providers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "count"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "error"] },
+          "count": { "type": "integer", "minimum": 0 },
+          "error_kind": {
+            "type": "string",
+            "enum": ["timeout", "http_error", "decode_error", "transport_error"]
+          },
+          "warning": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

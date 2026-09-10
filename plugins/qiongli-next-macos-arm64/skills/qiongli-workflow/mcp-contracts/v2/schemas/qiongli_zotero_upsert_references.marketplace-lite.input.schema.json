@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qiongli.dev/schemas/tools/qiongli_zotero_upsert_references.input.v2.json",
+  "title": "qiongli_zotero_upsert_references input",
+  "type": "object",
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": { "type": "object" }
+    },
+    "collection_path": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "update_policy": {
+      "type": "string",
+      "enum": ["fill_blank", "prefer_enriched"],
+      "default": "fill_blank"
+    },
+    "dry_run": { "type": "boolean", "default": true },
+    "write_intent": { "type": "string", "const": "apply" },
+    "dry_run_receipt": { "type": "string", "pattern": "^zwr1_[0-9a-f]{64}$" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "dry_run": { "const": false } },
+        "required": ["dry_run"]
+      },
+      "then": { "required": ["write_intent", "dry_run_receipt"] }
+    }
+  ],
+  "additionalProperties": false
+}

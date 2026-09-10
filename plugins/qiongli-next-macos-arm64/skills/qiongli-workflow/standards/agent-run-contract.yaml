@@ -1,0 +1,50 @@
+contract_version: "1.0.0"
+execution_modes:
+  - solo_codex
+  - solo_claude
+  - solo_antigravity
+  - duo
+  - triad
+runtime_agents:
+  - codex
+  - claude
+  - antigravity
+verification_statuses:
+  - passed
+  - failed
+  - blocked
+required_run_fields:
+  - run_id
+  - execution_mode
+  - controller
+  - primary_agent
+  - task_id
+  - paper_type
+  - topic
+  - input_context_hash
+  - session_id
+  - artifacts_read
+  - artifacts_written
+  - warnings
+  - blocking_issues
+  - confidence
+  - verification_status
+required_review_fields:
+  - reviewer_agent
+  - reviewed_run_id
+  - review_status
+  - findings
+  - blocking_issues
+  - required_revisions
+  - verification_evidence
+required_handoff_fields:
+  - from_agent
+  - to_agent
+  - task_id
+  - completed_artifacts
+  - decision_summary
+  - unresolved_questions
+  - evidence_dependencies
+  - assumptions
+  - risks
+  - next_actions

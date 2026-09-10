@@ -1,0 +1,11 @@
+id: academy-of-management-journal
+display_name: "Academy of Management Journal"
+discipline: business
+quality_bar:
+  - "Contribution must extend management theory, not only document a business phenomenon."
+  - "Empirical design must align constructs, level of analysis, sample, and mechanism."
+  - "Methods transparency must support doctoral-level journal review."
+fit_notes:
+  - "Best fit for strong empirical papers with clear theory contribution."
+  - "Position practical relevance after the theory contribution is established."
+  - "Use qualitative or quantitative evidence only when it can support the claimed mechanism."

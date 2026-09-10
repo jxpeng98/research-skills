@@ -121,7 +121,10 @@ behavior. Beta.1 targets macOS ARM64, Windows x64, and Linux x64/glibc 2.35+.
 npm needs Node 18+; PyPI needs Python 3.9+.
 
 Cargo builds the CLI from source and requires Rust 1.97+ and the target's native
-linker. It provides both `qiongli` and `ql`:
+linker. It provides both `qiongli` and `ql`.
+
+Cargo publication is pending. The command below will work after the crates.io
+upload; use the standalone archive, npm or PyPI in the meantime.
 
 ```sh
 cargo install qiongli --version 2.0.0-beta.1 --locked

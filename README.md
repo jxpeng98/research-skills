@@ -70,7 +70,10 @@ before running. See [extraction, PATH and MCP setup](docs/guide/cli-2x.md#standa
 for step-by-step instructions. Choose these platform archives from **Assets**, rather than
 GitHub's automatic **Source code** downloads. Host applications and online services remain separate.
 
-For Cargo users, build from source with Rust 1.97+ and a native linker:
+Cargo builds from source with Rust 1.97+ and a native linker.
+
+Cargo publication is pending; use the command below once the crates.io upload
+is complete. Standalone downloads, npm and PyPI are available now.
 
 ```sh
 cargo install qiongli --version 2.0.0-beta.1 --locked

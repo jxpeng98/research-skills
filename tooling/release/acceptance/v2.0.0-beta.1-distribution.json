@@ -1,0 +1,382 @@
+{
+  "status": "published-with-cargo-pending",
+  "version": "2.0.0-beta.1",
+  "source_commit": "a9472e2407512ba21572a289aa75b3267955e24d",
+  "release": "https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.1",
+  "published_at": "2026-09-10T20:36:32Z",
+  "native_qualification": {
+    "conclusion": "success",
+    "databaseId": 34525953141,
+    "headSha": "a9472e2407512ba21572a289aa75b3267955e24d",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34525953141"
+  },
+  "cargo_qualification": {
+    "conclusion": "success",
+    "databaseId": 34525994551,
+    "headSha": "a9472e2407512ba21572a289aa75b3267955e24d",
+    "status": "completed",
+    "url": "https://github.com/jxpeng98/qiongli/actions/runs/34525994551"
+  },
+  "public_downloads": {
+    "version": "2.0.0-beta.1",
+    "source_commit": "a9472e2407512ba21572a289aa75b3267955e24d",
+    "all_public_files_match_ci": true,
+    "public_files": 16,
+    "runtime_path": "empty",
+    "macos_cli": {
+      "version": "2.0.0-beta.1",
+      "invalid_command_rejected": true,
+      "mcp_tools": {
+        "lite": 14,
+        "full": 32
+      },
+      "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+    },
+    "macos_plugins": {
+      "codex": {
+        "version": "2.0.0-beta.1",
+        "source_commit": "a9472e2407512ba21572a289aa75b3267955e24d",
+        "platform": "codex",
+        "target": "aarch64-apple-darwin",
+        "binary_sha256": "8a296fb8bdaaf6d55002efedabf2e0dba42e1695636c09fdc23507ba2a532186",
+        "pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18",
+        "content_root_sha256": "cfaea329d8fc22e523aee30ab257c82faba92eb564848e74270e664bb01ef94d",
+        "sha256": "f927d5c033e241e2da495879c80a098b278195732952105bed9420c4df14d65c",
+        "bytes": 7150711,
+        "status": "passed",
+        "runtime_path": "empty",
+        "mcp_tools": 14
+      },
+      "claude": {
+        "version": "2.0.0-beta.1",
+        "source_commit": "a9472e2407512ba21572a289aa75b3267955e24d",
+        "platform": "claude",
+        "target": "aarch64-apple-darwin",
+        "binary_sha256": "8a296fb8bdaaf6d55002efedabf2e0dba42e1695636c09fdc23507ba2a532186",
+        "pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18",
+        "content_root_sha256": "cfaea329d8fc22e523aee30ab257c82faba92eb564848e74270e664bb01ef94d",
+        "sha256": "dbb3d4e2f0829f7adb77e58393df6426ac904e01074009385c0ee15212014a00",
+        "bytes": 7150396,
+        "status": "passed",
+        "runtime_path": "empty",
+        "mcp_tools": 14
+      }
+    }
+  },
+  "registry_publication": {
+    "npm": {
+      "status": "published",
+      "version": "2.0.0-beta.1",
+      "run": 34527401737
+    },
+    "pypi": {
+      "status": "published",
+      "version": "2.0.0b1",
+      "run": 34527401715
+    },
+    "public_versions_and_digests": {
+      "npm_version": "2.0.0-beta.1",
+      "npm_dist_tags": {
+        "latest": "1.17.0",
+        "next": "2.0.0-beta.1"
+      },
+      "pypi_version": "2.0.0b1",
+      "pypi_wheels": [
+        {
+          "file": "qiongli-2.0.0b1-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "1404b694659051512ac48be82228b7cad5b11aab3b4b459b0f6d36bdba77a426"
+        },
+        {
+          "file": "qiongli-2.0.0b1-py3-none-manylinux_2_35_x86_64.whl",
+          "sha256": "d9c6a0f7b22238b0757f23d3191bed8a2ab261821c80c6aa83ed71ec26c37433"
+        },
+        {
+          "file": "qiongli-2.0.0b1-py3-none-win_amd64.whl",
+          "sha256": "aef9415a3e0731e3013ae28cadafea1a57a580e2c70a1173cc1c966b1dce12cf"
+        }
+      ],
+      "downloaded_registry_bytes_match_release": true
+    },
+    "macos_public_install": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-beta.1.tgz",
+          "sha256": "a76ebd62956307488b6d687a869cd75320c88c0962f4ca9377bb5eca39eb892f",
+          "bytes": 19570698
+        },
+        {
+          "file": "qiongli-2.0.0b1-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "1404b694659051512ac48be82228b7cad5b11aab3b4b459b0f6d36bdba77a426",
+          "bytes": 6556907
+        }
+      ],
+      "checks": {
+        "npm": {
+          "version": "2.0.0-beta.1",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+        },
+        "pypi": {
+          "version": "2.0.0-beta.1",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+        }
+      }
+    }
+  },
+  "marketplace": {
+    "status": "published",
+    "catalog_repository": "https://github.com/jxpeng98/skillsplace",
+    "catalog_commit": "39c8963125b098552838f5c0d3d3d8991c464d86",
+    "catalog_tests_passed": 30,
+    "public_catalog_bytes_verified": true,
+    "stable_version": "1.17.0",
+    "legacy_generic_next_version": "2.0.0-alpha.8",
+    "native_distributions": [
+      {
+        "name": "qiongli-next-macos-arm64",
+        "host": "codex",
+        "target": "aarch64-apple-darwin",
+        "artifact": "qiongli-next-codex-plugin-v2.0.0-beta.1-aarch64-apple-darwin.tar.gz",
+        "sha256": "f927d5c033e241e2da495879c80a098b278195732952105bed9420c4df14d65c",
+        "binary_sha256": "8a296fb8bdaaf6d55002efedabf2e0dba42e1695636c09fdc23507ba2a532186",
+        "distribution_ref": "codex/aarch64-apple-darwin/v2.0.0-beta.1",
+        "plugin_path": "plugins/qiongli-next-macos-arm64",
+        "commit": "000dc91cbb2e77d26d92708d28aa098e31dcc8a6",
+        "verified_files": 434
+      },
+      {
+        "name": "qiongli-next-macos-arm64",
+        "host": "claude",
+        "target": "aarch64-apple-darwin",
+        "artifact": "qiongli-next-claude-plugin-v2.0.0-beta.1-aarch64-apple-darwin.tar.gz",
+        "sha256": "dbb3d4e2f0829f7adb77e58393df6426ac904e01074009385c0ee15212014a00",
+        "binary_sha256": "8a296fb8bdaaf6d55002efedabf2e0dba42e1695636c09fdc23507ba2a532186",
+        "distribution_ref": "claude/aarch64-apple-darwin/v2.0.0-beta.1",
+        "plugin_path": "plugins/qiongli-next-macos-arm64",
+        "commit": "c9659663eda89659e4eb815ae047fd95274bcd46",
+        "verified_files": 434
+      },
+      {
+        "name": "qiongli-next-linux-x64",
+        "host": "codex",
+        "target": "x86_64-unknown-linux-gnu",
+        "artifact": "qiongli-next-codex-plugin-v2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz",
+        "sha256": "82c4c91bd51050e06ef2d6062b022339210dabfa00de10a6c35b7ab05e1697c2",
+        "binary_sha256": "960dc5e1b34dc52e9d0af20565a971e202401cd2b4aabd5bf058a90d875716ba",
+        "distribution_ref": "codex/x86_64-unknown-linux-gnu/v2.0.0-beta.1",
+        "plugin_path": "plugins/qiongli-next-linux-x64",
+        "commit": "963f0223c8e254a5ca36a2dad4fdf421be85deb0",
+        "verified_files": 434
+      },
+      {
+        "name": "qiongli-next-linux-x64",
+        "host": "claude",
+        "target": "x86_64-unknown-linux-gnu",
+        "artifact": "qiongli-next-claude-plugin-v2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz",
+        "sha256": "8d4df247010c016d4f5ca09f5abecaa375f08b3ac0f67ef313d9b1c521941ed1",
+        "binary_sha256": "960dc5e1b34dc52e9d0af20565a971e202401cd2b4aabd5bf058a90d875716ba",
+        "distribution_ref": "claude/x86_64-unknown-linux-gnu/v2.0.0-beta.1",
+        "plugin_path": "plugins/qiongli-next-linux-x64",
+        "commit": "b2f4fce050e5cc8977edc9c9fdc555fc77a855af",
+        "verified_files": 434
+      },
+      {
+        "name": "qiongli-next-windows-x64",
+        "host": "codex",
+        "target": "x86_64-pc-windows-msvc",
+        "artifact": "qiongli-next-codex-plugin-v2.0.0-beta.1-x86_64-pc-windows-msvc.tar.gz",
+        "sha256": "3db6af3e667751b58c07897995da59ce2483337c7595bbd7217150650d1e355d",
+        "binary_sha256": "9237a8f4a493b6d2e8405aced5fc7cbf9ede703a36317642594b44399d5c6815",
+        "distribution_ref": "codex/x86_64-pc-windows-msvc/v2.0.0-beta.1",
+        "plugin_path": "plugins/qiongli-next-windows-x64",
+        "commit": "d9f12e46ec79c9870ce67b30fdca0a11ff13d340",
+        "verified_files": 434
+      },
+      {
+        "name": "qiongli-next-windows-x64",
+        "host": "claude",
+        "target": "x86_64-pc-windows-msvc",
+        "artifact": "qiongli-next-claude-plugin-v2.0.0-beta.1-x86_64-pc-windows-msvc.tar.gz",
+        "sha256": "e0331d3abb2d7934510f4718404293d79ad1fe5f81a8cff1c0b6ea69b95596c2",
+        "binary_sha256": "9237a8f4a493b6d2e8405aced5fc7cbf9ede703a36317642594b44399d5c6815",
+        "distribution_ref": "claude/x86_64-pc-windows-msvc/v2.0.0-beta.1",
+        "plugin_path": "plugins/qiongli-next-windows-x64",
+        "commit": "101c7aa5d9e4dad752d27f1ff189bae3cb23061f",
+        "verified_files": 434
+      }
+    ]
+  },
+  "cargo": {
+    "status": "blocked-account-email-verification",
+    "uploaded_crates": [],
+    "source_packages_verified": 9,
+    "local_toolchain": "1.97.0",
+    "local_archive_install": {
+      "status": "passed",
+      "scope": "local install and CLI/MCP protocol smoke; not registry publication or complete feature acceptance",
+      "packages": [
+        {
+          "file": "qiongli-2.0.0-beta.1.crate",
+          "sha256": "db362df74d6814f197923deab18b213bf59903738b548d830936414bea18359e",
+          "bytes": 1006000
+        },
+        {
+          "file": "qiongli-config-2.0.0-beta.1.crate",
+          "sha256": "819d3f61d92068b76cf27a73d6209fe1f06761ae02250e7aceff6b4c16e2b3e3",
+          "bytes": 37833
+        },
+        {
+          "file": "qiongli-content-2.0.0-beta.1.crate",
+          "sha256": "1c194e7685118479133e7f24dcff434db1e2d5d6b1a42ee8ea059d0cb47f5d93",
+          "bytes": 32754
+        },
+        {
+          "file": "qiongli-execution-2.0.0-beta.1.crate",
+          "sha256": "cc9918476ab6b46e1df90a28d5092e517272cc4998d3832b7e0676dbe85a3ab1",
+          "bytes": 145229
+        },
+        {
+          "file": "qiongli-platform-2.0.0-beta.1.crate",
+          "sha256": "4010c0df8729d27e5fad9af0044e3075278f17e0342369593cc3bdf8b7e7e9d2",
+          "bytes": 240184
+        },
+        {
+          "file": "qiongli-project-2.0.0-beta.1.crate",
+          "sha256": "1c06d69f97e1614ed35c88582ffc2088bd885857c3f6d123adae328a1cd2d94c",
+          "bytes": 251658
+        },
+        {
+          "file": "qiongli-runtime-2.0.0-beta.1.crate",
+          "sha256": "1332c5fe7623fff7aabd45a23cf47f7afbcf43b23d9aaebccb29003236c18f79",
+          "bytes": 68214
+        },
+        {
+          "file": "qiongli-ui-2.0.0-beta.1.crate",
+          "sha256": "7cd51bfc5b2b75962bfa48bd738b872ef3252a4087abc228d6804aee0fe03535",
+          "bytes": 70811
+        },
+        {
+          "file": "qiongli-windows-security-2.0.0-beta.1.crate",
+          "sha256": "5e5c8e3ad799d8d3794bc952a20d10216ac4c92d3099d828ee0a0cd74bccd4c7",
+          "bytes": 8953
+        }
+      ],
+      "checks": {
+        "cargo_archives": {
+          "version": "2.0.0-beta.1",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+        },
+        "cargo_alias": {
+          "version": "2.0.0-beta.1",
+          "invalid_command_rejected": true,
+          "mcp_tools": {
+            "lite": 14,
+            "full": 32
+          },
+          "content_pack_sha256": "373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18"
+        }
+      }
+    },
+    "publication_error": "crates.io HTTP 400: A verified email address is required to publish crates.",
+    "required_user_action": "Verify the account email at https://crates.io/settings/profile.",
+    "upload_log": "/private/tmp/qiongli-beta1-cargo-publish.log",
+    "frozen_source_manifest": "/private/tmp/qiongli-beta1-cargo-frozen-source.json",
+    "staged_workspace": "/private/tmp/qiongli-beta1-cargo-local/cargo-source",
+    "resume": "Inspect existing versions, publish only missing packages from the frozen release source using normal Cargo verification, then dispatch publish-cargo.yml on v2.0.0-beta.1 with verify_public=true."
+  },
+  "artifacts": [
+    {
+      "file": "marketplace-plugins.json",
+      "sha256": "cfc9db2e4dfad25702385dcff8039b5f6464b3aae18f76d15c2c21d74cccfc87",
+      "bytes": 3222
+    },
+    {
+      "file": "qiongli-2.0.0-beta.1-aarch64-apple-darwin.tar.gz",
+      "sha256": "af823ef26d8fb8ec96f9b5598def06bb93d8f34c6863a5c39fc5bc70256b4016",
+      "bytes": 6527178
+    },
+    {
+      "file": "qiongli-2.0.0-beta.1-x86_64-pc-windows-msvc.zip",
+      "sha256": "85ed75287d96745445ca28777ff362173d6d75c0313f5a91651a796bed557c65",
+      "bytes": 5423280
+    },
+    {
+      "file": "qiongli-2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "edf0dd1a92159e9da0c4b6a1d8648d8a89711d30301e01e21059daeffd0e6683",
+      "bytes": 7140762
+    },
+    {
+      "file": "qiongli-2.0.0-beta.1.tgz",
+      "sha256": "a76ebd62956307488b6d687a869cd75320c88c0962f4ca9377bb5eca39eb892f",
+      "bytes": 19570698
+    },
+    {
+      "file": "qiongli-2.0.0b1-py3-none-macosx_11_0_arm64.whl",
+      "sha256": "1404b694659051512ac48be82228b7cad5b11aab3b4b459b0f6d36bdba77a426",
+      "bytes": 6556907
+    },
+    {
+      "file": "qiongli-2.0.0b1-py3-none-manylinux_2_35_x86_64.whl",
+      "sha256": "d9c6a0f7b22238b0757f23d3191bed8a2ab261821c80c6aa83ed71ec26c37433",
+      "bytes": 7189224
+    },
+    {
+      "file": "qiongli-2.0.0b1-py3-none-win_amd64.whl",
+      "sha256": "aef9415a3e0731e3013ae28cadafea1a57a580e2c70a1173cc1c966b1dce12cf",
+      "bytes": 5424262
+    },
+    {
+      "file": "qiongli-next-claude-plugin-v2.0.0-beta.1-aarch64-apple-darwin.tar.gz",
+      "sha256": "dbb3d4e2f0829f7adb77e58393df6426ac904e01074009385c0ee15212014a00",
+      "bytes": 7150396
+    },
+    {
+      "file": "qiongli-next-claude-plugin-v2.0.0-beta.1-x86_64-pc-windows-msvc.tar.gz",
+      "sha256": "e0331d3abb2d7934510f4718404293d79ad1fe5f81a8cff1c0b6ea69b95596c2",
+      "bytes": 6016335
+    },
+    {
+      "file": "qiongli-next-claude-plugin-v2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "8d4df247010c016d4f5ca09f5abecaa375f08b3ac0f67ef313d9b1c521941ed1",
+      "bytes": 7765987
+    },
+    {
+      "file": "qiongli-next-codex-plugin-v2.0.0-beta.1-aarch64-apple-darwin.tar.gz",
+      "sha256": "f927d5c033e241e2da495879c80a098b278195732952105bed9420c4df14d65c",
+      "bytes": 7150711
+    },
+    {
+      "file": "qiongli-next-codex-plugin-v2.0.0-beta.1-x86_64-pc-windows-msvc.tar.gz",
+      "sha256": "3db6af3e667751b58c07897995da59ce2483337c7595bbd7217150650d1e355d",
+      "bytes": 6016620
+    },
+    {
+      "file": "qiongli-next-codex-plugin-v2.0.0-beta.1-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "82c4c91bd51050e06ef2d6062b022339210dabfa00de10a6c35b7ab05e1697c2",
+      "bytes": 7766252
+    }
+  ],
+  "boundaries": [
+    "No managed/App or full-program acceptance claimed.",
+    "Configured models, Host registration and research files unchanged.",
+    "Published tag and asset bytes remain immutable.",
+    "Documentation source is updated; no separate website deployment was performed."
+  ]
+}

@@ -385,12 +385,14 @@
         "docs/architecture/decisions/0221-cargo-cli-publication.md",
         "tooling/release/v2.0.0-alpha.8.md",
         "tooling/release/acceptance/v2.0.0-alpha.8-distribution.json",
-        "docs/architecture/decisions/0223-bundled-marketplace-native-mcp.md"
+        "docs/architecture/decisions/0223-bundled-marketplace-native-mcp.md",
+        "tooling/release/v2.0.0-beta.1.md",
+        "tooling/release/acceptance/v2.0.0-beta.1-distribution.json"
       ],
-      "commit": "3d64767c52682464079a25cb59ef72683b229d8a",
-      "run": "34490579219",
+      "commit": "a9472e2407512ba21572a289aa75b3267955e24d",
+      "run": "34525953141",
       "updated_at": "2026-09-10",
-      "blocker": "Alpha.8 is published on GitHub, npm next and PyPI with successful native build and combined-package installation on all three systems. Public bytes match CI. Skillsplace next now references verified same-version Codex/Claude distributions, and the public npm bridge passed on macOS. Cargo publication is still blocked by Windows source qualification and missing registry credentials; live Host registration and complete research baseline acceptance remain open. Subsequent user-approved platform-specific bundled Marketplace packaging is implemented locally with 23 focused tests and isolated macOS empty-PATH executable checks. Windows/Linux native Plugin checks, new-version publication, target distribution refs and external catalog adaptation remain pending; historical alpha.8 publication evidence is unchanged. Standalone alpha.8 GitHub binaries are already public; bilingual download/setup guidance and target-specific archive READMEs are implemented locally. All three public archives matched their manifests and checksums, and macOS direct CLI/MCP passed with empty PATH. Documentation deployment and future archive README publication follow their normal release paths; existing qualification gaps remain. Inspection found public Windows alpha.8 imports VCRUNTIME140.dll; download guidance now discloses that exception. Static CRT linking, a system-DLL import guard and required empty-PATH CLI evidence are implemented locally. An offline Rust 1.98.1 cross-build and Windows 11 Arm x64-emulation ZIP/CLI/MCP checks passed; pinned Rust 1.97 native Windows x64 qualification, a fresh three-platform packet and new-version publication remain pending."
+      "blocker": "Beta.1 is published on GitHub, npm next and PyPI from a9472e24 after native run 34525953141 passed all three builds and combined installs. Public files match qualified bytes; isolated macOS public CLI/npm/PyPI and native Plugin checks passed. Six immutable native Plugin refs and Skillsplace 39c8963 expose explicit platform choices; stable and legacy generic entries remain unchanged. Cargo run 34525994551 passed official source verification and archive installation on macOS, Windows and Linux; the staged CRLF problem is fixed. Local Cargo upload was rejected at the first crate because crates.io requires a verified account email. No crate was uploaded. User email verification, local upload and subsequent three-platform public registry installs remain pending. Documentation deployment is separate. Live Host registration, complete research baseline and managed/App/program acceptance remain open; distribution success does not grant those acceptances."
     },
     {
       "id": "CLI-411",

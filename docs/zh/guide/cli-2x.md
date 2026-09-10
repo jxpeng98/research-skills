@@ -125,7 +125,10 @@ python -m pip install --pre qiongli==2.0.0b1
 npm 需要 Node 18+，PyPI 需要 Python 3.9+；两者都提供 `qiongli` 和 `ql`。
 安装后分别用 `--version` 核对版本。通过原包管理器升级包管理器安装的版本。
 
-Cargo 从源码构建同一个 CLI，需要 Rust 1.97+ 和本机链接器：
+Cargo 从源码构建同一个 CLI，需要 Rust 1.97+ 和本机链接器。
+
+Cargo 尚待完成发布，上传 crates.io 后才能使用以下命令。
+目前请使用独立二进制、npm 或 PyPI。
 
 ```sh
 cargo install qiongli --version 2.0.0-beta.1 --locked

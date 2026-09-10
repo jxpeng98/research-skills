@@ -3,7 +3,7 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## In progress: beta.1 publication with local Cargo — September 10
+## Published beta.1; Cargo awaiting account verification — September 10
 
 The maintainer requested a beta release and explicitly authorized local Cargo
 publication using the existing login. Candidate `2.0.0-beta.1` / PyPI `2.0.0b1`
@@ -22,13 +22,61 @@ distribution gates and immutable versions remain required.
 
 Release notes and bilingual installation guidance use beta.1 and distinguish
 immediate binary use from Cargo source compilation. Qualification, publication
-and public-download evidence will be recorded here after actual observations.
+and public-download observations are recorded below.
 Preparation passed 42 focused version/packaging/documentation tests, Capability
 Contract v2, tag/version alignment, 7 roadmap checks and the VitePress build.
 Logs: `/private/tmp/qiongli-beta1-focused.log`,
 `/private/tmp/qiongli-beta1-docs-build.log`, `/private/tmp/qiongli-beta1-pack.log`.
 The regenerated pack contains 432 resources, SHA-256
 `373b215e6390560a5849f1bb70f48e032b07af5a2bcc95dd95b5182995b85e18`.
+
+Frozen source `a9472e2407512ba21572a289aa75b3267955e24d` passed native distribution
+run **34525953141** (three builds, assembly and three final-package installs) and
+Cargo run **34525994551** (three official source verifications and archive installs).
+Windows native receipts show only system DLLs, with no VC runtime dependency.
+Local `release_ready.sh --cli-github` qualification also passed. Its first attempt
+passed 41 tests but the sandbox denied a temporary localhost fixture's TCP bind;
+the authorized rerun passed all 42. Local Cargo dry-run verified all nine crates;
+archive installs exercised both command names and Lite/Full MCP. Logs under
+`/private/tmp/`: `qiongli-beta1-native-qualified.log`,
+`qiongli-beta1-cargo-dry-run.log` and `qiongli-beta1-cargo-install.log`.
+
+The immutable beta tag and GitHub prerelease are published. npm run **34527401737**
+and PyPI run **34527401715** passed. All 16 independently downloaded GitHub files
+match CI; the public npm tarball and all three wheel metadata digests match the
+release. Actual macOS npm/PyPI installs, direct CLI and both native Plugins passed
+CLI/MCP checks. npm `latest` remains 1.17.0; `next` is beta.1. Receipts:
+`/private/tmp/qiongli-beta1-public-download-receipt.json` and
+`/private/tmp/qiongli-beta1-registry-public-install/install-check.json`.
+
+All six qualified Plugin trees were projected without byte or mode changes
+(434 files each), published on the indexed immutable refs, and read back by
+commit. Skillsplace **39c8963125b098552838f5c0d3d3d8991c464d86** publishes three
+explicit native platform entries; its 30 checks passed, including preservation
+of those pins during legacy sync. All three public catalogs match reviewed bytes.
+The generic next entry stays on alpha.8 and stable stays on 1.17.0. No installed
+Host configuration or private research data was accessed.
+
+Cargo upload reached crates.io using the local login but the first crate was
+rejected with HTTP 400: a verified account email is required. **No crate was
+uploaded.** The user has been asked to verify the email at
+`https://crates.io/settings/profile`; release notes and current install guidance
+disclose that Cargo is pending. This is an account gate, not a packaging failure.
+Upload log: `/private/tmp/qiongli-beta1-cargo-publish.log`. Frozen staged source:
+`/private/tmp/qiongli-beta1-cargo-local/cargo-source`, bound by
+`/private/tmp/qiongli-beta1-cargo-frozen-source.json`.
+
+After user verification, inspect existing registry versions before uploading
+only missing packages from this same source with normal Cargo verification.
+Then dispatch `publish-cargo.yml` on `v2.0.0-beta.1` with `verify_public=true`,
+verify public Cargo installs, and clear the availability notice. Do not retag or
+replace existing beta assets. Channel evidence is retained in
+`tooling/release/acceptance/v2.0.0-beta.1-distribution.json`; CLI-410 stays active.
+Documentation source is updated; no separate website deployment was performed.
+The final availability/evidence update passed 17 documentation/roadmap checks,
+evidence consistency checks and the VitePress build. Logs:
+`/private/tmp/qiongli-beta1-publication-docs-tests.log` and
+`/private/tmp/qiongli-beta1-publication-docs-build.log`.
 
 ## Completed locally: portable runtime and final language pass — September 10
 

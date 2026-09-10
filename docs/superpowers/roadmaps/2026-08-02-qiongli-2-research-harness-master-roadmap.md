@@ -63,7 +63,7 @@ product acceptance. CLI First is the product direction; CI remains verification.
 |---|---|
 | **CLOSEOUT** | App/ACP and authorized Trellis cleanup merged via #181; CLI build separation merged via #182. Retain the old plan/review as history. `PLT-404`—`PLT-408` remain deferred, not accepted. |
 | **NOW** | Alpha.7 is published from `de982b42` on GitHub, npm `next` (`2.0.0-alpha.7`) and PyPI (`2.0.0a7`), with native build and final-package installation passing on macOS ARM64, Windows x64 and Linux x64 (glibc 2.35+). Public downloads match CI bytes. `CLI-405` bounded Codex/Claude Code handoff with configured DeepSeek remains verified at `dfebb17c`, revision 2. Program and managed/App lifecycle acceptance remain separate. |
-| **NEXT** | Skills-first quality work: the maintainer paused Host registration. Canonical Plugin routing, complete discovery and model-capability guidance are strengthened locally. Shared execution scope and stopping now limit automatic skill chains and routine critique while retaining formal gates; next measure representative bounded literature/code/long-document tasks with available tools before changing model effort or merging specialist cards. Local Plugin source lifecycle (ADR 0222) and Cargo wiring (ADR 0221) remain implemented. Official Host registration/refresh/removal is deferred; Cargo still needs named-release three-platform and public registry checks. Baseline acceptance remains separate. |
+| **NEXT** | Skills-first quality work, ordered: (1) reconcile lower-level proofreading/review instructions and bounded coursework/dissertation entry; (2) evaluate Host activation, internal Skill selection and unnecessary execution on representative bilingual requests; (3) strengthen source anchors, claim support and revision-aware continuation on one research journey. Entry/routing consolidation is locally complete through `784d9e12`; it is not a measured routing-accuracy claim. Local Plugin source lifecycle (ADR 0222) and Cargo wiring (ADR 0221) remain implemented. Host registration is paused; Cargo still needs named-release three-platform and public registry checks. Baseline acceptance remains separate. |
 | **AFTER THE BASELINE** | `CLI-406` task/claim/candidate contract, `CLI-407` two real local Hosts, `CLI-408` conflict/crash/revocation checks. `CLI-409` qualifies additional Hosts separately. `CLI-410` can release the CLI baseline before collaboration; `CLI-411` qualifies collaboration separately. |
 | **LATER** | `CLI-412` optional cross-device synchronization only after local collaboration, with new scope authority. M2/M3 replacement and M4+ research expansion retain their independent gates. |
 
@@ -73,6 +73,18 @@ and the precise next increment. The former
 [ACP implementation plan](https://github.com/jxpeng98/qiongli/blob/ab84081fd260cb2914ce86f6dc4b6c77c26c6a58/.trellis/tasks/09-04-app-acp-all-chat-realignment/implement.md)
 and its embedded-Agent review are historical source evidence. Their unfinished
 App stages are no longer the next execution queue.
+
+September 10 research-Skills review: prioritize a research project that keeps
+claims, sources, decisions and revisions traceable, with execution proportional
+to the requested outcome. Skill count, multiple models and lifecycle coverage
+alone do not establish differentiation. The current comparison found overlapping
+capabilities in [Scientific Agent Skills](https://github.com/K-Dense-AI/scientific-agent-skills),
+[Academic Research Skills](https://github.com/Imbad0202/academic-research-skills),
+[Claude Academic Workflow](https://github.com/ericluo04/claude-academic-workflow)
+and [PaperQA](https://github.com/Future-House/paper-qa); these are public-document
+comparisons, not performance results. Keep the existing 82-card library and
+CLI/Plugin/MCP owners while measuring outcome quality and avoidable operations.
+Do not add a new routing service, graph store or model manager for this increment.
 
 The new user outcome is: install a verified native package, use a chosen Host to
 compare sources and propose a note, approve through existing project owners,

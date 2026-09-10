@@ -3,7 +3,54 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
-## Current increment: bounded Skill execution — September 10
+## Current increment: Skill routing consistency — September 10
+
+User outcome: route a small academic request to its actual deliverable, retain
+formal research requirements, and stop without lower-level guidance restarting
+an interview, detector-score loop or full project workflow.
+
+Previous work is already split and locally merged: `8f921a53` / `b39177db`
+(model interaction / verification and content lock), then `30336389` /
+`784d9e12` (bounded execution / verification and content lock). Baseline worktree
+was clean. This increment starts on `codex/skill-routing-consistency` from
+`784d9e12`; preserve that history rather than recommitting completed work.
+
+Ordered construction plan:
+
+1. **Instruction consistency (this increment).** Remove the remaining Stage-J
+   detector-score and mandatory multi-agent loops, distinguish simulated review
+   lenses from independent reviewers, and allow direct entry to coursework and
+   dissertation work. Clarify adjacent intent routes using requested input and
+   output, with supporting cards loaded only as needed. Update canonical cards,
+   their existing digest/index/registry and affected references together.
+2. **Routing and execution evidence (next increment).** Reuse existing evaluation
+   infrastructure for about 40–60 bilingual cases covering positive/negative
+   activation, adjacent intents, paraphrases, scope restrictions and continuation.
+   Distinguish Host activation, internal Skill selection and runtime capability
+   routing. Compare the same model/tools with no Skill, the preceding version and
+   the candidate. Record actual selected resources, unnecessary questions/tool
+   calls, unrequested writes or escalation, completion and evidence quality.
+   Bind cases/results to source; synthetic and live-Host results remain separate.
+3. **Evidence and continuity (after routing evidence).** Select one literature →
+   reading → claim → manuscript journey. Verify source locators and claim support,
+   changed-source diagnostics and restart/continuation against exact revisions.
+   Expand to other methods only after that journey has measurable evidence.
+
+Scope: keep all 82 cards, stable Task IDs, formal outputs, minimum formal review
+counts, missing-evidence behavior and preview/approval/CAS. The native
+`qiongli_orchestrator_route` remains a runtime-profile entry, not an 82-way
+semantic classifier. No model configuration, public MCP/schema, new routing
+service, installed Host registration, private research access or release change.
+
+Validation for this increment: use existing content/contract/resource checks,
+the strict card audit, independent synthetic forward cases for the affected
+routes, then regenerate the embedded content lock from the committed content
+and check both native Host bundles. A local merge is not program acceptance or
+proof of comparative routing accuracy. Record actual results here once at
+integration; commit planning, implementation and packaging/evidence separately,
+then fast-forward merge into local `2.x`.
+
+## Completed: bounded Skill execution — September 10
 
 Following the first audit, the maintainer requested systematic consolidation to
 reduce unnecessary reasoning loops and execution. Source `30336389` keeps all

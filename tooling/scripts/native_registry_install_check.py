@@ -27,7 +27,9 @@ def run(argv, *, root, env, input=None, check=True):
 def check_cli(executable, *, version, root, env):
     command = executable if isinstance(executable, list) else [executable]
     assert run(command + ['--version'], root=root, env=env).stdout.strip() == f'qiongli {version}'
-    assert 'qiongli project' in run(command + ['--help'], root=root, env=env).stdout
+    help_text = run(command + ['--help'], root=root, env=env).stdout
+    assert 'Usage:' in help_text and 'project' in help_text
+    assert 'qiongli project' in run(command + ['project', '--help'], root=root, env=env).stdout
     content = run(command + ['content', 'list'], root=root, env=env)
     content = json.loads(content.stdout)
     assert content['content_version'] == version

@@ -68,8 +68,11 @@ into a new directory. Open a terminal there (PowerShell on Windows) and run:
 {command} --version
 {command} --help
 {command} content list
-{command} install migrate --interactive
+{command} setup
 ```
+
+Running without arguments shows help. Terminal queries display readable summaries;
+use `--json` for structured output or `--text` to save a readable report.
 
 The interactive review detects visible CLI installations and offers manual archive
 or uninstall guidance. Enter keeps your setup; it never changes files or settings.
@@ -77,7 +80,7 @@ or uninstall guidance. Enter keeps your setup; it never changes files or setting
 You can run the executable by absolute path, or add its directory to your user
 PATH. This archive supplies `{executable}`; `ql` is a package-manager alias.
 For MCP, configure your Host with the absolute executable path and arguments
-`mcp serve --profile full --transport stdio` (or `--profile lite`). Downloading
+`mcp serve --profile full` (or `--profile lite`). Downloading
 the CLI does not automatically register a Host Plugin or change its models.
 Research writes retain their preview, approval and revision checks.
 

@@ -3,12 +3,12 @@
 Qiongli 2 is CLI-first. GitHub binary archives, npm and PyPI distribute the same
 native executable for a given version and target. No Qiongli App is required.
 
-## Everyday commands (next release)
+## Everyday commands (beta.3)
 
-These refinements are implemented on the `2.x` development branch and are not yet
-in the published beta.2 package. `ql` and `qiongli` accept the same commands.
+Beta.3 adds shorter commands, focused help and readable terminal output.
+`ql` and `qiongli` accept the same commands.
 
-| Task | Short command | Published beta.2 equivalent |
+| Task | Short command | Earlier beta.2 equivalent |
 |---|---|---|
 | See common commands | `qiongli` | `qiongli --help` |
 | Check local health | `qiongli doctor` | Same command, JSON output |
@@ -46,7 +46,7 @@ retain their full plan values; `--json` is the exact machine-readable representa
 Rust or package-manager setup is needed.** You can run from the extracted folder;
 adding it to PATH is optional.
 
-Download a platform archive from [Release v2.0.0-beta.2](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.2).
+Download a platform archive from [Release v2.0.0-beta.3](https://github.com/jxpeng98/qiongli/releases/tag/v2.0.0-beta.3).
 It contains `qiongli` (Windows: `qiongli.exe`), `README.md` and `LICENSE`.
 The executable embeds the research Skills, templates and Lite/Full MCP resources;
 you do not need a separate resource directory or a checkout of this repository.
@@ -54,11 +54,11 @@ Configure models, Host applications and online literature services separately.
 
 | Your platform | Complete CLI archive |
 |---|---|
-| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz) |
-| Windows x64 | [qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip) |
-| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS Apple Silicon / ARM64 | [qiongli-2.0.0-beta.3-aarch64-apple-darwin.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.3/qiongli-2.0.0-beta.3-aarch64-apple-darwin.tar.gz) |
+| Windows x64 | [qiongli-2.0.0-beta.3-x86_64-pc-windows-msvc.zip](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.3/qiongli-2.0.0-beta.3-x86_64-pc-windows-msvc.zip) |
+| Linux x64 / glibc 2.35+ | [qiongli-2.0.0-beta.3-x86_64-unknown-linux-gnu.tar.gz](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.3/qiongli-2.0.0-beta.3-x86_64-unknown-linux-gnu.tar.gz) |
 
-Windows Beta.1 statically links its C runtime, so you do not need to install the
+Windows beta releases statically link the C runtime, so you do not need to install the
 Visual C++ runtime separately. Linux uses system libraries, including glibc 2.35+.
 
 Choose these files under **Assets**. GitHub's **Source code** archives require a
@@ -68,21 +68,21 @@ Windows ARM builds are not part of this release.
 
 ### 1. Verify the download
 
-Download [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.2/SHA256SUMS)
+Download [SHA256SUMS](https://github.com/jxpeng98/qiongli/releases/download/v2.0.0-beta.3/SHA256SUMS)
 from the same release. In the directory containing your download, run the command
 for your platform and compare its hash with the line for that exact filename in
 `SHA256SUMS`. Continue only if they match.
 
 ```sh
 # macOS
-shasum -a 256 qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz
+shasum -a 256 qiongli-2.0.0-beta.3-aarch64-apple-darwin.tar.gz
 # Linux
-sha256sum qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz
+sha256sum qiongli-2.0.0-beta.3-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```powershell
 # Windows
-Get-FileHash .\qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip -Algorithm SHA256
+Get-FileHash .\qiongli-2.0.0-beta.3-x86_64-pc-windows-msvc.zip -Algorithm SHA256
 ```
 
 ### 2. Extract and run
@@ -91,9 +91,9 @@ Extract into a new directory, keeping existing installations and research files
 intact. On macOS:
 
 ```sh
-mkdir qiongli-2.0.0-beta.2-macos-arm64
-tar -xzf qiongli-2.0.0-beta.2-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-beta.2-macos-arm64
-cd qiongli-2.0.0-beta.2-macos-arm64
+mkdir qiongli-2.0.0-beta.3-macos-arm64
+tar -xzf qiongli-2.0.0-beta.3-aarch64-apple-darwin.tar.gz -C qiongli-2.0.0-beta.3-macos-arm64
+cd qiongli-2.0.0-beta.3-macos-arm64
 ./qiongli --version
 ./qiongli --help
 ./qiongli content list
@@ -102,9 +102,9 @@ cd qiongli-2.0.0-beta.2-macos-arm64
 On Linux:
 
 ```sh
-mkdir qiongli-2.0.0-beta.2-linux-x64
-tar -xzf qiongli-2.0.0-beta.2-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-beta.2-linux-x64
-cd qiongli-2.0.0-beta.2-linux-x64
+mkdir qiongli-2.0.0-beta.3-linux-x64
+tar -xzf qiongli-2.0.0-beta.3-x86_64-unknown-linux-gnu.tar.gz -C qiongli-2.0.0-beta.3-linux-x64
+cd qiongli-2.0.0-beta.3-linux-x64
 ./qiongli --version
 ./qiongli --help
 ./qiongli content list
@@ -113,14 +113,14 @@ cd qiongli-2.0.0-beta.2-linux-x64
 On Windows, open PowerShell in your download directory:
 
 ```powershell
-Expand-Archive -Path .\qiongli-2.0.0-beta.2-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-beta.2-windows-x64
-Set-Location .\qiongli-2.0.0-beta.2-windows-x64
+Expand-Archive -Path .\qiongli-2.0.0-beta.3-x86_64-pc-windows-msvc.zip -DestinationPath .\qiongli-2.0.0-beta.3-windows-x64
+Set-Location .\qiongli-2.0.0-beta.3-windows-x64
 .\qiongli.exe --version
 .\qiongli.exe --help
 .\qiongli.exe content list
 ```
 
-The version output should be `qiongli 2.0.0-beta.2`. The archive supplies the
+The version output should be `qiongli 2.0.0-beta.3`. The archive supplies the
 `qiongli` executable; npm/PyPI/Cargo additionally provide the `ql` command alias.
 
 ### 3. Optional PATH and Host setup
@@ -163,8 +163,8 @@ PATH or Host settings. No file is deleted, moved or archived. Review shared
 command files before uninstalling: an old package may own the same entry as a
 new one. Research files, configuration and Plugin caches are excluded.
 
-Published beta.2 also opens this review on an empty-argument terminal launch.
-The next release uses `qiongli setup` and shows help on an empty launch. To open
+Beta.3 uses `qiongli setup` to open this review and shows help on an empty launch.
+Beta.2 opened the review on an empty-argument terminal launch. To open
 the review during npm installation, allow Qiongli's script for that invocation and connect it to the
 terminal:
 
@@ -181,7 +181,7 @@ otherwise Qiongli skips the review. See [npm's script settings](https://docs.npm
 
 Disabling install scripts with `--ignore-scripts` still leaves a working CLI.
 If Qiongli is already installed, run the newly installed executable's
-`install migrate --interactive` command; reinstalling is unnecessary. pip and Cargo users also run
+`setup` command; reinstalling is unnecessary. pip and Cargo users also run
 the review after installation. Scripts, help/version commands and MCP do not
 prompt. Package-manager installations stay in place for backup; only a confirmed
 standalone release bundle is suitable for a separate, checksum-verified copy.
@@ -209,7 +209,7 @@ Cargo builds the CLI from source and requires Rust 1.97+ and the target's native
 linker. It provides both `qiongli` and `ql`.
 
 ```sh
-cargo install qiongli --version 2.0.0-beta.2 --locked
+cargo install qiongli --version 2.0.0-beta.3 --locked
 ```
 
 Use the exact SemVer prerelease version; Cargo has no `next` channel. Choose the

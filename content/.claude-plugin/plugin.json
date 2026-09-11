@@ -1,6 +1,6 @@
 {
   "name": "qiongli",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "Dependency-free native academic research workflows for Claude Code.",
   "author": {
     "name": "Jiaxin Peng",

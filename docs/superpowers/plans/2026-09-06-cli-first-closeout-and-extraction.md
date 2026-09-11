@@ -3,6 +3,49 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Command clarity and terminal output — September 11
+
+Base `8f5930d8`; branch `codex/cli-command-clarity`. The maintainer requested
+clearer commands and output, using 1.x as a reference. The retained Python CLI's
+short `setup` entry and opt-in JSON informed this native implementation; frozen
+1.x source is unchanged. The bounded outcome is an understandable first screen,
+direct everyday queries and readable results without changing write authority.
+
+Empty CLI launches now show help. `setup`/`install review` explicitly open the
+existing installation review. Bare project/config/content/install/update commands
+select their read-only queries; `project ls`, positional project show, and install
+list reuse existing owners. MCP requires an explicit profile and defaults to stdio.
+Scoped help draws detailed syntax from existing owners; full reference remains
+available through `help all`. Usage errors give a short, private-value-free hint.
+
+The executable presents terminal summaries while redirected output and library
+command results retain their existing contracts. Explicit JSON/text modes reject
+conflicts before execution and preserve option-looking values. MCP stays protocol
+only. Text preserves exit codes, redaction and complete mutation preview values,
+escapes terminal controls, and explains the legacy in-process runtime check without
+recommending an obsolete R4 upgrade. No dependencies, models, user installations,
+research files or Host settings were changed. Bilingual docs mark the new commands
+as not yet published; the package README describes the next built package.
+
+Validation: the broad library run passed 217 checks; its alpha-only native-install
+fixture failed on beta.2 and was corrected using the existing identity validator,
+then passed. The manual capacity observation remains ignored. The CLI run passed
+36 of 37 checks; the remaining old help expectation was moved to scoped candidate
+help and its full authority-refusal case passed. Final presentation and query
+regressions passed, including literal option values and conflicting output flags.
+All seven MCP checks passed with old explicit and new default stdio syntax. Five
+packaging tests, Clippy/all-targets, formatting and docs build passed; existing
+mise cache, highlighting and bundle-size notices remain. Isolated terminal checks
+confirmed help without a prompt, readable redacted queries, explicit JSON, both
+command names, and Enter retaining the setup without creating state.
+
+Receipts: `/private/tmp/qiongli-clarity-tests.log`,
+`/private/tmp/qiongli-clarity-integration.log`, focused `qiongli-clarity-*-final.log`
+files and `/private/tmp/qiongli-cli-clarity-terminal.json`. The terminal transcript
+is `/private/tmp/qiongli-cli-clarity-demo.txt`. Final diff review found no remaining
+actionable issue. Integrate locally; a future authorized release must qualify
+new packages on all three platforms. No publication or Host acceptance is claimed.
+
 ## Beta.2 installation review and release submission — September 11
 
 Installation-doc follow-up on `codex/npm-install-permission-docs`, based on

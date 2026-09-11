@@ -434,10 +434,15 @@ mod tests {
             ));
             create_private_directory(&root);
 
-            let artifact = current_target_native_artifact_identity(
-                env!("CARGO_PKG_VERSION"),
+            let artifact = [
                 ReleaseChannel::Alpha,
-            )
+                ReleaseChannel::Beta,
+                ReleaseChannel::Stable,
+            ]
+            .into_iter()
+            .find_map(|channel| {
+                current_target_native_artifact_identity(env!("CARGO_PKG_VERSION"), channel).ok()
+            })
             .expect("current native CLI test identity must resolve");
             let artifact_id = native_artifact_id(&artifact).unwrap();
             let archive_name = native_portable_archive_file_name(&artifact).unwrap();
@@ -510,7 +515,7 @@ mod tests {
                 .expect("native CLI signed release must be written");
             let authority_bytes = serde_json_canonicalizer::to_vec(&json!({
                 "schema_version": 1,
-                "channel": "alpha",
+                "channel": artifact.channel,
                 "minimum_release_generation": 19,
                 "minimum_launch_grant_generation": 13,
                 "release_keys": [{

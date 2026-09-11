@@ -15,7 +15,10 @@ into reviewed records; no new graph store, raw-PDF scanner or write owner exists
 
 ## Local Pattern
 
-- `apps/qiongli/src/command.rs` owns public CLI parsing and help.
+- `apps/qiongli/src/command.rs` owns public CLI parsing; `cli_help.rs` provides
+  short entry pages and selects detailed syntax from the command owners.
+  `cli_presentation.rs` formats their results for terminal users without owning
+  project writes, Host configuration or MCP dispatch.
 - `apps/qiongli/src/desktop.rs` owns the shared App service; Tauri commands in
   `desktop/tauri_adapter.rs` adapt it instead of duplicating product logic.
 - `crates/qiongli-runtime/src/contract.rs` and `apps/qiongli/src/mcp.rs` own the
@@ -99,9 +102,26 @@ Desktop-enabled empty arguments retain the App launch behavior.
 Shared App services, DTO/schema generators, CLI inspection, MCP dispatch and
 preview/approval/CAS remain available without the renderer. `ui` fails without
 the desktop feature; `ui --startup-check` reports shared service readiness only.
-CLI-only empty arguments open the read-only installation review when both stdin
-and stdout are terminals; redirected launches still print help. Explicit
-`install migrate --interactive` rejects non-terminal input/output.
+CLI-only empty arguments show help on both terminals and redirected streams.
+`setup` and `install review` open the existing read-only installation review;
+`install migrate --interactive` remains supported. All reject non-terminal
+input/output. npm's optional terminal-only installation hook retains its route.
+
+Bare `project`, `config`, `content`, `install` and `update` select their read-only
+list/show/inventory/status operations. `project ls`, `project show <id>` and
+`install list` reuse existing parsers and services. `mcp serve` still requires an
+explicit profile and defaults its only supported transport to stdio. `help <topic>`
+and `<topic> -h|--help` display scoped help; `help all` retains the full reference.
+Usage failures remain exit 2 without echoing private arguments or a full reference.
+
+The executable formats terminal queries as readable summaries. Redirected output,
+`run_cli`/`prepare_action`, and existing JSON schemas retain their machine contracts.
+One leading or trailing `--json` or `--text` explicitly selects presentation;
+valid option values must never be stripped as output flags. Conflicts fail before
+execution. Explicit output flags are rejected for interactive/streaming commands;
+MCP stdout never includes human presentation. Error exit status and path redaction
+are preserved. Text escapes terminal controls, retains complete mutation preview
+fields and digest values, and summarizes only designated read-only overviews.
 Embedded resource, release authority and Companion checks always run in the
 build script. CLI-only compilation is not standalone package qualification.
 

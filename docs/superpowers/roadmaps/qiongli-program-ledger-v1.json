@@ -265,8 +265,8 @@
       ],
       "commit": "",
       "run": "",
-      "updated_at": "2026-09-06",
-      "blocker": ""
+      "updated_at": "2026-09-11",
+      "blocker": "Everyday command and terminal presentation improvements are locally implemented: explicit setup review, read-only short commands, scoped help, and readable terminal queries preserve redirected JSON, approval/CAS, path redaction and MCP protocols. Local CLI/MCP, packaging, terminal, Clippy and documentation checks are recorded in the current plan. These commands are not yet published; three-platform package and Host acceptance remain separate."
     },
     {
       "id": "CLI-403",

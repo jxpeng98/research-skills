@@ -375,13 +375,20 @@ fn review(
     for (index, item) in inventory.installations.iter().enumerate() {
         writeln!(
             writer,
-            "{}. {} | {} | running={} | PATH={:?}",
+            "\n{}. {}  {}{}\n   Version source: {}",
             index + 1,
             item.channel,
-            serde_json::to_string(&item.version).unwrap_or_default(),
-            item.running,
-            item.active_commands
+            item.version.as_deref().unwrap_or("version unknown"),
+            if item.running { "  (running now)" } else { "" },
+            item.version_source
         )?;
+        if !item.active_commands.is_empty() {
+            writeln!(
+                writer,
+                "   First on PATH: {}",
+                item.active_commands.join(", ")
+            )?;
+        }
         for path in &item.entries {
             writeln!(writer, "   {}", display(path))?;
         }

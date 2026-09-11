@@ -184,10 +184,15 @@ Native CLI for macOS Apple Silicon, Windows x64, and Linux x64 (glibc 2.35+).
 Includes embedded research content and Lite/Full MCP. No App is required.
 The Host owns models and credentials. No executable download runs at install time.
 Run the newly installed command by its full path if another version is on PATH.
-Run `qiongli install migrate --interactive` to choose a preferred installation and
+Run `qiongli setup` to choose a preferred installation and
 review manual archive/uninstall guidance. Nothing is deleted or moved, and PATH,
-Host settings and research data stay unchanged. Empty-argument terminal launches
-open this review too; scripts and MCP never prompt. For review during npm install:
+Host settings and research data stay unchanged. Empty-argument launches show help.
+Use `qiongli project`, `qiongli config`, and `qiongli install` for common queries.
+`qiongli help project create` shows focused help; `qiongli help all` shows every command.
+Terminal queries show readable summaries; redirected output retains its original
+format. Use `--json` explicitly for scripts or `--text` for readable redirected output.
+Existing command forms, approvals and MCP protocols remain supported.
+Scripts and MCP never prompt. For review during npm install:
 
 ```sh
 npm install -g qiongli@next --allow-scripts=qiongli --foreground-scripts

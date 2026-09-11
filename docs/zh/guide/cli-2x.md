@@ -3,6 +3,41 @@
 Qiongli 2 以原生 CLI 为入口，不需要打开或安装 Qiongli App。
 同一版本、同一平台的 GitHub 二进制包、npm 和 PyPI 包使用相同的原生可执行文件。
 
+## 常用命令（下个版本）
+
+以下调整已在 `2.x` 开发分支实现，**尚未包含在已发布的 beta.2 中**。
+`ql` 是 `qiongli` 的短名称，两者用法相同。
+
+| 要做什么 | 简短入口 | 已发布 beta.2 的写法 |
+|---|---|---|
+| 查看常用命令 | `qiongli` | `qiongli --help` |
+| 检查本地状态和问题 | `qiongli doctor` | 命令相同，输出为 JSON |
+| 审查已安装的 CLI 版本 | `qiongli setup` | `qiongli install migrate --interactive` |
+| 查看 CLI 安装和 Host | `qiongli install` | `qiongli install inventory` |
+| 列出研究项目 | `qiongli project` | `qiongli project list` |
+| 查看一个项目 | `qiongli project show <id>` | `qiongli project show --project-id <id>` |
+| 查看配置 | `qiongli config` | `qiongli config show` |
+| 查看内置内容配置档 | `qiongli content` | `qiongli content list` |
+| 以 stdio 接入 Full MCP | `qiongli mcp serve --profile full` | 还需加上 `--transport stdio` |
+
+不必在一页中查找所有参数。例如，`qiongli help project create` 和
+`qiongli project create --help` 都只显示创建项目的用法。
+`qiongli help all` 提供完整命令参考，包括高级安装操作。
+`qiongli update` 查询受管理安装的更新状态；通过 npm、pip 或 Cargo 安装的包，
+仍使用原包管理器升级。
+
+终端中的查询默认显示易读摘要；重定向时保留原有输出格式。脚本可以明确使用
+`--json`，需要保存易读报告时则使用 `--text`。格式参数放在命令开头或末尾，只选一个：
+
+```sh
+qiongli status --json
+qiongli doctor --text > qiongli-doctor.txt
+```
+
+`setup` 借用了 1.x 熟悉的入口名称，在 2.x 中专门用于审查 CLI 安装，不会配置 Host、
+更换模型或卸载程序。无参数运行改为显示帮助，需要审查版本时再运行 `qiongli setup`。
+项目写入仍需预览、批准和修订检查；易读预览完整保留审批所需的参数，程序处理时使用 `--json`。
+
 ## 独立二进制下载 {#standalone-binary-download}
 
 **推荐直接下载：解压后就能运行，不用先安装 Python、Node.js、Rust 或包管理器。**
@@ -112,7 +147,8 @@ PATH、常见用户安装目录及已配置的 Cargo、Python、npm 位置；其
 删除、移动或归档任何文件。卸载前要确认文件归属：旧包可能与新版共用启动入口。
 研究文件、配置和 Plugin 缓存不属于 CLI 清理范围。
 
-在终端中无参数运行新版 `qiongli` 也会打开向导。如需在 npm 安装过程中显示向导，
+已发布的 beta.2 在终端中无参数运行时会打开向导；下个版本改为显示帮助，
+通过 `qiongli setup` 主动打开向导。如需在 npm 安装过程中显示向导，
 可以为本次安装授权穷理的脚本，并让脚本连接终端：
 
 ```sh

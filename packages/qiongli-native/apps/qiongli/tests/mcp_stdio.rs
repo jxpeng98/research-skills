@@ -72,7 +72,9 @@ impl Fixture {
     }
 
     fn command(&self) -> Command {
-        self.command_with_profile("marketplace-lite")
+        let mut command = self.command_with_profile("marketplace-lite");
+        command.args(["--transport", "stdio"]);
+        command
     }
 
     fn command_with_profile(&self, profile: &str) -> Command {
@@ -83,7 +85,7 @@ impl Fixture {
             .env("QIONGLI_CONFIG_HOME", &self.config_root)
             .env("HOME", &self.home)
             .env("USERPROFILE", &self.home)
-            .args(["mcp", "serve", "--transport", "stdio", "--profile", profile])
+            .args(["mcp", "serve", "--profile", profile])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -1585,7 +1587,8 @@ fn full_profile_reuses_redacted_project_state_and_accepts_connected_capture() {
 fn invalid_or_escalating_mcp_cli_modes_fail_before_stdio_serving() {
     for args in [
         ["mcp", "serve", "--profile", "lite", "--transport", "http"].as_slice(),
-        ["mcp", "serve", "--profile", "lite"].as_slice(),
+        ["mcp", "serve", "--transport", "stdio"].as_slice(),
+        ["mcp", "serve", "--profile", "lite", "--json"].as_slice(),
     ] {
         let output = Command::new(env!("CARGO_BIN_EXE_qiongli"))
             .args(args)
@@ -1593,6 +1596,6 @@ fn invalid_or_escalating_mcp_cli_modes_fail_before_stdio_serving() {
             .expect("invalid native MCP command must exit");
         assert_eq!(output.status.code(), Some(2));
         assert!(output.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&output.stderr).contains("Qiongli native MCP"));
+        assert!(String::from_utf8_lossy(&output.stderr).contains("--help` for usage."));
     }
 }

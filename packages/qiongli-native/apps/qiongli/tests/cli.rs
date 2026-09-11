@@ -137,6 +137,111 @@ fn installation_review_rejects_redirected_input_without_writes() {
     assert!(!fixture.config_root.exists());
 }
 
+#[test]
+fn short_queries_output_modes_and_scoped_help_preserve_script_contracts() {
+    let fixture = Fixture::new("cli-presentation");
+    for (short, old) in [
+        (vec!["project"], vec!["project", "list"]),
+        (vec!["project", "ls"], vec!["project", "list"]),
+        (vec!["config"], vec!["config", "show"]),
+        (vec!["content"], vec!["content", "list"]),
+        (vec!["install"], vec!["install", "inventory"]),
+        (vec!["install", "list"], vec!["install", "inventory"]),
+        (vec!["update"], vec!["update", "status"]),
+    ] {
+        let current = run_configured(&fixture, &short);
+        let original = run_configured(&fixture, &old);
+        assert_eq!(current.status.code(), original.status.code());
+        assert_eq!(current.stdout, original.stdout, "{short:?}");
+    }
+    let raw = run_configured(&fixture, &["status"]);
+    assert!(parse_json(&raw)["product_version"].is_string());
+    for flags in [vec!["status", "--json"], vec!["--json", "status"]] {
+        assert_eq!(run_configured(&fixture, &flags).stdout, raw.stdout);
+    }
+    let text = run_configured(&fixture, &["status", "--text"]);
+    let text = String::from_utf8_lossy(&text.stdout);
+    assert!(text.starts_with("Qiongli "));
+    assert!(text.contains("Next: qiongli doctor"));
+    assert!(!text.contains("pack_sha256"));
+    assert!(!text.contains(fixture.root.to_str().unwrap()));
+    let empty = run_configured(&fixture, &["project", "--text"]);
+    assert!(String::from_utf8_lossy(&empty.stdout).contains("No registered projects"));
+    let doctor = run_configured(&fixture, &["doctor", "--text"]);
+    assert_eq!(
+        doctor.status.code(),
+        run_configured(&fixture, &["doctor", "--json"])
+            .status
+            .code()
+    );
+    assert!(!public_output(&doctor).contains(fixture.root.to_str().unwrap()));
+    let help = run(&["help", "project", "create"]);
+    assert_eq!(help.stdout, run(&["project", "create", "-h"]).stdout);
+    assert!(public_output(&help).contains("--expected-plan-digest"));
+    assert!(!public_output(&help).contains("project capture"));
+    assert!(run(&["--help"]).stdout.split(|byte| *byte == b'\n').count() < 45);
+    for args in [vec!["setup"], vec!["install", "review"]] {
+        let output = run_configured(&fixture, &args);
+        assert!(public_output(&output).contains("interactive-terminal-required"));
+    }
+    for args in [
+        vec!["--json", "status", "--text"],
+        vec!["status", "--json", "--json"],
+        vec!["mcp", "serve", "--profile", "full", "--text"],
+        vec!["setup", "--json"],
+        vec![
+            "config",
+            "set",
+            "--expected-revision",
+            "0",
+            "--default-profile",
+            "full",
+            "--json",
+            "--text",
+        ],
+    ] {
+        assert_eq!(
+            run_configured(&fixture, &args).status.code(),
+            Some(2),
+            "{args:?}"
+        );
+    }
+    // Literal option-looking values must not be consumed as output flags.
+    let destination = fixture.root.join("new-project");
+    let preview = run_configured(
+        &fixture,
+        &[
+            "--json",
+            "project",
+            "create",
+            "preview",
+            "--root",
+            destination.to_str().unwrap(),
+            "--name",
+            "--text",
+        ],
+    );
+    assert!(preview.status.success(), "{}", public_output(&preview));
+    assert!(preview.stdout.windows(6).any(|value| value == b"--text"));
+    let trailing = run_configured(
+        &fixture,
+        &[
+            "project",
+            "create",
+            "preview",
+            "--root",
+            destination.to_str().unwrap(),
+            "--name",
+            "--text",
+            "--json",
+        ],
+    );
+    assert!(trailing.status.success(), "{}", public_output(&trailing));
+    assert!(trailing.stdout.windows(6).any(|value| value == b"--text"));
+    assert!(!destination.exists());
+    assert!(!fixture.config_root.exists());
+}
+
 fn run_without_home_or_path(args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_qiongli"))
         .args(args)
@@ -3620,6 +3725,7 @@ fn root_and_nested_help_use_stdout_and_return_success() {
         assert!(output.stderr.is_empty());
     }
 
+    assert!(public_output(&run(&["help", "all"])).contains("--max-depth"));
     let root = run(&["--help"]);
     let root_help = String::from_utf8_lossy(&root.stdout);
     assert!(!root_help.contains("qiongli ui"));
@@ -3635,20 +3741,17 @@ fn root_and_nested_help_use_stdout_and_return_success() {
 
     let install = run(&["install", "--help"]);
     let install_help = String::from_utf8_lossy(&install.stdout);
-    assert!(install_help.contains("release engineering"));
-    assert!(install_help.contains("qiongli app plan"));
-    assert!(install_help.contains("not a second end-user integration installer"));
+    assert!(install_help.contains("qiongli setup"));
+    assert!(install_help.contains("qiongli install candidate --help"));
+    assert!(install_help.lines().count() < 25);
 
-    let app = run(&["app", "--help"]);
+    let app = run(&["app", "plan", "--help"]);
     let app_help = String::from_utf8_lossy(&app.stdout);
     assert!(app_help.contains("qiongli app plan integrations-install"));
     assert!(app_help.contains("qiongli app plan integrations-reconcile"));
     assert!(app_help.contains("qiongli app plan cli-remove"));
     assert!(app_help.contains("qiongli app plan cli-path-configure"));
-    assert!(app_help.contains(
-        "CLI install, PATH configuration, remove or predecessor restoration, and integration repair"
-    ));
-    assert!(app_help.contains("are separate state-bound plans"));
+    assert!(app_help.contains("Preview and approval requirements still apply"));
 }
 
 #[test]
@@ -4453,16 +4556,12 @@ fn invalid_explicit_invocations_and_environment_fail_without_echoing_private_val
             &["ui", "extra-private-canary"],
             Some("extra-private-canary"),
         ),
-        (&["content"], None),
         (&["content", "help"], None),
         (
             &["content", "list", "extra-private-canary"],
             Some("extra-private-canary"),
         ),
         (&["content", "materialize", "--profile", "full"], None),
-        (&["config"], None),
-        (&["config", "-h"], None),
-        (&["install"], None),
         (
             &["install", "status", "extra-private-canary"],
             Some("extra-private-canary"),
@@ -4507,7 +4606,8 @@ fn invalid_explicit_invocations_and_environment_fail_without_echoing_private_val
         assert!(output.stdout.is_empty());
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(stderr.contains("error:"));
-        assert!(stderr.contains("Usage:"));
+        assert!(stderr.contains("--help` for usage."));
+        assert!(stderr.lines().count() <= 4);
         if let Some(canary) = canary {
             assert!(!stderr.contains(canary));
         }
@@ -4712,7 +4812,7 @@ fn update_recovery_requires_explicit_digest_and_approval_without_creating_state(
 #[test]
 fn native_activation_public_entry_refuses_source_authority_without_writes() {
     let fixture = Fixture::new("native-activation-source");
-    let help = run_configured(&fixture, &["install", "--help"]);
+    let help = run_configured(&fixture, &["install", "candidate", "activate", "--help"]);
     assert!(String::from_utf8_lossy(&help.stdout).contains("candidate activate --candidate"));
     let output = run_configured(
         &fixture,

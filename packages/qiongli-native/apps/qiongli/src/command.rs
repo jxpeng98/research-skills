@@ -38,23 +38,21 @@ use crate::update_cli::UpdateCliCommand;
 const OUTPUT_SCHEMA_VERSION: u32 = 1;
 const MAX_CLIENT_METADATA_BYTES: u64 = 256 * 1_024;
 
-const USAGE: &str = "Qiongli native CLI\n\nUsage:\n  qiongli\n  qiongli --version\n  qiongli --help\n  qiongli app <snapshot|verify-integrations|verify-skills|plan|apply>\n  qiongli project <list|show|doctor|create|register|migrate|import|export|archive|restore|refresh|unregister>\n  qiongli content list\n  qiongli config show\n  qiongli config set --expected-revision <revision> --default-profile <profile>\n  qiongli config backend status\n  qiongli update status\n  qiongli update recovery-preview\n  qiongli update recover --expected-marker-digest <sha256> --approve-filesystem-write\n  qiongli update channel --expected-revision <revision> --stream <stable|beta>\n  qiongli update check\n  qiongli update download --expected-revision <revision>\n  qiongli update verify --expected-revision <revision>\n  qiongli update stage --expected-revision <revision>\n  qiongli update install --expected-revision <revision>\n  qiongli update cancel --expected-revision <revision>\n  qiongli install status\n  qiongli install inventory [--paths exact]\n  qiongli install migrate --interactive\n  qiongli install codex status\n  qiongli install claude status\n  qiongli migrate-1x <inspect|preview|apply|continue|status|recover> [options]\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli status\n  qiongli doctor\n\nProfiles:\n  skill-only | marketplace-lite | lite | full\n\nOptions:\n  -h, --help  Print help\n  --version   Print the native product version\n";
+const USAGE: &str = crate::cli_help::HOME;
 
-const INSPECTION_USAGE: &str = "\nInspection:\n  qiongli paths             Show exact resolved paths\n  qiongli paths --json      Show the versioned exact-path JSON snapshot\n  qiongli doctor            Run redacted native Product Doctor checks\n  qiongli doctor --paths exact\n                            Include the exact-path snapshot explicitly\n";
+pub(crate) const APP_USAGE: &str = "Qiongli App control contract\n\nUsage:\n  qiongli app snapshot\n  qiongli app plugin-source-status --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-install --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-update --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-remove --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app read-project-artifact --project-id <prj_id> --expected-project-revision <revision> --expected-projection-id <grp_id> <--node-id <nod_id>|--edge-id <edg_id>>\n  qiongli app verify-integrations --target <codex|claude|all>\n  qiongli app verify-skills --preset <qiongli-managed|current-project>\n  qiongli app verify-skills --target-id <skills-target-sha256>\n  qiongli app plan cli-install\n  qiongli app plan cli-remove\n  qiongli app plan cli-path-configure\n  qiongli app plan skills-reconcile --preset <qiongli-managed|current-project> --profile <profile>\n  qiongli app plan skills-update --target-id <skills-target-sha256>\n  qiongli app plan skills-remove --target-id <skills-target-sha256>\n  qiongli app plan skills-detach --target-id <skills-target-sha256>\n  qiongli app plan integrations-install --target <codex|claude|all>\n  qiongli app plan integrations-reconcile --target <codex|claude|all>\n  qiongli app plan integrations-remove --target <codex|claude|all>\n  qiongli app apply --plan <absolute-plan.json> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change --approve-host-trust]\n  qiongli app --help\n\nPlugin source operations export a user-approved local Plugin with a bundled binary; they do not register a Host or confer signed release authority. The destination parent must already exist and be secure.\n\nRead-only commands use the same native DesktopService and versioned App event contract as the GUI. Project artifact reads are revision-, projection-, and entity-bound and return only a bounded, path-redacted App event. CLI install, PATH configuration, remove or predecessor restoration, and integration repair are separate state-bound plans. Drifted Skills can be detached without changing their retained files. All mutations use a canonical, expiring, digest-bound plan and the same receipt-bound native transaction authority as the App.\n";
 
-const APP_USAGE: &str = "Qiongli App control contract\n\nUsage:\n  qiongli app snapshot\n  qiongli app plugin-source-status --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-install --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-update --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app plan plugin-source-remove --target <codex|claude> --destination <absolute-path/qiongli-next>\n  qiongli app read-project-artifact --project-id <prj_id> --expected-project-revision <revision> --expected-projection-id <grp_id> <--node-id <nod_id>|--edge-id <edg_id>>\n  qiongli app verify-integrations --target <codex|claude|all>\n  qiongli app verify-skills --preset <qiongli-managed|current-project>\n  qiongli app verify-skills --target-id <skills-target-sha256>\n  qiongli app plan cli-install\n  qiongli app plan cli-remove\n  qiongli app plan cli-path-configure\n  qiongli app plan skills-reconcile --preset <qiongli-managed|current-project> --profile <profile>\n  qiongli app plan skills-update --target-id <skills-target-sha256>\n  qiongli app plan skills-remove --target-id <skills-target-sha256>\n  qiongli app plan skills-detach --target-id <skills-target-sha256>\n  qiongli app plan integrations-install --target <codex|claude|all>\n  qiongli app plan integrations-reconcile --target <codex|claude|all>\n  qiongli app plan integrations-remove --target <codex|claude|all>\n  qiongli app apply --plan <absolute-plan.json> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change --approve-host-trust]\n  qiongli app --help\n\nPlugin source operations export a user-approved local Plugin with a bundled binary; they do not register a Host or confer signed release authority. The destination parent must already exist and be secure.\n\nRead-only commands use the same native DesktopService and versioned App event contract as the GUI. Project artifact reads are revision-, projection-, and entity-bound and return only a bounded, path-redacted App event. CLI install, PATH configuration, remove or predecessor restoration, and integration repair are separate state-bound plans. Drifted Skills can be detached without changing their retained files. All mutations use a canonical, expiring, digest-bound plan and the same receipt-bound native transaction authority as the App.\n";
+pub(crate) const CONTENT_USAGE: &str = "Qiongli embedded content (read only)\n\nUsage:\n  qiongli content list\n  qiongli content --help\n\nManaged Skills mutations use `qiongli app plan skills-reconcile|skills-update|skills-remove|skills-detach` followed by `qiongli app apply`. The CLI supports the declared presets; a custom destination is not currently a CLI option. The `app` namespace uses the native service without opening a GUI. The retired `content materialize` syntax returns `managed-skills-plan-required` without writing.\n";
 
-const CONTENT_USAGE: &str = "Qiongli embedded content (read only)\n\nUsage:\n  qiongli content list\n  qiongli content --help\n\nManaged Skills mutations use `qiongli app plan skills-reconcile|skills-update|skills-remove|skills-detach` followed by `qiongli app apply`. The CLI supports the declared presets; a custom destination is not currently a CLI option. The `app` namespace uses the native service without opening a GUI. The retired `content materialize` syntax returns `managed-skills-plan-required` without writing.\n";
+pub(crate) const CONFIG_USAGE: &str = "Qiongli global config\n\nUsage:\n  qiongli config show\n  qiongli config set --expected-revision <revision> --default-profile <profile>\n  qiongli config backend status\n  qiongli config --help\n\nModel execution is owned by Codex, Claude Code, or another supported host. Direct backend configuration and connection tests are not available in the default product.\n";
 
-const CONFIG_USAGE: &str = "Qiongli global config\n\nUsage:\n  qiongli config show\n  qiongli config set --expected-revision <revision> --default-profile <profile>\n  qiongli config backend status\n  qiongli config --help\n\nModel execution is owned by Codex, Claude Code, or another supported host. Direct backend configuration and connection tests are not available in the default product.\n";
+pub(crate) const UPDATE_USAGE: &str = "Qiongli native update\n\nUsage:\n  qiongli update status\n  qiongli update recovery-preview\n  qiongli update recover --expected-marker-digest <sha256> --approve-filesystem-write\n  qiongli update channel --expected-revision <revision> --stream <stable|beta>\n  qiongli update check\n  qiongli update download --expected-revision <revision>\n  qiongli update verify --expected-revision <revision>\n  qiongli update stage --expected-revision <revision>\n  qiongli update install --expected-revision <revision>\n  qiongli update cancel --expected-revision <revision>\n  qiongli update --help\n";
 
-const UPDATE_USAGE: &str = "Qiongli native update\n\nUsage:\n  qiongli update status\n  qiongli update recovery-preview\n  qiongli update recover --expected-marker-digest <sha256> --approve-filesystem-write\n  qiongli update channel --expected-revision <revision> --stream <stable|beta>\n  qiongli update check\n  qiongli update download --expected-revision <revision>\n  qiongli update verify --expected-revision <revision>\n  qiongli update stage --expected-revision <revision>\n  qiongli update install --expected-revision <revision>\n  qiongli update cancel --expected-revision <revision>\n  qiongli update --help\n";
+pub(crate) const MCP_USAGE: &str = "Qiongli MCP connection\n\nUsage:\n  qiongli mcp serve --profile <lite|marketplace-lite|full> [--transport stdio]\n  qiongli mcp --help\n\nstdio is the default transport. Lite exposes literature tools; Full also provides\nResearch Library, capture, academic graph, and local checkpoint controls. The connected host owns model execution and returns revision-bound candidates through the host handoff contract.\n";
 
-const MCP_USAGE: &str = "Qiongli native MCP\n\nUsage:\n  qiongli mcp serve --profile <lite|marketplace-lite|full> --transport stdio\n  qiongli mcp --help\n\nFull profile adds redacted Research Library, capture, academic graph, and local checkpoint controls. The connected host owns model execution and returns revision-bound candidates through the host handoff contract.\n";
+pub(crate) const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory [--paths exact]\n  qiongli install migrate --interactive\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --transaction-id <update-id> --expected-journal-digest <sha256> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate activate-recover --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-discard --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nCross-channel migration is a read-only interactive review. Select a preferred CLI and request manual archive/uninstall guidance; no files, PATH or Host settings are changed. Unknown executables are never launched during discovery.\n\nNormal managed Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
 
-const INSTALL_USAGE: &str = "Qiongli native payload inspection and release engineering\n\nUsage:\n\nRead-only observation:\n  qiongli install status\n  qiongli install inventory [--paths exact]\n  qiongli install migrate --interactive\n  qiongli install codex status\n  qiongli install claude status\n\nRelease-engineering payload commands:\n  qiongli install candidate activate --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --transaction-id <update-id> --expected-journal-digest <sha256> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate activate-recover --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-discard --transaction-id <update-id> --expected-journal-digest <sha256> --approve-filesystem-write\n  qiongli install candidate activate-prepare --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id> --expected-preflight-digest <preflight-sha256> --approve-filesystem-write\n  qiongli install candidate activate-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --previous-install-id <native-payload-id>\n  qiongli install candidate stage-preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate stage --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write\n  qiongli install candidate preview --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude>\n  qiongli install candidate apply --candidate <candidate.json> --archive <archive> --release-notes <notes.md> --target <codex|claude> --expected-approval-digest <sha256> --approve-filesystem-write --approve-client-config-change --approve-host-trust\n  qiongli install candidate verify --target <codex|claude> --install-id <native-payload-id>\n  qiongli install candidate remove --target <codex|claude> --install-id <native-payload-id> --approve-filesystem-write --approve-client-config-change\n  qiongli install native preview --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude>\n  qiongli install native apply --release <release.json> --archive <archive> --managed-root <absolute-path> --target <codex|claude> --expected-plan-digest <sha256> --approve-filesystem-write\n  qiongli install native verify --managed-root <absolute-path> --install-id <native-payload-id>\n  qiongli install native remove --managed-root <absolute-path> --install-id <native-payload-id> --approve-filesystem-write\n  qiongli install --help\n\nCandidate activate-preview only checks installed identities; its preflight digest does not authorize activation.\n\nCross-channel migration is a read-only interactive review. Select a preferred CLI and request manual archive/uninstall guidance; no files, PATH or Host settings are changed. Unknown executables are never launched during discovery.\n\nNormal managed Qiongli CLI, Plugin, and standalone Skills lifecycle uses `qiongli app plan` followed by `qiongli app apply`. The candidate/native commands above are retained for signed payload release engineering and are not a second end-user integration installer.\n";
-
-const MIGRATION_USAGE: &str = "Qiongli 1.x replacement migration\n\nUsage:\n  qiongli migrate-1x inspect\n  qiongli migrate-1x preview [--provider-resolution <provider>=<keep-v2|use-legacy|merge-compatible>]...\n  qiongli migrate-1x apply --migration-id <id> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change] [--approve-secret-store-write]\n  qiongli migrate-1x continue --migration-id <id> --confirm-host-activation\n  qiongli migrate-1x continue --migration-id <id> --approve-cleanup\n  qiongli migrate-1x continue --migration-id <id> --finalize\n  qiongli migrate-1x status --migration-id <id>\n  qiongli migrate-1x recover --migration-id <id>\n  qiongli migrate-1x --help\n";
+pub(crate) const MIGRATION_USAGE: &str = "Qiongli 1.x replacement migration\n\nUsage:\n  qiongli migrate-1x inspect\n  qiongli migrate-1x preview [--provider-resolution <provider>=<keep-v2|use-legacy|merge-compatible>]...\n  qiongli migrate-1x apply --migration-id <id> --expected-plan-digest <sha256> --approve-filesystem-write [--approve-client-config-change] [--approve-secret-store-write]\n  qiongli migrate-1x continue --migration-id <id> --confirm-host-activation\n  qiongli migrate-1x continue --migration-id <id> --approve-cleanup\n  qiongli migrate-1x continue --migration-id <id> --finalize\n  qiongli migrate-1x status --migration-id <id>\n  qiongli migrate-1x recover --migration-id <id>\n  qiongli migrate-1x --help\n";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct DetectedClientVersion {
@@ -294,6 +292,23 @@ pub enum ProductAction {
 }
 
 impl CliOutput {
+    pub(crate) fn with_stdout(mut self, stdout: String) -> Self {
+        self.stdout = stdout;
+        self
+    }
+
+    pub(crate) fn with_stderr(mut self, stderr: String) -> Self {
+        self.stderr = stderr;
+        self
+    }
+
+    pub(crate) fn usage_text(message: &str) -> Self {
+        Self {
+            exit_code: 2,
+            stdout: String::new(),
+            stderr: format!("error: {message}\n\nRun `qiongli --help` for usage.\n"),
+        }
+    }
     #[must_use]
     pub const fn exit_code(&self) -> u8 {
         self.exit_code
@@ -329,7 +344,11 @@ impl CliOutput {
         Self {
             exit_code: 2,
             stdout: String::new(),
-            stderr: format!("error: {}\n\n{}", error.message, error.usage),
+            stderr: format!(
+                "error: {}\n\nRun `qiongli {}--help` for usage.\n",
+                error.message,
+                help_scope(error.usage)
+            ),
         }
     }
 }
@@ -392,7 +411,8 @@ pub(crate) fn prepare_action_with_release_authority(
     };
 
     let output = match command {
-        Command::Help => CliOutput::success_text(format!("{USAGE}{INSPECTION_USAGE}")),
+        Command::Help => CliOutput::success_text(USAGE),
+        Command::TopicHelp(text) => CliOutput::success_text(text),
         Command::Version => {
             CliOutput::success_text(format!("qiongli {}\n", env!("CARGO_PKG_VERSION")))
         }
@@ -581,6 +601,7 @@ pub(crate) fn prepare_action_with_release_authority(
 #[derive(Debug, Eq, PartialEq)]
 enum Command {
     Help,
+    TopicHelp(String),
     Version,
     Ui,
     UiCandidate(CandidateReleaseOptions),
@@ -676,9 +697,43 @@ fn parse_args(args: impl IntoIterator<Item = OsString>) -> Result<Command, Usage
         return Err(global_usage_error("command or option is not valid text"));
     };
 
+    if command == "help"
+        || (args.len() > 1
+            && matches!(
+                args.last().and_then(|arg| arg.to_str()),
+                Some("--help" | "-h")
+            ))
+    {
+        let topic = if command == "help" {
+            &args[1..]
+        } else {
+            &args[..args.len() - 1]
+        };
+        return crate::cli_help::topic(topic)
+            .map(Command::TopicHelp)
+            .ok_or_else(|| global_usage_error("unknown help topic"));
+    }
+    if args.len() == 1 {
+        match command {
+            "setup" => return Ok(Command::InstallMigrateInteractive),
+            "install" => return Ok(Command::InstallInventory { exact_paths: false }),
+            "config" => return Ok(Command::ConfigShow),
+            "content" => return Ok(Command::ContentList),
+            "project" => {
+                return Ok(Command::Project(
+                    crate::project_cli::ProjectCliCommand::List,
+                ));
+            }
+            "update" => return Ok(Command::Update(UpdateCliCommand::Status)),
+            "mcp" | "app" | "migrate-1x" => {
+                return Ok(Command::TopicHelp(crate::cli_help::topic(&args).unwrap()));
+            }
+            _ => {}
+        }
+    }
     match command {
         "-h" | "--help" if args.len() == 1 => Ok(Command::Help),
-        "--version" if args.len() == 1 => Ok(Command::Version),
+        "--version" | "-V" if args.len() == 1 => Ok(Command::Version),
         "content" => parse_content_args(&args[1..]),
         "config" => parse_config_args(&args[1..]),
         "update" => parse_update_args(&args[1..]),
@@ -714,6 +769,24 @@ fn parse_args(args: impl IntoIterator<Item = OsString>) -> Result<Command, Usage
             Err(global_usage_error("unexpected extra argument"))
         }
         _ => Err(global_usage_error("unknown command or option")),
+    }
+}
+
+pub(crate) fn accepts_arguments(args: &[OsString]) -> bool {
+    parse_args(args.iter().cloned()).is_ok()
+}
+
+fn help_scope(usage: &str) -> &'static str {
+    match usage {
+        APP_USAGE => "app ",
+        CONTENT_USAGE => "content ",
+        CONFIG_USAGE => "config ",
+        UPDATE_USAGE => "update ",
+        MCP_USAGE => "mcp ",
+        INSTALL_USAGE => "install ",
+        MIGRATION_USAGE => "migrate-1x ",
+        crate::project_cli::PROJECT_USAGE => "project ",
+        _ => "",
     }
 }
 
@@ -1073,10 +1146,13 @@ fn parse_install_args(args: &[OsString]) -> Result<Command, UsageError> {
     match subcommand {
         "--help" if args.len() == 1 => Ok(Command::InstallHelp),
         "status" if args.len() == 1 => Ok(Command::InstallStatus),
-        "inventory" if args.len() == 1 => Ok(Command::InstallInventory { exact_paths: false }),
-        "inventory" if args.len() == 3 && args[1] == "--paths" && args[2] == "exact" => {
+        "list" | "inventory" if args.len() == 1 => {
+            Ok(Command::InstallInventory { exact_paths: false })
+        }
+        "list" | "inventory" if args.len() == 3 && args[1] == "--paths" && args[2] == "exact" => {
             Ok(Command::InstallInventory { exact_paths: true })
         }
+        "review" if args.len() == 1 => Ok(Command::InstallMigrateInteractive),
         "migrate" if args.len() == 2 && args[1] == "--interactive" => {
             Ok(Command::InstallMigrateInteractive)
         }
@@ -1970,9 +2046,6 @@ fn parse_mcp_serve_options(args: &[OsString]) -> Result<Command, UsageError> {
     }
     if profile.is_none() {
         return Err(mcp_usage_error("MCP profile is required"));
-    }
-    if transport.is_none() {
-        return Err(mcp_usage_error("MCP transport is required"));
     }
     Ok(if profile == Some("full") {
         Command::McpServeFullStdio
@@ -3954,6 +4027,19 @@ mod tests {
 
     #[test]
     fn parser_accepts_both_option_orders_and_the_lite_alias() {
+        assert_eq!(
+            parse_args(args(&["mcp", "serve", "--profile", "full"])),
+            Ok(Command::McpServeFullStdio)
+        );
+        assert_eq!(
+            parse_args(args(&["setup"])),
+            Ok(Command::InstallMigrateInteractive)
+        );
+        let id = "prj_00000000000000000000000000000001";
+        assert_eq!(
+            parse_args(args(&["project", "show", id])),
+            parse_args(args(&["project", "show", "--project-id", id]))
+        );
         let first = parse_args(args(&[
             "content",
             "materialize",
@@ -4291,7 +4377,6 @@ mod tests {
                 "--approve-filesystem-write",
                 "--approve-filesystem-write",
             ],
-            vec!["content"],
             vec!["content", "list", "extra"],
             vec!["content", "materialize", "--profile", "full"],
             vec![
@@ -4318,7 +4403,6 @@ mod tests {
                 "--enabled",
                 "maybe",
             ],
-            vec!["update"],
             vec!["update", "status", "extra"],
             vec!["update", "channel", "--expected-revision", "0"],
             vec!["update", "download"],
@@ -4334,8 +4418,6 @@ mod tests {
             ],
             vec!["update", "check", "--url", "https://private-canary"],
             vec!["status", "extra"],
-            vec!["mcp"],
-            vec!["mcp", "serve", "--profile", "lite"],
             vec!["mcp", "serve", "--transport", "stdio"],
             vec![
                 "install",

@@ -3,6 +3,43 @@
 Qiongli 2 is CLI-first. GitHub binary archives, npm and PyPI distribute the same
 native executable for a given version and target. No Qiongli App is required.
 
+## Everyday commands (next release)
+
+These refinements are implemented on the `2.x` development branch and are not yet
+in the published beta.2 package. `ql` and `qiongli` accept the same commands.
+
+| Task | Short command | Published beta.2 equivalent |
+|---|---|---|
+| See common commands | `qiongli` | `qiongli --help` |
+| Check local health | `qiongli doctor` | Same command, JSON output |
+| Review installed CLI versions | `qiongli setup` | `qiongli install migrate --interactive` |
+| List installations and Hosts | `qiongli install` | `qiongli install inventory` |
+| List research projects | `qiongli project` | `qiongli project list` |
+| Read one project | `qiongli project show <id>` | `qiongli project show --project-id <id>` |
+| Read configuration | `qiongli config` | `qiongli config show` |
+| List embedded content profiles | `qiongli content` | `qiongli content list` |
+| Connect Full MCP over stdio | `qiongli mcp serve --profile full` | Add `--transport stdio` |
+
+Use `qiongli help project create` or `qiongli project create --help` to see one
+operation's parameters. `qiongli help all` retains the complete reference, including
+advanced managed installation commands. `qiongli update` shows managed update
+status; npm, pip and Cargo packages are still upgraded with their own package manager.
+
+Queries display readable summaries in a terminal. Redirected output retains its
+previous format; use `--json` explicitly for structured data, or `--text` to save a
+readable report. Put one output flag before the command or at the end:
+
+```sh
+qiongli status --json
+qiongli doctor --text > qiongli-doctor.txt
+```
+
+The short `setup` entry borrows the familiar 1.x name but specifically reviews CLI
+installations. It does not configure a Host, select a model or uninstall anything.
+An empty-argument launch shows help instead of starting that review. Project writes
+still use the same preview, approval and revision checks. Human-readable previews
+retain their full plan values; `--json` is the exact machine-readable representation.
+
 ## Standalone binary download
 
 **Recommended for direct use: download, extract, and run. No Python, Node.js,
@@ -126,8 +163,9 @@ PATH or Host settings. No file is deleted, moved or archived. Review shared
 command files before uninstalling: an old package may own the same entry as a
 new one. Research files, configuration and Plugin caches are excluded.
 
-An empty-argument terminal launch also opens this review. To open it during npm
-installation, allow Qiongli's script for that invocation and connect it to the
+Published beta.2 also opens this review on an empty-argument terminal launch.
+The next release uses `qiongli setup` and shows help on an empty launch. To open
+the review during npm installation, allow Qiongli's script for that invocation and connect it to the
 terminal:
 
 ```sh

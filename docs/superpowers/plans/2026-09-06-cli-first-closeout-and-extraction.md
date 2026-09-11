@@ -3,6 +3,46 @@
 Date: 2026-09-06. This is the bounded execution plan selected by the master
 roadmap. The program ledger remains the only task-state authority.
 
+## Beta.3 release submission — September 11
+
+The maintainer explicitly requested pushing the command improvements and releasing
+an updated version, with no Agent tracking after submission. Branch
+`codex/cli-beta3-release` carries beta.3 metadata, refreshed bilingual download
+instructions and reviewed release notes. The standalone archive README now uses
+`setup` and the shorter MCP invocation. Publication reuses Release Automation;
+Cargo uploads remain in Actions with the existing repository token.
+
+The clean local `2.x` source `c9f10bc4a21f5dee60c9d1aea0f50bbdacc87661`
+passed the current-target release-ready owner on macOS ARM64: formatting, Clippy,
+37 CLI and seven MCP tests, extracted empty-PATH CLI/Lite14/Full32, isolated
+npm/wheel installs and both native Plugin archives. Package digests and
+`SHA256SUMS` match. Eighteen version/packaging/publication tests and the docs build
+passed; existing highlighting and bundle-size notices remain. A real terminal
+check of the extracted beta.3 binary confirmed no-argument help, readable redacted
+queries, explicit JSON and Enter keeping the setup without creating state.
+
+The first release-ready run passed its CLI/MCP regressions but exposed an old
+root-help expectation in the shared installation checker. It now checks the
+compact root help and detailed project help separately. The same extracted binary
+passed that focused reproduction, and the complete release-ready rerun passed.
+No CLI behavior or write authority was changed to satisfy the packaging check.
+
+Receipts: `/private/tmp/qiongli-beta3-release-final/assets/release-manifest.json`,
+`/private/tmp/qiongli-beta3-release-final.log`,
+`/private/tmp/qiongli-beta3-packaging-tests.log`,
+`/private/tmp/qiongli-beta3-docs-build.log` and
+`/private/tmp/qiongli-beta3-terminal.json`. The original failed check is retained
+in `/private/tmp/qiongli-beta3-release.log`.
+
+Final integration changes only this record and its ledger/index; all seven
+roadmap checks and the native change-boundary check passed. The authorized
+next step is to push the candidate branch and immutable `v2.0.0-beta.3` tag,
+then dispatch Release Automation at that tag. The workflow must qualify the final
+source on all three platforms before publishing GitHub assets and dispatching
+npm/PyPI/Cargo uploads. Stop after dispatch acceptance; do not poll or collect
+remote results. No beta.3 publication success, registry availability, external
+Marketplace catalog update or Host/program acceptance is claimed here.
+
 ## Command clarity and terminal output — September 11
 
 Base `8f5930d8`; branch `codex/cli-command-clarity`. The maintainer requested
